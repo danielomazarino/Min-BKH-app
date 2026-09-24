@@ -1,0 +1,32 @@
+[
+  {
+    "id": "samuel-gustafson",
+    "name": "Samuel Gustafson",
+    "bkhSeasons": "2016-2018",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+  },
+  {
+    "id": "mikkel-rygaard",
+    "name": "Mikkel Rygaard",
+    "bkhSeasons": "2019-2021",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+  },
+  {
+    "id": "alexander-jeremejeff",
+    "name": "Alexander Jeremejeff",
+    "bkhSeasons": "2018-2021",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+  },
+  {
+    "id": "julius-lindberg",
+    "name": "Julius Lindberg",
+    "bkhSeasons": "2021-2024",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+  },
+  {
+    "id": "paulo-vitor",
+    "name": "Paulo Victor",
+    "bkhSeasons": "2019-2020",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+  }
+]

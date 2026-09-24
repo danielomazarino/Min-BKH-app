@@ -1,0 +1,153 @@
+{
+  "freshness": {
+    "generatedAt": "2026-09-24T16:52:47.541Z",
+    "sourceStatus": {
+      "rss:BK Häcken": "ok",
+      "rss:Sportbladet": "ok",
+      "apiFootball": "skipped"
+    }
+  },
+  "nextMatch": null,
+  "lastResult": null,
+  "upcoming": [],
+  "recent": [],
+  "lastMatchDetail": null,
+  "table": [],
+  "tablePosition": null,
+  "warnings": null,
+  "news": [
+    {
+      "id": "BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
+      "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
+      "publishedAt": "2026-09-20T16:00:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/acd01c89-2e09-4a89-ad64-9842a8244abf.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten"
+    },
+    {
+      "id": "BK Häcken-5-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "title": "BK Häcken åker till Kalmar – här är matchtruppen",
+      "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
+      "publishedAt": "2026-09-19T13:50:05.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/8463a6c2-df5f-4c36-a795-5785f03afa9e.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen"
+    },
+    {
+      "id": "BK Häcken-13-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
+      "url": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
+      "publishedAt": "2026-09-11T10:00:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1770199263BB250713MI100.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play"
+    },
+    {
+      "id": "BK Häcken-14-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
+      "title": "Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby",
+      "url": "https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
+      "summary": "I kväll, fredagen den 11 september klockan 19.00, spelar BK Häcken mot Mjällby AIF på Nordic Wellness Arena.",
+      "publishedAt": "2026-09-11T09:45:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/c38ac1aa-abde-4ed2-82ab-3725a9e73ad1.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby"
+    },
+    {
+      "id": "BK Häcken-15-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
+      "title": "Matchtruppen inför Mjällby på Nordic Wellness Arena",
+      "url": "https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
+      "summary": "Senaste nytt om laget inför fredagens hemmamatch.",
+      "publishedAt": "2026-09-10T15:23:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/19163131-107c-4b05-8785-e52a3ef6bde0.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif"
+    },
+    {
+      "id": "BK Häcken-16-https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
+      "title": "Matchtröjehelg på Nordic Wellness Arena",
+      "url": "https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
+      "summary": "Fira in helgen med allsvensk fredagsmatch!",
+      "publishedAt": "2026-09-10T10:16:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/559af1ae-5db0-4dd5-a3a6-b64197dca002.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena"
+    },
+    {
+      "id": "Sportbladet-5-https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss",
+      "title": "AVSLÖJAR: Oenighet om transferöppenheten: ”Oron är överdriven”",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss",
+      "summary": "Klubbarna inte överens i känsliga frågan",
+      "publishedAt": "2026-09-24T10:28:06.000Z",
+      "publisher": "Sportbladet",
+      "category": "club",
+      "imageUrl": "https://akamai.vgc.no/v2/images/34da1e7f-c68c-35dd-8720-9ebc918f47f0?format=auto&w=1000&s=118e5897fd9421ca3497517d5eeb14bb4e9c7ac6",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss"
+    },
+    {
+      "id": "Sportbladet-11-https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss",
+      "title": "Sparkas efter orden till kvinnliga domaren",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss",
+      "summary": "”Det är det bästa för klubben”",
+      "publishedAt": "2026-09-23T18:46:13.000Z",
+      "publisher": "Sportbladet",
+      "category": "club",
+      "imageUrl": "https://akamai.vgc.no/v2/images/944036a9-a512-33d6-9e61-def0b4e7d5a0?format=auto&w=1000&s=a13585b248c48ce2987383483de2cfa6e43c44e4",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss"
+    },
+    {
+      "id": "Sportbladet-14-https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss",
+      "title": "Sparkades – fick 354 (!) miljoner kr",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss",
+      "summary": "Enorm utgift för engelska krisklubben",
+      "publishedAt": "2026-09-23T16:19:09.000Z",
+      "publisher": "Sportbladet",
+      "category": "club",
+      "imageUrl": "https://akamai.vgc.no/v2/images/200c7443-6aef-392d-9a15-e2fd96d480c0?format=auto&w=1000&s=fb3961487dc3ec823ec5d9ab97bdbf1c89292933",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss"
+    },
+    {
+      "id": "Sportbladet-19-https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss",
+      "title": "Allsvenskan inifrån: Här är Bergvalls nya drömlön",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss",
+      "summary": "Heta sillynyheter ✓ Blåvitts målvaktsplan",
+      "publishedAt": "2026-09-23T07:29:55.000Z",
+      "publisher": "Sportbladet",
+      "category": "men",
+      "imageUrl": "https://akamai.vgc.no/v2/images/5b0fc26c-a5a3-3c89-ab78-4f987983be47?format=auto&w=1000&s=904b5cd2561573e1deb36525d4d170c3c8eb8665",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss"
+    },
+    {
+      "id": "Sportbladet-29-https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss",
+      "title": "Fotbollsklubben köper en miljon tegelstenar",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss",
+      "summary": "Köpet inför nybygget",
+      "publishedAt": "2026-09-21T17:07:03.000Z",
+      "publisher": "Sportbladet",
+      "category": "club",
+      "imageUrl": "https://akamai.vgc.no/v2/images/01009479-12fb-3599-927e-506e430158c9?format=auto&w=1000&s=4562f14ff70fa6c407c560e5e9ec099a1ab75001",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss"
+    }
+  ],
+  "formerPlayers": []
+}

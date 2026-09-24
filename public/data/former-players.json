@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-09-24T16:52:47.539Z",
+  "sourceStatus": {
+    "rss:BK Häcken": "ok",
+    "rss:Sportbladet": "ok",
+    "apiFootball": "skipped"
+  },
+  "players": [
+    {
+      "id": "samuel-gustafson",
+      "name": "Samuel Gustafson",
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "samuel-gustafson",
+        "playerName": "Samuel Gustafson",
+        "topic": "other",
+        "claim": "Fotbolltransfers! datum: 1995-01-11 (31 år) Position: Mittfältare. Kontrakt: 2026-12-31 Marknadsvärde: 25 miljoner kr",
+        "sourceName": "fotbolltransfers.com",
+        "sourceUrl": "https://fotbolltransfers.com/spelare/samuel-gustafson/5140",
+        "retrievedAt": "2026-09-24T16:52:46.140Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "mikkel-rygaard",
+      "name": "Mikkel Rygaard",
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "mikkel-rygaard",
+        "playerName": "Mikkel Rygaard",
+        "topic": "other",
+        "claim": "Rygaard är född i Nykøbing Falster och började spela fotboll i Nykøbing Falster ... I oktober 2024 förlängde Rygaard sitt kontrakt med två år.",
+        "sourceName": "sv.wikipedia.org",
+        "sourceUrl": "https://sv.wikipedia.org/wiki/Mikkel_Rygaard",
+        "retrievedAt": "2026-09-24T16:52:47.023Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "alexander-jeremejeff",
+      "name": "Alexander Jeremejeff",
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "alexander-jeremejeff",
+        "playerName": "Alexander Jeremejeff",
+        "topic": "other",
+        "claim": "Alexander Jeremejeff får ont om speltid i Panathinaikos. Nu talar mycket för att han lämnar klubben. – Vi har många anfallare och vissa som ...",
+        "sourceName": "www.expressen.se",
+        "sourceUrl": "https://www.expressen.se/sport/fotboll/allsvenskan/kravet-pa-jeremejeff-maste-tavla-om-platsen/",
+        "retrievedAt": "2026-09-24T16:52:47.191Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "julius-lindberg",
+      "name": "Julius Lindberg",
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "julius-lindberg",
+        "playerName": "Julius Lindberg",
+        "topic": "other",
+        "claim": "BK Häcken och Julius Lindberg är överens om en kontraktsförlängning. Den 27-årige mittfältaren har skrivit på ett nytt fyraårsavtal med ...",
+        "sourceName": "bkhacken.se",
+        "sourceUrl": "https://bkhacken.se/nyhet/julius-lindberg-forlanger-med-bk-hacken",
+        "retrievedAt": "2026-09-24T16:52:47.365Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "paulo-vitor",
+      "name": "Paulo Victor",
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "paulo-vitor",
+        "playerName": "Paulo Victor",
+        "topic": "other",
+        "claim": "Paulo Victor, Lag: Querétaro FC, Ålder: 25, Land: Brasilien, Längd: 184 cm, Föredragen fot: Vänster, Tröja: 12, Övergångsvärde: 1,1 mn €",
+        "sourceName": "www.fotmob.com",
+        "sourceUrl": "https://www.fotmob.com/sv/players/1269652/paulo-victor",
+        "retrievedAt": "2026-09-24T16:52:47.539Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    }
+  ]
+}

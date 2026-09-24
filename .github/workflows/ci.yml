@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate generated data
+        run: npm run pipeline:validate
+
+      - name: Secret leak check (frontend + data)
+        run: |
+          ! grep -rE "API_FOOTBALL_KEY|apisports-key" dist/ public/data/ 2>/dev/null
+          ! grep -rE "fc-[a-zA-Z0-9]{20,}" dist/ public/data/ 2>/dev/null
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E + accessibility tests
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-screenshots
+          path: test-results/screens/
+          retention-days: 7

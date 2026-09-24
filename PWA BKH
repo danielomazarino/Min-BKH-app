@@ -1,0 +1,1635 @@
+```text
+You are the agent operating as the autonomous lead engineer, product implementer, UX implementer, data-engineering implementer, test engineer and release engineer for this project.
+
+Your task is to build the complete production MVP of a public mobile-first Progressive Web App for BK Häcken men's football supporters.
+
+The application must be deployable as a public static site on GitHub Pages.
+
+IMPORTANT WORKING STYLE
+-----------------------
+Work autonomously in one coherent session.
+
+Do not stop after planning.
+Do not merely describe what should be built.
+Inspect the repository, make the necessary implementation decisions, implement the product, create the data pipeline, create tests, run the tests, fix failures, build the production application, validate the result, and leave the repository in a deployable state.
+
+Do not ask the user unnecessary questions.
+
+If a non-critical implementation detail is unspecified, choose a sensible solution that is consistent with this specification.
+
+If an important external-data assumption is uncertain, investigate it using the available tools/web access and document the result rather than inventing data.
+
+Do not silently weaken requirements because something is inconvenient.
+
+Do not introduce paid services, subscriptions, paid API tiers, automatic billing, or services requiring the public user to create an account unless explicitly required by this specification.
+
+The application must remain useful if a secondary external source fails.
+
+============================================================
+1. PRODUCT PURPOSE
+============================================================
+
+Build a small, high-quality public PWA for supporters of BK Häcken's men's first team.
+
+The product is NOT intended to become a generic football statistics platform.
+
+Its purpose is to make a few things substantially easier to follow:
+
+1. Current BK Häcken men's team
+   - next match
+   - latest result
+   - match information
+   - relevant men's team news
+   - player match statistics
+   - yellow-card/suspension situation
+
+2. Former BK Häcken players
+   - follow selected former players
+   - current club
+   - current-season playing statistics
+   - contract status/expiry when sufficiently supported
+   - transfers
+   - loans
+   - contract extensions
+   - relevant career news
+   - consolidated news/watchlist information
+
+The strongest differentiating feature is the warning/suspension overview for the current men's team.
+
+A second important differentiator is useful monitoring of former BK Häcken players during transfers, contract periods and career changes.
+
+Do NOT add features merely because football apps commonly have them.
+
+No xG.
+No heatmaps.
+No running distance.
+No GPS/tracking data.
+No subjective player ratings.
+No live-match event system in MVP.
+No betting.
+No fantasy football.
+No unnecessary social features.
+No decorative AI-generated content.
+
+Principle:
+
+INFORMATION BEFORE BLOAT.
+
+AI is a tool for information compression and research, not a visible decoration.
+
+============================================================
+2. FIXED HOSTING ARCHITECTURE
+============================================================
+
+The application MUST be hosted on GitHub Pages.
+
+This is a fixed architectural constraint.
+
+Do NOT propose moving the application to:
+- Vercel backend
+- Netlify backend
+- Firebase backend
+- a custom server
+- Cloudflare Workers
+- a VPS
+- any other persistent backend
+
+unless absolutely necessary for a clearly documented security or technical reason, and do not make such a change autonomously.
+
+The intended architecture is:
+
+External data sources
+        |
+        v
+GitHub Actions
+        |
+        v
+normalised static JSON/data artifacts
+        |
+        v
+React PWA
+        |
+        v
+GitHub Pages
+
+The browser should normally read static data from the deployed application.
+
+Users should NOT call paid/credentialed third-party APIs directly from the browser.
+
+============================================================
+3. TECHNOLOGY STACK
+============================================================
+
+Use the existing repository conventions if they are already appropriate.
+
+Otherwise use:
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Lucide icons
+- vite-plugin-pwa
+- Vitest
+- Playwright
+- @axe-core/playwright
+
+Use a clean component architecture.
+
+Use TypeScript throughout the application and data-processing code where practical.
+
+Do not introduce a large framework unnecessarily.
+
+Keep dependencies understandable and maintainable.
+
+============================================================
+4. VISUAL IDENTITY
+============================================================
+
+The application MUST use BK Häcken's colours as its primary visual identity:
+
+BLACK + YELLOW. use the bk häcken official icons if allowed, otherwise create a yellow and black icon with a gothenburg crane a hedge (häck) and a football that is used as pwa icon and shown in the app visuals.
+
+Do not use a generic blue/purple AI-app appearance.
+
+The visual system should feel like a modern BK Häcken supporter application.
+
+Use black and yellow deliberately rather than flooding every surface with yellow.
+
+Recommended hierarchy:
+
+- dark/black primary surfaces or strong black typography
+- BK Häcken yellow as primary accent/action/status colour
+- neutral supporting surfaces
+- red only for genuinely negative/error/suspension states where appropriate
+- green only for genuinely positive states where useful
+
+Do not invent a complicated colour palette.
+
+Create design tokens so the visual identity can be adjusted centrally.
+
+============================================================
+5. UX PRINCIPLE
+============================================================
+
+The application is primarily for an iPhone user.
+
+Primary target:
+iPhone 13.
+
+The user may use it outdoors on a cold late-October evening.
+
+Therefore:
+
+- large touch targets
+- obvious controls
+- no tiny links
+- no tiny icon-only controls unless universally understood and sufficiently large
+- generous spacing around important controls
+- easy one-handed operation
+- important information in natural thumb-reach areas
+- minimal horizontal scrolling
+- no desktop dashboard simply shrunk to mobile
+- short labels
+- clear hierarchy
+- predictable placement
+- fast recognition
+- no visual clutter
+
+Primary interactive controls should be at least 48x48 CSS pixels.
+
+The application should remain usable at a 320px-wide viewport.
+
+Do not use visual density to mean "many things packed together."
+
+The target is:
+
+INFORMATION DENSITY WITHOUT VISUAL DENSITY.
+
+============================================================
+6. NAVIGATION
+============================================================
+
+Use a very small number of primary destinations.
+
+Preferred mobile navigation:
+
+- Hem
+- Matcher
+- Nyheter
+- Spelare
+
+Do not create additional top-level navigation unless there is a demonstrated need.
+
+Former players/watchlist belongs naturally under Spelare.
+
+Warnings should be prominent from Home and accessible through the relevant team/player context rather than necessarily becoming a separate top-level destination.
+
+Use large, understandable navigation controls.
+
+============================================================
+7. HOME SCREEN
+============================================================
+
+The Home screen should immediately answer:
+
+"What matters to a BK Häcken men's supporter right now?"
+
+Show, in a clear order:
+
+1. Next men's match
+   - opponent
+   - competition
+   - date
+   - time if available
+   - home/away
+
+2. Warning/suspension situation
+   - suspended for next match
+   - one warning from suspension
+   - other relevant warning information
+
+3. Latest result
+   - opponent
+   - score
+   - competition
+   - date
+
+4. Recent relevant men's news
+   - approximately 3–5 items
+   - title
+   - date
+   - source/category as appropriate
+
+5. League table/position if reliable data is available.
+
+Do not create a large hero image.
+
+Do not use a carousel.
+
+Do not fill the screen with decorative cards.
+
+The next match and warning status should be visually prominent.
+
+============================================================
+8. MATCHES
+============================================================
+
+The Matches area must show men's first-team matches.
+
+For each match support, where data is available:
+
+- date
+- competition
+- opponent
+- home/away
+- result
+- score
+- goals
+- cards
+- starting XI
+- substitutions
+- player minutes
+- assists
+- other relevant player-level statistics available from the chosen source
+
+For the latest completed match, make player statistics particularly useful.
+
+A simple table/list is preferable to a visually overloaded football dashboard.
+
+Example conceptual structure:
+
+Player | Minutes | Goals | Assists | Yellow
+
+Adapt to the actual data returned by the source.
+
+Do not display fields merely because the API provides them.
+
+============================================================
+9. WARNING / SUSPENSION FEATURE
+============================================================
+
+This is a core feature.
+
+The app must not simply display:
+
+"Player has 2 yellow cards."
+
+Instead it must answer:
+
+- Who is suspended for the next match?
+- Who is one warning away from suspension?
+- Which competition/season does the warning status refer to?
+
+Model warnings by:
+
+- player
+- competition
+- season
+- match history
+- warnings
+- suspension state
+
+Do not mix warnings across competitions.
+
+Do not apply a generic threshold blindly.
+
+Use the current applicable SvFF competition regulations for the relevant competition/season and document the rule in the repository.
+
+For the 2026 competition rules, SvFF's regulations specify that a player who receives three warnings in different matches in the same competition serves a suspension in the same competition. Verify the exact applicable rule during implementation and model it explicitly rather than hard-coding an undocumented assumption.
+
+The warning logic must be unit tested.
+
+Acceptance examples must include:
+
+- player with two relevant warnings and no suspension -> appears in "En varning från avstängning"
+- player who has reached the applicable threshold -> appears as suspended when the suspension applies
+- warnings from another competition do not incorrectly affect the Allsvenskan status
+- season boundaries do not incorrectly carry old warnings into a new season
+- match-specific suspension status is correctly associated with the next relevant match
+
+Use actual source data and rule configuration rather than hand-coded player-specific exceptions.
+
+============================================================
+10. BK HÄCKEN NEWS
+============================================================
+
+Current men's team news is a core feature.
+
+Do not simply filter articles by the presence of the word "Herr".
+
+BK Häcken's site can contain:
+- men's articles
+- women's articles
+- academy/youth material
+- club-wide material
+- mixed tags
+- articles whose relevance is not perfectly represented by one tag
+
+Build a robust relevance/classification pipeline.
+
+Primary source:
+
+BK Häcken's official news/press ecosystem.
+
+Use its available RSS feeds where appropriate instead of unnecessarily scraping HTML.
+
+Investigate the available official feeds during implementation.
+
+The repository should document exactly which feed(s) are being used.
+
+Relevant official BK Häcken news should be classified into:
+
+- men
+- women
+- youth/academy
+- club/general
+- unknown
+
+Only relevant men's content should appear in the men's news view, while club-wide content may be included when genuinely relevant.
+
+Do not invent a classification.
+
+If deterministic rules are insufficient, use conservative classification and/or LLM classification only where justified.
+
+============================================================
+11. FORMER BK HÄCKEN PLAYERS
+============================================================
+
+This is the second major feature.
+
+The user wants to follow former BK Häcken players.
+
+This does NOT mean showing their latest match as if they were still BK Häcken players.
+
+Instead it is a career-monitoring feature.
+
+For a former player, show where relevant:
+
+- player name
+- current club
+- current league/country
+- current-season statistics
+- appearances
+- starts
+- minutes
+- goals
+- assists
+- cards where useful
+- contract expiry/status if supported
+- transfers
+- loans
+- contract extensions
+- relevant career news
+
+Use factual playing-volume indicators.
+
+Do NOT show subjective statements such as:
+
+- "in poor form"
+- "ordinary season"
+- "looks ready for a return"
+- "should return to Häcken"
+
+unless the user explicitly asks for analysis later.
+
+Do not infer transfer likelihood.
+
+============================================================
+12. FORMER PLAYER FAVORITES
+============================================================
+
+Allow users to mark former BK Häcken players as favorites.
+
+Favorites must persist locally across sessions.
+
+Use localStorage or another appropriate browser-local mechanism.
+
+Do not require login.
+
+Do not require an account.
+
+Do not require a backend.
+
+The favorite list must be easy to modify.
+
+The UI should make it obvious which players are currently followed.
+
+============================================================
+13. FORMER PLAYER CONTRACT DATA
+============================================================
+
+Contract expiry is important.
+
+But this is also a high-risk data field.
+
+NEVER display an unverified contract date as a confirmed fact.
+
+Every contract claim must carry provenance.
+
+Use a model conceptually like:
+
+{
+  player,
+  contractStatus,
+  contractExpiry,
+  verificationStatus,
+  source,
+  sourceUrl,
+  publishedAt,
+  discoveredVia,
+  retrievedAt
+}
+
+Possible verification states:
+
+- confirmed
+- reported
+- unverified
+- unknown
+
+Examples:
+
+CONFIRMED:
+"Contract expires December 2026"
+only when supported by an appropriate source.
+
+REPORTED:
+"Contract reportedly runs until December 2026"
+when a reputable source reports it but primary confirmation is unavailable.
+
+UNKNOWN:
+"No verified contract expiry found."
+
+Never turn an uncertain date into a hard date merely because a database contains one.
+
+============================================================
+14. FORMER PLAYER NEWS RESEARCH
+============================================================
+
+This is where web search/research is useful.
+
+The system should be capable of finding relevant news about followed former players.
+
+Relevant categories include:
+
+- transfer
+- loan
+- contract extension
+- contract expiry
+- contract negotiations
+- new club
+- departure
+- return
+- major career development
+- relevant injury/comeback where genuinely newsworthy
+- significant football career events
+
+Do not search for every player continuously at high frequency.
+
+Use the user's favorite list to constrain monitoring.
+
+============================================================
+15. RSS SOURCES
+============================================================
+
+Use RSS where stable public feeds exist.
+
+The intended source family includes:
+
+1. BK Häcken's official news/press RSS
+2. Fotbollskanalen RSS
+3. Sportbladet/Fotboll RSS where available and technically usable
+4. other reputable Swedish football RSS feeds only if they are actually available and useful
+
+Do not assume a feed exists.
+
+Verify each feed during implementation.
+
+Document every feed in:
+
+docs/data-sources.md
+
+RSS is a source/distribution mechanism, not automatically a guarantee of truth.
+
+The article itself remains the source.
+
+============================================================
+16. FIRECRAWL KEYLESS
+============================================================
+
+Firecrawl Keyless is the intended supplementary open-web search mechanism.
+
+IMPORTANT:
+
+Use Firecrawl Keyless only as a supplementary discovery/research source.
+
+Do not make the entire application dependent on Firecrawl.
+
+Firecrawl Keyless currently provides web search/scrape without account/API key and automatically provides 1,000 free credits per month.
+
+There must be:
+
+- no Firecrawl account requirement for public users
+- no Firecrawl API key in the repository
+- no Firecrawl API key in the frontend
+- no credit card requirement for public users
+- no automatic payment
+- no paid Firecrawl tier
+
+Use the no-credential/keyless mechanism where it is appropriate and technically reliable.
+
+Before implementation, verify the current Keyless API behavior and limits using the official Firecrawl documentation.
+
+Do not blindly trust assumptions from this prompt if the current official documentation differs.
+
+============================================================
+17. FIRECRAWL PROVENANCE MUST BE VISIBLE
+============================================================
+
+If Firecrawl is used to discover information, this MUST be represented in provenance.
+
+Do not hide the use of Firecrawl.
+
+Separate:
+
+1. SOURCE
+   The actual article/site containing the information.
+
+2. DISCOVERY METHOD
+   How our system found it.
+
+Example:
+
+Source:
+Football Tribe
+
+Published:
+2026-09-04
+
+Claim:
+Contract reportedly runs until December 2026
+
+Status:
+Reported
+
+Discovered via:
+Firecrawl web search
+
+Source URL:
+[original article URL]
+
+This distinction is important because Firecrawl is a discovery/extraction service, not itself the authority for the claim.
+
+============================================================
+18. DO NOT MAKE FIRECRAWL THE SOURCE OF TRUTH
+============================================================
+
+The system must never reason:
+
+"Firecrawl found it, therefore it is true."
+
+Instead:
+
+Firecrawl
+  -> finds candidate source
+  -> retrieves source content
+  -> source is evaluated
+  -> relevant claim extracted
+  -> provenance retained
+  -> confidence/verification status assigned
+
+Prefer primary sources where available:
+
+- official club
+- official league
+- official competition
+- player interview
+- official announcement
+
+Then reputable journalism.
+
+Do not treat rumours as facts.
+
+============================================================
+19. LLM USAGE
+============================================================
+
+LLM use is optional and must solve a concrete problem.
+
+Do NOT add a visible "AI assistant" merely for marketing.
+
+The most useful LLM roles are:
+
+1. classify whether an article is relevant to a former player
+2. extract structured claims
+3. distinguish contract/transfer/loan/etc.
+4. identify duplicate coverage of the same event
+5. summarise multiple verified articles into a compact watchlist item
+6. distinguish confirmed/report/rumour where evidence allows
+
+The LLM must NOT invent facts.
+
+Every extracted claim must retain source provenance.
+
+Prefer structured JSON output.
+
+Conceptual example:
+
+{
+  "player": "Samuel Gustafson",
+  "topic": "contract",
+  "claim": "Contract reportedly runs until December 2026",
+  "status": "reported",
+  "source": "Football Tribe",
+  "sourceUrl": "...",
+  "publishedAt": "...",
+  "discoveredVia": "firecrawl",
+  "evidenceType": "reported_media"
+}
+
+============================================================
+20. NO PAID LLM REQUIREMENT
+============================================================
+
+Do not build an architecture that requires a paid LLM.
+
+If a free LLM/API is available without payment and is sufficiently reliable, it may be used.
+
+If not, implement the pipeline so that:
+
+- deterministic processing still works
+- RSS and structured data still work
+- web research can be optional
+- failed LLM calls do not break the application
+
+Do not add an API requiring a credit card merely because it is convenient.
+
+If evaluating a free LLM, verify its current terms/quota during implementation.
+
+Document the result.
+
+============================================================
+21. API-FOOTBALL
+============================================================
+
+Use API-Football Free as the structured football-data source if live verification confirms that the required 2026 Allsvenskan data is available.
+
+Current Free plan:
+- $0
+- 100 requests/day
+- 10 requests/minute
+- relevant football endpoints available
+- free plan has limitations on historical seasons/data
+
+API-Football API credentials MUST exist only in GitHub Actions Secrets.
+
+Never expose the API key in:
+
+- frontend JavaScript
+- static JSON
+- Git history
+- generated HTML
+- client-side environment variables
+- logs
+
+The GitHub Action should fetch/normalise data and commit or publish generated static data.
+
+Use caching aggressively.
+
+Monitor API response rate-limit headers where useful.
+
+Do not waste requests.
+
+============================================================
+22. DATA PIPELINE
+============================================================
+
+Create a GitHub Actions data pipeline.
+
+Conceptual architecture:
+
+API-Football
+     |
+BK Häcken RSS
+     |
+Swedish football RSS
+     |
+Firecrawl Keyless
+     |
+optional free LLM
+     |
+     v
+normalisation
+     |
+validation
+     |
+deduplication
+     |
+provenance
+     |
+static JSON
+     |
+GitHub Pages
+
+Separate raw/source retrieval from normalized application data.
+
+Do not put business logic solely in React components.
+
+Create reusable data-processing modules.
+
+The generated data should include freshness metadata.
+
+Example:
+
+{
+  "generatedAt": "...",
+  "sourceStatus": {
+    "apiFootball": "...",
+    "bkHacken": "...",
+    "firecrawl": "..."
+  }
+}
+
+============================================================
+23. FAILURE AND STALE DATA STRATEGY
+============================================================
+
+The app must not become blank if an external source fails.
+
+If a data update fails:
+
+- preserve the last known good data
+- do not overwrite valid data with empty data
+- record the failure
+- expose a subtle stale-data indication where appropriate
+
+Example:
+
+"Senast uppdaterad 23 sep 18:42"
+
+If data is older than a sensible threshold:
+
+"Data kan vara inaktuell"
+
+Do not show frightening error screens for ordinary background-source failures.
+
+The public application should remain usable.
+
+============================================================
+24. DATA PROVENANCE
+============================================================
+
+External facts should retain provenance wherever practical.
+
+At minimum, support:
+
+- sourceName
+- sourceUrl
+- publishedAt
+- retrievedAt
+- discoveredVia
+- verificationStatus
+- confidence where useful
+
+For football statistics:
+
+- provider
+- season
+- competition
+- retrievedAt
+
+For news:
+
+- publisher
+- original URL
+- article date
+- discovery method
+
+The UI should expose source information without becoming cluttered.
+
+A user should be able to answer:
+
+"Where did this information come from?"
+
+without opening developer tools.
+
+============================================================
+25. NEWS DEDUPLICATION
+============================================================
+
+Different articles may describe the same event.
+
+Do not show five copies of the same transfer event merely because five sites reported it.
+
+Implement sensible deduplication.
+
+Use deterministic techniques first:
+- canonical URL
+- normalized title
+- date
+- player
+- topic
+
+Use LLM semantic deduplication only where it provides meaningful benefit.
+
+Do not over-engineer this.
+
+============================================================
+26. FORMER PLAYER WATCHLIST SUMMARY
+============================================================
+
+Provide a compact "Mina Häcken-spelare" style view.
+
+For each favorite:
+
+- player
+- current club
+- league/country
+- current-season playing volume
+- contract status if supported
+- latest relevant career event
+- source/freshness
+
+The summary should resemble a useful supporter information feed/blog digest, not an AI essay.
+
+Example conceptual presentation:
+
+Mikkel Rygaard
+Nordsjælland
+Contract: expires end of 2026
+This season: 18 apps / 14 starts / 1,120 min
+Latest: contract situation discussed in interview
+[Source]
+
+Keep text concise.
+
+============================================================
+27. PLAYER STATISTICS
+============================================================
+
+Use structured statistics from API-Football where available.
+
+Display factual metrics such as:
+
+- appearances
+- starts
+- minutes
+- goals
+- assists
+- yellow cards
+- red cards
+
+Do not display a subjective "form score".
+
+For former players, clearly identify the season and competition.
+
+Do not combine statistics from multiple competitions without labelling them.
+
+============================================================
+28. INITIAL FORMER-PLAYER REGISTRY
+============================================================
+
+Create a maintainable registry of former BK Häcken players.
+
+Do not fabricate a list.
+
+Inspect reliable historical/team sources and/or the existing repository.
+
+If the repository already contains former-player data, reuse and normalise it.
+
+If an initial curated registry is required, document its provenance and make it easy to extend.
+
+The registry should support:
+
+- player ID
+- canonical name
+- aliases where necessary
+- former BK Häcken association
+- API-Football ID where known
+- current club ID where known
+
+Do not make the entire system dependent on manually entered club names.
+
+============================================================
+29. UI DETAILS
+============================================================
+
+Use shadcn/ui components selectively.
+
+Do not turn every piece of information into a card.
+
+Prefer:
+
+- lists
+- compact sections
+- simple rows
+- clear headings
+- badges for status
+- tables only when they are genuinely easier to scan
+
+Avoid:
+- giant hero sections
+- image carousels
+- excessive rounded cards
+- excessive shadows
+- tiny metadata
+- decorative gradients
+- stock football imagery
+- fake AI visualisations
+
+BK Häcken black/yellow identity should be unmistakable without becoming visually aggressive.
+
+============================================================
+30. ACCESSIBILITY
+============================================================
+
+Target WCAG 2.2 AA principles.
+
+At minimum:
+
+- sufficient contrast
+- semantic HTML
+- keyboard accessibility
+- focus states
+- labels
+- aria where necessary
+- no icon-only control without accessible name
+- touch targets >=48px for primary controls
+- text remains readable at mobile sizes
+
+Use axe-core with Playwright.
+
+Automated accessibility tests are not sufficient by themselves, but they must be included.
+
+============================================================
+31. RESPONSIVE DESIGN
+============================================================
+
+Design mobile-first.
+
+Primary target:
+390x844 and iPhone 13-class viewport.
+
+Also test:
+320px width.
+
+Then progressively support larger screens.
+
+Do not design desktop first and shrink it.
+
+On desktop, the application may become wider and use additional whitespace/columns, but mobile hierarchy must remain intact.
+
+============================================================
+32. PWA
+============================================================
+
+Use vite-plugin-pwa or an equivalent well-maintained approach.
+
+Provide:
+
+- manifest
+- icons
+- theme color
+- installability
+- service worker
+- sensible offline fallback
+
+The app should still show the last cached data when offline where possible.
+
+Do not pretend that live data is available offline.
+
+============================================================
+33. LOADING / EMPTY / ERROR STATES
+============================================================
+
+Every important screen needs deliberate states:
+
+Loading:
+- concise skeleton or placeholder
+- preserve layout
+
+Empty:
+- explain why there is no data
+- do not show a blank screen
+
+Error:
+- explain what failed
+- give useful next step if applicable
+
+Stale:
+- show last update time
+- subtle warning
+
+No data:
+- never invent placeholder football information.
+
+============================================================
+34. TESTING
+============================================================
+
+Testing is part of the implementation, not a future task.
+
+Create:
+
+A. Unit tests with Vitest
+
+Test:
+- warning/suspension logic
+- competition/season scoping
+- news classification
+- deduplication
+- provenance handling
+- contract verification status
+- data normalization
+- stale-data logic
+- favorite persistence logic
+
+B. End-to-end tests with Playwright
+
+At minimum test:
+
+1. Home loads
+2. next match visible
+3. latest result visible
+4. warning status visible
+5. matches page works
+6. latest match statistics work
+7. news page works
+8. former player list works
+9. favorite can be added
+10. favorite persists after reload
+11. player detail works
+12. contract provenance is visible
+13. source links work
+14. app works at 320px width
+15. app works at 390x844
+16. no horizontal overflow
+17. offline/cached state behaves sensibly
+
+C. Accessibility tests
+
+Run axe-core against key screens.
+
+D. Production build test
+
+Run the real production build.
+
+E. Data validation
+
+Validate generated JSON against schemas.
+
+============================================================
+35. VISUAL REGRESSION
+============================================================
+
+Use Playwright screenshots for the most important mobile screens.
+
+At minimum:
+
+- Home
+- Warnings
+- Matches/latest match
+- News
+- Former player list
+- Former player detail
+
+Use screenshots to catch accidental layout regressions.
+
+Do not require pixel-perfect equality for dynamic content.
+
+Mask or stabilise dynamic timestamps/data where necessary.
+
+============================================================
+36. GITHUB ACTIONS
+============================================================
+
+Create or update workflows for:
+
+1. CI
+   - install
+   - lint
+   - typecheck
+   - unit tests
+   - accessibility/e2e tests where appropriate
+   - build
+
+2. Data update
+   - retrieve data
+   - validate
+   - normalise
+   - write static data
+   - preserve last-known-good data on failure
+
+3. Deployment
+   - GitHub Pages deployment
+
+Do not create unnecessary workflows.
+
+Respect GitHub Actions quotas.
+
+Do not create an uncontrolled loop where data generation commits trigger itself endlessly.
+
+============================================================
+37. SECRET MANAGEMENT
+============================================================
+
+Potential secret:
+
+API_FOOTBALL_KEY
+
+Store it only as a GitHub Actions Secret.
+
+Do not store:
+
+- API keys
+- tokens
+- passwords
+- cookies
+- user credentials
+
+in source control.
+
+Firecrawl Keyless should NOT require a secret.
+
+If an optional LLM service requires a key, make that dependency explicit and optional. Do not put it in frontend code.
+
+============================================================
+38. COST CONTROL
+============================================================
+
+This project is explicitly intended to run without paid services.
+
+Hard rule:
+
+NO AUTOMATIC PAYMENT.
+
+Do not add:
+- paid API plans
+- auto-recharge
+- credit-card-dependent search services
+- paid LLM services
+
+unless explicitly requested later.
+
+For API-Football, use the Free tier.
+
+For Firecrawl, use Keyless.
+
+If Firecrawl Keyless becomes unavailable or exceeds its free quota:
+- the pipeline must degrade gracefully
+- RSS and structured football data must continue
+- no automatic paid fallback
+
+Do not silently substitute a paid API.
+
+============================================================
+39. SOURCE STRATEGY
+============================================================
+
+Create docs/data-sources.md with a table containing:
+
+Source
+Purpose
+Primary/fallback
+Authentication
+Free limit
+Refresh frequency
+Fields used
+Known limitations
+Provenance treatment
+Failure behaviour
+
+At minimum document:
+
+- BK Häcken
+- API-Football
+- Fotbollskanalen
+- Sportbladet/Fotboll RSS if used
+- Firecrawl Keyless
+- any LLM actually used
+
+Verify current documentation during implementation.
+
+============================================================
+40. PRODUCT DOCUMENTATION
+============================================================
+
+Create:
+
+docs/product.md
+docs/data-sources.md
+docs/ux-spec.md
+docs/acceptance-tests.md
+
+These are part of the deliverable.
+
+docs/product.md:
+- purpose
+- target users
+- MVP scope
+- non-goals
+- future extension ideas
+
+docs/data-sources.md:
+- all sources
+- provenance
+- quotas
+- refresh
+- limitations
+- fallback
+
+docs/ux-spec.md:
+- layout
+- navigation
+- colours
+- typography
+- touch targets
+- mobile rules
+- states
+- component rules
+- accessibility
+- anti-bloat principles
+
+docs/acceptance-tests.md:
+- executable/testable product requirements
+
+============================================================
+41. EXTENSIBILITY
+============================================================
+
+Design for future extension but do not implement future bloat.
+
+Future possibilities may include:
+
+- richer former-player monitoring
+- more detailed competition data
+- AI-generated weekly digest
+- additional Swedish football sources
+- more advanced player statistics
+- push notifications
+- more competitions
+
+Do not implement them now unless needed for architecture.
+
+Create clean interfaces so they can be added later.
+
+============================================================
+42. SECURITY
+============================================================
+
+Audit the final application for:
+
+- exposed secrets
+- unsafe external HTML
+- XSS risks
+- unsafe URL handling
+- untrusted source content
+- dependency issues
+- accidental client-side API credentials
+
+External article text must be treated as untrusted content.
+
+Do not render arbitrary HTML from external news sources unless sanitized.
+
+Prefer plain text/markdown rendering with safe sanitization.
+
+============================================================
+43. DATA QUALITY
+============================================================
+
+The system must prefer:
+
+correct but incomplete
+
+over:
+
+complete-looking but unreliable.
+
+If contract information cannot be verified:
+
+"No verified contract expiry found."
+
+is preferable to an invented or stale date.
+
+If former-player current club cannot be confidently resolved:
+
+"Current club not verified."
+
+is preferable to guessing.
+
+If an article is ambiguous:
+
+do not present it as fact.
+
+============================================================
+44. ACCEPTANCE CRITERIA
+============================================================
+
+The implementation is complete only if all of the following are true:
+
+PRODUCT
+- public GitHub Pages PWA
+- mobile-first
+- BK Häcken black/yellow visual identity
+- no login required
+- no user API key required
+- no user payment required
+
+CURRENT TEAM
+- next match
+- latest result
+- men's news
+- latest match player statistics
+- warning/suspension status
+
+WARNINGS
+- competition-scoped
+- season-scoped
+- suspension logic tested
+- "one warning from suspension" clearly identified
+- next-match suspension clearly identified
+
+NEWS
+- official BK Häcken source
+- RSS where appropriate
+- robust men's relevance filtering
+- deduplication
+- source attribution
+
+FORMER PLAYERS
+- favorites
+- persisted favorites
+- current club
+- current season stats
+- playing volume
+- contract status
+- transfers/loans
+- relevant news
+- consolidated watchlist
+
+PROVENANCE
+- source URL
+- source name
+- date
+- discovery method
+- verification status
+- Firecrawl use visible when applicable
+
+RELIABILITY
+- no invented contract dates
+- stale-data handling
+- last-known-good fallback
+- source failures do not blank the app
+
+COST
+- no paid API dependency
+- no automatic payment
+- API-Football free tier
+- Firecrawl Keyless where used
+- no API secrets in frontend
+
+UX
+- works at 320px
+- tested at 390x844
+- >=48px primary controls
+- no horizontal overflow
+- one-hand friendly
+- no unnecessary visual clutter
+
+TESTING
+- unit tests
+- e2e tests
+- accessibility tests
+- production build
+- data validation
+- screenshot regression for key screens
+
+============================================================
+45. AUTONOMOUS EXECUTION PLAN
+============================================================
+
+Follow this sequence.
+
+PHASE 1 — REPOSITORY INSPECTION
+
+Inspect the repository before changing anything.
+
+Determine:
+- existing framework
+- existing GitHub Pages setup
+- existing workflows
+- existing data structures
+- existing dependencies
+- existing tests
+- deployment configuration
+- whether this is a new or partially existing application
+
+Do not destroy useful existing work.
+
+PHASE 2 — ARCHITECTURE
+
+Write/update:
+- docs/product.md
+- docs/data-sources.md
+- docs/ux-spec.md
+- docs/acceptance-tests.md
+
+Resolve architecture based on actual repository state.
+
+PHASE 3 — DATA SOURCE VALIDATION
+
+Before relying on an endpoint:
+- test it
+- inspect returned fields
+- confirm 2026 data coverage
+- record limitations
+
+Particularly verify:
+- API-Football Allsvenskan
+- current season
+- fixtures
+- events
+- lineups
+- player statistics
+- player transfers
+
+Verify BK Häcken RSS.
+
+Verify Firecrawl Keyless current interface.
+
+If a proposed source does not actually support the needed field, do not fake it.
+
+PHASE 4 — DATA MODEL
+
+Implement normalized data models.
+
+Use explicit schemas/types.
+
+Keep source/provenance metadata.
+
+PHASE 5 — DATA PIPELINE
+
+Implement GitHub Actions data retrieval and normalization.
+
+Ensure secrets stay server-side.
+
+Ensure last-known-good behaviour.
+
+PHASE 6 — UI
+
+Implement the mobile-first application.
+
+Use black/yellow BK Häcken design tokens.
+
+Build the information hierarchy before adding polish.
+
+PHASE 7 — FORMER PLAYER RESEARCH
+
+Implement favorite-player monitoring architecture.
+
+Use structured sources first.
+
+Use RSS and Firecrawl for discovery.
+
+Use LLM only where it produces meaningful structured value.
+
+Preserve provenance.
+
+PHASE 8 — TESTS
+
+Implement all relevant tests.
+
+PHASE 9 — VALIDATION
+
+Run:
+- typecheck
+- lint
+- unit tests
+- e2e
+- accessibility
+- production build
+- data validation
+
+Fix all failures.
+
+PHASE 10 — FINAL REVIEW
+
+Perform a product-level review as if you were a BK Häcken supporter using an iPhone 13 outside in cold weather.
+
+Ask:
+
+Can I immediately see:
+- who Häcken plays next?
+- whether anyone is suspended?
+- who is one yellow from suspension?
+- what happened in the last match?
+- what is the latest relevant news?
+- what is happening with my former Häcken players?
+
+If not, improve the hierarchy.
+
+Do not add more features.
+Improve clarity.
+
+============================================================
+46. FINAL REPORT
+============================================================
+
+When implementation is complete, provide a concise final report containing:
+
+1. What was built
+2. Main architecture
+3. Data sources
+4. Firecrawl/LLM status
+5. Cost/payment status
+6. Tests run and results
+7. GitHub Actions workflows
+8. Any limitations that remain
+9. Deployment status
+10. Any decisions that future development should preserve
+
+Do not dump code into the final report.
+
+Do not ask the user to manually inspect source code.
+
+The user is the product owner and final validator, not the code reviewer.
+
+============================================================
+FINAL PRINCIPLE
+============================================================
+
+Build a small, trustworthy, fast, mobile-first BK Häcken supporter PWA.
+
+Do not build an AI demo.
+
+Do not build a generic football dashboard.
+
+Do not build an information dump.
+
+Build the thing a supporter actually wants to open on their iPhone:
+
+"Vad behöver jag veta om Häcken just nu?"
+
+And for former players:
+
+"Vad har hänt med mina gamla Häcken-spelare sedan sist?"
+
+Prioritize:
+TRUSTWORTHY DATA
+PROVENANCE
+CLARITY
+MOBILE UX
+SIMPLICITY
+EXTENSIBILITY
+
+over:
+FEATURE COUNT
+DECORATION
+AI MARKETING
+VISUAL BLOAT
+SUBJECTIVE ANALYSIS
+
+Start by inspecting the repository and then execute the complete implementation autonomously.
+```

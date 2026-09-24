@@ -1,0 +1,9 @@
+{
+  "competition": "allsvenskan",
+  "season": "2026",
+  "rule": "warnings-per-suspension",
+  "threshold": 3,
+  "suspensionMatches": 1,
+  "ruleSource": "SvFF tävlingsbestämmelser stor herrfotboll 2026: tre varningar i olika matcher i samma tävling ger en matchers avstängning i samma tävling. Uppdateras om SvFF ändrar bestämmelserna.",
+  "ruleSourceUrl": "https://www.svenskfotboll.se/for-klubben/om-organisationen/dokument-och-regler/"
+}
