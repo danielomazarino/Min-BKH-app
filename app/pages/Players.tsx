@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Star } from "lucide-react";
 import type { FormerPlayer } from "../../pipeline/src/types";
+import { searchPlayers } from "../../pipeline/src/search";
 import {
   loadFormerPlayers,
   loadFavorites,
@@ -12,22 +13,37 @@ export default function Players() {
   const [state, setState] = useState<FormerPlayersState>({ status: "loading" });
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
   const [selected, setSelected] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     loadFormerPlayers().then(setState);
   }, []);
 
-  if (state.status === "loading") return <div className="skeleton" style={{ height: 300 }} aria-busy="true" />;
-  if (state.status === "error") return <div className="empty">Kunde inte läsa spelardata. Försök igen senare.</div>;
-
-  const players = state.data.players;
+  const players = state.status === "ready" ? state.data.players : [];
+  const results = useMemo(() => searchPlayers(players, query), [players, query]);
   const favPlayers = players.filter((p) => favorites.includes(p.id));
   const selectedPlayer = selected ? players.find((p) => p.id === selected) : null;
+
+  if (state.status === "loading") return <div className="skeleton" style={{ height: 300 }} aria-busy="true" />;
+  if (state.status === "error") return <div className="empty">Kunde inte läsa spelardata. Försök igen senare.</div>;
 
   return (
     <div>
       <h1>Spelare</h1>
       <p className="meta">Tidigare Häcken-spelare du följer och deras karriär — utan inloggning.</p>
+
+      <label htmlFor="player-search" className="meta" style={{ display: "block", marginTop: 10 }}>
+        Sök tidigare Häcken-spelare
+      </label>
+      <input
+        id="player-search"
+        type="search"
+        className="search-field"
+        placeholder="t.ex. Rygaard, Gustafson …"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        autoComplete="off"
+      />
 
       {favPlayers.length > 0 && (
         <section aria-labelledby="fav-h">
@@ -39,11 +55,13 @@ export default function Players() {
       )}
 
       <section aria-labelledby="all-h">
-        <h2 id="all-h">Alla spelare</h2>
-        {players.length === 0 ? (
-          <div className="card empty">Inga tidigare spelare i registret ännu.</div>
+        <h2 id="all-h">{query ? "Sökresultat" : "Alla spelare"}</h2>
+        {results.length === 0 ? (
+          <div className="card empty">
+            {query ? `Inga spelare matchar ”${query}”.` : "Inga tidigare spelare i registret ännu."}
+          </div>
         ) : (
-          players.map((p) => (
+          results.map((p) => (
             <FormerPlayerRow
               key={p.id}
               p={p}
@@ -190,7 +208,7 @@ function PlayerDetail({
         </p>
       ) : (
         <p data-testid="contract-info" className="meta">
-          Ingen verifierad kontraktsinformation hittad.
+          Kontraktslut ej verifierat.
         </p>
       )}
 
@@ -206,7 +224,7 @@ function PlayerDetail({
             ) : (
               p.latestEvent.sourceName
             )}{" "}
-            · Hittad via {p.latestEvent.discoveredVia} · {p.latestEvent.verificationStatus}
+            · Upptäckt via {p.latestEvent.discoveredVia} · {p.latestEvent.verificationStatus}
           </div>
         </div>
       )}

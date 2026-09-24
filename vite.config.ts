@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png"],
       manifest: {
-        name: "Min BKH",
-        short_name: "Min BKH",
+        name: "Min BKH-app",
+        short_name: "Min BKH-app",
         description: "Supporterapp för BK Häckens herrlag",
         lang: "sv-SE",
         theme_color: "#000000",

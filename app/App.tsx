@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
-import { CalendarDays, House, Newspaper, Users } from "lucide-react";
+import { CalendarDays, House, Newspaper, Settings, Users } from "lucide-react";
 import Home from "./pages/Home";
 import Matches from "./pages/Matches";
 import News from "./pages/News";
 import Players from "./pages/Players";
+import SettingsPage from "./pages/Settings";
 import { loadAppData, type AppDataState } from "./data";
 
 export default function App() {
@@ -17,9 +18,9 @@ export default function App() {
   return (
     <HashRouter>
       <header className="app-header">
-        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="Min BKH" className="crest" />
+        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="Min BKH-app" className="crest" />
         <div className="title">
-          MIN <span>BKH</span>
+          Min <span>BKH</span>-app
         </div>
       </header>
       <main>
@@ -28,9 +29,17 @@ export default function App() {
           <Route path="/matcher" element={<Matches state={state} />} />
           <Route path="/nyheter" element={<News state={state} />} />
           <Route path="/spelare" element={<Players />} />
+          <Route path="/installningar" element={<SettingsPage state={state} />} />
         </Routes>
         <StaleNote state={state} />
       </main>
+      <button
+        className="settings-btn"
+        aria-label="Inställningar"
+        onClick={() => (window.location.hash = "#/installningar")}
+      >
+        <Settings aria-hidden />
+      </button>
       <nav className="bottom-nav" aria-label="Huvudnavigation">
         <NavLink to="/" icon={<House aria-hidden />} label="Hem" />
         <NavLink to="/matcher" icon={<CalendarDays aria-hidden />} label="Matcher" />

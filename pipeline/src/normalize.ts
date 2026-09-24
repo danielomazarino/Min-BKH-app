@@ -27,6 +27,7 @@ export function normalizeFixture(f: FixtureResponse): MatchRef {
       : "other";
   const homeAway: MatchRef["homeAway"] = f.teams.home.id === BKH_TEAM_ID ? "home" : "away";
   const opponent = homeAway === "home" ? f.teams.away.name : f.teams.home.name;
+  const venue = f.fixture.venue?.name?.trim() || undefined;
   return {
     id: f.fixture.id,
     competition: competitionFromLeague(f.league.id, f.league.name),
@@ -37,6 +38,7 @@ export function normalizeFixture(f: FixtureResponse): MatchRef {
     status,
     scoreHome: f.goals.home ?? undefined,
     scoreAway: f.goals.away ?? undefined,
+    venue,
   };
 }
 

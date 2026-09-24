@@ -14,6 +14,7 @@ import type {
 import { fetchRss } from "./rss";
 import { classifyNews, menRelevantNews } from "./classify";
 import { dedupeNews } from "./dedupe";
+import { buildNewsEvents, publisherRole } from "./newsEvents";
 import { computeWarnings, type WarningEvent } from "./warnings";
 import { loadRegistry } from "./registry";
 import { firecrawlSearch, playerQuery } from "./firecrawl";
@@ -31,9 +32,17 @@ import { normalizeFixture, normalizePlayerStats, normalizeTable, pickNextAndLast
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
+/**
+ * News sources (all verified 2026-09-25, see docs/SOURCES.md for the audit).
+ * Roles per publication are in newsEvents.ts.
+ */
 const RSS_SOURCES = [
   { url: "https://bkhacken.se/feed", publisher: "BK Häcken" },
   { url: "https://rss.aftonbladet.se/rss2/small/pages/sections/sportbladet/fotboll/", publisher: "Sportbladet" },
+  { url: "https://feeds.expressen.se/sport/fotboll/", publisher: "Expressen" },
+  { url: "https://www.svt.se/sport/rss.xml", publisher: "SVT Sport" },
+  { url: "https://www.bollsvenskan.se/feed/", publisher: "Bollsvenskan" },
+  { url: "https://allsvenskan.se/feed/", publisher: "Allsvenskan" },
 ];
 
 const STATUS: Record<string, SourceStatus> = {};
@@ -56,6 +65,7 @@ async function collectNews(): Promise<NewsItem[]> {
     if (feed.ok) {
       for (const item of feed.items) {
         item.category = classifyNews(item.title, item.summary ?? "");
+        item.sourceRole = publisherRole(src.publisher);
       }
       all.push(...feed.items);
     }
@@ -206,6 +216,8 @@ async function main() {
     ? computeWarnings(foot.warningEvents, "allsvenskan", String(SEASON), next)
     : null;
 
+  const relevantNews = menRelevantNews(news).slice(0, 40);
+
   const appData: AppData = {
     freshness: freshness(),
     nextMatch: next,
@@ -216,7 +228,8 @@ async function main() {
     table: foot.table,
     tablePosition: foot.table.find((r) => r.team.includes("Häcken")) ?? null,
     warnings,
-    news: menRelevantNews(news).slice(0, 30),
+    news: relevantNews,
+    newsEvents: buildNewsEvents(relevantNews),
     formerPlayers: [],
   };
 
@@ -263,6 +276,7 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
     tablePosition: next.tablePosition ?? prev.tablePosition,
     warnings: next.warnings ?? prev.warnings,
     news: next.news.length ? next.news : prev.news,
+    newsEvents: next.newsEvents.length ? next.newsEvents : (prev.newsEvents ?? []),
     formerPlayers: [],
   };
   writeFileSync(path, JSON.stringify(merged, null, 2));

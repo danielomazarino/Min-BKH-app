@@ -1,20 +1,22 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("News", () => {
-  test("shows news items with source attribution or empty state", async ({ page }) => {
+  test("shows news events with summaries and source pills", async ({ page }) => {
     await page.goto("/#/nyheter");
-    // Wait for either news items or the empty state — count() is an instant
-    // snapshot and can race React's async data commit.
-    await page.locator("[data-testid='news-item'], .empty").first().waitFor({ timeout: 10000 });
-    const items = page.getByTestId("news-item");
+    await page.locator("[data-testid='news-event'], .empty").first().waitFor({ timeout: 10000 });
+    const events = page.getByTestId("news-event");
     const empty = page.locator(".empty");
-    expect((await items.count()) + (await empty.count())).toBeGreaterThan(0);
+    expect((await events.count()) + (await empty.count())).toBeGreaterThan(0);
 
-    if ((await items.count()) > 0) {
-      const first = items.first();
-      await expect(first.locator("a")).toBeVisible();
-      // Source attribution (publisher) is visible.
-      await expect(first.locator(".meta")).toContainText("·");
+    if ((await events.count()) > 0) {
+      const first = events.first();
+      // Summary visible without external navigation.
+      await expect(first.getByTestId("news-summary")).toBeVisible();
+      // Source pills exist and open canonical URLs.
+      const pills = first.getByTestId("source-pills").locator("a");
+      expect(await pills.count()).toBeGreaterThan(0);
+      const href = await pills.first().getAttribute("href");
+      expect(href).toMatch(/^https?:\/\//);
     }
   });
 });

@@ -2,31 +2,275 @@
   {
     "id": "samuel-gustafson",
     "name": "Samuel Gustafson",
+    "aliases": [
+      "gustafson"
+    ],
     "bkhSeasons": "2016-2018",
-    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
   },
   {
     "id": "mikkel-rygaard",
     "name": "Mikkel Rygaard",
+    "aliases": [
+      "rygaard"
+    ],
     "bkhSeasons": "2019-2021",
-    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
   },
   {
     "id": "alexander-jeremejeff",
     "name": "Alexander Jeremejeff",
+    "aliases": [
+      "jeremejeff"
+    ],
     "bkhSeasons": "2018-2021",
-    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
   },
   {
     "id": "julius-lindberg",
     "name": "Julius Lindberg",
+    "aliases": [
+      "lindberg"
+    ],
     "bkhSeasons": "2021-2024",
-    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
   },
   {
-    "id": "paulo-vitor",
+    "id": "paulo-victor",
     "name": "Paulo Victor",
+    "aliases": [
+      "paulo"
+    ],
     "bkhSeasons": "2019-2020",
-    "notes": "Curated from public BK Häcken squad history (Wikipedia)."
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "martin-ericsson",
+    "name": "Martin Ericsson",
+    "aliases": [
+      "ericsson"
+    ],
+    "bkhSeasons": "2009-2013",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "dominic-chatto",
+    "name": "Dominic Chatto",
+    "aliases": [
+      "chatto"
+    ],
+    "bkhSeasons": "2008-2015",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "rene-makondele",
+    "name": "René Makondele",
+    "aliases": [
+      "makondele"
+    ],
+    "bkhSeasons": "2008-2015",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "mohammed-abubakari",
+    "name": "Mohammed Abubakari",
+    "aliases": [
+      "abubakari"
+    ],
+    "bkhSeasons": "2015-2019",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "david-myrestam",
+    "name": "David Myrestam",
+    "aliases": [
+      "myrestam"
+    ],
+    "bkhSeasons": "2013-2016",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "oscar-lewicki",
+    "name": "Oscar Lewicki",
+    "aliases": [
+      "lewicki"
+    ],
+    "bkhSeasons": "2016-2019",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "filip-helander",
+    "name": "Filip Helander",
+    "aliases": [
+      "helander"
+    ],
+    "bkhSeasons": "2013-2015",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "alexander-faltsetas",
+    "name": "Alexander Faltsetas",
+    "aliases": [
+      "faltsetas"
+    ],
+    "bkhSeasons": "2014-2017",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "nasiru-mohammed",
+    "name": "Nasiru Mohammed",
+    "aliases": [
+      "nasiru"
+    ],
+    "bkhSeasons": "2014-2019",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "erik-friberg",
+    "name": "Erik Friberg",
+    "aliases": [
+      "friberg"
+    ],
+    "bkhSeasons": "2015-2017",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "andreas-landgren",
+    "name": "Andreas Landgren",
+    "aliases": [
+      "landgren"
+    ],
+    "bkhSeasons": "2013-2018",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "simon-gustafson",
+    "name": "Simon Gustafson",
+    "aliases": [
+      "simon gustafson"
+    ],
+    "bkhSeasons": "2015-2016",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "alhassan-wakaso",
+    "name": "Alhassan Wakaso",
+    "aliases": [
+      "wakaso"
+    ],
+    "bkhSeasons": "2016-2017",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "ahmed-yasin",
+    "name": "Ahmed Yasin",
+    "aliases": [
+      "yasin"
+    ],
+    "bkhSeasons": "2017-2019",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "jesper-karlstrom",
+    "name": "Jesper Karlström",
+    "aliases": [
+      "karlström",
+      "karlstrom"
+    ],
+    "bkhSeasons": "2015-2018",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "darijan-bojanic",
+    "name": "Darijan Bojanic",
+    "aliases": [
+      "bojanic",
+      "bojanić"
+    ],
+    "bkhSeasons": "2018-2020",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "emil-krafth",
+    "name": "Emil Krafth",
+    "aliases": [
+      "krafth"
+    ],
+    "bkhSeasons": "2011-2013",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "jiloan-hamad",
+    "name": "Jiloan Hamad",
+    "aliases": [
+      "hamad"
+    ],
+    "bkhSeasons": "2019",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "kenneth-mattsson",
+    "name": "Kenneth Mattsson",
+    "aliases": [
+      "mattsson"
+    ],
+    "bkhSeasons": "2013-2016",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "mohammed-ali-khan",
+    "name": "Mohammed Ali Khan",
+    "aliases": [
+      "ali khan",
+      "khan"
+    ],
+    "bkhSeasons": "2013-2015",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "walid-atta",
+    "name": "Walid Atta",
+    "aliases": [
+      "atta"
+    ],
+    "bkhSeasons": "2013-2015",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "mattias-bjarsmy",
+    "name": "Mattias Bjärsmy",
+    "aliases": [
+      "bjärsmy",
+      "bjarsmy"
+    ],
+    "bkhSeasons": "2014-2019",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "alexander-fesshaie",
+    "name": "Alexander Fesshaie",
+    "aliases": [
+      "fesshaie"
+    ],
+    "bkhSeasons": "2021-2023",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "benjamin-acquah",
+    "name": "Benjamin Acquah",
+    "aliases": [
+      "acquah"
+    ],
+    "bkhSeasons": "2020-2023",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
+  },
+  {
+    "id": "erion-sadiku",
+    "name": "Erion Sadiku",
+    "aliases": [
+      "sadiku"
+    ],
+    "bkhSeasons": "2021-2022",
+    "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
   }
 ]

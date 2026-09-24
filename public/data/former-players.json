@@ -1,14 +1,21 @@
 {
-  "generatedAt": "2026-09-24T16:52:47.539Z",
+  "generatedAt": "2026-09-24T22:33:04.639Z",
   "sourceStatus": {
     "rss:BK Häcken": "ok",
     "rss:Sportbladet": "ok",
+    "rss:Expressen": "ok",
+    "rss:SVT Sport": "ok",
+    "rss:Bollsvenskan": "ok",
+    "rss:Allsvenskan": "ok",
     "apiFootball": "skipped"
   },
   "players": [
     {
       "id": "samuel-gustafson",
       "name": "Samuel Gustafson",
+      "aliases": [
+        "gustafson"
+      ],
       "currentClub": null,
       "currentLeague": null,
       "currentCountry": null,
@@ -22,7 +29,7 @@
         "claim": "Fotbolltransfers! datum: 1995-01-11 (31 år) Position: Mittfältare. Kontrakt: 2026-12-31 Marknadsvärde: 25 miljoner kr",
         "sourceName": "fotbolltransfers.com",
         "sourceUrl": "https://fotbolltransfers.com/spelare/samuel-gustafson/5140",
-        "retrievedAt": "2026-09-24T16:52:46.140Z",
+        "retrievedAt": "2026-09-24T22:32:57.011Z",
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }
@@ -30,6 +37,9 @@
     {
       "id": "mikkel-rygaard",
       "name": "Mikkel Rygaard",
+      "aliases": [
+        "rygaard"
+      ],
       "currentClub": null,
       "currentLeague": null,
       "currentCountry": null,
@@ -43,7 +53,7 @@
         "claim": "Rygaard är född i Nykøbing Falster och började spela fotboll i Nykøbing Falster ... I oktober 2024 förlängde Rygaard sitt kontrakt med två år.",
         "sourceName": "sv.wikipedia.org",
         "sourceUrl": "https://sv.wikipedia.org/wiki/Mikkel_Rygaard",
-        "retrievedAt": "2026-09-24T16:52:47.023Z",
+        "retrievedAt": "2026-09-24T22:32:57.983Z",
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }
@@ -51,6 +61,9 @@
     {
       "id": "alexander-jeremejeff",
       "name": "Alexander Jeremejeff",
+      "aliases": [
+        "jeremejeff"
+      ],
       "currentClub": null,
       "currentLeague": null,
       "currentCountry": null,
@@ -64,7 +77,7 @@
         "claim": "Alexander Jeremejeff får ont om speltid i Panathinaikos. Nu talar mycket för att han lämnar klubben. – Vi har många anfallare och vissa som ...",
         "sourceName": "www.expressen.se",
         "sourceUrl": "https://www.expressen.se/sport/fotboll/allsvenskan/kravet-pa-jeremejeff-maste-tavla-om-platsen/",
-        "retrievedAt": "2026-09-24T16:52:47.191Z",
+        "retrievedAt": "2026-09-24T22:32:58.150Z",
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }
@@ -72,6 +85,9 @@
     {
       "id": "julius-lindberg",
       "name": "Julius Lindberg",
+      "aliases": [
+        "lindberg"
+      ],
       "currentClub": null,
       "currentLeague": null,
       "currentCountry": null,
@@ -85,14 +101,17 @@
         "claim": "BK Häcken och Julius Lindberg är överens om en kontraktsförlängning. Den 27-årige mittfältaren har skrivit på ett nytt fyraårsavtal med ...",
         "sourceName": "bkhacken.se",
         "sourceUrl": "https://bkhacken.se/nyhet/julius-lindberg-forlanger-med-bk-hacken",
-        "retrievedAt": "2026-09-24T16:52:47.365Z",
+        "retrievedAt": "2026-09-24T22:32:58.340Z",
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }
     },
     {
-      "id": "paulo-vitor",
+      "id": "paulo-victor",
       "name": "Paulo Victor",
+      "aliases": [
+        "paulo"
+      ],
       "currentClub": null,
       "currentLeague": null,
       "currentCountry": null,
@@ -100,16 +119,450 @@
       "stats": null,
       "contract": null,
       "latestEvent": {
-        "playerId": "paulo-vitor",
+        "playerId": "paulo-victor",
         "playerName": "Paulo Victor",
         "topic": "other",
         "claim": "Paulo Victor, Lag: Querétaro FC, Ålder: 25, Land: Brasilien, Längd: 184 cm, Föredragen fot: Vänster, Tröja: 12, Övergångsvärde: 1,1 mn €",
         "sourceName": "www.fotmob.com",
         "sourceUrl": "https://www.fotmob.com/sv/players/1269652/paulo-victor",
-        "retrievedAt": "2026-09-24T16:52:47.539Z",
+        "retrievedAt": "2026-09-24T22:32:58.509Z",
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }
+    },
+    {
+      "id": "martin-ericsson",
+      "name": "Martin Ericsson",
+      "aliases": [
+        "ericsson"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "martin-ericsson",
+        "playerName": "Martin Ericsson",
+        "topic": "other",
+        "claim": "Han blev presenterad som IF Elfsborgsspelare den 3 december 2008. Efter att han blivit utlånad till BK Häcken under våren 2012, skrev han den 31 juli under ...",
+        "sourceName": "sv.wikipedia.org",
+        "sourceUrl": "https://sv.wikipedia.org/wiki/Martin_Ericsson_(fotbollsspelare)",
+        "retrievedAt": "2026-09-24T22:32:58.996Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "dominic-chatto",
+      "name": "Dominic Chatto",
+      "aliases": [
+        "chatto"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "dominic-chatto",
+        "playerName": "Dominic Chatto",
+        "topic": "other",
+        "claim": "Dominic Chatto Bashir Jamilu, född 12 juli 1985 i Kaduna, är en nigeriansk före detta fotbollsspelare (mittfältare).",
+        "sourceName": "sv.wikipedia.org",
+        "sourceUrl": "https://sv.wikipedia.org/wiki/Dominic_Chatto",
+        "retrievedAt": "2026-09-24T22:32:59.520Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "rene-makondele",
+      "name": "René Makondele",
+      "aliases": [
+        "makondele"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "rene-makondele",
+        "playerName": "René Makondele",
+        "topic": "other",
+        "claim": "René Muzola Makondele, född 20 april 1982 i Kinshasa, (omgång 1-18) Makondele lånas ut från DIF till Gefle för säsongen 2005 (dif.se, 2005-03-03)",
+        "sourceName": "sv.wikipedia.org",
+        "sourceUrl": "https://sv.wikipedia.org/wiki/Ren%C3%A9_Makondele",
+        "retrievedAt": "2026-09-24T22:32:59.998Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "mohammed-abubakari",
+      "name": "Mohammed Abubakari",
+      "aliases": [
+        "abubakari"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "mohammed-abubakari",
+        "playerName": "Mohammed Abubakari",
+        "topic": "other",
+        "claim": "I februari 2022 förlängde han sitt kontrakt med ett år. Referenser. redigera · Mohammed Abubakari på Svenska Fotbollförbundets webbplats; Mohammed Abubakari ...",
+        "sourceName": "sv.wikipedia.org",
+        "sourceUrl": "https://sv.wikipedia.org/wiki/Mohammed_Abubakari",
+        "retrievedAt": "2026-09-24T22:33:00.543Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "david-myrestam",
+      "name": "David Myrestam",
+      "aliases": [
+        "myrestam"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "david-myrestam",
+        "playerName": "David Myrestam",
+        "topic": "other",
+        "claim": "I december 2020 förlängde Myrestam sitt kontrakt med ett år. Efter ... ↑ ”David Myrestam — svenskfotboll.se”. svenskfotboll.se. Arkiverad från ...",
+        "sourceName": "sv.wikipedia.org",
+        "sourceUrl": "https://sv.wikipedia.org/wiki/David_Myrestam",
+        "retrievedAt": "2026-09-24T22:33:01.017Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "oscar-lewicki",
+      "name": "Oscar Lewicki",
+      "aliases": [
+        "lewicki"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "oscar-lewicki",
+        "playerName": "Oscar Lewicki",
+        "topic": "other",
+        "claim": "I november 2024 förlängde Lewicki sitt kontrakt med ett år. I januari ... ↑ ”Oscar Lewicki — svenskfotboll.se”. svenskfotboll.se. Arkiverad från ...",
+        "sourceName": "sv.wikipedia.org",
+        "sourceUrl": "https://sv.wikipedia.org/wiki/Oscar_Lewicki",
+        "retrievedAt": "2026-09-24T22:33:01.536Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "filip-helander",
+      "name": "Filip Helander",
+      "aliases": [
+        "helander"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "filip-helander",
+        "playerName": "Filip Helander",
+        "topic": "other",
+        "claim": "Filip Helander blir kvar på Hisingen. BK Häcken har gjort klart med cypriotiska Omonia Nicosia om en permanent övergång och kontraktet löper ö ...",
+        "sourceName": "bkhacken.se",
+        "sourceUrl": "https://bkhacken.se/nyhet/filip-helander-stannar-bk-hacken-har-kopt-loss-forsvarsklippan",
+        "retrievedAt": "2026-09-24T22:33:02.049Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "alexander-faltsetas",
+      "name": "Alexander Faltsetas",
+      "aliases": [
+        "faltsetas"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": {
+        "playerId": "alexander-faltsetas",
+        "playerName": "Alexander Faltsetas",
+        "topic": "other",
+        "claim": "Kontraktslös · Gefle IF. 2011-11-16. Bosman. Alexander ... Övergång. Alexander Faltsetas · FC Trollhättan · IFK Göteborg. © 2026 Fotbolltransfers.com ...",
+        "sourceName": "fotbolltransfers.com",
+        "sourceUrl": "https://fotbolltransfers.com/spelare/alexander-faltsetas/1339",
+        "retrievedAt": "2026-09-24T22:33:02.571Z",
+        "discoveredVia": "firecrawl",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "id": "nasiru-mohammed",
+      "name": "Nasiru Mohammed",
+      "aliases": [
+        "nasiru"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "erik-friberg",
+      "name": "Erik Friberg",
+      "aliases": [
+        "friberg"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "andreas-landgren",
+      "name": "Andreas Landgren",
+      "aliases": [
+        "landgren"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "simon-gustafson",
+      "name": "Simon Gustafson",
+      "aliases": [
+        "simon gustafson"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "alhassan-wakaso",
+      "name": "Alhassan Wakaso",
+      "aliases": [
+        "wakaso"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "ahmed-yasin",
+      "name": "Ahmed Yasin",
+      "aliases": [
+        "yasin"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "jesper-karlstrom",
+      "name": "Jesper Karlström",
+      "aliases": [
+        "karlström",
+        "karlstrom"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "darijan-bojanic",
+      "name": "Darijan Bojanic",
+      "aliases": [
+        "bojanic",
+        "bojanić"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "emil-krafth",
+      "name": "Emil Krafth",
+      "aliases": [
+        "krafth"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "jiloan-hamad",
+      "name": "Jiloan Hamad",
+      "aliases": [
+        "hamad"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "kenneth-mattsson",
+      "name": "Kenneth Mattsson",
+      "aliases": [
+        "mattsson"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "mohammed-ali-khan",
+      "name": "Mohammed Ali Khan",
+      "aliases": [
+        "ali khan",
+        "khan"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "walid-atta",
+      "name": "Walid Atta",
+      "aliases": [
+        "atta"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "mattias-bjarsmy",
+      "name": "Mattias Bjärsmy",
+      "aliases": [
+        "bjärsmy",
+        "bjarsmy"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "alexander-fesshaie",
+      "name": "Alexander Fesshaie",
+      "aliases": [
+        "fesshaie"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "benjamin-acquah",
+      "name": "Benjamin Acquah",
+      "aliases": [
+        "acquah"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
+    },
+    {
+      "id": "erion-sadiku",
+      "name": "Erion Sadiku",
+      "aliases": [
+        "sadiku"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
     }
   ]
 }

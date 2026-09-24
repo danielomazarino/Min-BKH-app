@@ -48,7 +48,7 @@ async function call<T>(path: string, params: Record<string, string | number>): P
 }
 
 export interface FixtureResponse {
-  fixture: { id: number; date: string; status: { short: string; long: string } };
+  fixture: { id: number; date: string; status: { short: string; long: string }; venue?: { name?: string; city?: string } };
   league: { id: number; name: string; season: number };
   teams: { home: { id: number; name: string }; away: { id: number; name: string } };
   goals: { home: number | null; away: number | null };

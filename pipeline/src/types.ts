@@ -38,6 +38,7 @@ export interface MatchRef {
   status: "scheduled" | "finished" | "postponed" | "other";
   scoreHome?: number;
   scoreAway?: number;
+  venue?: string;
 }
 
 export interface PlayerMatchStat {
@@ -63,6 +64,8 @@ export interface LeagueTableRow {
   goalDiff: number;
 }
 
+export type SourceRole = "primary" | "secondary" | "discovery" | "unknown";
+
 export interface NewsItem {
   id: string;
   title: string;
@@ -74,6 +77,31 @@ export interface NewsItem {
   imageUrl?: string;
   discoveredVia: string;
   dedupeKey?: string;
+  /** Provenance role of this specific article's reporting. */
+  sourceRole?: SourceRole;
+}
+
+/**
+ * A news EVENT: one underlying story, possibly reported by multiple sources.
+ * The UI shows one card per event with source pills.
+ */
+export interface NewsEvent {
+  id: string;
+  title: string;
+  summary: string;
+  publishedAt: string;
+  category: NewsCategory;
+  /** Newest publication date among sources. */
+  latestPublishedAt: string;
+  sources: Array<{
+    publisher: string;
+    url: string;
+    publishedAt: string;
+    role: SourceRole;
+    discoveredVia: string;
+  }>;
+  /** How the event summary was produced. */
+  summaryMethod: "rss-description" | "extracted" | "excerpt";
 }
 
 export interface PlayerWarning {
@@ -153,5 +181,7 @@ export interface AppData {
   tablePosition: LeagueTableRow | null;
   warnings: WarningsReport | null;
   news: NewsItem[];
+  /** Deduplicated news events (one card per underlying story). */
+  newsEvents: NewsEvent[];
   formerPlayers: FormerPlayer[];
 }

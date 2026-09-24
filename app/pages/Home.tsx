@@ -88,18 +88,30 @@ export default function Home({ state }: { state: AppDataState }) {
       {/* 4. News */}
       <section aria-labelledby="news-h">
         <h2 id="news-h">Senaste nyheterna</h2>
-        {data.news.length === 0 ? (
+        {(data.newsEvents ?? []).length === 0 ? (
           <div className="card empty">Inga nyheter just nu.</div>
         ) : (
-          data.news.slice(0, 5).map((n) => (
-            <div className="row" key={n.id}>
-              <div>
-                <a href={n.url} target="_blank" rel="noopener noreferrer">
-                  {n.title}
-                </a>
-                <div className="meta">
-                  {new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(new Date(n.publishedAt))} · {n.publisher}
-                </div>
+          (data.newsEvents ?? []).slice(0, 4).map((ev) => (
+            <div className="card" key={ev.id} data-testid="home-news-event">
+              <div style={{ fontWeight: 600 }}>{ev.title}</div>
+              {ev.summary && <div style={{ fontSize: "0.9rem", margin: "4px 0" }}>{ev.summary}</div>}
+              <div className="meta">
+                {new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short" }).format(new Date(ev.publishedAt))}
+                {ev.sources.length > 1 ? ` · ${ev.sources.length} källor` : ` · ${ev.sources[0]?.publisher ?? ""}`}
+              </div>
+              <div className="pills">
+                {ev.sources.slice(0, 3).map((s) => (
+                  <a
+                    key={s.url}
+                    className={`pill${s.role === "primary" ? " pill-primary" : ""}`}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${s.publisher} — öppna originalartikel`}
+                  >
+                    {s.publisher}
+                  </a>
+                ))}
               </div>
             </div>
           ))

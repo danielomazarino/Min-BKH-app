@@ -1,11 +1,20 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Former players", () => {
-  test("list renders with favorite toggles", async ({ page }) => {
+  test("search filters by partial name and Swedish characters", async ({ page }) => {
     await page.goto("/#/spelare");
     await page.getByTestId("former-player").first().waitFor({ timeout: 10000 });
-    const rows = page.getByTestId("former-player");
-    await expect(rows.first()).toBeVisible();
+
+    const search = page.getByLabel("Sök tidigare Häcken-spelare");
+    await search.fill("Ryg");
+    await expect(page.getByTestId("former-player")).toHaveCount(1);
+
+    // Diacritic-insensitive: bjarsmy matches Bjärsmy.
+    await search.fill("bjarsmy");
+    await expect(page.getByTestId("former-player")).toHaveCount(1);
+
+    await search.fill("zzzz");
+    await expect(page.locator(".empty")).toBeVisible();
   });
 
   test("favorite can be added and persists after reload", async ({ page }) => {
@@ -32,10 +41,10 @@ test.describe("Former players", () => {
     const detail = page.getByTestId("player-detail");
     await expect(detail).toBeVisible();
     await expect(detail.getByTestId("contract-info")).toBeVisible();
-    // Provenance: source link or explicit "no verified info" text.
+    // Provenance: source link or explicit "not verified" text.
     const contractText = await detail.getByTestId("contract-info").innerText();
     expect(
-      contractText.includes("Källa") || contractText.includes("Ingen verifierad"),
+      contractText.includes("Källa") || contractText.includes("Kontraktslut ej verifierat"),
     ).toBeTruthy();
   });
 

@@ -24,6 +24,7 @@ const MatchRef = z.object({
   status: z.enum(["scheduled", "finished", "postponed", "other"]),
   scoreHome: z.number().optional(),
   scoreAway: z.number().optional(),
+  venue: z.string().optional(),
 });
 
 const PlayerWarning = z.object({
@@ -59,6 +60,26 @@ const NewsItem = z.object({
   imageUrl: z.string().optional(),
   discoveredVia: z.string(),
   dedupeKey: z.string().optional(),
+  sourceRole: z.enum(["primary", "secondary", "discovery", "unknown"]).optional(),
+});
+
+const NewsEvent = z.object({
+  id: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  publishedAt: z.string(),
+  category: z.enum(["men", "women", "youth", "club", "unknown"]),
+  latestPublishedAt: z.string(),
+  sources: z.array(
+    z.object({
+      publisher: z.string(),
+      url: z.string().url(),
+      publishedAt: z.string(),
+      role: z.enum(["primary", "secondary", "discovery", "unknown"]),
+      discoveredVia: z.string(),
+    }),
+  ),
+  summaryMethod: z.enum(["rss-description", "extracted", "excerpt"]),
 });
 
 const AppData = z.object({
@@ -100,6 +121,7 @@ const AppData = z.object({
     .nullable(),
   warnings: WarningsReport.nullable(),
   news: z.array(NewsItem),
+  newsEvents: z.array(NewsEvent),
   formerPlayers: z.array(z.unknown()),
 });
 
