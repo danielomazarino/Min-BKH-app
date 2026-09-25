@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T02:04:54.932Z",
+    "generatedAt": "2026-09-25T03:43:24.617Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,7 +16,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T02:04:48.649Z",
+    "retrievedAt": "2026-09-25T03:43:19.692Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -497,7 +497,7 @@
     "ruleSource": "SvFF tävlingsbestämmelser stor herrfotboll 2026: tre varningar i olika matcher i samma tävling ger en matchers avstängning i samma tävling. Uppdateras om SvFF ändrar bestämmelserna.",
     "suspended": [],
     "atRisk": [],
-    "generatedAt": "2026-09-25T02:04:54.930Z"
+    "generatedAt": "2026-09-25T03:43:24.617Z"
   },
   "news": [
     {
@@ -644,7 +644,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Expressen-8-https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
+      "id": "Expressen-9-https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
       "title": "Viktor Andersson köps loss av Blåvitt",
       "url": "https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
       "summary": "IFK Värnamo-lånet Viktor Andersson, 22, har imponerat i allsvenskan. Nu utnyttjar Blåvitt optionen och köper loss målvakten. – Jag är helt otroligt glad, säger han till Blåvitt+.",
@@ -701,7 +701,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Expressen-8-https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
+      "id": "event-Expressen-9-https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
       "title": "Viktor Andersson köps loss av Blåvitt",
       "summary": "IFK Värnamo-lånet Viktor Andersson, 22, har imponerat i allsvenskan. Nu utnyttjar Blåvitt optionen och köper loss målvakten. – Jag är helt otroligt glad, säger han till Blåvitt+.",
       "publishedAt": "2026-09-24T11:32:05.000Z",
