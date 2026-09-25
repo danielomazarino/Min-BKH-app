@@ -19,6 +19,7 @@ import { computeWarnings, type WarningEvent } from "./warnings";
 import { loadRegistry } from "./registry";
 import { firecrawlSearch, playerQuery } from "./firecrawl";
 import { readLastKnownGood } from "./stale";
+import { normalizeSearch } from "./search";
 import {
   ALLSVENSKAN_LEAGUE_ID,
   BKH_TEAM_ID,
@@ -245,7 +246,8 @@ async function main() {
     recent,
     lastMatchDetail: foot.lastMatchDetail,
     table: foot.table,
-    tablePosition: foot.table.find((r) => r.team.includes("Häcken")) ?? null,
+    tablePosition:
+      foot.table.find((r) => normalizeSearch(r.team).includes(normalizeSearch("Häcken"))) ?? null,
     warnings,
     news: relevantNews,
     newsEvents: buildNewsEvents(relevantNews),
