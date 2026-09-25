@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T01:01:13.541Z",
+    "generatedAt": "2026-09-25T01:07:30.453Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -8,15 +8,272 @@
       "rss:SVT Sport": "ok",
       "rss:Bollsvenskan": "ok",
       "rss:Allsvenskan": "ok",
-      "apiFootball": "failed"
+      "apiFootball": "ok"
     }
   },
   "nextMatch": null,
-  "lastResult": null,
+  "lastResult": {
+    "id": 1357836,
+    "competition": "svenska-cupen",
+    "season": "2024",
+    "date": "2025-03-09T12:10:00+00:00",
+    "homeAway": "away",
+    "opponent": "IFK Goteborg",
+    "status": "finished",
+    "scoreHome": 4,
+    "scoreAway": 0,
+    "venue": "Nya Ullevi"
+  },
   "upcoming": [],
-  "recent": [],
-  "lastMatchDetail": null,
-  "table": [],
+  "recent": [
+    {
+      "id": 1357836,
+      "competition": "svenska-cupen",
+      "season": "2024",
+      "date": "2025-03-09T12:10:00+00:00",
+      "homeAway": "away",
+      "opponent": "IFK Goteborg",
+      "status": "finished",
+      "scoreHome": 4,
+      "scoreAway": 0,
+      "venue": "Nya Ullevi"
+    },
+    {
+      "id": 1320433,
+      "competition": "svenska-cupen",
+      "season": "2024",
+      "date": "2025-03-03T17:30:00+00:00",
+      "homeAway": "home",
+      "opponent": "Kalmar FF",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 1,
+      "venue": "3Arena"
+    },
+    {
+      "id": 1320416,
+      "competition": "svenska-cupen",
+      "season": "2024",
+      "date": "2025-02-22T12:00:00+00:00",
+      "homeAway": "away",
+      "opponent": "Stockholm Internazionale",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 3,
+      "venue": "3Arena"
+    },
+    {
+      "id": 1320400,
+      "competition": "svenska-cupen",
+      "season": "2024",
+      "date": "2025-02-15T12:00:00+00:00",
+      "homeAway": "home",
+      "opponent": "Varbergs BoIS FC",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "3Arena"
+    },
+    {
+      "id": 1164319,
+      "competition": "allsvenskan",
+      "season": "2024",
+      "date": "2024-11-10T14:00:00+00:00",
+      "homeAway": "away",
+      "opponent": "Vasteras SK FK",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 0,
+      "venue": "Hitachi Energy Arena"
+    },
+    {
+      "id": 1164304,
+      "competition": "allsvenskan",
+      "season": "2024",
+      "date": "2024-11-02T14:00:00+00:00",
+      "homeAway": "home",
+      "opponent": "Malmo FF",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 2,
+      "venue": "Tele2 Arena"
+    },
+    {
+      "id": 1164300,
+      "competition": "allsvenskan",
+      "season": "2024",
+      "date": "2024-10-26T13:00:00+00:00",
+      "homeAway": "away",
+      "opponent": "Sirius",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 3,
+      "venue": "Studenternas IP"
+    },
+    {
+      "id": 1164288,
+      "competition": "allsvenskan",
+      "season": "2024",
+      "date": "2024-10-21T12:00:00+00:00",
+      "homeAway": "home",
+      "opponent": "Djurgardens IF",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 0,
+      "venue": "Tele2 Arena"
+    },
+    {
+      "id": 1164282,
+      "competition": "allsvenskan",
+      "season": "2024",
+      "date": "2024-10-05T13:00:00+00:00",
+      "homeAway": "home",
+      "opponent": "Halmstad",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 0,
+      "venue": "Tele2 Arena"
+    },
+    {
+      "id": 1164272,
+      "competition": "allsvenskan",
+      "season": "2024",
+      "date": "2024-09-29T12:00:00+00:00",
+      "homeAway": "away",
+      "opponent": "AIK Stockholm",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 0,
+      "venue": "Strawberry Arena"
+    }
+  ],
+  "lastMatchDetail": {
+    "id": 1357836,
+    "competition": "svenska-cupen",
+    "season": "2024",
+    "date": "2025-03-09T12:10:00+00:00",
+    "homeAway": "away",
+    "opponent": "IFK Goteborg",
+    "status": "finished",
+    "scoreHome": 4,
+    "scoreAway": 0,
+    "venue": "Nya Ullevi",
+    "playerStats": []
+  },
+  "table": [
+    {
+      "rank": 1,
+      "team": "Malmo FF",
+      "played": 30,
+      "points": 65,
+      "goalDiff": 0
+    },
+    {
+      "rank": 2,
+      "team": "Hammarby FF",
+      "played": 30,
+      "points": 54,
+      "goalDiff": 0
+    },
+    {
+      "rank": 3,
+      "team": "AIK Stockholm",
+      "played": 30,
+      "points": 54,
+      "goalDiff": 0
+    },
+    {
+      "rank": 4,
+      "team": "Djurgardens IF",
+      "played": 30,
+      "points": 53,
+      "goalDiff": 0
+    },
+    {
+      "rank": 5,
+      "team": "Mjallby AIF",
+      "played": 30,
+      "points": 50,
+      "goalDiff": 0
+    },
+    {
+      "rank": 6,
+      "team": "Gais",
+      "played": 30,
+      "points": 48,
+      "goalDiff": 0
+    },
+    {
+      "rank": 7,
+      "team": "IF Elfsborg",
+      "played": 30,
+      "points": 45,
+      "goalDiff": 0
+    },
+    {
+      "rank": 8,
+      "team": "BK Hacken",
+      "played": 30,
+      "points": 42,
+      "goalDiff": 0
+    },
+    {
+      "rank": 9,
+      "team": "Sirius",
+      "played": 30,
+      "points": 41,
+      "goalDiff": 0
+    },
+    {
+      "rank": 10,
+      "team": "IF Brommapojkarna",
+      "played": 30,
+      "points": 34,
+      "goalDiff": 0
+    },
+    {
+      "rank": 11,
+      "team": "IFK Norrkoping",
+      "played": 30,
+      "points": 34,
+      "goalDiff": 0
+    },
+    {
+      "rank": 12,
+      "team": "Halmstad",
+      "played": 30,
+      "points": 33,
+      "goalDiff": 0
+    },
+    {
+      "rank": 13,
+      "team": "IFK Goteborg",
+      "played": 30,
+      "points": 31,
+      "goalDiff": 0
+    },
+    {
+      "rank": 14,
+      "team": "IFK Varnamo",
+      "played": 30,
+      "points": 31,
+      "goalDiff": 0
+    },
+    {
+      "rank": 15,
+      "team": "Kalmar FF",
+      "played": 30,
+      "points": 30,
+      "goalDiff": 0
+    },
+    {
+      "rank": 16,
+      "team": "Vasteras SK FK",
+      "played": 30,
+      "points": 23,
+      "goalDiff": 0
+    }
+  ],
   "tablePosition": null,
   "warnings": null,
   "news": [
