@@ -22,6 +22,7 @@ import { readLastKnownGood } from "./stale";
 import {
   ALLSVENSKAN_LEAGUE_ID,
   BKH_TEAM_ID,
+  FREE_PLAN_SEASONS,
   SEASON,
   fetchFixtures,
   fetchPlayerStatsForFixture,
@@ -81,19 +82,36 @@ interface FootballData {
   lastMatchDetail: MatchDetail | null;
   warningEvents: WarningEvent[];
   apiOk: boolean;
+  activeSeason: number;
 }
 
 async function collectFootballData(): Promise<FootballData> {
-  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, warningEvents: [], apiOk: false };
+  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, warningEvents: [], apiOk: false, activeSeason: SEASON };
   if (!process.env.API_FOOTBALL_KEY) {
     STATUS.apiFootball = "skipped";
     return empty;
   }
 
-  const { fixtures, status } = await fetchFixtures(BKH_TEAM_ID, SEASON);
+  // Season fallback: the free plan only allows seasons 2022-2024 (verified
+  // 2026-09-25). Try the current season first; if the API rejects the season,
+  // fall back to the newest allowed one so the free tier still yields data.
+  let activeSeason = SEASON;
+  let { fixtures, status } = await fetchFixtures(BKH_TEAM_ID, SEASON);
+  if (!status.ok && /season/i.test(status.error ?? "")) {
+    for (const s of FREE_PLAN_SEASONS.slice(1)) {
+      const res = await fetchFixtures(BKH_TEAM_ID, s);
+      if (res.status.ok) {
+        fixtures = res.fixtures;
+        status = res.status;
+        activeSeason = s;
+        console.log(`API-Football: season ${SEASON} not available on this plan — using season ${s}`);
+        break;
+      }
+    }
+  }
   STATUS.apiFootball = status.ok ? "ok" : "failed";
   if (!status.ok) console.error("API-Football error:", status.error);
-  if (!status.ok || !fixtures) return empty;
+  if (!status.ok || !fixtures) return { ...empty, activeSeason };
 
   const matches = fixtures.map(normalizeFixture);
   const { last } = pickNextAndLast(matches);
@@ -115,7 +133,7 @@ async function collectFootballData(): Promise<FootballData> {
 
   // Standings (Allsvenskan)
   let table: ReturnType<typeof normalizeTable> = [];
-  const standingsRes = await fetchStandings(ALLSVENSKAN_LEAGUE_ID, SEASON);
+  const standingsRes = await fetchStandings(ALLSVENSKAN_LEAGUE_ID, activeSeason);
   if (standingsRes.status.ok && standingsRes.data) {
     const resp = standingsRes.data as Array<{ league: { standings: StandingRow[][] } }>;
     const rows = resp[0]?.league?.standings?.[0] ?? [];
@@ -141,12 +159,12 @@ async function collectFootballData(): Promise<FootballData> {
     }
   }
 
-  return { matches, table, lastMatchDetail, warningEvents, apiOk: true };
+  return { matches, table, lastMatchDetail, warningEvents, apiOk: true, activeSeason };
 }
 
 // ---------- former players ----------
 
-async function collectFormerPlayers(): Promise<FormerPlayer[]> {
+async function collectFormerPlayers(activeSeason: number): Promise<FormerPlayer[]> {
   const registry = loadRegistry();
   const out: FormerPlayer[] = [];
 
@@ -167,7 +185,7 @@ async function collectFormerPlayers(): Promise<FormerPlayer[]> {
 
     // Structured stats via API-Football when we know the id and have a key.
     if (entry.apiFootballId && process.env.API_FOOTBALL_KEY && STATUS.apiFootball === "ok") {
-      const res = await fetchPlayerStatistics(entry.apiFootballId, SEASON, ALLSVENSKAN_LEAGUE_ID);
+      const res = await fetchPlayerStatistics(entry.apiFootballId, activeSeason, ALLSVENSKAN_LEAGUE_ID);
       if (res.status.ok && res.data) {
         // Only fill what the API verifiably returns for a Häcken-connected league;
         // former players mostly play abroad, so this stays conservative.
@@ -197,8 +215,8 @@ async function collectFormerPlayers(): Promise<FormerPlayer[]> {
   return out;
 }
 
-async function collectFormerPlayersData(): Promise<FormerPlayersData> {
-  const players = await collectFormerPlayers();
+async function collectFormerPlayersData(activeSeason: number): Promise<FormerPlayersData> {
+  const players = await collectFormerPlayers(activeSeason);
   return { ...freshness(), players };
 }
 
@@ -209,7 +227,7 @@ async function main() {
 
   const news = await collectNews();
   const foot = await collectFootballData();
-  const formerPlayers = await collectFormerPlayersData();
+  const formerPlayers = await collectFormerPlayersData(foot.activeSeason);
 
   const { next, last, upcoming, recent } = pickNextAndLast(foot.matches);
 

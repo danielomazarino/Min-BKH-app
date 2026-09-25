@@ -8,6 +8,10 @@ const BASE = "https://v3.football.api-sports.io";
 export const BKH_TEAM_ID = 363; // BK Häcken in API-Football (Allsvenskan)
 export const ALLSVENSKAN_LEAGUE_ID = 113;
 export const SEASON = 2026;
+// Free plan limitation (verified 2026-09-25): "Free plans do not have access to
+// this season, try from 2022 to 2024." We try the current season first and fall
+// back to the newest allowed season so the free tier still yields real data.
+export const FREE_PLAN_SEASONS = [SEASON, 2024, 2023, 2022];
 
 export interface ApiFootballStatus {
   ok: boolean;
