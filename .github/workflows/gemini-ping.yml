@@ -1,0 +1,39 @@
+name: Gemini one-shot connectivity check (TEMPORARY)
+
+# TEMPORARY, THROWAWAY WORKFLOW.
+# Purpose: one single request to the Gemini API to check reachability,
+# authentication and capacity. Deleted immediately after the run.
+#
+# Guarantees:
+#   - exactly ONE POST request, no retries, no backoff, no model loop
+#   - the API key is only ever read into the request header, never echoed
+#   - this workflow does NOT run the news pipeline and does NOT deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Single Gemini request
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -u
+          MODEL="gemini-3.8-flash"
+          PROMPT='{"contents":[{"role":"user","parts":[{"text":"Reply with exactly: GEMINI_OK"}]}]}'
+          code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            -X POST \
+            -H "x-goog-api-key: ${GEMINI_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$PROMPT" \
+            "https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent")
+          echo "model=${MODEL}"
+          echo "http_status=${code}"
+          echo "--- response body ---"
+          head -c 1500 /tmp/resp.json
+          echo
