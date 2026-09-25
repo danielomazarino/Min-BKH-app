@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T20:13:52.368Z",
+    "generatedAt": "2026-09-25T20:30:37.113Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -17,7 +17,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T20:13:08.536Z",
+    "retrievedAt": "2026-09-25T20:30:13.211Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
