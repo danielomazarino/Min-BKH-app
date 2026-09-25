@@ -22,7 +22,10 @@ import type { NewsCategory, NewsEvent, NewsItem } from "./types";
 import { buildNewsEvents, publisherRole } from "./newsEvents";
 
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+// gemini-2.5-flash is restricted to accounts that used it historically and
+// returns HTTP 404 for new keys (verified 2026-09-25). Google recommends
+// gemini-3.8-flash for new projects. Override with GEMINI_MODEL if needed.
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.8-flash";
 const TIMEOUT_MS = 120000;
 
 export const MAX_SUMMARY_CHARS = 200;
