@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T01:07:30.453Z",
+    "generatedAt": "2026-09-25T01:09:38.839Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -274,7 +274,13 @@
       "goalDiff": 0
     }
   ],
-  "tablePosition": null,
+  "tablePosition": {
+    "rank": 8,
+    "team": "BK Hacken",
+    "played": 30,
+    "points": 42,
+    "goalDiff": 0
+  },
   "warnings": null,
   "news": [
     {
