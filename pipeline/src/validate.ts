@@ -73,13 +73,20 @@ const NewsEvent = z.object({
   sources: z.array(
     z.object({
       publisher: z.string(),
+      title: z.string().optional(),
       url: z.string().url(),
       publishedAt: z.string(),
       role: z.enum(["primary", "secondary", "discovery", "unknown"]),
       discoveredVia: z.string(),
     }),
   ),
-  summaryMethod: z.enum(["rss-description", "extracted", "excerpt"]),
+  summaryMethod: z.enum([
+    "rss-description",
+    "extracted",
+    "excerpt",
+    "gemini-synthesis",
+    "gemini-synthesis-fallback",
+  ]),
 });
 
 const MatchEvents = z.object({

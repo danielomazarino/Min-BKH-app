@@ -22,6 +22,13 @@ import type { WarningEvent } from "./warnings";
 import { loadRegistry } from "./registry";
 import { firecrawlSearch, playerQuery } from "./firecrawl";
 import { readLastKnownGood } from "./stale";
+import { prefilterNews, DEFAULT_WINDOW_DAYS } from "./newsPrefilter";
+import { fetchArticleTexts } from "./articleText";
+import {
+  buildEventsFromGemini,
+  synthesizeWithGemini,
+  type GeminiArticleInput,
+} from "./gemini";
 import { pickNextAndLast } from "./normalize";
 import { normalizeSearch } from "./search";
 import {
@@ -386,12 +393,69 @@ async function main() {
       "vittsjö gik", "eskilstuna united", "vittsjö", "bk häcken dam", "häcken dam",
     ],
   };
-  const relevantNews = news
-    .filter((n) => {
-      const r = classifyRelevance(n, known);
-      return r.relevance === "CURRENT_HACKEN";
-    })
-    .slice(0, 40);
+  // ---------- news: deterministic pre-filter → Gemini synthesis ----------
+  //
+  // Gemini is the semantic authority on men's vs women's team and on which
+  // articles describe the same underlying event. The pre-filter only removes
+  // cheap, unambiguous noise (date window, ads, non-Häcken league coverage).
+  const windowDays = Number(process.env.NEWS_WINDOW_DAYS ?? DEFAULT_WINDOW_DAYS);
+  const { candidates, dropped } = prefilterNews(news, { windowDays });
+  console.log(`news: ${candidates.length} candidates, ${dropped.length} dropped before Gemini`);
+
+  // Server-side article text (the browser never fetches article bodies).
+  const texts = await fetchArticleTexts(candidates.map((c) => c.url));
+  let textFailures = 0;
+  const geminiInput: GeminiArticleInput[] = candidates.map((c) => {
+    const t = texts.get(c.url);
+    if (!t?.ok) textFailures++;
+    return {
+      id: c.id,
+      publisher: c.publisher,
+      title: c.title,
+      url: c.url,
+      publishedAt: c.publishedAt,
+      text: t?.ok ? t.text : undefined,
+      categoryHint: c.category,
+    };
+  });
+
+  const gem = await synthesizeWithGemini(geminiInput);
+  STATUS.gemini = gem.status.ok ? "ok" : gem.result === null ? "failed" : "ok";
+  console.log(
+    `news: gemini ok=${gem.status.ok} calls=${gem.status.calls} events=${gem.result?.events.length ?? 0} articleTextUnavailable=${textFailures}` +
+      (gem.status.error ? ` error="${gem.status.error}"` : ""),
+  );
+
+  let newsEvents: ReturnType<typeof buildNewsEvents> | ReturnType<typeof buildEventsFromGemini>;
+  if (gem.result) {
+    // Trust but verify: every event must be men's-scoped, and URLs come from us.
+    newsEvents = buildEventsFromGemini(candidates, gem.result);
+    if (newsEvents.length === 0) {
+      console.error("Gemini produced no men's events — falling back to deterministic events");
+      newsEvents = buildNewsEvents(
+        candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+      );
+    }
+  } else {
+    // Gemini unavailable: keep the previous deterministic behaviour unchanged.
+    newsEvents = buildNewsEvents(
+      candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+    );
+  }
+  const relevantNews = newsEvents.flatMap((ev) =>
+    ev.sources.map((s) => {
+      const match = candidates.find((c) => c.url === s.url);
+      return match ?? {
+        id: s.url,
+        title: s.title ?? ev.title,
+        url: s.url,
+        publishedAt: s.publishedAt,
+        publisher: s.publisher,
+        category: ev.category,
+        discoveredVia: s.discoveredVia,
+      };
+    }),
+  ).slice(0, 40);
 
   const appData: AppData = {
     freshness: freshness(),
@@ -409,7 +473,7 @@ async function main() {
     cardMatchesInspected: foot.cardMatchesInspected,
     disciplineRule: foot.disciplineRule,
     news: relevantNews,
-    newsEvents: buildNewsEvents(relevantNews),
+    newsEvents,
     formerPlayers: [],
     squadStats: foot.squadStats,
     ...(foot.unavailableReason

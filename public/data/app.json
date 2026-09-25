@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T12:31:32.333Z",
+    "generatedAt": "2026-09-25T20:13:52.368Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -8,7 +8,8 @@
       "rss:SVT Sport": "ok",
       "rss:Bollsvenskan": "ok",
       "rss:Allsvenskan": "ok",
-      "sportomedia": "ok"
+      "sportomedia": "ok",
+      "gemini": "failed"
     }
   },
   "footballSource": {
@@ -16,7 +17,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T12:31:14.839Z",
+    "retrievedAt": "2026-09-25T20:13:08.536Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -868,7 +869,7 @@
   "cardMatchesInspected": 22,
   "news": [
     {
-      "id": "BK Häcken-0-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
+      "id": "BK Häcken-1-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
       "title": "Tuff Champions League-premiär mot Inter",
       "url": "https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
       "summary": "Bortamötet på Stadio Brianteo slutar i en uddamålsförlust.",
@@ -881,7 +882,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "BK Häcken-4-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -894,7 +895,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-5-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "BK Häcken-6-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
@@ -907,7 +908,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-7-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
+      "id": "BK Häcken-8-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
       "title": "Gåfotboll med BK Häcken – för hälsan och glädjens skull",
       "url": "https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
       "summary": "Möt deltagarna på Slätta Damm och ta del av gemenskapen, glädjen och rörelsen som står i centrum.",
@@ -920,7 +921,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-8-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
+      "id": "BK Häcken-9-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
       "title": "Biljettinformation inför bortamatcherna i Champions League",
       "url": "https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
       "summary": "Den 22 september inleds ligafasen i Champions League.",
@@ -933,7 +934,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-12-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "BK Häcken-13-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "url": "https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
@@ -946,7 +947,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-13-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "id": "BK Häcken-14-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
       "url": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
@@ -959,7 +960,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-14-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
+      "id": "BK Häcken-15-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
       "title": "Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby",
       "url": "https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
       "summary": "I kväll, fredagen den 11 september klockan 19.00, spelar BK Häcken mot Mjällby AIF på Nordic Wellness Arena.",
@@ -972,7 +973,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-15-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
+      "id": "BK Häcken-16-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
       "title": "Matchtruppen inför Mjällby på Nordic Wellness Arena",
       "url": "https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
       "summary": "Senaste nytt om laget inför fredagens hemmamatch.",
@@ -985,7 +986,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-16-https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
+      "id": "BK Häcken-17-https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
       "title": "Matchtröjehelg på Nordic Wellness Arena",
       "url": "https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
       "summary": "Fira in helgen med allsvensk fredagsmatch!",
@@ -998,7 +999,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-17-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
+      "id": "BK Häcken-18-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
       "title": "BK Häcken är vidare i Svenska Cupen efter kvällens derbyvinst",
       "url": "https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
       "publishedAt": "2026-09-09T19:59:35.000Z",
@@ -1010,7 +1011,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-18-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
+      "id": "BK Häcken-19-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
       "title": "Biljettsläpp till hemmamatcherna i Champions Leauge",
       "url": "https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
       "summary": "Missa inte de magiska Europakvällarna på Hisingen.",
@@ -1021,24 +1022,11 @@
       "discoveredVia": "rss",
       "dedupeKey": "https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
       "sourceRole": "primary"
-    },
-    {
-      "id": "BK Häcken-19-https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
-      "title": "Derby och kval i Svenska Cupen – här är truppen mot IFK Göteborg",
-      "url": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
-      "summary": "Onsdagen den 9 september, klockan 18.45, spelar BK Häcken den andra omgången i Svenska Cupen.",
-      "publishedAt": "2026-09-08T16:00:00.000Z",
-      "publisher": "BK Häcken",
-      "category": "unknown",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1f130a74-601f-46c7-bc1f-a844fccfee5e.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
-      "sourceRole": "primary"
     }
   ],
   "newsEvents": [
     {
-      "id": "event-BK Häcken-0-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
+      "id": "event-BK Häcken-1-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
       "title": "Tuff Champions League-premiär mot Inter",
       "summary": "Bortamötet på Stadio Brianteo slutar i en uddamålsförlust.",
       "publishedAt": "2026-09-22T20:15:00.000Z",
@@ -1056,7 +1044,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "event-BK Häcken-4-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-20T16:00:00.000Z",
@@ -1074,7 +1062,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-5-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "event-BK Häcken-6-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-19T13:50:05.000Z",
@@ -1092,7 +1080,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-7-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
+      "id": "event-BK Häcken-8-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
       "title": "Gåfotboll med BK Häcken – för hälsan och glädjens skull",
       "summary": "Möt deltagarna på Slätta Damm och ta del av gemenskapen, glädjen och rörelsen som står i centrum.",
       "publishedAt": "2026-09-18T09:48:00.000Z",
@@ -1110,7 +1098,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-8-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
+      "id": "event-BK Häcken-9-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
       "title": "Biljettinformation inför bortamatcherna i Champions League",
       "summary": "Den 22 september inleds ligafasen i Champions League.",
       "publishedAt": "2026-09-17T10:15:00.000Z",
@@ -1128,7 +1116,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-12-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "event-BK Häcken-13-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
       "publishedAt": "2026-09-11T19:40:00.000Z",
@@ -1146,7 +1134,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-13-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "id": "event-BK Häcken-14-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
       "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
       "publishedAt": "2026-09-11T10:00:00.000Z",
@@ -1164,7 +1152,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-14-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
+      "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
       "title": "Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby",
       "summary": "I kväll, fredagen den 11 september klockan 19.00, spelar BK Häcken mot Mjällby AIF på Nordic Wellness Arena.",
       "publishedAt": "2026-09-11T09:45:00.000Z",
@@ -1182,7 +1170,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
+      "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
       "title": "Matchtruppen inför Mjällby på Nordic Wellness Arena",
       "summary": "Senaste nytt om laget inför fredagens hemmamatch.",
       "publishedAt": "2026-09-10T15:23:00.000Z",
@@ -1200,7 +1188,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
+      "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
       "title": "Matchtröjehelg på Nordic Wellness Arena",
       "summary": "Fira in helgen med allsvensk fredagsmatch!",
       "publishedAt": "2026-09-10T10:16:00.000Z",
@@ -1218,7 +1206,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
+      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
       "title": "BK Häcken är vidare i Svenska Cupen efter kvällens derbyvinst",
       "summary": "BK Häcken är vidare i Svenska Cupen efter kvällens derbyvinst",
       "publishedAt": "2026-09-09T19:59:35.000Z",
@@ -1236,7 +1224,7 @@
       "summaryMethod": "excerpt"
     },
     {
-      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
+      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
       "title": "Biljettsläpp till hemmamatcherna i Champions Leauge",
       "summary": "Missa inte de magiska Europakvällarna på Hisingen.",
       "publishedAt": "2026-09-09T10:00:00.000Z",
@@ -1247,24 +1235,6 @@
           "publisher": "BK Häcken",
           "url": "https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
           "publishedAt": "2026-09-09T10:00:00.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
-      "title": "Derby och kval i Svenska Cupen – här är truppen mot IFK Göteborg",
-      "summary": "Onsdagen den 9 september, klockan 18.45, spelar BK Häcken den andra omgången i Svenska Cupen.",
-      "publishedAt": "2026-09-08T16:00:00.000Z",
-      "latestPublishedAt": "2026-09-08T16:00:00.000Z",
-      "category": "unknown",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
-          "publishedAt": "2026-09-08T16:00:00.000Z",
           "role": "primary",
           "discoveredVia": "rss"
         }

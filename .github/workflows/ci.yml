@@ -37,6 +37,7 @@ jobs:
         run: |
           ! grep -rE "API_FOOTBALL_KEY|apisports-key" dist/ public/data/ 2>/dev/null
           ! grep -rE "fc-[a-zA-Z0-9]{20,}" dist/ public/data/ 2>/dev/null
+          ! grep -rE "GEMINI_API_KEY|AIza[0-9A-Za-z_-]{30,}" dist/ public/data/ 2>/dev/null
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

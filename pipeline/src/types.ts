@@ -146,13 +146,15 @@ export interface NewsEvent {
   latestPublishedAt: string;
   sources: Array<{
     publisher: string;
+    /** Original article headline, preserved for provenance. */
+    title?: string;
     url: string;
     publishedAt: string;
     role: SourceRole;
     discoveredVia: string;
   }>;
   /** How the event summary was produced. */
-  summaryMethod: "rss-description" | "extracted" | "excerpt";
+  summaryMethod: "rss-description" | "extracted" | "excerpt" | "gemini-synthesis" | "gemini-synthesis-fallback";
 }
 
 export interface PlayerWarning {

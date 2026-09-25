@@ -29,6 +29,9 @@ jobs:
       - name: Run data pipeline
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          # Gemini news synthesis. When unset the pipeline falls back to the
+          # previous deterministic news events (safe, no silent corruption).
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run pipeline
 
       - name: Validate generated data
