@@ -58,17 +58,17 @@ export function pickNextAndLast(matches: MatchRef[]): { next: MatchRef | null; l
 export interface StandingRow {
   rank: number;
   team: { name: string };
-  all: { played: number; goals: { diff: number } };
-  points: number;
+  all: { played: number | null; goals: { diff: number | null } | null } | null;
+  points: number | null;
 }
 
 export function normalizeTable(rows: StandingRow[]): LeagueTableRow[] {
   return rows.map((r) => ({
     rank: r.rank,
-    team: r.team.name,
-    played: r.all.played,
-    points: r.points,
-    goalDiff: r.all.goals.diff,
+    team: r.team?.name ?? "Okänd",
+    played: r.all?.played ?? 0,
+    points: r.points ?? 0,
+    goalDiff: r.all?.goals?.diff ?? 0,
   }));
 }
 
