@@ -92,6 +92,7 @@ async function collectFootballData(): Promise<FootballData> {
 
   const { fixtures, status } = await fetchFixtures(BKH_TEAM_ID, SEASON);
   STATUS.apiFootball = status.ok ? "ok" : "failed";
+  if (!status.ok) console.error("API-Football error:", status.error);
   if (!status.ok || !fixtures) return empty;
 
   const matches = fixtures.map(normalizeFixture);
