@@ -13,13 +13,12 @@ import type {
   NewsItem,
   SeasonPlayerStat,
   SourceStatus,
-  WarningsReport,
 } from "./types";
 import { fetchRss } from "./rss";
-import { classifyNews, menRelevantNews } from "./classify";
+import { classifyNews } from "./classify";
 import { dedupeNews } from "./dedupe";
 import { buildNewsEvents, publisherRole } from "./newsEvents";
-import { computeWarnings, type WarningEvent } from "./warnings";
+import type { WarningEvent } from "./warnings";
 import { loadRegistry } from "./registry";
 import { firecrawlSearch, playerQuery } from "./firecrawl";
 import { readLastKnownGood } from "./stale";
@@ -40,12 +39,15 @@ import {
 } from "./sportomedia";
 import {
   assertNotHammarby,
-  hashId,
   normalizeSmEvents,
   normalizeSmMatch,
   normalizeSmSquad,
   normalizeSmStandings,
 } from "./smNormalize";
+import { matchesSquadPlayer, resolveCanonicalId } from "./playerIdentity";
+import { buildLedger, computeSeasonDiscipline, type CardEvent } from "./discipline";
+import { classifyRelevance, type KnownPersons } from "./newsRelevance";
+import { getRule } from "./rules";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
@@ -102,6 +104,10 @@ interface FootballData {
   /** Set when current data could not be retrieved. */
   unavailableReason: string | null;
   squadStats: SeasonPlayerStat[];
+  /** Season-level disciplinary ledger (chronological, rule-applied). */
+  discipline: ReturnType<typeof computeSeasonDiscipline>;
+  /** How many finished matches contributed card events. */
+  cardMatchesInspected: number;
 }
 
 const SM_QUERY_VERSION = "sm-2026-09-25";
@@ -126,7 +132,7 @@ function footballSourceMeta(retrievedAt: string, dataStatus: FootballSourceMeta[
  * fails, the dataset is marked unavailable and the UI must say so.
  */
 async function collectCurrentFootballData(): Promise<FootballData> {
-  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, warningEvents: [], source: null, unavailableReason: null, squadStats: [] };
+  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, warningEvents: [], source: null, unavailableReason: null, squadStats: [], discipline: [], cardMatchesInspected: 0 };
   const retrievedAt = generatedAt();
 
   // Identity guard: we query BKH and must never receive Hammarby data.
@@ -157,41 +163,83 @@ async function collectCurrentFootballData(): Promise<FootballData> {
 
   const matches = fx.matches.map(normalizeSmMatch);
   const table = normalizeSmStandings(st.rows);
-  const { last } = pickNextAndLast(matches);
+  const { last, upcoming } = pickNextAndLast(matches);
 
-  // 4) Match detail (events) for the most recent finished match only.
+  // Canonical identity map: squad players get fogisId-based canonical ids.
+  // Event player names are mapped to canonical ids via normalized name match
+  // at ingestion time (stored, not re-matched at runtime).
+  const squadNameToId = new Map<string, string>();
+  for (const p of squadStats) {
+    squadNameToId.set(p.playerName, p.playerId);
+  }
+  const idResolver = (eventName: string): string => {
+    for (const [squadName, id] of squadNameToId) {
+      if (matchesSquadPlayer(eventName, squadName)) return id;
+    }
+    // Player not in current squad (departed mid-season or opponent misattribution):
+    // deterministic name-based canonical id.
+    return resolveCanonicalId({ name: eventName });
+  };
+
+  // 4) Match detail (events) for the most recent finished match + season-wide
+  //    card events for the disciplinary ledger.
   let lastMatchDetail: MatchDetail | null = null;
   const warningEvents: WarningEvent[] = [];
-  if (last) {
-    const det = await fetchMatchDetailSm(last.id);
-    if (det.status.ok && det.match) {
-      const ev = normalizeSmEvents(det.match.matchEvents);
-      lastMatchDetail = {
-        ...last,
-        events: {
-          goals: ev.goals,
-          yellowCards: ev.yellowCards,
-          redCards: ev.redCards,
-          substitutions: ev.substitutions,
-        },
-      };
-      // Warning events from the match's yellow cards (per-player).
-      for (const yc of ev.yellowCards) {
-        if (yc.teamName?.includes("Häcken")) {
-          warningEvents.push({
-            playerId: hashId(yc.playerName),
-            playerName: yc.playerName,
-            competition: "allsvenskan",
-            matchId: last.id,
-            matchDate: last.date,
-            season: last.season,
-          });
-        }
-      }
-    } else {
-      console.error("SportoMedia match detail error:", det.status.error);
+  const finished = matches.filter((m) => m.status === "finished").sort((a, b) => a.date.localeCompare(b.date));
+  const perMatchCards: Array<{ matchId: number; matchDate: string; häckenYellows: string[]; häckenReds: string[] }> = [];
+  let cardMatchesInspected = 0;
+
+  for (const m of finished) {
+    const det = await fetchMatchDetailSm(m.id);
+    if (!det.status.ok || !det.match) {
+      console.error(`SportoMedia match detail error (${m.id}):`, det.status.error);
+      continue;
     }
+    const ev = normalizeSmEvents(det.match.matchEvents);
+    cardMatchesInspected++;
+    perMatchCards.push({
+      matchId: m.id,
+      matchDate: m.date,
+      häckenYellows: ev.yellowCards.filter((c) => c.teamName?.includes("Häcken")).map((c) => c.playerName),
+      häckenReds: ev.redCards.filter((c) => c.teamName?.includes("Häcken")).map((c) => c.playerName),
+    });
+    if (last && m.id === last.id) {
+      lastMatchDetail = {
+        ...m,
+        events: { goals: ev.goals, yellowCards: ev.yellowCards, redCards: ev.redCards, substitutions: ev.substitutions },
+      };
+    }
+    // Small delay to stay well under any rate limits (22 requests total).
+    await new Promise((r) => setTimeout(r, 300));
   }
+
+  // 5) Season disciplinary ledger (chronological, rule-applied).
+  const cardEvents: CardEvent[] = buildLedger(
+    perMatchCards,
+    idResolver,
+    "allsvenskan",
+    String(CURRENT_SEASON),
+  );
+  const rule = getRule("allsvenskan", String(CURRENT_SEASON));
+  const discipline = computeSeasonDiscipline(
+    cardEvents,
+    { threshold: rule?.threshold ?? 3, suspensionMatches: rule?.suspensionMatches ?? 1 },
+    finished.map((m) => m.date),
+    upcoming.length ? { matchId: upcoming[0].id, date: upcoming[0].date } : null,
+  );
+
+  // Legacy warningEvents shape for computeWarnings compatibility (not used for UI anymore).
+  for (const ce of cardEvents.filter((e) => e.kind === "yellow")) {
+    warningEvents.push({
+      playerId: 0,
+      playerName: ce.playerName,
+      competition: ce.competition,
+      matchId: ce.matchId,
+      matchDate: ce.matchDate,
+      season: ce.season,
+    });
+  }
+  void warningEvents;
 
   return {
     matches,
@@ -201,16 +249,28 @@ async function collectCurrentFootballData(): Promise<FootballData> {
     source: footballSourceMeta(retrievedAt, "current"),
     unavailableReason: null,
     squadStats,
+    discipline,
+    cardMatchesInspected,
   };
 }
 
 // ---------- former players ----------
 
-async function collectFormerPlayers(): Promise<FormerPlayer[]> {
+async function collectFormerPlayers(currentSquadNames: string[]): Promise<FormerPlayer[]> {
   const registry = loadRegistry();
   const out: FormerPlayer[] = [];
 
+  // B5 registry correction: a registry entry whose name matches a player in
+  // the CURRENT SportoMedia squad is not a former player — exclude them
+  // (e.g. Julius Lindberg, Filip Helander returned to the club). Uses the
+  // same ingestion-time matcher as card events so "Mikkel Rygaard" (registry)
+  // matches "Mikkel Rygaard Jensen" (squad).
   for (const entry of registry) {
+    const isCurrent = currentSquadNames.some(
+      (squadName) => matchesSquadPlayer(entry.name, squadName) ||
+        (entry.aliases ?? []).some((a) => matchesSquadPlayer(a, squadName)),
+    );
+    if (isCurrent) continue;
     const base: FormerPlayer = {
       id: entry.id,
       name: entry.name,
@@ -258,8 +318,8 @@ async function collectFormerPlayers(): Promise<FormerPlayer[]> {
   return out;
 }
 
-async function collectFormerPlayersData(): Promise<FormerPlayersData> {
-  const players = await collectFormerPlayers();
+async function collectFormerPlayersData(currentSquadNames: string[]): Promise<FormerPlayersData> {
+  const players = await collectFormerPlayers(currentSquadNames);
   return { ...freshness(), players };
 }
 
@@ -270,15 +330,21 @@ async function main() {
 
   const news = await collectNews();
   const foot = await collectCurrentFootballData();
-  const formerPlayers = await collectFormerPlayersData();
+  const formerPlayers = await collectFormerPlayersData(foot.squadStats.map((p) => p.playerName));
 
   const { next, last, upcoming, recent } = pickNextAndLast(foot.matches);
 
-  const warnings: WarningsReport | null = next
-    ? computeWarnings(foot.warningEvents, "allsvenskan", String(CURRENT_SEASON), next)
-    : null;
-
-  const relevantNews = menRelevantNews(news).slice(0, 40);
+  // Entity/relation-based news relevance (replaces generic keyword matching).
+  const known: KnownPersons = {
+    currentPlayers: foot.squadStats.map((p) => p.playerName),
+    formerPlayers: formerPlayers.players.map((p) => p.name),
+  };
+  const relevantNews = news
+    .filter((n) => {
+      const r = classifyRelevance(n, known);
+      return r.relevance === "CURRENT_HACKEN";
+    })
+    .slice(0, 40);
 
   const appData: AppData = {
     freshness: freshness(),
@@ -291,7 +357,9 @@ async function main() {
     table: foot.table,
     tablePosition:
       foot.table.find((r) => normalizeSearch(r.team).includes(normalizeSearch("Häcken"))) ?? null,
-    warnings,
+    warnings: null,
+    discipline: foot.discipline,
+    cardMatchesInspected: foot.cardMatchesInspected,
     news: relevantNews,
     newsEvents: buildNewsEvents(relevantNews),
     formerPlayers: [],
@@ -312,7 +380,7 @@ async function main() {
   const formerEmpty = (d: FormerPlayersData) => d.players.every((p) => !p.currentClub && !p.latestEvent && !p.contract);
 
   writeAppIfBetter(resolve(DATA_DIR, "app.json"), appData, appEmpty);
-  writeFormerIfBetter(resolve(DATA_DIR, "former-players.json"), formerData, formerEmpty);
+  writeFormerIfBetter(resolve(DATA_DIR, "former-players.json"), formerData, formerEmpty, foot.squadStats.map((p) => p.playerName));
 
   console.log("Pipeline complete:", JSON.stringify(appData.freshness.sourceStatus));
 }
@@ -353,18 +421,33 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
   writeFileSync(path, JSON.stringify(merged, null, 2));
 }
 
-function writeFormerIfBetter(path: string, next: FormerPlayersData, isEmpty: (d: FormerPlayersData) => boolean): void {
+function writeFormerIfBetter(
+  path: string,
+  next: FormerPlayersData,
+  isEmpty: (d: FormerPlayersData) => boolean,
+  currentSquadNames: string[],
+): void {
+  // B5: players now in the current squad must never be resurrected from the
+  // last-known-good copy (e.g. Lindberg/Helander returned to Häcken).
+  const notCurrent = (p: FormerPlayer) =>
+    !currentSquadNames.some(
+      (s) => matchesSquadPlayer(p.name, s) || (p.aliases ?? []).some((a) => matchesSquadPlayer(a, s)),
+    );
   const prev = readLastKnownGood<FormerPlayersData>(path);
   if (!prev) {
     writeFileSync(path, JSON.stringify(next, null, 2));
     return;
   }
   if (isEmpty(next)) {
-    const merged: FormerPlayersData = { generatedAt: next.generatedAt, sourceStatus: next.sourceStatus, players: prev.players };
+    const merged: FormerPlayersData = {
+      generatedAt: next.generatedAt,
+      sourceStatus: next.sourceStatus,
+      players: prev.players.filter(notCurrent),
+    };
     writeFileSync(path, JSON.stringify(merged, null, 2));
     return;
   }
-  const prevById = new Map(prev.players.map((p) => [p.id, p]));
+  const prevById = new Map(prev.players.filter(notCurrent).map((p) => [p.id, p]));
   const mergedPlayers = next.players.map((p) => {
     const old = prevById.get(p.id);
     if (!old) return p;

@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T03:43:24.617Z",
+    "generatedAt": "2026-09-25T10:23:13.382Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,7 +16,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T03:43:19.692Z",
+    "retrievedAt": "2026-09-25T10:22:46.274Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -501,6 +501,45 @@
   },
   "news": [
     {
+      "id": "BK Häcken-0-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
+      "title": "Tuff Champions League-premiär mot Inter",
+      "url": "https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
+      "summary": "Bortamötet på Stadio Brianteo slutar i en uddamålsförlust.",
+      "publishedAt": "2026-09-22T20:15:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/09390dde-d349-405e-80a4-c6ed869f8bf5.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
+      "sourceRole": "primary"
+    },
+    {
+      "id": "BK Häcken-1-https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
+      "title": "Matchguide: Champions League-premiär borta mot FC Inter",
+      "url": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
+      "summary": "BK Häcken ställs mot italienskt motstånd i första matchen av UEFA Women's Champions League.",
+      "publishedAt": "2026-09-22T07:56:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/aaba81ee-00a4-4eae-8a75-f69a3c3483ae.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
+      "sourceRole": "primary"
+    },
+    {
+      "id": "BK Häcken-2-https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
+      "title": "Europaspecial – lär känna Laney Egbuka",
+      "url": "https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
+      "summary": "Inför varje Champions League-match publicerar vi en längre intervju med en spelare i laget som ni får möjlighet att lära känna bättre. Först ut är Laney Egbuka.",
+      "publishedAt": "2026-09-20T22:50:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "women",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/b01a0666-2fe5-47b4-890c-9d9684bced26.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
+      "sourceRole": "primary"
+    },
+    {
       "id": "BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -514,6 +553,19 @@
       "sourceRole": "primary"
     },
     {
+      "id": "BK Häcken-4-https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
+      "title": "Komfortabel trepoängare och utökad serieledning",
+      "url": "https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
+      "summary": "BK Häcken vann med 3–0 över Eskilstuna United. Läs kommentarer efter vinsten.",
+      "publishedAt": "2026-09-19T15:44:33.000Z",
+      "publisher": "BK Häcken",
+      "category": "women",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/6805826c-e0f7-4842-8cda-2fdb96d71bbf.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
+      "sourceRole": "primary"
+    },
+    {
       "id": "BK Häcken-5-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
@@ -524,6 +576,71 @@
       "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/8463a6c2-df5f-4c36-a795-5785f03afa9e.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "sourceRole": "primary"
+    },
+    {
+      "id": "BK Häcken-6-https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
+      "title": "Truppen mot Eskilstuna United – trio tillbaka",
+      "url": "https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
+      "summary": "Johanna Fossdalsá Sörensen, Tuva Ölvestad och Joy Omewa med i truppen mot Eskilstuna United.",
+      "publishedAt": "2026-09-18T13:51:33.000Z",
+      "publisher": "BK Häcken",
+      "category": "women",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/86a5b2f7-3f36-46b4-b413-d0b15dbc6d53.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
+      "sourceRole": "primary"
+    },
+    {
+      "id": "BK Häcken-7-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
+      "title": "Gåfotboll med BK Häcken – för hälsan och glädjens skull",
+      "url": "https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
+      "summary": "Möt deltagarna på Slätta Damm och ta del av gemenskapen, glädjen och rörelsen som står i centrum.",
+      "publishedAt": "2026-09-18T09:48:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "women",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/be6616a8-5920-4995-a48f-ff626101f488.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
+      "sourceRole": "primary"
+    },
+    {
+      "id": "BK Häcken-8-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
+      "title": "Biljettinformation inför bortamatcherna i Champions League",
+      "url": "https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
+      "summary": "Den 22 september inleds ligafasen i Champions League.",
+      "publishedAt": "2026-09-17T10:15:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/7d1d0001-b357-43dd-b963-7bb1238fe3cb.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
+      "sourceRole": "primary"
+    },
+    {
+      "id": "BK Häcken-10-https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
+      "title": "Besöksinformation inför söndagsmatchen mot Vittsjö GIK",
+      "url": "https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
+      "summary": "På med matchtröjan och heja fram BK Häcken till tre gulsvarta poäng!",
+      "publishedAt": "2026-09-12T15:20:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "women",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/23eca29b-e496-4790-a09a-94e502e0a175.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
+      "sourceRole": "primary"
+    },
+    {
+      "id": "BK Häcken-12-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
+      "url": "https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
+      "publishedAt": "2026-09-11T19:40:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/852c9212-e22f-4f90-8d06-900a6a0a7190.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "sourceRole": "primary"
     },
     {
@@ -579,234 +696,98 @@
       "sourceRole": "primary"
     },
     {
-      "id": "Sportbladet-9-https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss",
-      "title": "AVSLÖJAR: Oenighet om transferöppenheten: ”Oron är överdriven”",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss",
-      "summary": "Klubbarna inte överens i känsliga frågan",
-      "publishedAt": "2026-09-24T10:28:06.000Z",
-      "publisher": "Sportbladet",
-      "category": "club",
-      "imageUrl": "https://akamai.vgc.no/v2/images/34da1e7f-c68c-35dd-8720-9ebc918f47f0?format=auto&w=1000&s=118e5897fd9421ca3497517d5eeb14bb4e9c7ac6",
+      "id": "BK Häcken-17-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
+      "title": "BK Häcken är vidare i Svenska Cupen efter kvällens derbyvinst",
+      "url": "https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
+      "publishedAt": "2026-09-09T19:59:35.000Z",
+      "publisher": "BK Häcken",
+      "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/aec70de3-1222-4db1-a805-5ae2e86e4fd6.jpg",
       "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss",
-      "sourceRole": "secondary"
+      "dedupeKey": "https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
+      "sourceRole": "primary"
     },
     {
-      "id": "Sportbladet-15-https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss",
-      "title": "Sparkas efter orden till kvinnliga domaren",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss",
-      "summary": "”Det är det bästa för klubben”",
-      "publishedAt": "2026-09-23T18:46:13.000Z",
-      "publisher": "Sportbladet",
-      "category": "club",
-      "imageUrl": "https://akamai.vgc.no/v2/images/944036a9-a512-33d6-9e61-def0b4e7d5a0?format=auto&w=1000&s=a13585b248c48ce2987383483de2cfa6e43c44e4",
+      "id": "BK Häcken-18-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
+      "title": "Biljettsläpp till hemmamatcherna i Champions Leauge",
+      "url": "https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
+      "summary": "Missa inte de magiska Europakvällarna på Hisingen.",
+      "publishedAt": "2026-09-09T10:00:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/339428b3-c558-47b7-99c6-d4ebf96b8796.jpg",
       "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss",
-      "sourceRole": "secondary"
+      "dedupeKey": "https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
+      "sourceRole": "primary"
     },
     {
-      "id": "Sportbladet-18-https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss",
-      "title": "Sparkades – fick 354 (!) miljoner kr",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss",
-      "summary": "Enorm utgift för engelska krisklubben",
-      "publishedAt": "2026-09-23T16:19:09.000Z",
-      "publisher": "Sportbladet",
-      "category": "club",
-      "imageUrl": "https://akamai.vgc.no/v2/images/200c7443-6aef-392d-9a15-e2fd96d480c0?format=auto&w=1000&s=fb3961487dc3ec823ec5d9ab97bdbf1c89292933",
+      "id": "BK Häcken-19-https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
+      "title": "Derby och kval i Svenska Cupen – här är truppen mot IFK Göteborg",
+      "url": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
+      "summary": "Onsdagen den 9 september, klockan 18.45, spelar BK Häcken den andra omgången i Svenska Cupen.",
+      "publishedAt": "2026-09-08T16:00:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1f130a74-601f-46c7-bc1f-a844fccfee5e.jpg",
       "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Sportbladet-23-https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss",
-      "title": "Allsvenskan inifrån: Här är Bergvalls nya drömlön",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss",
-      "summary": "Heta sillynyheter ✓ Blåvitts målvaktsplan",
-      "publishedAt": "2026-09-23T07:29:55.000Z",
-      "publisher": "Sportbladet",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/5b0fc26c-a5a3-3c89-ab78-4f987983be47?format=auto&w=1000&s=904b5cd2561573e1deb36525d4d170c3c8eb8665",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Sportbladet-33-https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss",
-      "title": "Fotbollsklubben köper en miljon tegelstenar",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss",
-      "summary": "Köpet inför nybygget",
-      "publishedAt": "2026-09-21T17:07:03.000Z",
-      "publisher": "Sportbladet",
-      "category": "club",
-      "imageUrl": "https://akamai.vgc.no/v2/images/01009479-12fb-3599-927e-506e430158c9?format=auto&w=1000&s=4562f14ff70fa6c407c560e5e9ec099a1ab75001",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Expressen-9-https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
-      "title": "Viktor Andersson köps loss av Blåvitt",
-      "url": "https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
-      "summary": "IFK Värnamo-lånet Viktor Andersson, 22, har imponerat i allsvenskan. Nu utnyttjar Blåvitt optionen och köper loss målvakten. – Jag är helt otroligt glad, säger han till Blåvitt+.",
-      "publishedAt": "2026-09-24T11:32:05.000Z",
-      "publisher": "Expressen",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "SVT Sport-13-https://www.svt.se/sport/fotboll/alexander-isak-om-lagkamratens-ord-tyckte-mer-synd-om-dem",
-      "title": "Alexander Isak om lagkamratens ord: ”Tyckte mer synd om dem”",
-      "url": "https://www.svt.se/sport/fotboll/alexander-isak-om-lagkamratens-ord-tyckte-mer-synd-om-dem",
-      "summary": "Andy Robertson tyckte synd om Alexander Isak när han kom till Liverpool. Klubben var i sorg – och det gick ut över de nya spelarna, menar veteranen. – Jag tycker mer synd om de som var där och behövde gå igenom det som de behövde gå igenom, svarar Isak.",
-      "publishedAt": "2026-09-24T13:20:33.000Z",
-      "publisher": "SVT Sport",
-      "category": "club",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.svt.se/sport/fotboll/alexander-isak-om-lagkamratens-ord-tyckte-mer-synd-om-dem",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Allsvenskan-6-https://allsvenskan.se/nyheter/sa-spelas-omgang-24-30-av-allsvenskan/",
-      "title": "Så spelas omgång 24-30 av Allsvenskan",
-      "url": "https://allsvenskan.se/nyheter/sa-spelas-omgang-24-30-av-allsvenskan/",
-      "summary": "Hela schemat här!",
-      "publishedAt": "2026-09-01T08:03:14.000Z",
-      "publisher": "Allsvenskan",
-      "category": "men",
-      "imageUrl": "https://allsvenskan.se/wp-content/uploads/2026/09/BB260413MT028-1024x683.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://allsvenskan.se/nyheter/sa-spelas-omgang-24-30-av-allsvenskan/",
+      "dedupeKey": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
       "sourceRole": "primary"
     }
   ],
   "newsEvents": [
     {
-      "id": "event-SVT Sport-13-https://www.svt.se/sport/fotboll/alexander-isak-om-lagkamratens-ord-tyckte-mer-synd-om-dem",
-      "title": "Alexander Isak om lagkamratens ord: ”Tyckte mer synd om dem”",
-      "summary": "Andy Robertson tyckte synd om Alexander Isak när han kom till Liverpool. Klubben var i sorg – och det gick ut över de nya spelarna, menar veteranen. – Jag tycker mer synd om de som var där och behövde gå igenom det som de behövde gå igenom, svarar Isak.",
-      "publishedAt": "2026-09-24T13:20:33.000Z",
-      "latestPublishedAt": "2026-09-24T13:20:33.000Z",
-      "category": "club",
+      "id": "event-BK Häcken-0-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
+      "title": "Tuff Champions League-premiär mot Inter",
+      "summary": "Bortamötet på Stadio Brianteo slutar i en uddamålsförlust.",
+      "publishedAt": "2026-09-22T20:15:00.000Z",
+      "latestPublishedAt": "2026-09-22T20:15:00.000Z",
+      "category": "unknown",
       "sources": [
         {
-          "publisher": "SVT Sport",
-          "url": "https://www.svt.se/sport/fotboll/alexander-isak-om-lagkamratens-ord-tyckte-mer-synd-om-dem",
-          "publishedAt": "2026-09-24T13:20:33.000Z",
-          "role": "secondary",
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
+          "publishedAt": "2026-09-22T20:15:00.000Z",
+          "role": "primary",
           "discoveredVia": "rss"
         }
       ],
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Expressen-9-https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
-      "title": "Viktor Andersson köps loss av Blåvitt",
-      "summary": "IFK Värnamo-lånet Viktor Andersson, 22, har imponerat i allsvenskan. Nu utnyttjar Blåvitt optionen och köper loss målvakten. – Jag är helt otroligt glad, säger han till Blåvitt+.",
-      "publishedAt": "2026-09-24T11:32:05.000Z",
-      "latestPublishedAt": "2026-09-24T11:32:05.000Z",
-      "category": "men",
+      "id": "event-BK Häcken-1-https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
+      "title": "Matchguide: Champions League-premiär borta mot FC Inter",
+      "summary": "BK Häcken ställs mot italienskt motstånd i första matchen av UEFA Women's Champions League.",
+      "publishedAt": "2026-09-22T07:56:00.000Z",
+      "latestPublishedAt": "2026-09-22T07:56:00.000Z",
+      "category": "unknown",
       "sources": [
         {
-          "publisher": "Expressen",
-          "url": "https://www.expressen.se/sport/fotboll/allsvenskan/viktor-andersson-kops-loss-av-blavitt/",
-          "publishedAt": "2026-09-24T11:32:05.000Z",
-          "role": "secondary",
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
+          "publishedAt": "2026-09-22T07:56:00.000Z",
+          "role": "primary",
           "discoveredVia": "rss"
         }
       ],
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Sportbladet-9-https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss",
-      "title": "AVSLÖJAR: Oenighet om transferöppenheten: ”Oron är överdriven”",
-      "summary": "Klubbarna inte överens i känsliga frågan",
-      "publishedAt": "2026-09-24T10:28:06.000Z",
-      "latestPublishedAt": "2026-09-24T10:28:06.000Z",
-      "category": "club",
+      "id": "event-BK Häcken-2-https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
+      "title": "Europaspecial – lär känna Laney Egbuka",
+      "summary": "Inför varje Champions League-match publicerar vi en längre intervju med en spelare i laget som ni får möjlighet att lära känna bättre. Först ut är Laney Egbuka.",
+      "publishedAt": "2026-09-20T22:50:00.000Z",
+      "latestPublishedAt": "2026-09-20T22:50:00.000Z",
+      "category": "women",
       "sources": [
         {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OkKezq/avslojar-klubbarna-inte-overens-om-transferoppenheten-finns-en-oro?utm_medium=rss",
-          "publishedAt": "2026-09-24T10:28:06.000Z",
-          "role": "secondary",
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
+          "publishedAt": "2026-09-20T22:50:00.000Z",
+          "role": "primary",
           "discoveredVia": "rss"
         }
       ],
       "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Sportbladet-15-https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss",
-      "title": "Sparkas efter orden till kvinnliga domaren",
-      "summary": "”Det är det bästa för klubben”",
-      "publishedAt": "2026-09-23T18:46:13.000Z",
-      "latestPublishedAt": "2026-09-23T18:46:13.000Z",
-      "category": "club",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/L4zmq4/mls-columbus-crew-sparkar-federico-higuain?utm_medium=rss",
-          "publishedAt": "2026-09-23T18:46:13.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Sportbladet-18-https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss",
-      "title": "Sparkades – fick 354 (!) miljoner kr",
-      "summary": "Enorm utgift för engelska krisklubben",
-      "publishedAt": "2026-09-23T16:19:09.000Z",
-      "latestPublishedAt": "2026-09-23T16:19:09.000Z",
-      "category": "club",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/vroxzw/daniel-levy-fick-354-miljoner-kronor-av-tottenham?utm_medium=rss",
-          "publishedAt": "2026-09-23T16:19:09.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Sportbladet-23-https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss",
-      "title": "Allsvenskan inifrån: Här är Bergvalls nya drömlön",
-      "summary": "Heta sillynyheter ✓ Blåvitts målvaktsplan",
-      "publishedAt": "2026-09-23T07:29:55.000Z",
-      "latestPublishedAt": "2026-09-23T07:29:55.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Gx7r64/allsvenskan-inifran-har-ar-bergvalls-nya-dromlon?utm_medium=rss",
-          "publishedAt": "2026-09-23T07:29:55.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Sportbladet-33-https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss",
-      "title": "Fotbollsklubben köper en miljon tegelstenar",
-      "summary": "Fotbollsklubben köper en miljon tegelstenar",
-      "publishedAt": "2026-09-21T17:07:03.000Z",
-      "latestPublishedAt": "2026-09-21T17:07:03.000Z",
-      "category": "club",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/d4ARKA/birmingham-koper-in-en-miljon-tegelstenar?utm_medium=rss",
-          "publishedAt": "2026-09-21T17:07:03.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "excerpt"
     },
     {
       "id": "event-BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -827,6 +808,24 @@
       "summaryMethod": "rss-description"
     },
     {
+      "id": "event-BK Häcken-4-https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
+      "title": "Komfortabel trepoängare och utökad serieledning",
+      "summary": "BK Häcken vann med 3–0 över Eskilstuna United. Läs kommentarer efter vinsten.",
+      "publishedAt": "2026-09-19T15:44:33.000Z",
+      "latestPublishedAt": "2026-09-19T15:44:33.000Z",
+      "category": "women",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
+          "publishedAt": "2026-09-19T15:44:33.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
       "id": "event-BK Häcken-5-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
@@ -838,6 +837,96 @@
           "publisher": "BK Häcken",
           "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
           "publishedAt": "2026-09-19T13:50:05.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-6-https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
+      "title": "Truppen mot Eskilstuna United – trio tillbaka",
+      "summary": "Johanna Fossdalsá Sörensen, Tuva Ölvestad och Joy Omewa med i truppen mot Eskilstuna United.",
+      "publishedAt": "2026-09-18T13:51:33.000Z",
+      "latestPublishedAt": "2026-09-18T13:51:33.000Z",
+      "category": "women",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
+          "publishedAt": "2026-09-18T13:51:33.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-7-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
+      "title": "Gåfotboll med BK Häcken – för hälsan och glädjens skull",
+      "summary": "Möt deltagarna på Slätta Damm och ta del av gemenskapen, glädjen och rörelsen som står i centrum.",
+      "publishedAt": "2026-09-18T09:48:00.000Z",
+      "latestPublishedAt": "2026-09-18T09:48:00.000Z",
+      "category": "women",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
+          "publishedAt": "2026-09-18T09:48:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-8-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
+      "title": "Biljettinformation inför bortamatcherna i Champions League",
+      "summary": "Den 22 september inleds ligafasen i Champions League.",
+      "publishedAt": "2026-09-17T10:15:00.000Z",
+      "latestPublishedAt": "2026-09-17T10:15:00.000Z",
+      "category": "unknown",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
+          "publishedAt": "2026-09-17T10:15:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-10-https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
+      "title": "Besöksinformation inför söndagsmatchen mot Vittsjö GIK",
+      "summary": "På med matchtröjan och heja fram BK Häcken till tre gulsvarta poäng!",
+      "publishedAt": "2026-09-12T15:20:00.000Z",
+      "latestPublishedAt": "2026-09-12T15:20:00.000Z",
+      "category": "women",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
+          "publishedAt": "2026-09-12T15:20:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-12-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
+      "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
+      "publishedAt": "2026-09-11T19:40:00.000Z",
+      "latestPublishedAt": "2026-09-11T19:40:00.000Z",
+      "category": "unknown",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+          "publishedAt": "2026-09-11T19:40:00.000Z",
           "role": "primary",
           "discoveredVia": "rss"
         }
@@ -917,28 +1006,64 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Allsvenskan-6-https://allsvenskan.se/nyheter/sa-spelas-omgang-24-30-av-allsvenskan/",
-      "title": "Så spelas omgång 24-30 av Allsvenskan",
-      "summary": "Så spelas omgång 24-30 av Allsvenskan",
-      "publishedAt": "2026-09-01T08:03:14.000Z",
-      "latestPublishedAt": "2026-09-01T08:03:14.000Z",
-      "category": "men",
+      "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
+      "title": "BK Häcken är vidare i Svenska Cupen efter kvällens derbyvinst",
+      "summary": "BK Häcken är vidare i Svenska Cupen efter kvällens derbyvinst",
+      "publishedAt": "2026-09-09T19:59:35.000Z",
+      "latestPublishedAt": "2026-09-09T19:59:35.000Z",
+      "category": "unknown",
       "sources": [
         {
-          "publisher": "Allsvenskan",
-          "url": "https://allsvenskan.se/nyheter/sa-spelas-omgang-24-30-av-allsvenskan/",
-          "publishedAt": "2026-09-01T08:03:14.000Z",
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
+          "publishedAt": "2026-09-09T19:59:35.000Z",
           "role": "primary",
           "discoveredVia": "rss"
         }
       ],
       "summaryMethod": "excerpt"
+    },
+    {
+      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
+      "title": "Biljettsläpp till hemmamatcherna i Champions Leauge",
+      "summary": "Missa inte de magiska Europakvällarna på Hisingen.",
+      "publishedAt": "2026-09-09T10:00:00.000Z",
+      "latestPublishedAt": "2026-09-09T10:00:00.000Z",
+      "category": "unknown",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
+          "publishedAt": "2026-09-09T10:00:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
+      "title": "Derby och kval i Svenska Cupen – här är truppen mot IFK Göteborg",
+      "summary": "Onsdagen den 9 september, klockan 18.45, spelar BK Häcken den andra omgången i Svenska Cupen.",
+      "publishedAt": "2026-09-08T16:00:00.000Z",
+      "latestPublishedAt": "2026-09-08T16:00:00.000Z",
+      "category": "unknown",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
+          "publishedAt": "2026-09-08T16:00:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
     }
   ],
   "formerPlayers": [],
   "squadStats": [
     {
-      "playerId": 480798,
+      "playerId": "fogis:480798",
       "playerName": "Andreas Linde",
       "positionGroup": "goalkeepers",
       "matchesPlayed": 12,
@@ -950,7 +1075,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 540307,
+      "playerId": "fogis:540307",
       "playerName": "Etrit Berisha",
       "positionGroup": "goalkeepers",
       "matchesPlayed": 5,
@@ -962,7 +1087,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 872878,
+      "playerId": "fogis:872878",
       "playerName": "David Andersson",
       "positionGroup": "goalkeepers",
       "matchesPlayed": 6,
@@ -974,7 +1099,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1132533,
+      "playerId": "fogis:1132533",
       "playerName": "Kristan Marinkovic",
       "positionGroup": "goalkeepers",
       "matchesPlayed": 2,
@@ -986,7 +1111,7 @@
       "competition": "Ettan Södra, herr  2026"
     },
     {
-      "playerId": 478646,
+      "playerId": "fogis:478646",
       "playerName": "Adam Lundkvist",
       "positionGroup": "defenders",
       "matchesPlayed": 19,
@@ -998,7 +1123,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 826008,
+      "playerId": "fogis:826008",
       "playerName": "Ben Engdahl",
       "positionGroup": "defenders",
       "matchesPlayed": 0,
@@ -1010,7 +1135,7 @@
       "competition": ""
     },
     {
-      "playerId": 1126135,
+      "playerId": "fogis:1126135",
       "playerName": "Leo Väisänen",
       "positionGroup": "defenders",
       "matchesPlayed": 4,
@@ -1022,7 +1147,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1499101,
+      "playerId": "fogis:1499101",
       "playerName": "Brice Wembangomo",
       "positionGroup": "defenders",
       "matchesPlayed": 22,
@@ -1034,7 +1159,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1146319,
+      "playerId": "fogis:1146319",
       "playerName": "Filip Öhman",
       "positionGroup": "defenders",
       "matchesPlayed": 1,
@@ -1046,7 +1171,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 919310,
+      "playerId": "fogis:919310",
       "playerName": "Olle Samuelsson",
       "positionGroup": "defenders",
       "matchesPlayed": 12,
@@ -1058,7 +1183,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1056766,
+      "playerId": "fogis:1056766",
       "playerName": "Harry Hilvenius",
       "positionGroup": "defenders",
       "matchesPlayed": 16,
@@ -1070,7 +1195,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 453737,
+      "playerId": "fogis:453737",
       "playerName": "Filip Helander",
       "positionGroup": "defenders",
       "matchesPlayed": 21,
@@ -1082,7 +1207,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1251827,
+      "playerId": "fogis:1251827",
       "playerName": "Mikkel Rygaard Jensen",
       "positionGroup": "midfields",
       "matchesPlayed": 21,
@@ -1094,7 +1219,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1009627,
+      "playerId": "fogis:1009627",
       "playerName": "Pontus Dahbo",
       "positionGroup": "midfields",
       "matchesPlayed": 9,
@@ -1106,7 +1231,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 705320,
+      "playerId": "fogis:705320",
       "playerName": "Julius Lindberg",
       "positionGroup": "midfields",
       "matchesPlayed": 20,
@@ -1118,7 +1243,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1549805,
+      "playerId": "fogis:1549805",
       "playerName": "Sanders Ngabo",
       "positionGroup": "midfields",
       "matchesPlayed": 10,
@@ -1130,7 +1255,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1564471,
+      "playerId": "fogis:1564471",
       "playerName": "Abdoulaye Doumbia",
       "positionGroup": "midfields",
       "matchesPlayed": 20,
@@ -1142,7 +1267,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 750969,
+      "playerId": "fogis:750969",
       "playerName": "David Seger",
       "positionGroup": "midfields",
       "matchesPlayed": 11,
@@ -1154,7 +1279,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1034709,
+      "playerId": "fogis:1034709",
       "playerName": "Nikola Mitrovic",
       "positionGroup": "midfields",
       "matchesPlayed": 3,
@@ -1166,7 +1291,7 @@
       "competition": "Div  Västra Götaland, herr  2026"
     },
     {
-      "playerId": 1550027,
+      "playerId": "fogis:1550027",
       "playerName": "Sabri Dahari Kondo",
       "positionGroup": "midfields",
       "matchesPlayed": 1,
@@ -1178,7 +1303,7 @@
       "competition": "Svenska Cupen 2026"
     },
     {
-      "playerId": 1678145,
+      "playerId": "fogis:1678145",
       "playerName": "Simen Hestnes",
       "positionGroup": "midfields",
       "matchesPlayed": 8,
@@ -1190,7 +1315,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 801089,
+      "playerId": "fogis:801089",
       "playerName": "Harun Ibrahim",
       "positionGroup": "midfields",
       "matchesPlayed": 6,
@@ -1202,7 +1327,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1034065,
+      "playerId": "fogis:1034065",
       "playerName": "Wilson Lindberg Uhrström",
       "positionGroup": "midfields",
       "matchesPlayed": 4,
@@ -1214,7 +1339,7 @@
       "competition": "Allsvenskan 2026"
     },
     {
-      "playerId": 758301,
+      "playerId": "fogis:758301",
       "playerName": "Adrian Svanbäck",
       "positionGroup": "forwards",
       "matchesPlayed": 22,
@@ -1226,7 +1351,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1552257,
+      "playerId": "fogis:1552257",
       "playerName": "Christ Ivan Wawa",
       "positionGroup": "forwards",
       "matchesPlayed": 2,
@@ -1238,7 +1363,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 770195,
+      "playerId": "fogis:770195",
       "playerName": "Gustav Lindgren",
       "positionGroup": "forwards",
       "matchesPlayed": 22,
@@ -1250,7 +1375,7 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": 1040287,
+      "playerId": "fogis:1040287",
       "playerName": "Bamir Fierza Sadiku",
       "positionGroup": "forwards",
       "matchesPlayed": 8,

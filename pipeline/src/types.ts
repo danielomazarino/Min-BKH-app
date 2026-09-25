@@ -43,6 +43,26 @@ export interface CurrentDataUnavailable {
   checkedAt: string;
 }
 
+/** Season-level disciplinary status for one player. */
+export type DisciplineStatus =
+  | "none"
+  | "at_risk"
+  | "suspended_next"
+  | "served"
+  | "red_suspended"
+  | "unknown";
+
+export interface PlayerDiscipline {
+  playerId: string;
+  playerName: string;
+  warningCount: number;
+  redCards: number;
+  status: DisciplineStatus;
+  relevantWarnings: Array<{ matchId: number; date: string }>;
+  servedAt?: string;
+  incomplete: boolean;
+}
+
 export interface TeamRef {
   id?: number;
   name: string;
@@ -62,7 +82,8 @@ export interface MatchRef {
 }
 
 export interface PlayerMatchStat {
-  playerId: number;
+  /** Canonical player id (fogis:N or name:NORMALIZED). */
+  playerId: string;
   playerName: string;
   minutes: number | null;
   goals: number;
@@ -202,7 +223,8 @@ export interface FormerPlayersData extends Freshness {
 
 /** One player's current-season statistics (from SportoMedia squad query). */
 export interface SeasonPlayerStat {
-  playerId: number;
+  /** Canonical player id (fogis:N or name:NORMALIZED). */
+  playerId: string;
   playerName: string;
   positionGroup: "goalkeepers" | "defenders" | "midfields" | "forwards";
   matchesPlayed: number;
@@ -232,6 +254,10 @@ export interface AppData {
   formerPlayers: FormerPlayer[];
   /** Current-season squad statistics (SportoMedia). */
   squadStats?: SeasonPlayerStat[];
+  /** Season-level disciplinary ledger (chronological, rule-applied). */
+  discipline?: PlayerDiscipline[];
+  /** Number of finished matches whose card events were inspected. */
+  cardMatchesInspected?: number;
   /** Set when current data could not be retrieved — UI must show this. */
   currentDataUnavailable?: CurrentDataUnavailable;
 }

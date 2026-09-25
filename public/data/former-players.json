@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T03:43:24.617Z",
+  "generatedAt": "2026-09-25T10:23:13.369Z",
   "sourceStatus": {
     "rss:BK Häcken": "ok",
     "rss:Sportbladet": "ok",
@@ -35,30 +35,6 @@
       }
     },
     {
-      "id": "mikkel-rygaard",
-      "name": "Mikkel Rygaard",
-      "aliases": [
-        "rygaard"
-      ],
-      "currentClub": null,
-      "currentLeague": null,
-      "currentCountry": null,
-      "clubVerified": false,
-      "stats": null,
-      "contract": null,
-      "latestEvent": {
-        "playerId": "mikkel-rygaard",
-        "playerName": "Mikkel Rygaard",
-        "topic": "other",
-        "claim": "Rygaard är född i Nykøbing Falster och började spela fotboll i Nykøbing Falster ... I oktober 2024 förlängde Rygaard sitt kontrakt med två år.",
-        "sourceName": "sv.wikipedia.org",
-        "sourceUrl": "https://sv.wikipedia.org/wiki/Mikkel_Rygaard",
-        "retrievedAt": "2026-09-25T03:43:22.925Z",
-        "discoveredVia": "firecrawl",
-        "verificationStatus": "unverified"
-      }
-    },
-    {
       "id": "alexander-jeremejeff",
       "name": "Alexander Jeremejeff",
       "aliases": [
@@ -78,30 +54,6 @@
         "sourceName": "www.expressen.se",
         "sourceUrl": "https://www.expressen.se/sport/fotboll/allsvenskan/kravet-pa-jeremejeff-maste-tavla-om-platsen/",
         "retrievedAt": "2026-09-25T03:43:22.968Z",
-        "discoveredVia": "firecrawl",
-        "verificationStatus": "unverified"
-      }
-    },
-    {
-      "id": "julius-lindberg",
-      "name": "Julius Lindberg",
-      "aliases": [
-        "lindberg"
-      ],
-      "currentClub": null,
-      "currentLeague": null,
-      "currentCountry": null,
-      "clubVerified": false,
-      "stats": null,
-      "contract": null,
-      "latestEvent": {
-        "playerId": "julius-lindberg",
-        "playerName": "Julius Lindberg",
-        "topic": "other",
-        "claim": "BK Häcken och Julius Lindberg är överens om en kontraktsförlängning. Den 27-årige mittfältaren har skrivit på ett nytt fyraårsavtal med ...",
-        "sourceName": "bkhacken.se",
-        "sourceUrl": "https://bkhacken.se/nyhet/julius-lindberg-forlanger-med-bk-hacken",
-        "retrievedAt": "2026-09-25T03:43:23.015Z",
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }
@@ -270,30 +222,6 @@
         "sourceName": "sv.wikipedia.org",
         "sourceUrl": "https://sv.wikipedia.org/wiki/Oscar_Lewicki",
         "retrievedAt": "2026-09-25T03:43:23.361Z",
-        "discoveredVia": "firecrawl",
-        "verificationStatus": "unverified"
-      }
-    },
-    {
-      "id": "filip-helander",
-      "name": "Filip Helander",
-      "aliases": [
-        "helander"
-      ],
-      "currentClub": null,
-      "currentLeague": null,
-      "currentCountry": null,
-      "clubVerified": false,
-      "stats": null,
-      "contract": null,
-      "latestEvent": {
-        "playerId": "filip-helander",
-        "playerName": "Filip Helander",
-        "topic": "other",
-        "claim": "Filip Helander blir kvar på Hisingen. BK Häcken har gjort klart med cypriotiska Omonia Nicosia om en permanent övergång och kontraktet löper ö ...",
-        "sourceName": "bkhacken.se",
-        "sourceUrl": "https://bkhacken.se/nyhet/filip-helander-stannar-bk-hacken-har-kopt-loss-forsvarsklippan",
-        "retrievedAt": "2026-09-25T03:43:23.403Z",
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }

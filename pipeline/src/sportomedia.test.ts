@@ -11,7 +11,6 @@ import {
   assertMatchBelongsToHäcken,
   assertNotHammarby,
   gameTimeToMinute,
-  hashId,
   normalizeSmEvents,
   normalizeSmMatch,
   normalizeSmSquad,
@@ -207,13 +206,13 @@ describe("SportoMedia squad parsing", () => {
     expect(helander).toMatchObject({ goals: 0, matchesPlayed: 0, positionGroup: "defenders" });
   });
 
-  it("uses fogisId when present, deterministic hash when missing", () => {
+  it("uses canonical ids: fogisId when present, deterministic name key when missing", () => {
     const stats = normalizeSmSquad(squad as never);
     const berisha = stats.find((s) => s.playerName === "Etrit Berisha");
-    expect(berisha?.playerId).toBe(540307);
+    expect(berisha?.playerId).toBe("fogis:540307");
     const helander = stats.find((s) => s.playerName === "Filip Helander");
-    expect(helander?.playerId).toBe(hashId("Filip Helander"));
-    expect(hashId("Filip Helander")).toBe(hashId("Filip Helander"));
+    // Departed/no-stats players still get a deterministic canonical id.
+    expect(helander?.playerId).toBe("name:filip helander");
   });
 });
 

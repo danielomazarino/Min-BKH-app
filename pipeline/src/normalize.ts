@@ -5,6 +5,7 @@ import type {
   PlayerMatchStat,
 } from "./types";
 import { ALLSVENSKAN_LEAGUE_ID, BKH_TEAM_ID, type FixtureResponse } from "./apifootball";
+import { resolveCanonicalId } from "./playerIdentity";
 
 export function competitionFromLeague(leagueId: number, leagueName: string): Competition {
   if (leagueId === ALLSVENSKAN_LEAGUE_ID || /allsvenskan/i.test(leagueName)) return "allsvenskan";
@@ -87,7 +88,7 @@ export function normalizePlayerStats(rows: ApiPlayerStat[]): PlayerMatchStat[] {
     const s = row.statistics[0];
     if (!s) continue;
     out.push({
-      playerId: row.player.id,
+      playerId: resolveCanonicalId({ name: row.player.name }),
       playerName: row.player.name,
       minutes: s.games.minutes,
       goals: s.goals.total ?? 0,

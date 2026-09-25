@@ -255,3 +255,29 @@ table.stats td.num, table.stats th.num { text-align: right; }
   .bottom-nav { justify-content: center; }
   .bottom-nav a { flex: 0 0 120px; }
 }
+
+/* Player detail bottom sheet */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+}
+.sheet {
+  width: 100%;
+  max-height: 82vh;
+  overflow-y: auto;
+  background: var(--bkh-black);
+  border-radius: 16px 16px 0 0;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+}
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bkh-border);
+  margin: 0 auto 12px;
+}

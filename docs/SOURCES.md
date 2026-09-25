@@ -85,5 +85,13 @@ UI-visning:
 ## Uppdateringspolicy
 
 - Nattlig pipeline (03:30 UTC) hämtar alla RSS-källor (gratis, inga gränser i praktiken).
-- API-Football anropas restriktivt (~15–25 anrop/körning) för att hålla sig under 100/dag.
-- Firecrawl används sparsamt: endast för favoriserade tidigare spelare.
+- SportoMedia GraphQL anropas restriktivt (tabell + matcher + detaljer för färdigspelade matcher, ~300 ms mellanrum).
+- API-Football anropas restriktivt (~15–25 anrop/körning) för att hålla sig under 100/dag — och ENDAST för historiska säsonger (2022–2024). Aldrig för aktuell säsong.
+- Firecrawl Keyless används endast som upptäcktsverktyg för tidigare spelare — aldrig som källa. Status 2026-09-25: keyless-anrop utan API-nyckel får 429 (rate-limited), så klubb-/kontraktsdata för tidigare spelare är oftast tom med `clubVerified: false`. Artiklar som hittas visas alltid med artikelns egen källa, aldrig "Firecrawl".
+
+## Produktregler för data (2026-09-25)
+
+- Aktuell säsong = 2026 (SportoMedia). Historiska säsonger får ALDRIG tyst ersätta 2026-data; om 2026-data saknas visas explicit banner (`currentDataUnavailable`).
+- Varnings-/avstängningsstatus byggs ENDAST av verifierade kortdata per match (SportoMedia-händelser) — aggregerade "gula kort"-siffror räcker inte som bevis för avstängning.
+- Nyhetsrelevans kräver entitet: officiell Häcken-källa, explicit Häcken-nämnning eller känd person. Generiska ord ("klubb", "förening") räcker aldrig.
+- Spelaridentitet: canonical id (`fogis:N` när Fogis-id finns, annars `name:normaliserat-namn`). Registret för tidigare spelare exkluderar spelare som finns i aktuell trupp.

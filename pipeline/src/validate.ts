@@ -28,7 +28,7 @@ const MatchRef = z.object({
 });
 
 const PlayerWarning = z.object({
-  playerId: z.number(),
+  playerId: z.string(),
   playerName: z.string(),
   competition: z.string(),
   season: z.string(),
@@ -130,7 +130,7 @@ const AppData = z.object({
     playerStats: z
       .array(
         z.object({
-          playerId: z.number(),
+          playerId: z.string(),
           playerName: z.string(),
           minutes: z.number().nullable(),
           goals: z.number(),
@@ -162,7 +162,7 @@ const AppData = z.object({
   squadStats: z
     .array(
       z.object({
-        playerId: z.number(),
+        playerId: z.string(),
         playerName: z.string(),
         positionGroup: z.enum(["goalkeepers", "defenders", "midfields", "forwards"]),
         matchesPlayed: z.number(),
@@ -181,6 +181,21 @@ const AppData = z.object({
       checkedAt: z.string(),
     })
     .optional(),
+  discipline: z
+    .array(
+      z.object({
+        playerId: z.string(),
+        playerName: z.string(),
+        warningCount: z.number(),
+        redCards: z.number(),
+        status: z.enum(["none", "at_risk", "suspended_next", "served", "red_suspended", "unknown"]),
+        relevantWarnings: z.array(z.object({ matchId: z.number(), date: z.string() })),
+        servedAt: z.string().optional(),
+        incomplete: z.boolean(),
+      }),
+    )
+    .optional(),
+  cardMatchesInspected: z.number().optional(),
 });
 
 const FormerPlayersData = z.object({

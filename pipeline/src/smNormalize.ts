@@ -2,8 +2,9 @@
  * Normalizers for SportoMedia GraphQL data → app types.
  * All functions are pure and unit-testable.
  */
-import type { LeagueTableRow, MatchRef, PlayerMatchStat } from "./types";
+import type { LeagueTableRow, MatchRef, PlayerMatchStat, SeasonPlayerStat } from "./types";
 import { BKH_ABBRV, HAMMARBY_ABBRV, type SmMatch, type SmMatchEvent, type SmSquadPlayer, type SmStandingsRow } from "./sportomedia";
+import { resolveCanonicalId } from "./playerIdentity";
 
 /** Guard: Hammarby data must never be presented as BK Häcken. Throws on violation. */
 export function assertNotHammarby(abbrv: string, context: string): void {
@@ -153,7 +154,7 @@ export function normalizeSmSquadStats(players: SmSquadPlayer[]): PlayerMatchStat
   return players
     .filter((p) => p.currentSeasonStats)
     .map((p) => ({
-      playerId: p.fogisId ?? hashId(p.givenName + p.surName),
+      playerId: resolveCanonicalId({ fogisId: p.fogisId ?? null, name: `${p.givenName} ${p.surName}`.trim() }),
       playerName: `${p.givenName} ${p.surName}`.trim(),
       minutes: null, // per-season minutes not provided by currentSeasonStats
       goals: p.currentSeasonStats?.goals ?? 0,
@@ -171,19 +172,7 @@ export function hashId(name: string): number {
   return Math.abs(h);
 }
 
-/** Season stats shape for the app's player pages. */
-export interface SeasonPlayerStat {
-  playerId: number;
-  playerName: string;
-  positionGroup: "goalkeepers" | "defenders" | "midfields" | "forwards";
-  matchesPlayed: number;
-  matchesStarted: number;
-  goals: number;
-  assists: number;
-  yellowCards: number;
-  redCards: number;
-  competition: string | null;
-}
+/** Season stats shape comes from types.ts (canonical string playerId). */
 
 export function normalizeSmSquad(squad: { goalkeepers: SmSquadPlayer[]; defenders: SmSquadPlayer[]; midfields: SmSquadPlayer[]; forwards: SmSquadPlayer[] }): SeasonPlayerStat[] {
   const out: SeasonPlayerStat[] = [];
@@ -193,7 +182,7 @@ export function normalizeSmSquad(squad: { goalkeepers: SmSquadPlayer[]; defender
       const st = p.currentSeasonStats;
       const playerName = `${p.givenName} ${p.surName}`.trim();
       out.push({
-        playerId: p.fogisId ?? hashId(playerName),
+        playerId: resolveCanonicalId({ fogisId: p.fogisId ?? null, name: playerName }),
         playerName,
         positionGroup: g,
         matchesPlayed: st?.matchesPlayed ?? 0,
