@@ -129,7 +129,7 @@ export function classifyRelevance(
   // Women's/youth context always wins over men's relevance.
   const text = norm(`${title} ${summary}`);
   const womenContext =
-    /damallsvenskan|damlaget|damerna|damfotboll|kvinnor|obs dam|kvinnlig/.test(text) ||
+    /damallsvenskan|damlaget|damerna|damfotboll|kvinnor|obs dam|kvinnlig|women'?s champions league|women'?s super league/i.test(text) ||
     // Known women's-team players are strong women's evidence (e.g. Jennifer Falk).
     mentionsKnownPerson(title, summary, known.womenPlayers ?? []) !== null ||
     (known.womenContextTerms ?? []).some((t) => text.includes(norm(t)));

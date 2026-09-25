@@ -380,7 +380,11 @@ async function main() {
     currentPlayers: foot.squadStats.map((p) => p.playerName),
     formerPlayers: formerPlayers.players.map((p) => p.name),
     womenPlayers: KNOWN_WOMEN_PLAYERS,
-    womenContextTerms: ["damallsvenskan", "svenska cupen dam", "champions league dam", "europa cup dam"],
+    womenContextTerms: [
+      "damallsvenskan", "svenska cupen dam", "champions league dam", "europa cup dam",
+      // Damallsvenskan opponents — a Häcken article about these teams is women's coverage
+      "vittsjö gik", "eskilstuna united", "vittsjö", "bk häcken dam", "häcken dam",
+    ],
   };
   const relevantNews = news
     .filter((n) => {

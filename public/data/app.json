@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T12:25:28.270Z",
+    "generatedAt": "2026-09-25T12:31:32.333Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,7 +16,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T12:25:09.034Z",
+    "retrievedAt": "2026-09-25T12:31:14.839Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -881,19 +881,6 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-1-https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
-      "title": "Matchguide: Champions League-premiär borta mot FC Inter",
-      "url": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
-      "summary": "BK Häcken ställs mot italienskt motstånd i första matchen av UEFA Women's Champions League.",
-      "publishedAt": "2026-09-22T07:56:00.000Z",
-      "publisher": "BK Häcken",
-      "category": "unknown",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/aaba81ee-00a4-4eae-8a75-f69a3c3483ae.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
-      "sourceRole": "primary"
-    },
-    {
       "id": "BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -904,19 +891,6 @@
       "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/acd01c89-2e09-4a89-ad64-9842a8244abf.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
-      "sourceRole": "primary"
-    },
-    {
-      "id": "BK Häcken-4-https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
-      "title": "Komfortabel trepoängare och utökad serieledning",
-      "url": "https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
-      "summary": "BK Häcken vann med 3–0 över Eskilstuna United. Läs kommentarer efter vinsten.",
-      "publishedAt": "2026-09-19T15:44:33.000Z",
-      "publisher": "BK Häcken",
-      "category": "women",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/6805826c-e0f7-4842-8cda-2fdb96d71bbf.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
       "sourceRole": "primary"
     },
     {
@@ -956,19 +930,6 @@
       "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/7d1d0001-b357-43dd-b963-7bb1238fe3cb.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
-      "sourceRole": "primary"
-    },
-    {
-      "id": "BK Häcken-10-https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
-      "title": "Besöksinformation inför söndagsmatchen mot Vittsjö GIK",
-      "url": "https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
-      "summary": "På med matchtröjan och heja fram BK Häcken till tre gulsvarta poäng!",
-      "publishedAt": "2026-09-12T15:20:00.000Z",
-      "publisher": "BK Häcken",
-      "category": "women",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/23eca29b-e496-4790-a09a-94e502e0a175.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
       "sourceRole": "primary"
     },
     {
@@ -1095,24 +1056,6 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-1-https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
-      "title": "Matchguide: Champions League-premiär borta mot FC Inter",
-      "summary": "BK Häcken ställs mot italienskt motstånd i första matchen av UEFA Women's Champions League.",
-      "publishedAt": "2026-09-22T07:56:00.000Z",
-      "latestPublishedAt": "2026-09-22T07:56:00.000Z",
-      "category": "unknown",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
-          "publishedAt": "2026-09-22T07:56:00.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
       "id": "event-BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -1124,24 +1067,6 @@
           "publisher": "BK Häcken",
           "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
           "publishedAt": "2026-09-20T16:00:00.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-BK Häcken-4-https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
-      "title": "Komfortabel trepoängare och utökad serieledning",
-      "summary": "BK Häcken vann med 3–0 över Eskilstuna United. Läs kommentarer efter vinsten.",
-      "publishedAt": "2026-09-19T15:44:33.000Z",
-      "latestPublishedAt": "2026-09-19T15:44:33.000Z",
-      "category": "women",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/komfortabel-trepoangare-och-utokad-serieledning",
-          "publishedAt": "2026-09-19T15:44:33.000Z",
           "role": "primary",
           "discoveredVia": "rss"
         }
@@ -1196,24 +1121,6 @@
           "publisher": "BK Häcken",
           "url": "https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
           "publishedAt": "2026-09-17T10:15:00.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-BK Häcken-10-https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
-      "title": "Besöksinformation inför söndagsmatchen mot Vittsjö GIK",
-      "summary": "På med matchtröjan och heja fram BK Häcken till tre gulsvarta poäng!",
-      "publishedAt": "2026-09-12T15:20:00.000Z",
-      "latestPublishedAt": "2026-09-12T15:20:00.000Z",
-      "category": "women",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/besoksinformation-infor-sondagsmatch-mot-vittsjo-gik",
-          "publishedAt": "2026-09-12T15:20:00.000Z",
           "role": "primary",
           "discoveredVia": "rss"
         }
