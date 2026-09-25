@@ -61,11 +61,19 @@ const SOURCES: SourceInfo[] = [
     verified: "2026-09-25",
   },
   {
+    name: "SportoMedia (allsvenskan.se)",
+    url: "https://allsvenskan.se/",
+    type: "OFFICIELL" as const,
+    role: "Primär källa för aktuell matchdata",
+    provides: "Spelschema, resultat, tabell, händelser, spelarstatistik — säsong 2026",
+    verified: "2026-09-25",
+  },
+  {
     name: "API-Football",
     url: "https://www.api-football.com/",
     type: "STATISTIK",
-    role: "Strukturerad data (primär för matcher)",
-    provides: "Spelschema, resultat, tabeller, spelarstatistik",
+    role: "Historisk data (säsonger 2022–2024)",
+    provides: "Historiska resultat och statistik — aldrig aktuell säsong",
     verified: "2026-09-25",
   },
   {
@@ -87,8 +95,8 @@ export default function Settings({ state }: { state: AppDataState }) {
   const data = state.status === "ready" ? state.data : null;
   const generatedAt = data?.freshness.generatedAt;
   const stale = generatedAt ? (Date.now() - new Date(generatedAt).getTime()) / 3600000 > 36 : false;
-  const apiConfigured = data ? data.freshness.sourceStatus["apiFootball"] !== "skipped" : false;
-  const apiOk = data ? data.freshness.sourceStatus["apiFootball"] === "ok" : false;
+  const unavailable = data?.currentDataUnavailable;
+  const footballSource = data?.footballSource;
 
   return (
     <div>
@@ -119,13 +127,39 @@ export default function Settings({ state }: { state: AppDataState }) {
         <h2 id="diag-h">Datastatus</h2>
         <div className="card" data-testid="diagnostics">
           <div className="source-row">
-            <span className="name">API-Football (matcher &amp; statistik)</span>
+            <span className="name">SportoMedia (aktuell matchdata)</span>
+            <span className="meta" data-testid="sm-status">
+              {data?.freshness.sourceStatus["sportomedia"] === "ok"
+                ? `Fungerar — säsong ${footballSource?.season ?? "2026"} (Allsvenskan).`
+                : data?.freshness.sourceStatus["sportomedia"] === "failed"
+                  ? "Hämtningen misslyckades."
+                  : "Ej använd senaste körningen."}
+            </span>
+          </div>
+          {unavailable && (
+            <div className="source-row" data-testid="current-unavailable">
+              <span className="name">Aktuell matchdata</span>
+              <span className="meta">Ej tillgänglig: {unavailable.reason}</span>
+            </div>
+          )}
+          {footballSource && (
+            <div className="source-row">
+              <span className="name">Datakälla för matcher</span>
+              <span className="meta">
+                {footballSource.provider} via {footballSource.publicSite} · säsong {footballSource.season} ·
+                {" "}
+                {footballSource.dataStatus === "current"
+                  ? "aktuell säsong"
+                  : footballSource.dataStatus === "historical"
+                    ? "historisk säsong"
+                    : "ej tillgänglig"}
+              </span>
+            </div>
+          )}
+          <div className="source-row">
+            <span className="name">API-Football (historisk)</span>
             <span className="meta">
-              {!apiConfigured
-                ? "Ej konfigurerad — nyckel saknas. Matcher visas när nyckeln är satt."
-                : apiOk
-                  ? "Konfigurerad och fungerar."
-                  : "Konfigurerad men senaste hämtningen misslyckades."}
+              Historisk källa för säsonger 2022–2024. Används inte för aktuell data.
             </span>
           </div>
           <div className="source-row">

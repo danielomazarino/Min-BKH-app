@@ -12,10 +12,29 @@ Senaste fullständiga källgranskning: **2026-09-25**.
 | Expressen Fotboll | `https://feeds.expressen.se/sport/fotboll/` | NYHET | **Sekundär** | Svensk fotbollsnyhet | Ingen | Gratis | Ej publikt angivet | 2026-09-25 | Blandar in internationella nyheter | Citerar ofta Sportbladet | `role: secondary` |
 | SVT Sport | `https://www.svt.se/sport/rss.xml` | NYHET | **Sekundär** | Allmän sporthäntelse | Ingen | Gratis | Ej publikt angivet | 2026-09-25 | Bredd, lite Allsvenskan-djup | — | `role: secondary` |
 | Bollsvenskan | `https://www.bollsvenskan.se/feed/` | NYHET | **Sekundär** (artikelnivå varierar) | Allsvenskan-fokus, ibland egen rapportering | Ingen | Gratis | Ej publikt angivet | 2026-09-25 | WordPress-flöde med `content:encoded`; beskrivningar innehåller "The post … appeared first on" (ingen sammanfattning) | Egen rapportering kan vara primär på artikelnivå | `role: secondary` — per-artikel attribuering kan höja till primär när bevis finns |
-| API-Football | `https://v3.football.api-sports.io` | STATISTIK | **Primär** för strukturerad matchdata | Spelschema, resultat, tabell, spelarstatistik, händelser | `API_FOOTBALL_KEY` (endast GitHub Actions Secret) | Gratis (100 anrop/dag) | 10/min | 2026-09-25 | Free-plan begränsar historik; nyckel krävs | — | provider, season, competition, retrievedAt |
+| **SportoMedia GraphQL** | `https://gql.sportomedia.se/graphql` | OFFICIELL | **Primär för AKTUELL matchdata** — datatjänsten bakom allsvenskan.se | Spelschema, resultat, tabell, händelser (mål/assist/kort/byten), startelvor, spelarstatistik — säsong 2026 | Ingen | Gratis | Ej publikt angivet; 6 snabba anrop OK (2026-09-25) | 2026-09-25 | Ingen publicerad API-licens (status: oklar, klass B); låg frekvens krävs; lineups via rootfrågan `lineups()`; gameTime i sekunder | Samma underlag som allsvenskan.se visar — ingen dubblett med RSS | provider, publicSite, provenance, retrievedAt, season, dataStatus, queryVersion |
+| API-Football | `https://v3.football.api-sports.io` | STATISTIK | **HISTORISK** — endast säsonger 2022–2024 | Historiska resultat, tabeller, statistik | `API_FOOTBALL_KEY` (endast GitHub Actions Secret) | Gratis (100 anrop/dag) | 10/min | 2026-09-25 | Free-plan låser säsong 2025–2026; **team-ID 367 = Häcken, 363 = Hammarby (FEL för Häcken)** | — | provider, season, competition, retrievedAt — alltid märkt historisk |
 | Firecrawl Keyless | `POST https://api.firecrawl.dev/v2/search`, `/v2/scrape` | UPPTÄCKT | **Upptäckts-/inhämtningsverktyg — aldrig källa** | Hittar artiklar (t.ex. om tidigare spelare), kan hämta artikeltext för sammanfattning | Ingen nyckel (Keyless) | Gratis ~1 000 credits/mån; search: 2 credits/10 resultat; scrape: 1 credit/sida | Ej publikt angivet | 2026-09-25 | Credits-begränsad; målartiklar kan blockera | Resultat kan dubbletteras med RSS | `discoveredVia: firecrawl`; artikeln är alltid källan |
 
 ### Provenienskedja
+
+**Aktuell fotbollsdata (säsong 2026):**
+
+```
+SvFF/Fogis (officiellt tävlingsunderlag)
+        ↓
+SportoMedia (datatjänst)
+        ↓
+allsvenskan.se (officiell tävlingswebbplats — använder samma GraphQL-tjänst)
+        ↓
+GitHub Actions (nattlig hämtning, 3 anrop)
+        ↓
+public/data/app.json (statisk, med proveniens-metadata)
+        ↓
+GitHub Pages PWA
+```
+
+**Nyheter:**
 
 ```
 UPPTÄCKTSMETOD (RSS / Firecrawl / API)

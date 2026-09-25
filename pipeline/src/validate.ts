@@ -82,11 +82,46 @@ const NewsEvent = z.object({
   summaryMethod: z.enum(["rss-description", "extracted", "excerpt"]),
 });
 
+const MatchEvents = z.object({
+  goals: z.array(
+    z.object({
+      minute: z.string().nullable(),
+      playerName: z.string(),
+      teamName: z.string().nullable(),
+      assistPlayerName: z.string().nullable(),
+      forHäcken: z.boolean(),
+    }),
+  ),
+  yellowCards: z.array(z.object({ minute: z.string().nullable(), playerName: z.string(), teamName: z.string().nullable() })),
+  redCards: z.array(z.object({ minute: z.string().nullable(), playerName: z.string(), teamName: z.string().nullable() })),
+  substitutions: z.array(
+    z.object({
+      minute: z.string().nullable(),
+      inPlayer: z.string().nullable(),
+      outPlayer: z.string().nullable(),
+      teamName: z.string().nullable(),
+    }),
+  ),
+});
+
+const FootballSourceMeta = z.object({
+  provider: z.string(),
+  publicSite: z.string(),
+  provenance: z.string(),
+  sourceUrl: z.string(),
+  retrievedAt: z.string(),
+  season: z.string(),
+  competition: z.string(),
+  dataStatus: z.enum(["current", "historical", "unavailable"]),
+  queryVersion: z.string(),
+});
+
 const AppData = z.object({
   freshness: z.object({
     generatedAt: z.string(),
     sourceStatus: z.record(z.string()),
   }),
+  footballSource: FootballSourceMeta.optional(),
   nextMatch: MatchRef.nullable(),
   lastResult: MatchRef.nullable(),
   upcoming: z.array(MatchRef),
@@ -106,6 +141,7 @@ const AppData = z.object({
         }),
       )
       .optional(),
+    events: MatchEvents.optional(),
   }).nullable(),
   table: z.array(
     z.object({
@@ -123,6 +159,28 @@ const AppData = z.object({
   news: z.array(NewsItem),
   newsEvents: z.array(NewsEvent),
   formerPlayers: z.array(z.unknown()),
+  squadStats: z
+    .array(
+      z.object({
+        playerId: z.number(),
+        playerName: z.string(),
+        positionGroup: z.enum(["goalkeepers", "defenders", "midfields", "forwards"]),
+        matchesPlayed: z.number(),
+        matchesStarted: z.number(),
+        goals: z.number(),
+        assists: z.number(),
+        yellowCards: z.number(),
+        redCards: z.number(),
+        competition: z.string().nullable(),
+      }),
+    )
+    .optional(),
+  currentDataUnavailable: z
+    .object({
+      reason: z.string(),
+      checkedAt: z.string(),
+    })
+    .optional(),
 });
 
 const FormerPlayersData = z.object({

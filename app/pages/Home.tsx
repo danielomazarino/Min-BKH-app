@@ -18,6 +18,15 @@ export default function Home({ state }: { state: AppDataState }) {
     <div>
       <h1>Hem</h1>
 
+      {/* 0. Current-data availability banner (never silently substitute history) */}
+      {data.currentDataUnavailable && (
+        <div className="card empty" role="status" data-testid="current-data-unavailable">
+          <strong>Aktuell matchdata ej tillgänglig.</strong>
+          <p className="meta">{data.currentDataUnavailable.reason}</p>
+          <p className="meta">Senast kontrollerat: {new Intl.DateTimeFormat("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(data.currentDataUnavailable.checkedAt))}</p>
+        </div>
+      )}
+
       {/* 1. Next match */}
       <section aria-labelledby="next-match-h">
         <h2 id="next-match-h">Nästa match</h2>

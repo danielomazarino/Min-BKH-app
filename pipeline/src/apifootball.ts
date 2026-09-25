@@ -1,17 +1,26 @@
 /**
- * API-Football client (Free tier: 100 req/day, 10 req/min).
- * The key exists ONLY as an environment variable in GitHub Actions.
+ * API-Football client — HISTORICAL DATA ONLY.
+ *
+ * VERIFIED 2026-09-25 (see docs/DATA-SOURCE-INVESTIGATION-2026.md):
+ * - Free plan seasons are limited to 2022–2024. Season 2026 is NOT available.
+ * - BK Häcken's API-Football team ID is 367.
+ * - Team ID 363 is HAMMARBY FF and must NEVER be used for BK Häcken.
+ *   (Evidence: media.api-sports.io/football/teams/363.png renders Hammarby's
+ *   crest; 367.png renders Häcken's; team=363 fixtures match Hammarby's 2024
+ *   fixture list exactly.)
+ *
+ * Current 2026 data comes from SportoMedia (see sportomedia.ts).
  */
 
 const BASE = "https://v3.football.api-sports.io";
 
-export const BKH_TEAM_ID = 363; // BK Häcken in API-Football (Allsvenskan)
+/** BK Häcken in API-Football (verified via crest + fixture cross-check). */
+export const BKH_TEAM_ID = 367;
+/** Hammarby FF in API-Football — must never be used for BK Häcken. */
+export const HAMMARBY_TEAM_ID = 363;
 export const ALLSVENSKAN_LEAGUE_ID = 113;
-export const SEASON = 2026;
-// Free plan limitation (verified 2026-09-25): "Free plans do not have access to
-// this season, try from 2022 to 2024." We try the current season first and fall
-// back to the newest allowed season so the free tier still yields real data.
-export const FREE_PLAN_SEASONS = [SEASON, 2024, 2023, 2022];
+/** API-Football Free plan ceiling: seasons 2022–2024 only. */
+export const API_FOOTBALL_MAX_SEASON = 2024;
 
 export interface ApiFootballStatus {
   ok: boolean;
@@ -79,6 +88,6 @@ export async function fetchPlayerStatistics(playerId: number, season: number, le
   return call("players", { id: playerId, season, league: leagueId });
 }
 
-export async function searchPlayer(name: string): Promise<{ data: Array<{ player: { id: number; name: string } }> | null; status: ApiFootballStatus }> {
-  return call("players", { search: name, season: SEASON });
+export async function searchPlayer(name: string, season: number): Promise<{ data: Array<{ player: { id: number; name: string } }> | null; status: ApiFootballStatus }> {
+  return call("players", { search: name, season });
 }

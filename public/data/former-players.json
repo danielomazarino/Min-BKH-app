@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T01:09:38.839Z",
+  "generatedAt": "2026-09-25T02:04:54.929Z",
   "sourceStatus": {
     "rss:BK Häcken": "ok",
     "rss:Sportbladet": "ok",
@@ -7,7 +7,7 @@
     "rss:SVT Sport": "ok",
     "rss:Bollsvenskan": "ok",
     "rss:Allsvenskan": "ok",
-    "apiFootball": "ok"
+    "sportomedia": "ok"
   },
   "players": [
     {

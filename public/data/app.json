@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T01:09:38.839Z",
+    "generatedAt": "2026-09-25T02:04:54.932Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -8,280 +8,497 @@
       "rss:SVT Sport": "ok",
       "rss:Bollsvenskan": "ok",
       "rss:Allsvenskan": "ok",
-      "apiFootball": "ok"
+      "sportomedia": "ok"
     }
   },
-  "nextMatch": null,
-  "lastResult": {
-    "id": 1357836,
-    "competition": "svenska-cupen",
-    "season": "2024",
-    "date": "2025-03-09T12:10:00+00:00",
-    "homeAway": "away",
-    "opponent": "IFK Goteborg",
-    "status": "finished",
-    "scoreHome": 4,
-    "scoreAway": 0,
-    "venue": "Nya Ullevi"
+  "footballSource": {
+    "provider": "SportoMedia",
+    "publicSite": "allsvenskan.se",
+    "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
+    "sourceUrl": "https://gql.sportomedia.se/graphql",
+    "retrievedAt": "2026-09-25T02:04:48.649Z",
+    "season": "2026",
+    "competition": "Allsvenskan",
+    "dataStatus": "current",
+    "queryVersion": "sm-2026-09-25"
   },
-  "upcoming": [],
-  "recent": [
+  "nextMatch": {
+    "id": 6530009,
+    "competition": "allsvenskan",
+    "season": "2026",
+    "date": "2026-10-11T14:30:00.000Z",
+    "homeAway": "home",
+    "opponent": "Örgryte IS",
+    "status": "scheduled",
+    "venue": "Nordic Wellness Arena"
+  },
+  "lastResult": {
+    "id": 6530003,
+    "competition": "allsvenskan",
+    "season": "2026",
+    "date": "2026-09-20T12:00:00.000Z",
+    "homeAway": "away",
+    "opponent": "Kalmar FF",
+    "status": "finished",
+    "scoreHome": 0,
+    "scoreAway": 5,
+    "venue": "Guldfågeln Arena, Kalmar"
+  },
+  "upcoming": [
     {
-      "id": 1357836,
-      "competition": "svenska-cupen",
-      "season": "2024",
-      "date": "2025-03-09T12:10:00+00:00",
-      "homeAway": "away",
-      "opponent": "IFK Goteborg",
-      "status": "finished",
-      "scoreHome": 4,
-      "scoreAway": 0,
-      "venue": "Nya Ullevi"
+      "id": 6530009,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-11T14:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "Örgryte IS",
+      "status": "scheduled",
+      "venue": "Nordic Wellness Arena"
     },
     {
-      "id": 1320433,
-      "competition": "svenska-cupen",
-      "season": "2024",
-      "date": "2025-03-03T17:30:00+00:00",
+      "id": 6530015,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-18T14:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Malmö FF",
+      "status": "scheduled",
+      "venue": "Eleda Stadion"
+    },
+    {
+      "id": 6530023,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-24T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Degerfors IF",
+      "status": "scheduled",
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530033,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-28T18:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IF Brommapojkarna",
+      "status": "scheduled",
+      "venue": "Grimsta IP 1"
+    },
+    {
+      "id": 6530039,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-01T15:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "IFK Göteborg",
+      "status": "scheduled",
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530045,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-08T15:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "AIK",
+      "status": "scheduled",
+      "venue": "Nationalarenan, Strawberry Arena"
+    },
+    {
+      "id": 6530057,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-22T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "IF Elfsborg",
+      "status": "scheduled",
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530061,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-29T14:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Djurgårdens IF",
+      "status": "scheduled",
+      "venue": "3Arena "
+    }
+  ],
+  "recent": [
+    {
+      "id": 6530003,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-20T12:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Kalmar FF",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 5,
+      "venue": "Guldfågeln Arena, Kalmar"
+    },
+    {
+      "id": 6529993,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-11T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Mjällby AIF",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529981,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-05T13:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "GAIS",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 0,
+      "venue": "Gamla Ullevi "
+    },
+    {
+      "id": 6529977,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-29T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Västerås SK",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 3,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529971,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-21T17:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IK Sirius",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 3,
+      "venue": "Studenternas"
+    },
+    {
+      "id": 6529959,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-17T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Halmstads BK",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 0,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529949,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-09T12:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Hammarby",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 0,
+      "venue": "3Arena "
+    },
+    {
+      "id": 6529945,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-01T13:00:00.000Z",
       "homeAway": "home",
       "opponent": "Kalmar FF",
       "status": "finished",
-      "scoreHome": 2,
+      "scoreHome": 1,
       "scoreAway": 1,
-      "venue": "3Arena"
+      "venue": "Nordic Wellness Arena"
     },
     {
-      "id": 1320416,
-      "competition": "svenska-cupen",
-      "season": "2024",
-      "date": "2025-02-22T12:00:00+00:00",
-      "homeAway": "away",
-      "opponent": "Stockholm Internazionale",
+      "id": 6529934,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-27T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "AIK",
       "status": "finished",
       "scoreHome": 0,
-      "scoreAway": 3,
-      "venue": "3Arena"
-    },
-    {
-      "id": 1320400,
-      "competition": "svenska-cupen",
-      "season": "2024",
-      "date": "2025-02-15T12:00:00+00:00",
-      "homeAway": "home",
-      "opponent": "Varbergs BoIS FC",
-      "status": "finished",
-      "scoreHome": 1,
-      "scoreAway": 1,
-      "venue": "3Arena"
-    },
-    {
-      "id": 1164319,
-      "competition": "allsvenskan",
-      "season": "2024",
-      "date": "2024-11-10T14:00:00+00:00",
-      "homeAway": "away",
-      "opponent": "Vasteras SK FK",
-      "status": "finished",
-      "scoreHome": 1,
       "scoreAway": 0,
-      "venue": "Hitachi Energy Arena"
+      "venue": "Nordic Wellness Arena"
     },
     {
-      "id": 1164304,
+      "id": 6529932,
       "competition": "allsvenskan",
-      "season": "2024",
-      "date": "2024-11-02T14:00:00+00:00",
-      "homeAway": "home",
-      "opponent": "Malmo FF",
+      "season": "2026",
+      "date": "2026-07-19T14:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Halmstads BK",
       "status": "finished",
-      "scoreHome": 2,
+      "scoreHome": 0,
       "scoreAway": 2,
-      "venue": "Tele2 Arena"
-    },
-    {
-      "id": 1164300,
-      "competition": "allsvenskan",
-      "season": "2024",
-      "date": "2024-10-26T13:00:00+00:00",
-      "homeAway": "away",
-      "opponent": "Sirius",
-      "status": "finished",
-      "scoreHome": 0,
-      "scoreAway": 3,
-      "venue": "Studenternas IP"
-    },
-    {
-      "id": 1164288,
-      "competition": "allsvenskan",
-      "season": "2024",
-      "date": "2024-10-21T12:00:00+00:00",
-      "homeAway": "home",
-      "opponent": "Djurgardens IF",
-      "status": "finished",
-      "scoreHome": 2,
-      "scoreAway": 0,
-      "venue": "Tele2 Arena"
-    },
-    {
-      "id": 1164282,
-      "competition": "allsvenskan",
-      "season": "2024",
-      "date": "2024-10-05T13:00:00+00:00",
-      "homeAway": "home",
-      "opponent": "Halmstad",
-      "status": "finished",
-      "scoreHome": 1,
-      "scoreAway": 0,
-      "venue": "Tele2 Arena"
-    },
-    {
-      "id": 1164272,
-      "competition": "allsvenskan",
-      "season": "2024",
-      "date": "2024-09-29T12:00:00+00:00",
-      "homeAway": "away",
-      "opponent": "AIK Stockholm",
-      "status": "finished",
-      "scoreHome": 1,
-      "scoreAway": 0,
-      "venue": "Strawberry Arena"
+      "venue": "Örjans Vall"
     }
   ],
   "lastMatchDetail": {
-    "id": 1357836,
-    "competition": "svenska-cupen",
-    "season": "2024",
-    "date": "2025-03-09T12:10:00+00:00",
+    "id": 6530003,
+    "competition": "allsvenskan",
+    "season": "2026",
+    "date": "2026-09-20T12:00:00.000Z",
     "homeAway": "away",
-    "opponent": "IFK Goteborg",
+    "opponent": "Kalmar FF",
     "status": "finished",
-    "scoreHome": 4,
-    "scoreAway": 0,
-    "venue": "Nya Ullevi",
-    "playerStats": []
+    "scoreHome": 0,
+    "scoreAway": 5,
+    "venue": "Guldfågeln Arena, Kalmar",
+    "events": {
+      "goals": [
+        {
+          "minute": "63'",
+          "playerName": "Julius Lindberg",
+          "teamName": "BK Häcken",
+          "assistPlayerName": "Adrian Svanbäck",
+          "forHäcken": true
+        },
+        {
+          "minute": "55'",
+          "playerName": "Adrian Svanbäck",
+          "teamName": "BK Häcken",
+          "assistPlayerName": "Brice Wembangomo",
+          "forHäcken": true
+        },
+        {
+          "minute": "47'",
+          "playerName": "Gustav Lindgren",
+          "teamName": "BK Häcken",
+          "assistPlayerName": "Olle Samuelsson",
+          "forHäcken": true
+        },
+        {
+          "minute": "34'",
+          "playerName": "Gustav Lindgren",
+          "teamName": "BK Häcken",
+          "assistPlayerName": "Julius Lindberg",
+          "forHäcken": true
+        },
+        {
+          "minute": "2'",
+          "playerName": "Gustav Lindgren",
+          "teamName": "BK Häcken",
+          "assistPlayerName": "Filip Helander",
+          "forHäcken": true
+        }
+      ],
+      "yellowCards": [
+        {
+          "minute": "14'",
+          "playerName": "Olle Samuelsson",
+          "teamName": "BK Häcken"
+        }
+      ],
+      "redCards": [],
+      "substitutions": [
+        {
+          "minute": "87'",
+          "inPlayer": "Sivert Engh Øverby",
+          "outPlayer": "Miska Ylitolva",
+          "teamName": "Kalmar FF"
+        },
+        {
+          "minute": "81'",
+          "inPlayer": "Philip Pawlowski",
+          "outPlayer": "Abdoulaye Doumbia",
+          "teamName": "BK Häcken"
+        },
+        {
+          "minute": "71'",
+          "inPlayer": "Markus Haaland",
+          "outPlayer": "Julius Lindberg",
+          "teamName": "BK Häcken"
+        },
+        {
+          "minute": "71'",
+          "inPlayer": "Harun Ibrahim",
+          "outPlayer": "Olle Samuelsson",
+          "teamName": "BK Häcken"
+        },
+        {
+          "minute": "64'",
+          "inPlayer": "Wilson Lindberg Uhrström",
+          "outPlayer": "Mikkel Rygaard Jensen",
+          "teamName": "BK Häcken"
+        },
+        {
+          "minute": "64'",
+          "inPlayer": "Mads Agger",
+          "outPlayer": "Gustav Lindgren",
+          "teamName": "BK Häcken"
+        },
+        {
+          "minute": "56'",
+          "inPlayer": "Alexander Almqvist",
+          "outPlayer": "Aboubacar Keita",
+          "teamName": "Kalmar FF"
+        },
+        {
+          "minute": "51'",
+          "inPlayer": "Abdussalam Magashy",
+          "outPlayer": "Tobias Lauritsen",
+          "teamName": "Kalmar FF"
+        },
+        {
+          "minute": "51'",
+          "inPlayer": "Nassef Chourak",
+          "outPlayer": "Melker Hallberg",
+          "teamName": "Kalmar FF"
+        },
+        {
+          "minute": "45'",
+          "inPlayer": "Eskild Munk Dall",
+          "outPlayer": "Noah Shamoun",
+          "teamName": "Kalmar FF"
+        }
+      ]
+    }
   },
   "table": [
     {
       "rank": 1,
-      "team": "Malmo FF",
-      "played": 30,
-      "points": 65,
-      "goalDiff": 0
+      "team": "IK Sirius",
+      "played": 22,
+      "points": 51,
+      "goalDiff": 24
     },
     {
       "rank": 2,
-      "team": "Hammarby FF",
-      "played": 30,
-      "points": 54,
-      "goalDiff": 0
+      "team": "Hammarby",
+      "played": 22,
+      "points": 43,
+      "goalDiff": 29
     },
     {
       "rank": 3,
-      "team": "AIK Stockholm",
-      "played": 30,
-      "points": 54,
-      "goalDiff": 0
+      "team": "Djurgården",
+      "played": 22,
+      "points": 41,
+      "goalDiff": 26
     },
     {
       "rank": 4,
-      "team": "Djurgardens IF",
-      "played": 30,
-      "points": 53,
-      "goalDiff": 0
+      "team": "IF Elfsborg",
+      "played": 22,
+      "points": 37,
+      "goalDiff": 9
     },
     {
       "rank": 5,
-      "team": "Mjallby AIF",
-      "played": 30,
-      "points": 50,
-      "goalDiff": 0
+      "team": "BK Häcken",
+      "played": 22,
+      "points": 36,
+      "goalDiff": 9
     },
     {
       "rank": 6,
-      "team": "Gais",
-      "played": 30,
-      "points": 48,
-      "goalDiff": 0
+      "team": "Västerås SK",
+      "played": 22,
+      "points": 35,
+      "goalDiff": -1
     },
     {
       "rank": 7,
-      "team": "IF Elfsborg",
-      "played": 30,
-      "points": 45,
-      "goalDiff": 0
+      "team": "Malmö FF",
+      "played": 22,
+      "points": 33,
+      "goalDiff": 4
     },
     {
       "rank": 8,
-      "team": "BK Hacken",
-      "played": 30,
-      "points": 42,
-      "goalDiff": 0
+      "team": "AIK",
+      "played": 22,
+      "points": 33,
+      "goalDiff": -3
     },
     {
       "rank": 9,
-      "team": "Sirius",
-      "played": 30,
-      "points": 41,
-      "goalDiff": 0
+      "team": "IFK Göteborg",
+      "played": 22,
+      "points": 32,
+      "goalDiff": -10
     },
     {
       "rank": 10,
-      "team": "IF Brommapojkarna",
-      "played": 30,
-      "points": 34,
-      "goalDiff": 0
+      "team": "GAIS",
+      "played": 22,
+      "points": 30,
+      "goalDiff": 8
     },
     {
       "rank": 11,
-      "team": "IFK Norrkoping",
-      "played": 30,
-      "points": 34,
-      "goalDiff": 0
+      "team": "BP",
+      "played": 22,
+      "points": 27,
+      "goalDiff": -6
     },
     {
       "rank": 12,
-      "team": "Halmstad",
-      "played": 30,
-      "points": 33,
-      "goalDiff": 0
+      "team": "Mjällby AIF",
+      "played": 22,
+      "points": 22,
+      "goalDiff": -11
     },
     {
       "rank": 13,
-      "team": "IFK Goteborg",
-      "played": 30,
-      "points": 31,
-      "goalDiff": 0
+      "team": "Kalmar FF",
+      "played": 22,
+      "points": 19,
+      "goalDiff": -15
     },
     {
       "rank": 14,
-      "team": "IFK Varnamo",
-      "played": 30,
-      "points": 31,
-      "goalDiff": 0
+      "team": "Degerfors IF",
+      "played": 22,
+      "points": 19,
+      "goalDiff": -15
     },
     {
       "rank": 15,
-      "team": "Kalmar FF",
-      "played": 30,
-      "points": 30,
-      "goalDiff": 0
+      "team": "Örgryte IS",
+      "played": 22,
+      "points": 15,
+      "goalDiff": -24
     },
     {
       "rank": 16,
-      "team": "Vasteras SK FK",
-      "played": 30,
-      "points": 23,
-      "goalDiff": 0
+      "team": "Halmstads BK",
+      "played": 22,
+      "points": 14,
+      "goalDiff": -24
     }
   ],
   "tablePosition": {
-    "rank": 8,
-    "team": "BK Hacken",
-    "played": 30,
-    "points": 42,
-    "goalDiff": 0
+    "rank": 5,
+    "team": "BK Häcken",
+    "played": 22,
+    "points": 36,
+    "goalDiff": 9
   },
-  "warnings": null,
+  "warnings": {
+    "competition": "allsvenskan",
+    "season": "2026",
+    "rule": "warnings-per-suspension",
+    "ruleSource": "SvFF tävlingsbestämmelser stor herrfotboll 2026: tre varningar i olika matcher i samma tävling ger en matchers avstängning i samma tävling. Uppdateras om SvFF ändrar bestämmelserna.",
+    "suspended": [],
+    "atRisk": [],
+    "generatedAt": "2026-09-25T02:04:54.930Z"
+  },
   "news": [
     {
       "id": "BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -718,5 +935,331 @@
       "summaryMethod": "excerpt"
     }
   ],
-  "formerPlayers": []
+  "formerPlayers": [],
+  "squadStats": [
+    {
+      "playerId": 480798,
+      "playerName": "Andreas Linde",
+      "positionGroup": "goalkeepers",
+      "matchesPlayed": 12,
+      "matchesStarted": 12,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 540307,
+      "playerName": "Etrit Berisha",
+      "positionGroup": "goalkeepers",
+      "matchesPlayed": 5,
+      "matchesStarted": 5,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 872878,
+      "playerName": "David Andersson",
+      "positionGroup": "goalkeepers",
+      "matchesPlayed": 6,
+      "matchesStarted": 5,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1132533,
+      "playerName": "Kristan Marinkovic",
+      "positionGroup": "goalkeepers",
+      "matchesPlayed": 2,
+      "matchesStarted": 2,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Ettan Södra, herr  2026"
+    },
+    {
+      "playerId": 478646,
+      "playerName": "Adam Lundkvist",
+      "positionGroup": "defenders",
+      "matchesPlayed": 19,
+      "matchesStarted": 18,
+      "goals": 0,
+      "assists": 3,
+      "yellowCards": 3,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 826008,
+      "playerName": "Ben Engdahl",
+      "positionGroup": "defenders",
+      "matchesPlayed": 0,
+      "matchesStarted": 0,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": ""
+    },
+    {
+      "playerId": 1126135,
+      "playerName": "Leo Väisänen",
+      "positionGroup": "defenders",
+      "matchesPlayed": 4,
+      "matchesStarted": 3,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 1,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1499101,
+      "playerName": "Brice Wembangomo",
+      "positionGroup": "defenders",
+      "matchesPlayed": 22,
+      "matchesStarted": 20,
+      "goals": 0,
+      "assists": 3,
+      "yellowCards": 2,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1146319,
+      "playerName": "Filip Öhman",
+      "positionGroup": "defenders",
+      "matchesPlayed": 1,
+      "matchesStarted": 1,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 919310,
+      "playerName": "Olle Samuelsson",
+      "positionGroup": "defenders",
+      "matchesPlayed": 12,
+      "matchesStarted": 6,
+      "goals": 0,
+      "assists": 1,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1056766,
+      "playerName": "Harry Hilvenius",
+      "positionGroup": "defenders",
+      "matchesPlayed": 16,
+      "matchesStarted": 16,
+      "goals": 1,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 453737,
+      "playerName": "Filip Helander",
+      "positionGroup": "defenders",
+      "matchesPlayed": 21,
+      "matchesStarted": 20,
+      "goals": 1,
+      "assists": 1,
+      "yellowCards": 4,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1251827,
+      "playerName": "Mikkel Rygaard Jensen",
+      "positionGroup": "midfields",
+      "matchesPlayed": 21,
+      "matchesStarted": 17,
+      "goals": 2,
+      "assists": 5,
+      "yellowCards": 5,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1009627,
+      "playerName": "Pontus Dahbo",
+      "positionGroup": "midfields",
+      "matchesPlayed": 9,
+      "matchesStarted": 1,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 705320,
+      "playerName": "Julius Lindberg",
+      "positionGroup": "midfields",
+      "matchesPlayed": 20,
+      "matchesStarted": 18,
+      "goals": 7,
+      "assists": 7,
+      "yellowCards": 3,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1549805,
+      "playerName": "Sanders Ngabo",
+      "positionGroup": "midfields",
+      "matchesPlayed": 10,
+      "matchesStarted": 2,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1564471,
+      "playerName": "Abdoulaye Doumbia",
+      "positionGroup": "midfields",
+      "matchesPlayed": 20,
+      "matchesStarted": 19,
+      "goals": 2,
+      "assists": 2,
+      "yellowCards": 6,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 750969,
+      "playerName": "David Seger",
+      "positionGroup": "midfields",
+      "matchesPlayed": 11,
+      "matchesStarted": 6,
+      "goals": 0,
+      "assists": 1,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1034709,
+      "playerName": "Nikola Mitrovic",
+      "positionGroup": "midfields",
+      "matchesPlayed": 3,
+      "matchesStarted": 3,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Div  Västra Götaland, herr  2026"
+    },
+    {
+      "playerId": 1550027,
+      "playerName": "Sabri Dahari Kondo",
+      "positionGroup": "midfields",
+      "matchesPlayed": 1,
+      "matchesStarted": 0,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Svenska Cupen 2026"
+    },
+    {
+      "playerId": 1678145,
+      "playerName": "Simen Hestnes",
+      "positionGroup": "midfields",
+      "matchesPlayed": 8,
+      "matchesStarted": 6,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 801089,
+      "playerName": "Harun Ibrahim",
+      "positionGroup": "midfields",
+      "matchesPlayed": 6,
+      "matchesStarted": 3,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1034065,
+      "playerName": "Wilson Lindberg Uhrström",
+      "positionGroup": "midfields",
+      "matchesPlayed": 4,
+      "matchesStarted": 1,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan 2026"
+    },
+    {
+      "playerId": 758301,
+      "playerName": "Adrian Svanbäck",
+      "positionGroup": "forwards",
+      "matchesPlayed": 22,
+      "matchesStarted": 21,
+      "goals": 5,
+      "assists": 6,
+      "yellowCards": 2,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1552257,
+      "playerName": "Christ Ivan Wawa",
+      "positionGroup": "forwards",
+      "matchesPlayed": 2,
+      "matchesStarted": 0,
+      "goals": 1,
+      "assists": 0,
+      "yellowCards": 1,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 770195,
+      "playerName": "Gustav Lindgren",
+      "positionGroup": "forwards",
+      "matchesPlayed": 22,
+      "matchesStarted": 20,
+      "goals": 12,
+      "assists": 0,
+      "yellowCards": 3,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": 1040287,
+      "playerName": "Bamir Fierza Sadiku",
+      "positionGroup": "forwards",
+      "matchesPlayed": 8,
+      "matchesStarted": 0,
+      "goals": 1,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    }
+  ]
 }

@@ -23,6 +23,26 @@ export interface Freshness {
   sourceStatus: Record<string, SourceStatus>;
 }
 
+/** Provenance metadata for the current football dataset. */
+export interface FootballSourceMeta {
+  provider: string;
+  publicSite: string;
+  provenance: string;
+  sourceUrl: string;
+  retrievedAt: string;
+  season: string;
+  competition: string;
+  /** "current" = the season in progress; "historical" = a finished season. */
+  dataStatus: "current" | "historical" | "unavailable";
+  queryVersion: string;
+}
+
+/** Explicit marker when current data cannot be retrieved. */
+export interface CurrentDataUnavailable {
+  reason: string;
+  checkedAt: string;
+}
+
 export interface TeamRef {
   id?: number;
   name: string;
@@ -52,8 +72,18 @@ export interface PlayerMatchStat {
   starter: boolean;
 }
 
+/** Structured match events (SportoMedia). */
+export interface MatchEvents {
+  goals: Array<{ minute: string | null; playerName: string; teamName: string | null; assistPlayerName: string | null; forHäcken: boolean }>;
+  yellowCards: Array<{ minute: string | null; playerName: string; teamName: string | null }>;
+  redCards: Array<{ minute: string | null; playerName: string; teamName: string | null }>;
+  substitutions: Array<{ minute: string | null; inPlayer: string | null; outPlayer: string | null; teamName: string | null }>;
+}
+
 export interface MatchDetail extends MatchRef {
   playerStats?: PlayerMatchStat[];
+  /** Structured events (goals/cards/subs) from SportoMedia. */
+  events?: MatchEvents;
 }
 
 export interface LeagueTableRow {
@@ -170,8 +200,24 @@ export interface FormerPlayersData extends Freshness {
   players: FormerPlayer[];
 }
 
+/** One player's current-season statistics (from SportoMedia squad query). */
+export interface SeasonPlayerStat {
+  playerId: number;
+  playerName: string;
+  positionGroup: "goalkeepers" | "defenders" | "midfields" | "forwards";
+  matchesPlayed: number;
+  matchesStarted: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  competition: string | null;
+}
+
 export interface AppData {
   freshness: Freshness;
+  /** Provenance + season metadata for the football dataset. */
+  footballSource?: FootballSourceMeta;
   nextMatch: MatchRef | null;
   lastResult: MatchRef | null;
   upcoming: MatchRef[];
@@ -184,4 +230,8 @@ export interface AppData {
   /** Deduplicated news events (one card per underlying story). */
   newsEvents: NewsEvent[];
   formerPlayers: FormerPlayer[];
+  /** Current-season squad statistics (SportoMedia). */
+  squadStats?: SeasonPlayerStat[];
+  /** Set when current data could not be retrieved — UI must show this. */
+  currentDataUnavailable?: CurrentDataUnavailable;
 }

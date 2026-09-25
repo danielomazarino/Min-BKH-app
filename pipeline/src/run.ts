@@ -6,8 +6,12 @@ import type {
   FormerPlayer,
   FormerPlayerCareerEvent,
   FormerPlayersData,
+  FootballSourceMeta,
+  LeagueTableRow,
   MatchDetail,
+  MatchRef,
   NewsItem,
+  SeasonPlayerStat,
   SourceStatus,
   WarningsReport,
 } from "./types";
@@ -19,18 +23,29 @@ import { computeWarnings, type WarningEvent } from "./warnings";
 import { loadRegistry } from "./registry";
 import { firecrawlSearch, playerQuery } from "./firecrawl";
 import { readLastKnownGood } from "./stale";
+import { pickNextAndLast } from "./normalize";
 import { normalizeSearch } from "./search";
 import {
   ALLSVENSKAN_LEAGUE_ID,
-  BKH_TEAM_ID,
-  FREE_PLAN_SEASONS,
-  SEASON,
-  fetchFixtures,
-  fetchPlayerStatsForFixture,
+  API_FOOTBALL_MAX_SEASON,
   fetchPlayerStatistics,
-  fetchStandings,
 } from "./apifootball";
-import { normalizeFixture, normalizePlayerStats, normalizeTable, pickNextAndLast, type ApiPlayerStat, type StandingRow } from "./normalize";
+import {
+  BKH_ABBRV,
+  CURRENT_SEASON,
+  fetchMatchDetailSm,
+  fetchMatchesSm,
+  fetchSquadSm,
+  fetchStandingsSm,
+} from "./sportomedia";
+import {
+  assertNotHammarby,
+  hashId,
+  normalizeSmEvents,
+  normalizeSmMatch,
+  normalizeSmSquad,
+  normalizeSmStandings,
+} from "./smNormalize";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
@@ -78,94 +93,120 @@ async function collectNews(): Promise<NewsItem[]> {
 // ---------- football data ----------
 
 interface FootballData {
-  matches: ReturnType<typeof normalizeFixture>[];
-  table: ReturnType<typeof normalizeTable>;
+  matches: MatchRef[];
+  table: LeagueTableRow[];
   lastMatchDetail: MatchDetail | null;
   warningEvents: WarningEvent[];
-  apiOk: boolean;
-  activeSeason: number;
+  /** Provenance metadata for the football dataset. */
+  source: FootballSourceMeta | null;
+  /** Set when current data could not be retrieved. */
+  unavailableReason: string | null;
+  squadStats: SeasonPlayerStat[];
 }
 
-async function collectFootballData(): Promise<FootballData> {
-  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, warningEvents: [], apiOk: false, activeSeason: SEASON };
-  if (!process.env.API_FOOTBALL_KEY) {
-    STATUS.apiFootball = "skipped";
-    return empty;
+const SM_QUERY_VERSION = "sm-2026-09-25";
+
+function footballSourceMeta(retrievedAt: string, dataStatus: FootballSourceMeta["dataStatus"]): FootballSourceMeta {
+  return {
+    provider: "SportoMedia",
+    publicSite: "allsvenskan.se",
+    provenance: "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
+    sourceUrl: "https://gql.sportomedia.se/graphql",
+    retrievedAt,
+    season: String(CURRENT_SEASON),
+    competition: "Allsvenskan",
+    dataStatus,
+    queryVersion: SM_QUERY_VERSION,
+  };
+}
+
+/**
+ * Current football data via SportoMedia GraphQL (the service behind
+ * allsvenskan.se). Season 2026 only — NO historical fallback. If retrieval
+ * fails, the dataset is marked unavailable and the UI must say so.
+ */
+async function collectCurrentFootballData(): Promise<FootballData> {
+  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, warningEvents: [], source: null, unavailableReason: null, squadStats: [] };
+  const retrievedAt = generatedAt();
+
+  // Identity guard: we query BKH and must never receive Hammarby data.
+  assertNotHammarby(BKH_ABBRV, "current-data query");
+
+  // 1) Fixtures/results (season window covers the whole 2026 calendar year).
+  const seasonStart = `${CURRENT_SEASON}-01-01`;
+  const seasonEnd = `${CURRENT_SEASON}-12-31`;
+  const fx = await fetchMatchesSm(seasonStart, seasonEnd);  if (!fx.status.ok || !fx.matches) {
+    STATUS.sportomedia = "failed";
+    console.error("SportoMedia fixtures error:", fx.status.error);
+    return { ...empty, unavailableReason: `Fixtures ej tillgängliga: ${fx.status.error ?? "okänt fel"}` };
   }
 
-  // Season fallback: the free plan only allows seasons 2022-2024 (verified
-  // 2026-09-25). Try the current season first; if the API rejects the season,
-  // fall back to the newest allowed one so the free tier still yields data.
-  let activeSeason = SEASON;
-  let { fixtures, status } = await fetchFixtures(BKH_TEAM_ID, SEASON);
-  if (!status.ok && /season/i.test(status.error ?? "")) {
-    for (const s of FREE_PLAN_SEASONS.slice(1)) {
-      const res = await fetchFixtures(BKH_TEAM_ID, s);
-      if (res.status.ok) {
-        fixtures = res.fixtures;
-        status = res.status;
-        activeSeason = s;
-        console.log(`API-Football: season ${SEASON} not available on this plan — using season ${s}`);
-        break;
-      }
-    }
+  // 2) Standings.
+  const st = await fetchStandingsSm();
+  if (!st.status.ok || !st.rows) {
+    STATUS.sportomedia = "failed";
+    console.error("SportoMedia standings error:", st.status.error);
+    return { ...empty, unavailableReason: `Tabell ej tillgänglig: ${st.status.error ?? "okänt fel"}` };
   }
-  STATUS.apiFootball = status.ok ? "ok" : "failed";
-  if (!status.ok) console.error("API-Football error:", status.error);
-  if (!status.ok || !fixtures) return { ...empty, activeSeason };
 
-  const matches = fixtures.map(normalizeFixture);
+  // 3) Squad + season player stats.
+  const sq = await fetchSquadSm();
+  STATUS.sportomedia = "ok";
+  const squadStats = sq.status.ok && sq.squad ? normalizeSmSquad(sq.squad) : [];
+  if (!sq.status.ok) console.error("SportoMedia squad error:", sq.status.error);
+
+  const matches = fx.matches.map(normalizeSmMatch);
+  const table = normalizeSmStandings(st.rows);
   const { last } = pickNextAndLast(matches);
 
-  // Player stats + warning events for the last finished fixture only (save quota).
+  // 4) Match detail (events) for the most recent finished match only.
   let lastMatchDetail: MatchDetail | null = null;
   const warningEvents: WarningEvent[] = [];
   if (last) {
-    const statsRes = await fetchPlayerStatsForFixture(last.id);
-    if (statsRes.status.ok && statsRes.data) {
-      const rows = statsRes.data as ApiPlayerStat[];
-      const teamRows = rows.filter((r) => {
-        const t = (r as unknown as { statistics: Array<{ team?: { id: number } }> }).statistics[0]?.team;
-        return t?.id === BKH_TEAM_ID;
-      });
-      lastMatchDetail = { ...last, playerStats: normalizePlayerStats(teamRows.length ? teamRows : rows) };
-    }
-  }
-
-  // Standings (Allsvenskan)
-  let table: ReturnType<typeof normalizeTable> = [];
-  const standingsRes = await fetchStandings(ALLSVENSKAN_LEAGUE_ID, activeSeason);
-  if (standingsRes.status.ok && standingsRes.data) {
-    const resp = standingsRes.data as Array<{ league: { standings: StandingRow[][] } }>;
-    const rows = resp[0]?.league?.standings?.[0] ?? [];
-    table = normalizeTable(rows);
-  }
-
-  // Warning events: derive from fixtures/players across played Allsvenskan
-  // matches would cost many requests. Free-tier compromise: derive warning
-  // events from the last fixture detail now, and let the app show the latest
-  // known state. A fuller backfill can be enabled with more quota.
-  if (lastMatchDetail?.playerStats && last) {
-    for (const ps of lastMatchDetail.playerStats) {
-      if (ps.yellowCards > 0) {
-        warningEvents.push({
-          playerId: ps.playerId,
-          playerName: ps.playerName,
-          competition: "allsvenskan",
-          matchId: last.id,
-          matchDate: last.date,
-          season: last.season,
-        });
+    const det = await fetchMatchDetailSm(last.id);
+    if (det.status.ok && det.match) {
+      const ev = normalizeSmEvents(det.match.matchEvents);
+      lastMatchDetail = {
+        ...last,
+        events: {
+          goals: ev.goals,
+          yellowCards: ev.yellowCards,
+          redCards: ev.redCards,
+          substitutions: ev.substitutions,
+        },
+      };
+      // Warning events from the match's yellow cards (per-player).
+      for (const yc of ev.yellowCards) {
+        if (yc.teamName?.includes("Häcken")) {
+          warningEvents.push({
+            playerId: hashId(yc.playerName),
+            playerName: yc.playerName,
+            competition: "allsvenskan",
+            matchId: last.id,
+            matchDate: last.date,
+            season: last.season,
+          });
+        }
       }
+    } else {
+      console.error("SportoMedia match detail error:", det.status.error);
     }
   }
 
-  return { matches, table, lastMatchDetail, warningEvents, apiOk: true, activeSeason };
+  return {
+    matches,
+    table,
+    lastMatchDetail,
+    warningEvents,
+    source: footballSourceMeta(retrievedAt, "current"),
+    unavailableReason: null,
+    squadStats,
+  };
 }
 
 // ---------- former players ----------
 
-async function collectFormerPlayers(activeSeason: number): Promise<FormerPlayer[]> {
+async function collectFormerPlayers(): Promise<FormerPlayer[]> {
   const registry = loadRegistry();
   const out: FormerPlayer[] = [];
 
@@ -185,8 +226,9 @@ async function collectFormerPlayers(activeSeason: number): Promise<FormerPlayer[
     };
 
     // Structured stats via API-Football when we know the id and have a key.
+    // API-Football Free is HISTORICAL ONLY (seasons 2022-2024, team ID 367).
     if (entry.apiFootballId && process.env.API_FOOTBALL_KEY && STATUS.apiFootball === "ok") {
-      const res = await fetchPlayerStatistics(entry.apiFootballId, activeSeason, ALLSVENSKAN_LEAGUE_ID);
+      const res = await fetchPlayerStatistics(entry.apiFootballId, API_FOOTBALL_MAX_SEASON, ALLSVENSKAN_LEAGUE_ID);
       if (res.status.ok && res.data) {
         // Only fill what the API verifiably returns for a Häcken-connected league;
         // former players mostly play abroad, so this stays conservative.
@@ -216,8 +258,8 @@ async function collectFormerPlayers(activeSeason: number): Promise<FormerPlayer[
   return out;
 }
 
-async function collectFormerPlayersData(activeSeason: number): Promise<FormerPlayersData> {
-  const players = await collectFormerPlayers(activeSeason);
+async function collectFormerPlayersData(): Promise<FormerPlayersData> {
+  const players = await collectFormerPlayers();
   return { ...freshness(), players };
 }
 
@@ -227,19 +269,20 @@ async function main() {
   mkdirSync(DATA_DIR, { recursive: true });
 
   const news = await collectNews();
-  const foot = await collectFootballData();
-  const formerPlayers = await collectFormerPlayersData(foot.activeSeason);
+  const foot = await collectCurrentFootballData();
+  const formerPlayers = await collectFormerPlayersData();
 
   const { next, last, upcoming, recent } = pickNextAndLast(foot.matches);
 
   const warnings: WarningsReport | null = next
-    ? computeWarnings(foot.warningEvents, "allsvenskan", String(SEASON), next)
+    ? computeWarnings(foot.warningEvents, "allsvenskan", String(CURRENT_SEASON), next)
     : null;
 
   const relevantNews = menRelevantNews(news).slice(0, 40);
 
   const appData: AppData = {
     freshness: freshness(),
+    footballSource: foot.source ?? undefined,
     nextMatch: next,
     lastResult: last,
     upcoming,
@@ -252,6 +295,10 @@ async function main() {
     news: relevantNews,
     newsEvents: buildNewsEvents(relevantNews),
     formerPlayers: [],
+    squadStats: foot.squadStats,
+    ...(foot.unavailableReason
+      ? { currentDataUnavailable: { reason: foot.unavailableReason, checkedAt: generatedAt() } }
+      : {}),
   };
 
   const formerData: FormerPlayersData = {
@@ -288,6 +335,7 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
   }
   const merged: AppData = {
     freshness: next.freshness,
+    footballSource: next.footballSource ?? prev.footballSource,
     nextMatch: next.nextMatch ?? prev.nextMatch,
     lastResult: next.lastResult ?? prev.lastResult,
     upcoming: next.upcoming.length ? next.upcoming : prev.upcoming,
@@ -299,6 +347,8 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
     news: next.news.length ? next.news : prev.news,
     newsEvents: next.newsEvents.length ? next.newsEvents : (prev.newsEvents ?? []),
     formerPlayers: [],
+    squadStats: next.squadStats?.length ? next.squadStats : prev.squadStats,
+    currentDataUnavailable: next.currentDataUnavailable ?? prev.currentDataUnavailable,
   };
   writeFileSync(path, JSON.stringify(merged, null, 2));
 }

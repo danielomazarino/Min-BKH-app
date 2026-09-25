@@ -93,7 +93,7 @@ describe("fixture normalization", () => {
     ({
       fixture: { id: 1, date: "2026-09-20T14:00:00Z", status: { short: "FT", long: "Full Time" } },
       league: { id: 113, name: "Allsvenskan", season: 2026 },
-      teams: { home: { id: 363, name: "BK Häcken" }, away: { id: 400, name: "Kalmar FF" } },
+      teams: { home: { id: 367, name: "BK Häcken" }, away: { id: 400, name: "Kalmar FF" } },
       goals: { home: 5, away: 0 },
       ...over,
     }) as FixtureResponse;
@@ -108,7 +108,7 @@ describe("fixture normalization", () => {
   });
 
   it("normalizes an away scheduled fixture", () => {
-    const m = normalizeFixture(fixture({ teams: { home: { id: 400, name: "AIK" }, away: { id: 363, name: "BK Häcken" } }, fixture: { id: 2, date: "2026-10-04T15:00:00Z", status: { short: "NS", long: "Not Started" } } }));
+    const m = normalizeFixture(fixture({ teams: { home: { id: 400, name: "AIK" }, away: { id: 367, name: "BK Häcken" } }, fixture: { id: 2, date: "2026-10-04T15:00:00Z", status: { short: "NS", long: "Not Started" } } }));
     expect(m.homeAway).toBe("away");
     expect(m.opponent).toBe("AIK");
     expect(m.status).toBe("scheduled");
