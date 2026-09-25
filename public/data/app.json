@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T11:25:26.798Z",
+    "generatedAt": "2026-09-25T12:25:28.270Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,7 +16,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T11:24:59.692Z",
+    "retrievedAt": "2026-09-25T12:25:09.034Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -894,19 +894,6 @@
       "sourceRole": "primary"
     },
     {
-      "id": "BK Häcken-2-https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
-      "title": "Europaspecial – lär känna Laney Egbuka",
-      "url": "https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
-      "summary": "Inför varje Champions League-match publicerar vi en längre intervju med en spelare i laget som ni får möjlighet att lära känna bättre. Först ut är Laney Egbuka.",
-      "publishedAt": "2026-09-20T22:50:00.000Z",
-      "publisher": "BK Häcken",
-      "category": "women",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/b01a0666-2fe5-47b4-890c-9d9684bced26.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
-      "sourceRole": "primary"
-    },
-    {
       "id": "BK Häcken-3-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -943,19 +930,6 @@
       "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/8463a6c2-df5f-4c36-a795-5785f03afa9e.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
-      "sourceRole": "primary"
-    },
-    {
-      "id": "BK Häcken-6-https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
-      "title": "Truppen mot Eskilstuna United – trio tillbaka",
-      "url": "https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
-      "summary": "Johanna Fossdalsá Sörensen, Tuva Ölvestad och Joy Omewa med i truppen mot Eskilstuna United.",
-      "publishedAt": "2026-09-18T13:51:33.000Z",
-      "publisher": "BK Häcken",
-      "category": "women",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/86a5b2f7-3f36-46b4-b413-d0b15dbc6d53.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
       "sourceRole": "primary"
     },
     {
@@ -1099,53 +1073,9 @@
       "discoveredVia": "rss",
       "dedupeKey": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
       "sourceRole": "primary"
-    },
-    {
-      "id": "Sportbladet-28-https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
-      "title": "Häckens målvakter mot Juventus – två tonåringar",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
-      "summary": "”Lite speciellt” ✓ Så blir det nu",
-      "publishedAt": "2026-09-22T23:15:23.000Z",
-      "publisher": "Sportbladet",
-      "category": "unknown",
-      "imageUrl": "https://akamai.vgc.no/v2/images/a46f4e84-409d-3014-98b1-df192a511cb3?format=auto&w=1000&s=d7927524cfabcffc51c5e70f25a9c9b8cd93090f",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Sportbladet-31-https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
-      "title": "Förlust och Falk utvisad i Häckens CL-premiär",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
-      "summary": "16-åring tvingades in",
-      "publishedAt": "2026-09-22T18:39:45.000Z",
-      "publisher": "Sportbladet",
-      "category": "unknown",
-      "imageUrl": "https://akamai.vgc.no/v2/images/fe14cf69-a3e7-327b-b6bf-8dd75e5465b8?format=auto&w=1000&s=dd02ac0324d918b16957acc9ac86521c7fc8d3de",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
-      "sourceRole": "secondary"
     }
   ],
   "newsEvents": [
-    {
-      "id": "event-Sportbladet-28-https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
-      "title": "Häckens målvakter mot Juventus – två tonåringar",
-      "summary": "”Lite speciellt” ✓ Så blir det nu",
-      "publishedAt": "2026-09-22T23:15:23.000Z",
-      "latestPublishedAt": "2026-09-22T23:15:23.000Z",
-      "category": "unknown",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
-          "publishedAt": "2026-09-22T23:15:23.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
     {
       "id": "event-BK Häcken-0-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
       "title": "Tuff Champions League-premiär mot Inter",
@@ -1165,24 +1095,6 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Sportbladet-31-https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
-      "title": "Förlust och Falk utvisad i Häckens CL-premiär",
-      "summary": "16-åring tvingades in",
-      "publishedAt": "2026-09-22T18:39:45.000Z",
-      "latestPublishedAt": "2026-09-22T18:39:45.000Z",
-      "category": "unknown",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
-          "publishedAt": "2026-09-22T18:39:45.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
       "id": "event-BK Häcken-1-https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
       "title": "Matchguide: Champions League-premiär borta mot FC Inter",
       "summary": "BK Häcken ställs mot italienskt motstånd i första matchen av UEFA Women's Champions League.",
@@ -1194,24 +1106,6 @@
           "publisher": "BK Häcken",
           "url": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
           "publishedAt": "2026-09-22T07:56:00.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-BK Häcken-2-https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
-      "title": "Europaspecial – lär känna Laney Egbuka",
-      "summary": "Inför varje Champions League-match publicerar vi en längre intervju med en spelare i laget som ni får möjlighet att lära känna bättre. Först ut är Laney Egbuka.",
-      "publishedAt": "2026-09-20T22:50:00.000Z",
-      "latestPublishedAt": "2026-09-20T22:50:00.000Z",
-      "category": "women",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/europaspecial-lar-kanna-laney-egbuka",
-          "publishedAt": "2026-09-20T22:50:00.000Z",
           "role": "primary",
           "discoveredVia": "rss"
         }
@@ -1266,24 +1160,6 @@
           "publisher": "BK Häcken",
           "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
           "publishedAt": "2026-09-19T13:50:05.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-BK Häcken-6-https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
-      "title": "Truppen mot Eskilstuna United – trio tillbaka",
-      "summary": "Johanna Fossdalsá Sörensen, Tuva Ölvestad och Joy Omewa med i truppen mot Eskilstuna United.",
-      "publishedAt": "2026-09-18T13:51:33.000Z",
-      "latestPublishedAt": "2026-09-18T13:51:33.000Z",
-      "category": "women",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/truppen-mot-eskilstuna-united",
-          "publishedAt": "2026-09-18T13:51:33.000Z",
           "role": "primary",
           "discoveredVia": "rss"
         }

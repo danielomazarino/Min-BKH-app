@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T11:25:26.787Z",
+  "generatedAt": "2026-09-25T12:25:28.199Z",
   "sourceStatus": {
     "rss:BK Häcken": "ok",
     "rss:Sportbladet": "ok",
@@ -661,6 +661,22 @@
         "discoveredVia": "firecrawl",
         "verificationStatus": "unverified"
       }
+    },
+    {
+      "id": "david-frolund",
+      "name": "David Frölund",
+      "aliases": [
+        "marek",
+        "david marek",
+        "frolund"
+      ],
+      "currentClub": null,
+      "currentLeague": null,
+      "currentCountry": null,
+      "clubVerified": false,
+      "stats": null,
+      "contract": null,
+      "latestEvent": null
     }
   ]
 }

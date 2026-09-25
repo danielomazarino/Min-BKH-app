@@ -135,6 +135,17 @@
     "notes": "Curated from public BK Häcken squad history (Wikipedia: BK Häcken spelarlistor)."
   },
   {
+    "id": "david-frolund",
+    "name": "David Frölund",
+    "aliases": [
+      "marek",
+      "david marek",
+      "frolund"
+    ],
+    "bkhSeasons": "1999-2004, 2005-2015",
+    "notes": "Name change verified: played as David Marek, private name David Frölund since 2009. Sources: Expressen 2009-03-15 'Häckens nye back? Nej, David har bytt namn' (expressen.se/sport/hackens-nye-back-nej-david-har-bytt-namn/); Wikipedia sv 'David Frölund' (över 200 ligamatcher för BK Häcken, lämnade efter säsongen 2015); Transfermarkt profile 111962 (birth name David Marek, most games for Häcken). Birth name Dobrzelak."
+  },
+  {
     "id": "andreas-landgren",
     "name": "Andreas Landgren",
     "aliases": [

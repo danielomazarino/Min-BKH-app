@@ -89,6 +89,24 @@ UI-visning:
 - API-Football anropas restriktivt (~15–25 anrop/körning) för att hålla sig under 100/dag — och ENDAST för historiska säsonger (2022–2024). Aldrig för aktuell säsong.
 - Firecrawl Keyless används endast som upptäcktsverktyg för tidigare spelare — aldrig som källa. Status 2026-09-25: keyless-anrop utan API-nyckel får 429 (rate-limited), så klubb-/kontraktsdata för tidigare spelare är oftast tom med `clubVerified: false`. Artiklar som hittas visas alltid med artikelns egen källa, aldrig "Firecrawl".
 
+## Nyhetssökning — datumintervall (dokumenterat 2026-09-25)
+
+Appen använder INGET explicit datumfilter för nyheter — den använder varje RSS-källas
+egna fönster. Effektiva fönster (observerade 2026-09-25):
+
+| Källa | Effektivt fönster | Spänn |
+|---|---|---|
+| BK Häcken (bkhacken.se/feed) | 2026-09-08 → 2026-09-22 | 14 dagar |
+| Sportbladet | 2026-09-21 → 2026-09-25 | 3 dagar |
+| Expressen | 2026-09-24 → 2026-09-25 | 1 dag |
+| SVT Sport | 2026-09-24 → 2026-09-25 | 0–1 dag |
+| Bollsvenskan | senaste 10 inläggen | ~dagar |
+| Allsvenskan | 2026-08-11 → 2026-09-14 | 33 dagar |
+
+Sökintervall varierar alltså per källa eftersom RSS-flöden har olika retention.
+Detta är dokumenterat, inte konstgjort utökat. Källspecifik skillnad är förväntad
+eftersom flödena publicerar olika många artiklar per dag.
+
 ## Produktregler för data (2026-09-25)
 
 - Aktuell säsong = 2026 (SportoMedia). Historiska säsonger får ALDRIG tyst ersätta 2026-data; om 2026-data saknas visas explicit banner (`currentDataUnavailable`).

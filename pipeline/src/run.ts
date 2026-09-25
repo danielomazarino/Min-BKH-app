@@ -55,6 +55,40 @@ const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
  * News sources (all verified 2026-09-25, see docs/SOURCES.md for the audit).
  * Roles per publication are in newsEvents.ts.
  */
+/**
+ * Known BK Häcken women's-team players — used as women's-context evidence in
+ * news classification. Sourced from bkhacken.se/lag/dam/trupp (verified
+ * 2026-09-25). A secondary-source article mentioning any of these players is
+ * treated as women's-team coverage, never men's.
+ */
+const KNOWN_WOMEN_PLAYERS = [
+  "Jennifer Falk",
+  "Hanna Karlsson",
+  "Disa Hellwig",
+  "Ella McBride",
+  "Tabby Tindell",
+  "Josefine Rybrink",
+  "Lisa Löwing",
+  "Alva Selerud",
+  "Stine Sandbech",
+  "Emma Östlund",
+  "Aivi Luik",
+  "Halimatu Ayinde",
+  "Helena Sampaio",
+  "Elin Rubensson",
+  "Nathalie Staaf",
+  "Faith Chinzimu",
+  "Josefin Baudou",
+  "Pernille Sanvig",
+  "Laney Egbuka",
+  "Julie Steen",
+  "Tilde Karlsson",
+  "Tuva Ölvestad",
+  "Anna Anvegård",
+  "Maja Bodin",
+  "Joy Omewa",
+];
+
 const RSS_SOURCES = [
   { url: "https://bkhacken.se/feed", publisher: "BK Häcken" },
   { url: "https://rss.aftonbladet.se/rss2/small/pages/sections/sportbladet/fotboll/", publisher: "Sportbladet" },
@@ -340,9 +374,13 @@ async function main() {
   const { next, last, upcoming, recent } = pickNextAndLast(foot.matches);
 
   // Entity/relation-based news relevance (replaces generic keyword matching).
+  // Women's-team identity evidence: known women's squad players + Damallsvenskan
+  // opponents. Sourced from bkhacken.se dam trupp (verified 2026-09-25).
   const known: KnownPersons = {
     currentPlayers: foot.squadStats.map((p) => p.playerName),
     formerPlayers: formerPlayers.players.map((p) => p.name),
+    womenPlayers: KNOWN_WOMEN_PLAYERS,
+    womenContextTerms: ["damallsvenskan", "svenska cupen dam", "champions league dam", "europa cup dam"],
   };
   const relevantNews = news
     .filter((n) => {
@@ -448,10 +486,24 @@ function writeFormerIfBetter(
     return;
   }
   if (isEmpty(next)) {
+    // Fresh enrichment is empty (e.g. Firecrawl 429), but the fresh LIST still
+    // reflects the current registry — new/removed registry entries must apply.
+    // Merge: keep prev's enriched fields for players still in the registry,
+    // add brand-new registry entries, drop players no longer in the registry.
+    const nextById = new Map(next.players.map((p) => [p.id, p]));
     const merged: FormerPlayersData = {
       generatedAt: next.generatedAt,
       sourceStatus: next.sourceStatus,
-      players: prev.players.filter(notCurrent),
+      players: [
+        ...prev.players
+          .filter(notCurrent)
+          .filter((p) => nextById.has(p.id))
+          .map((p) => {
+            const fresh = nextById.get(p.id)!;
+            return { ...p, aliases: fresh.aliases, name: fresh.name };
+          }),
+        ...next.players.filter((p) => !prev.players.some((o) => o.id === p.id)),
+      ],
     };
     writeFileSync(path, JSON.stringify(merged, null, 2));
     return;

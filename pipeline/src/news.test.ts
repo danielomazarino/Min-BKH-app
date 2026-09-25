@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { classifyNews, menRelevantNews, isClubPromotional } from "./classify";
 import { dedupeNews, normalizeTitle, canonicalUrl } from "./dedupe";
+import { buildNewsEvents } from "./newsEvents";
+import { classifyRelevance } from "./newsRelevance";
 import type { NewsItem } from "./types";
 
 function news(overrides: Partial<NewsItem>): NewsItem {
@@ -87,5 +89,37 @@ describe("news deduplication", () => {
 
   it("strips tracking params from URLs", () => {
     expect(canonicalUrl("https://example.com/a/?utm_source=x&id=1")).toBe("https://example.com/a");
+  });
+
+  it("same men's event from two publishers → one event with two sources, original URLs preserved", () => {
+    const official = news({ id: "1", title: "Häcken vinner mot Kalmar", publisher: "BK Häcken", url: "https://bkhacken.se/nyhet/x", sourceRole: "primary" });
+    const secondary = news({ id: "2", title: "Häcken vinner mot Kalmar", publisher: "Sportbladet", url: "https://www.aftonbladet.se/sportbladet/a/xyz", sourceRole: "secondary", publishedAt: "2026-09-21T10:00:00Z" });
+    const events = buildNewsEvents(dedupeNews([official, secondary]));
+    expect(events).toHaveLength(1);
+    expect(events[0].sources).toHaveLength(2);
+    const pubs = events[0].sources.map((s) => s.publisher);
+    expect(pubs).toContain("BK Häcken");
+    expect(pubs).toContain("Sportbladet");
+    // Original URLs preserved per source.
+    expect(events[0].sources.map((s) => s.url)).toContain("https://www.aftonbladet.se/sportbladet/a/xyz");
+    // Firecrawl never becomes a publisher.
+    expect(pubs).not.toContain("Firecrawl");
+  });
+
+  it("different events remain separate", () => {
+    const a = news({ id: "1", title: "Häcken vinner mot Kalmar", url: "https://a.com/1" });
+    const b = news({ id: "2", title: "Häcken förlorar mot Malmö", url: "https://b.com/2" });
+    const events = buildNewsEvents(dedupeNews([a, b]));
+    expect(events).toHaveLength(2);
+  });
+
+  it("women's event is excluded from men's feed by relevance filter", () => {
+    // Covered in newsRelevance.test.ts; here we verify the pipeline filter shape:
+    // an item classified UNRELATED (women) never reaches buildNewsEvents input.
+    const women = news({ id: "3", title: "Falk utvisad i Häckens CL-premiär", publisher: "Sportbladet" });
+    // Simulate the run.ts filter with women's identity present:
+    const known = { currentPlayers: ["Gustav Lindgren"], formerPlayers: [], womenPlayers: ["Jennifer Falk"], womenContextTerms: [] };
+    const r = classifyRelevance(women, known);
+    expect(r.relevance === "CURRENT_HACKEN").toBe(false);
   });
 });

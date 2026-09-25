@@ -125,6 +125,26 @@ describe("former player search", () => {
     expect(searchPlayers(players, "rygaard")).toHaveLength(1);
   });
 
+  it("resolves alias to same canonical player: David Marek → David Frölund", () => {
+    const frolund = player({
+      id: "david-frolund",
+      name: "David Frölund",
+      aliases: ["marek", "david marek", "frolund"],
+    });
+    const roster = [...players, frolund];
+    // Both names resolve to the same canonical player.
+    expect(searchPlayers(roster, "Frölund").map((p) => p.id)).toEqual(["david-frolund"]);
+    expect(searchPlayers(roster, "Marek").map((p) => p.id)).toEqual(["david-frolund"]);
+    expect(searchPlayers(roster, "david marek").map((p) => p.id)).toEqual(["david-frolund"]);
+    // Diacritic-insensitive: frolund matches Frölund.
+    expect(searchPlayers(roster, "frolund")).toHaveLength(1);
+  });
+
+  it("unknown person produces no fabricated result", () => {
+    expect(searchPlayers(players, "David Fredlund")).toHaveLength(0);
+    expect(searchPlayers(players, "Zlatan Ibrahimovic")).toHaveLength(0);
+  });
+
   it("empty query returns all players", () => {
     expect(searchPlayers(players, "")).toHaveLength(4);
     expect(searchPlayers(players, "   ")).toHaveLength(4);

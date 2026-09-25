@@ -37,6 +37,10 @@ export interface KnownPersons {
   currentPlayers: string[];
   formerPlayers: string[];
   staff?: string[];
+  /** Known women's-team players — their presence marks an article as women's. */
+  womenPlayers?: string[];
+  /** Known women's-team opponents/competitions (Damallsvenskan clubs etc.). */
+  womenContextTerms?: string[];
 }
 
 function norm(s: string): string {
@@ -62,6 +66,29 @@ export function mentionsKnownPerson(title: string, summary: string, persons: str
     const key = norm(p);
     if (key.length < 4) continue;
     if (text.includes(key)) return p;
+    // Surname-only match: headlines often use just the surname ("Falk utvisad").
+    // Word-boundary match on the surname — substring matching would false-positive
+    // ("Lindelöf" contains "linde", "Ibrahimovic" contains "ibrahim").
+    // Surnames that are also common Swedish words ("Seger" = victory, "Sten" = stone)
+    // are excluded from surname-only matching — they require the full name.
+    const parts = key.split(" ").filter(Boolean);
+    const surname = parts[parts.length - 1];
+    const AMBIGUOUS_SURNAMES = new Set([
+      // common Swedish words
+      "seger", "sten", "berg", "lund", "mark", "wall", "dahl", "holm", "borg", "gren",
+      // among the most common Swedish surnames — too ambiguous for surname-only
+      // matching ("Viktor Andersson" must never match squad player "David Andersson")
+      "andersson", "johansson", "karlsson", "gustafson", "gustafsson", "nilsson",
+      "eriksson", "larsson", "olsson", "persson", "svensson", "jansson",
+    ]);
+    if (
+      parts.length >= 2 &&
+      surname.length >= 4 &&
+      !AMBIGUOUS_SURNAMES.has(surname) &&
+      new RegExp(`\\b${surname}\\b`).test(text)
+    ) {
+      return p;
+    }
   }
   return null;
 }
@@ -101,7 +128,11 @@ export function classifyRelevance(
 
   // Women's/youth context always wins over men's relevance.
   const text = norm(`${title} ${summary}`);
-  const womenContext = /damallsvenskan|damlaget|damerna|\bdam\b|kvinnor|obs dam/.test(text);
+  const womenContext =
+    /damallsvenskan|damlaget|damerna|damfotboll|kvinnor|obs dam|kvinnlig/.test(text) ||
+    // Known women's-team players are strong women's evidence (e.g. Jennifer Falk).
+    mentionsKnownPerson(title, summary, known.womenPlayers ?? []) !== null ||
+    (known.womenContextTerms ?? []).some((t) => text.includes(norm(t)));
   const youthContext = /akademi|u19|u17|pojkar|flickor|junior|p05|p07/.test(text);
 
   // 1) Official club source: relevance established by source metadata.
@@ -123,7 +154,21 @@ export function classifyRelevance(
         matchedPerson: person,
       };
     }
-    return { relevance: "CURRENT_HACKEN", category: "men", reason: "explicit Häcken mention" };
+    if (publisher === "BK Häcken") {
+      return { relevance: "CURRENT_HACKEN", category: "men", reason: "official club source" };
+    }
+    // Secondary source with Häcken mention but NO men's evidence (no known
+    // men's player, no men's competition marker). The Häcken mention alone
+    // cannot distinguish men's from women's team — be conservative.
+    const menMarker = /allsvenskan(?!\s*dam)|herr(?:ar|lag)?\b|svenska cupen herr/i.test(text);
+    if (!menMarker) {
+      return {
+        relevance: "UNKNOWN",
+        category: "unknown",
+        reason: "Häcken mention but no men's evidence — could be women's team",
+      };
+    }
+    return { relevance: "CURRENT_HACKEN", category: "men", reason: "Häcken mention + men's competition marker" };
   }
 
   // 3) Known Häcken person without explicit club mention (e.g. transfer story).

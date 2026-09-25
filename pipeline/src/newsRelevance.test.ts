@@ -64,9 +64,14 @@ describe("classifyRelevance — genuine Häcken articles retained", () => {
     expect(r.relevance).toBe("CURRENT_HACKEN");
   });
 
-  it("explicit Häcken mention is CURRENT_HACKEN", () => {
-    const r = cls("Häcken tog tre poäng borta", "Segern i Göteborg lyfte laget i tabellen.");
+  it("Häcken mention with men's competition marker is CURRENT_HACKEN", () => {
+    const r = cls("Häcken tog tre poäng i Allsvenskan", "Segern lyfte laget i tabellen.");
     expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("Häcken mention without men's evidence is UNKNOWN (could be women's)", () => {
+    const r = cls("Häcken tog tre poäng borta", "Segern i Göteborg lyfte laget i tabellen.");
+    expect(r.relevance).toBe("UNKNOWN");
   });
 
   it("Häcken + known current player is CURRENT_HACKEN", () => {
@@ -98,5 +103,52 @@ describe("classifyRelevance — genuine Häcken articles retained", () => {
   it("youth context on official source is UNRELATED", () => {
     const r = cls("Häcken akademi vann derby", "Pojkarna U17 visade stark form.", "BK Häcken");
     expect(r.relevance).toBe("UNRELATED");
+  });
+});
+describe("classifyRelevance — women's-team exclusion (regression: Sportbladet 2026-09)", () => {
+  const KNOWN_W = {
+    currentPlayers: ["Gustav Lindgren", "Abdoulaye Doumbia"],
+    formerPlayers: [],
+    womenPlayers: ["Jennifer Falk", "Elin Rubensson", "Laney Egbuka"],
+    womenContextTerms: ["damallsvenskan", "champions league dam"],
+  };
+  const clsw = (title: string, summary = "", publisher = "Sportbladet") =>
+    classifyRelevance({ title, summary, publisher }, KNOWN_W);
+
+  it("supplied women's article (målvakter mot Juventus) is NOT men's", () => {
+    // Real RSS title+summary as the app receives it. No men's evidence → UNKNOWN, excluded from men's feed.
+    const r = clsw("Häckens målvakter mot Juventus – två tonåringar", "”Lite speciellt” ✓ Så blir det nu");
+    expect(r.relevance).toBe("UNKNOWN");
+  });
+
+  it("women's article with known women's player (Falk utvisad) is UNRELATED", () => {
+    const r = clsw("Förlust och Falk utvisad i Häckens CL-premiär", "16-åring tvingades in i målvaktsrollen");
+    expect(r.relevance).toBe("UNRELATED");
+    expect(r.reason).toContain("women's context");
+  });
+
+  it("surname-only women's player match works (Falk)", () => {
+    const r = clsw("Falk räddade poängen för Häcken", "");
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("Damallsvenskan term marks women's context", () => {
+    const r = clsw("Häcken vinner i Damallsvenskan", "Storseger borta.");
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("genuine men's article with known men's player is accepted", () => {
+    const r = clsw("Häcken tog tre poäng i Allsvenskan", "Gustav Lindgren gjorde matchens mål.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("men's competition marker without player is accepted", () => {
+    const r = clsw("Häcken vann i Svenska Cupen herr", "1-0 efter mål i andra halvlek.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("generic Häcken article without men's evidence is not silently men's", () => {
+    const r = clsw("Häcken spelar nästa vecka", "");
+    expect(r.relevance).toBe("UNKNOWN");
   });
 });
