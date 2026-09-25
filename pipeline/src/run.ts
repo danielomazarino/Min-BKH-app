@@ -422,7 +422,7 @@ async function main() {
   const gem = await synthesizeWithGemini(geminiInput);
   STATUS.gemini = gem.status.ok ? "ok" : gem.result === null ? "failed" : "ok";
   console.log(
-    `news: gemini ok=${gem.status.ok} calls=${gem.status.calls} events=${gem.result?.events.length ?? 0} articleTextUnavailable=${textFailures}` +
+    `news: gemini ok=${gem.status.ok} model=${gem.status.model ?? "none"} calls=${gem.status.calls} events=${gem.result?.events.length ?? 0} articleTextUnavailable=${textFailures}` +
       (gem.status.error ? ` error="${gem.status.error}"` : ""),
   );
 

@@ -22,11 +22,32 @@ import type { NewsCategory, NewsEvent, NewsItem } from "./types";
 import { buildNewsEvents, publisherRole } from "./newsEvents";
 
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
-// gemini-2.5-flash is restricted to accounts that used it historically and
-// returns HTTP 404 for new keys (verified 2026-09-25). Google recommends
-// gemini-3.8-flash for new projects. Override with GEMINI_MODEL if needed.
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.8-flash";
 const TIMEOUT_MS = 120000;
+
+/**
+ * Ordered model candidates.
+ *
+ * Verified 2026-09-25 against a real key:
+ *   gemini-2.5-flash   -> HTTP 404 "no longer available to new users"
+ *   gemini-3.8-flash   -> HTTP 503 UNAVAILABLE "high demand" (capacity, not auth)
+ *
+ * So the model is a runtime concern, not a build-time constant. We try the
+ * candidates in order and use the first that answers. GEMINI_MODEL pins a
+ * single model (useful for debugging).
+ */
+const DEFAULT_MODELS = [
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+];
+const MODELS = (() => {
+  const pinned = process.env.GEMINI_MODEL;
+  return pinned ? [pinned] : DEFAULT_MODELS;
+})();
+
+/** HTTP statuses worth retrying on a different model / after a pause. */
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 
 export const MAX_SUMMARY_CHARS = 200;
 
@@ -116,6 +137,8 @@ export interface GeminiStatus {
   ok: boolean;
   error?: string;
   calls: number;
+  /** Which model actually produced the answer. */
+  model?: string;
 }
 
 /** Build the single batched request payload. Exported for tests. */
@@ -164,25 +187,61 @@ Endast artiklar med scope "men" ska ingå i events.`,
 interface GeminiCallResult {
   text: string;
   calls: number;
+  model: string;
 }
 
-/** One HTTP call. Throws on failure so the caller can fall back safely. */
-async function callGemini(articles: GeminiArticleInput[]): Promise<GeminiCallResult> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY is not set");
-  const res = await fetch(`${ENDPOINT}/${MODEL}:generateContent`, {
+class GeminiHttpError extends Error {
+  constructor(readonly status: number, body: string) {
+    super(`Gemini HTTP ${status}: ${body.slice(0, 300)}`);
+  }
+}
+
+/** One HTTP call against a specific model. */
+async function callModel(
+  model: string,
+  articles: GeminiArticleInput[],
+  apiKey: string,
+): Promise<GeminiCallResult> {
+  const res = await fetch(`${ENDPOINT}/${model}:generateContent`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify(buildGeminiRequestPayload(articles)),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
-  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  if (!res.ok) throw new GeminiHttpError(res.status, await res.text());
   const json = (await res.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   };
   const text = json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
   if (!text.trim()) throw new Error("Gemini returned an empty response");
-  return { text, calls: 1 };
+  return { text, calls: 1, model };
+}
+
+/**
+ * Try each candidate model in order. A model that is retired (404) or at
+ * capacity (503) is skipped; a 401/403 is fatal and stops immediately, because
+ * that means the key is wrong and retrying other models is pointless.
+ */
+async function callGemini(articles: GeminiArticleInput[]): Promise<GeminiCallResult> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY is not set");
+  const errors: string[] = [];
+  let calls = 0;
+  for (const model of MODELS) {
+    try {
+      const r = await callModel(model, articles, key);
+      return { ...r, calls: calls + 1 };
+    } catch (e) {
+      calls++;
+      const status = e instanceof GeminiHttpError ? e.status : 0;
+      const msg = e instanceof Error ? e.message : String(e);
+      errors.push(`${model}: ${msg}`);
+      console.warn(`gemini: model ${model} failed — ${msg}`);
+      if (status === 401 || status === 403) break;
+      if (status && !RETRYABLE.has(status)) break;
+    }
+  }
+  throw new Error(errors.join(" | "));
 }
 
 const Parsed = z.object({
@@ -252,16 +311,16 @@ export async function synthesizeWithGemini(
     };
   }
   try {
-    const { text, calls } = await callGemini(articles);
+    const { text, calls, model } = await callGemini(articles);
     const ids = articles.map((a) => a.id);
     const { result, unknownIds } = parseGeminiResponse(text, ids);
     if (result.events.length === 0) {
-      return { result: null, status: { ok: false, error: "Gemini returned no usable events", calls }, raw: text };
+      return { result: null, status: { ok: false, error: "Gemini returned no usable events", calls, model }, raw: text };
     }
     if (unknownIds.length) {
       console.warn(`gemini: ignored unknown article ids: ${unknownIds.join(", ")}`);
     }
-    return { result, status: { ok: true, calls }, raw: text };
+    return { result, status: { ok: true, calls, model }, raw: text };
   } catch (e) {
     return {
       result: null,
