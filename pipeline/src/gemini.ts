@@ -41,10 +41,11 @@ const DEFAULT_MODELS = [
   "gemini-3.6-flash",
   "gemini-3.5-flash",
 ];
-const MODELS = (() => {
+/** Read per call, not at import time, so the env override is always honoured. */
+function candidateModels(): string[] {
   const pinned = process.env.GEMINI_MODEL;
   return pinned ? [pinned] : DEFAULT_MODELS;
-})();
+}
 
 /** HTTP statuses worth retrying on a different model / after a pause. */
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
@@ -196,6 +197,20 @@ class GeminiHttpError extends Error {
   }
 }
 
+/** Maximum retries per model, AFTER the initial request. Bounded on purpose. */
+const MAX_RETRIES_PER_MODEL = 2;
+/** Backoff before retry N (1-based). Short — this is a nightly batch job. */
+const RETRY_DELAY_MS = [5_000, 20_000];
+/** Test seam: GEMINI_RETRY_DELAY_MS=0 makes retry-backoff tests instant. */
+function retryDelay(attempt: number): number {
+  const override = Number(process.env.GEMINI_RETRY_DELAY_MS);
+  return Number.isFinite(override) && override >= 0 ? override : RETRY_DELAY_MS[attempt];
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 /** One HTTP call against a specific model. */
 async function callModel(
   model: string,
@@ -218,27 +233,40 @@ async function callModel(
 }
 
 /**
- * Try each candidate model in order. A model that is retired (404) or at
- * capacity (503) is skipped; a 401/403 is fatal and stops immediately, because
- * that means the key is wrong and retrying other models is pointless.
+ * Try each candidate model in order, with a BOUNDED retry for transient
+ * failures only.
+ *
+ * Retried (capacity / rate limits): 429, 500, 502, 503, 504 — at most
+ * MAX_RETRIES_PER_MODEL times, then we move on to the next model.
+ *
+ * NOT retried, because retrying cannot help:
+ *   400 malformed request, 401/403 bad key, 404 retired model — we break out.
  */
 async function callGemini(articles: GeminiArticleInput[]): Promise<GeminiCallResult> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY is not set");
   const errors: string[] = [];
   let calls = 0;
-  for (const model of MODELS) {
-    try {
-      const r = await callModel(model, articles, key);
-      return { ...r, calls: calls + 1 };
-    } catch (e) {
-      calls++;
-      const status = e instanceof GeminiHttpError ? e.status : 0;
-      const msg = e instanceof Error ? e.message : String(e);
-      errors.push(`${model}: ${msg}`);
-      console.warn(`gemini: model ${model} failed — ${msg}`);
-      if (status === 401 || status === 403) break;
-      if (status && !RETRYABLE.has(status)) break;
+  for (const model of candidateModels()) {
+    for (let attempt = 0; attempt <= MAX_RETRIES_PER_MODEL; attempt++) {
+      try {
+        const r = await callModel(model, articles, key);
+        return { ...r, calls: calls + 1 };
+      } catch (e) {
+        calls++;
+        const status = e instanceof GeminiHttpError ? e.status : 0;
+        const msg = e instanceof Error ? e.message : String(e);
+        const canRetry = status !== 0 && RETRYABLE.has(status) && attempt < MAX_RETRIES_PER_MODEL;
+        console.warn(
+          `gemini: model ${model} attempt ${attempt + 1}/${MAX_RETRIES_PER_MODEL + 1} failed — ${msg}` +
+            (canRetry ? ` (retrying in ${retryDelay(attempt) / 1000}s)` : ""),
+        );
+        if (!canRetry) {
+          errors.push(`${model}: ${msg}`);
+          break;
+        }
+        await sleep(retryDelay(attempt));
+      }
     }
   }
   throw new Error(errors.join(" | "));

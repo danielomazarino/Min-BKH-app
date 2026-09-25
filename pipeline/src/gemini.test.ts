@@ -5,7 +5,7 @@
  * what we send, how we validate the response, how we build events, and how we
  * fail safely. Section 22 of the task.
  */
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import {
   buildEventsFromGemini,
   buildGeminiRequestPayload,
@@ -13,6 +13,7 @@ import {
   synthesizeWithGemini,
   truncateSummary,
   MAX_SUMMARY_CHARS,
+  type GeminiArticleInput,
   type GeminiResult,
 } from "./gemini";
 import { prefilterNews } from "./newsPrefilter";
@@ -258,11 +259,14 @@ describe("failure behaviour", () => {
   });
 
   it("returns null on an HTTP error", async () => {
+    // 500 is transient, so the retry path would otherwise burn real backoff here.
+    process.env.GEMINI_RETRY_DELAY_MS = "0";
     vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 500 })));
     process.env.GEMINI_API_KEY = "test-key";
     const { result, status } = await synthesizeWithGemini([{ id: "a4", publisher: "SVT", title: "T", url: "u", publishedAt: "d", categoryHint: "unknown" }]);
     expect(result).toBeNull();
     expect(status.error).toContain("HTTP 500");
+    delete process.env.GEMINI_RETRY_DELAY_MS;
   });
 
   it("rejects a response whose shape does not match the schema", () => {
@@ -271,6 +275,106 @@ describe("failure behaviour", () => {
 
   it("produces no events from a null Gemini result (caller keeps deterministic events)", () => {
     expect(buildEventsFromGemini(ARTICLES, null)).toHaveLength(0);
+  });
+});
+
+// ---------- bounded retry (transient failures only) ----------
+
+const ONE_ARTICLE: GeminiArticleInput[] = [
+  { id: "a4", publisher: "SVT", title: "T", url: "u", publishedAt: "d", categoryHint: "unknown" },
+];
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+/** Fresh object per call — a Response body can only be read once. */
+function httpError(status: number, text = "busy"): () => Response {
+  return () => new Response(text, { status });
+}
+
+const GOOD_BODY = {
+  candidates: [
+    {
+      content: {
+        parts: [
+          {
+            text: JSON.stringify({
+              verdicts: [{ articleId: "a4", scope: "men", confidence: "high", reason: "Allsvenskan herrlag" }],
+              events: [{ title: "Hattrick", summary: "Gustav Lindgren gjorde hattrick mot Kalmar.", articleIds: ["a4"] }],
+            }),
+          },
+        ],
+      },
+    },
+  ],
+};
+
+describe("bounded retry", () => {
+  // GEMINI_RETRY_DELAY_MS=0 removes the real backoff so these run instantly.
+  beforeEach(() => {
+    process.env.GEMINI_RETRY_DELAY_MS = "0";
+    process.env.GEMINI_MODEL = "gemini-3.8-flash";
+  });
+  afterEach(() => {
+    delete process.env.GEMINI_RETRY_DELAY_MS;
+    delete process.env.GEMINI_MODEL;
+  });
+
+  it("retries a 503 and succeeds on the second attempt", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    const mock = vi
+      .fn()
+      .mockImplementationOnce(httpError(503))
+      .mockImplementationOnce(() => jsonResponse(GOOD_BODY))
+      .mockImplementation(httpError(503));
+    vi.stubGlobal("fetch", mock);
+    const { result, status } = await synthesizeWithGemini(ONE_ARTICLE);
+    expect(result).not.toBeNull();
+    expect(status.ok).toBe(true);
+    expect(status.model).toBe("gemini-3.8-flash");
+    expect(mock).toHaveBeenCalledTimes(2);
+  });
+
+  it("gives up on a 503 after exactly 2 retries (3 attempts total), not an unbounded loop", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    const mock = vi.fn().mockImplementation(httpError(503));
+    vi.stubGlobal("fetch", mock);
+    const { result, status } = await synthesizeWithGemini(ONE_ARTICLE);
+    expect(result).toBeNull();
+    expect(status.ok).toBe(false);
+    expect(status.error).toContain("503");
+    expect(mock).toHaveBeenCalledTimes(3); // initial + 2 retries
+  });
+
+  it("does NOT retry a permanent 400", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    const mock = vi.fn().mockImplementation(httpError(400, "bad request"));
+    vi.stubGlobal("fetch", mock);
+    const { result } = await synthesizeWithGemini(ONE_ARTICLE);
+    expect(result).toBeNull();
+    expect(mock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT retry a 401", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    const mock = vi.fn().mockImplementation(httpError(401, "unauthorized"));
+    vi.stubGlobal("fetch", mock);
+    const { result } = await synthesizeWithGemini(ONE_ARTICLE);
+    expect(result).toBeNull();
+    expect(mock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT retry a retired model (404)", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    const mock = vi.fn().mockImplementation(httpError(404, "no longer available"));
+    vi.stubGlobal("fetch", mock);
+    const { result } = await synthesizeWithGemini(ONE_ARTICLE);
+    expect(result).toBeNull();
+    expect(mock).toHaveBeenCalledTimes(1);
   });
 });
 
