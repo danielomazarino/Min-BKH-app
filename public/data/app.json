@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T10:23:13.382Z",
+    "generatedAt": "2026-09-25T11:25:26.798Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,7 +16,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T10:22:46.274Z",
+    "retrievedAt": "2026-09-25T11:24:59.692Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -499,6 +499,373 @@
     "atRisk": [],
     "generatedAt": "2026-09-25T03:43:24.617Z"
   },
+  "discipline": [
+    {
+      "playerId": "fogis:1564471",
+      "playerName": "Abdoulaye Doumbia",
+      "warningCount": 6,
+      "redCards": 0,
+      "status": "suspended_next",
+      "relevantWarnings": [
+        {
+          "matchId": 6529838,
+          "date": "2026-04-11T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529848,
+          "date": "2026-04-19T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529889,
+          "date": "2026-05-17T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529945,
+          "date": "2026-08-01T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529959,
+          "date": "2026-08-17T17:00:00.000Z"
+        },
+        {
+          "matchId": 6529977,
+          "date": "2026-08-29T13:00:00.000Z"
+        }
+      ],
+      "servedAt": "2026-05-25T17:00:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:1251827",
+      "playerName": "Mikkel Rygaard Jensen",
+      "warningCount": 5,
+      "redCards": 0,
+      "status": "at_risk",
+      "relevantWarnings": [
+        {
+          "matchId": 6529838,
+          "date": "2026-04-11T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529859,
+          "date": "2026-04-22T17:00:00.000Z"
+        },
+        {
+          "matchId": 6529879,
+          "date": "2026-05-10T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529910,
+          "date": "2026-07-06T17:00:00.000Z"
+        },
+        {
+          "matchId": 6529945,
+          "date": "2026-08-01T13:00:00.000Z"
+        }
+      ],
+      "servedAt": "2026-05-17T14:30:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:453737",
+      "playerName": "Filip Helander",
+      "warningCount": 4,
+      "redCards": 0,
+      "status": "served",
+      "relevantWarnings": [
+        {
+          "matchId": 6529833,
+          "date": "2026-04-06T12:00:00.000Z"
+        },
+        {
+          "matchId": 6529838,
+          "date": "2026-04-11T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529897,
+          "date": "2026-05-25T17:00:00.000Z"
+        },
+        {
+          "matchId": 6529920,
+          "date": "2026-07-11T15:30:00.000Z"
+        }
+      ],
+      "servedAt": "2026-05-31T12:00:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "name:silas sinan erhen thorup andersen",
+      "playerName": "Silas Sinan Erhen Thorup Andersen",
+      "warningCount": 4,
+      "redCards": 0,
+      "status": "served",
+      "relevantWarnings": [
+        {
+          "matchId": 6529838,
+          "date": "2026-04-11T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529848,
+          "date": "2026-04-19T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529859,
+          "date": "2026-04-22T17:00:00.000Z"
+        },
+        {
+          "matchId": 6529904,
+          "date": "2026-05-31T12:00:00.000Z"
+        }
+      ],
+      "servedAt": "2026-04-27T17:00:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:478646",
+      "playerName": "Adam Lundkvist",
+      "warningCount": 3,
+      "redCards": 0,
+      "status": "served",
+      "relevantWarnings": [
+        {
+          "matchId": 6529833,
+          "date": "2026-04-06T12:00:00.000Z"
+        },
+        {
+          "matchId": 6529838,
+          "date": "2026-04-11T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529920,
+          "date": "2026-07-11T15:30:00.000Z"
+        }
+      ],
+      "servedAt": "2026-07-19T14:30:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:770195",
+      "playerName": "Gustav Lindgren",
+      "warningCount": 3,
+      "redCards": 0,
+      "status": "served",
+      "relevantWarnings": [
+        {
+          "matchId": 6529848,
+          "date": "2026-04-19T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529874,
+          "date": "2026-05-02T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529971,
+          "date": "2026-08-21T17:00:00.000Z"
+        }
+      ],
+      "servedAt": "2026-08-29T13:00:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "name:jeremy agbonifo",
+      "playerName": "Jeremy Agbonifo",
+      "warningCount": 3,
+      "redCards": 0,
+      "status": "served",
+      "relevantWarnings": [
+        {
+          "matchId": 6529889,
+          "date": "2026-05-17T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529897,
+          "date": "2026-05-25T17:00:00.000Z"
+        },
+        {
+          "matchId": 6529904,
+          "date": "2026-05-31T12:00:00.000Z"
+        }
+      ],
+      "servedAt": "2026-07-06T17:00:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:705320",
+      "playerName": "Julius Lindberg",
+      "warningCount": 3,
+      "redCards": 0,
+      "status": "served",
+      "relevantWarnings": [
+        {
+          "matchId": 6529838,
+          "date": "2026-04-11T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529879,
+          "date": "2026-05-10T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529934,
+          "date": "2026-07-27T17:00:00.000Z"
+        }
+      ],
+      "servedAt": "2026-08-01T13:00:00.000Z",
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:758301",
+      "playerName": "Adrian Svanbäck",
+      "warningCount": 2,
+      "redCards": 0,
+      "status": "at_risk",
+      "relevantWarnings": [
+        {
+          "matchId": 6529879,
+          "date": "2026-05-10T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529959,
+          "date": "2026-08-17T17:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "name:amor layouni",
+      "playerName": "Amor Layouni",
+      "warningCount": 2,
+      "redCards": 0,
+      "status": "at_risk",
+      "relevantWarnings": [
+        {
+          "matchId": 6529848,
+          "date": "2026-04-19T14:30:00.000Z"
+        },
+        {
+          "matchId": 6529897,
+          "date": "2026-05-25T17:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:1499101",
+      "playerName": "Brice Wembangomo",
+      "warningCount": 2,
+      "redCards": 0,
+      "status": "at_risk",
+      "relevantWarnings": [
+        {
+          "matchId": 6529874,
+          "date": "2026-05-02T13:00:00.000Z"
+        },
+        {
+          "matchId": 6529889,
+          "date": "2026-05-17T14:30:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:480798",
+      "playerName": "Andreas Linde",
+      "warningCount": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6529904,
+          "date": "2026-05-31T12:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "name:christ ivan alex wawa",
+      "playerName": "Christ Ivan Alex Wawa",
+      "warningCount": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6529949,
+          "date": "2026-08-09T12:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:750969",
+      "playerName": "David Seger",
+      "warningCount": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6529959,
+          "date": "2026-08-17T17:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:540307",
+      "playerName": "Etrit Berisha",
+      "warningCount": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6529977,
+          "date": "2026-08-29T13:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:801089",
+      "playerName": "Harun Ibrahim",
+      "warningCount": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6529959,
+          "date": "2026-08-17T17:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:919310",
+      "playerName": "Olle Samuelsson",
+      "warningCount": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6530003,
+          "date": "2026-09-20T12:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:1009627",
+      "playerName": "Pontus Dahbo",
+      "warningCount": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6529945,
+          "date": "2026-08-01T13:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    }
+  ],
+  "cardMatchesInspected": 22,
   "news": [
     {
       "id": "BK Häcken-0-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
@@ -732,9 +1099,53 @@
       "discoveredVia": "rss",
       "dedupeKey": "https://bkhacken.se/nyhet/derby-och-kval-i-svenska-cupen-har-ar-truppen-mot-ifk-goteborg",
       "sourceRole": "primary"
+    },
+    {
+      "id": "Sportbladet-28-https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
+      "title": "Häckens målvakter mot Juventus – två tonåringar",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
+      "summary": "”Lite speciellt” ✓ Så blir det nu",
+      "publishedAt": "2026-09-22T23:15:23.000Z",
+      "publisher": "Sportbladet",
+      "category": "unknown",
+      "imageUrl": "https://akamai.vgc.no/v2/images/a46f4e84-409d-3014-98b1-df192a511cb3?format=auto&w=1000&s=d7927524cfabcffc51c5e70f25a9c9b8cd93090f",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "Sportbladet-31-https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
+      "title": "Förlust och Falk utvisad i Häckens CL-premiär",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
+      "summary": "16-åring tvingades in",
+      "publishedAt": "2026-09-22T18:39:45.000Z",
+      "publisher": "Sportbladet",
+      "category": "unknown",
+      "imageUrl": "https://akamai.vgc.no/v2/images/fe14cf69-a3e7-327b-b6bf-8dd75e5465b8?format=auto&w=1000&s=dd02ac0324d918b16957acc9ac86521c7fc8d3de",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
+      "sourceRole": "secondary"
     }
   ],
   "newsEvents": [
+    {
+      "id": "event-Sportbladet-28-https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
+      "title": "Häckens målvakter mot Juventus – två tonåringar",
+      "summary": "”Lite speciellt” ✓ Så blir det nu",
+      "publishedAt": "2026-09-22T23:15:23.000Z",
+      "latestPublishedAt": "2026-09-22T23:15:23.000Z",
+      "category": "unknown",
+      "sources": [
+        {
+          "publisher": "Sportbladet",
+          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris?utm_medium=rss",
+          "publishedAt": "2026-09-22T23:15:23.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
     {
       "id": "event-BK Häcken-0-https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
       "title": "Tuff Champions League-premiär mot Inter",
@@ -748,6 +1159,24 @@
           "url": "https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
           "publishedAt": "2026-09-22T20:15:00.000Z",
           "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Sportbladet-31-https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
+      "title": "Förlust och Falk utvisad i Häckens CL-premiär",
+      "summary": "16-åring tvingades in",
+      "publishedAt": "2026-09-22T18:39:45.000Z",
+      "latestPublishedAt": "2026-09-22T18:39:45.000Z",
+      "category": "unknown",
+      "sources": [
+        {
+          "publisher": "Sportbladet",
+          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/6qalE8/forlust-och-falk-utvisad-i-hackens-cl-premiar?utm_medium=rss",
+          "publishedAt": "2026-09-22T18:39:45.000Z",
+          "role": "secondary",
           "discoveredVia": "rss"
         }
       ],
@@ -1386,5 +1815,12 @@
       "redCards": 0,
       "competition": "Allsvenskan  2026"
     }
-  ]
+  ],
+  "disciplineRule": {
+    "rule": "warnings-per-suspension",
+    "ruleSource": "SvFF tävlingsbestämmelser stor herrfotboll 2026: tre varningar i olika matcher i samma tävling ger en matchers avstängning i samma tävling. Uppdateras om SvFF ändrar bestämmelserna.",
+    "ruleSourceUrl": "https://www.svenskfotboll.se/for-klubben/om-organisationen/dokument-och-regler/",
+    "threshold": 3,
+    "suspensionMatches": 1
+  }
 }

@@ -1,5 +1,15 @@
 import type { AppDataState } from "../data";
 import { competitionLabel, fmtDateTime } from "../data";
+import type { PlayerDiscipline } from "../../pipeline/src/types";
+
+const DISCIPLINE_BADGE: Record<PlayerDiscipline["status"], { label: string; kind: "red" | "yellow" | "" } | undefined> = {
+  none: undefined,
+  at_risk: { label: "En varning från avstängning", kind: "yellow" },
+  suspended_next: { label: "Avstängd nästa match", kind: "red" },
+  served: undefined,
+  red_suspended: { label: "Rött kort — avstängningsstatus okänd", kind: "red" },
+  unknown: { label: "Varningsstatus okänd", kind: "yellow" },
+};
 
 export default function Home({ state }: { state: AppDataState }) {
   if (state.status === "loading") return <Skeleton />;
@@ -12,7 +22,10 @@ export default function Home({ state }: { state: AppDataState }) {
     );
 
   const { data } = state;
-  const w = data.warnings;
+  // Disciplinary tile is derived from the season ledger (chronological card
+  // history + rule). Legacy `warnings` is no longer produced.
+  const discipline = data.discipline ?? [];
+  const flagged = discipline.filter((d) => d.status === "suspended_next" || d.status === "at_risk" || d.status === "red_suspended" || d.status === "unknown");
 
   return (
     <div>
@@ -48,30 +61,26 @@ export default function Home({ state }: { state: AppDataState }) {
       {/* 2. Warnings */}
       <section aria-labelledby="warnings-h">
         <h2 id="warnings-h">Varningar &amp; avstängningar</h2>
-        {w ? (
-          <div data-testid="warnings">
-            {w.suspended.length === 0 && w.atRisk.length === 0 ? (
-              <div className="card empty">Inga spelare är avstängda eller nära avstängning.</div>
-            ) : (
-              <>
-                {w.suspended.map((p) => (
-                  <div key={p.playerId} className="warn-strip suspended" data-testid="suspended-player">
-                    <strong>{p.playerName}</strong> <span className="badge red">Avstängd nästa match</span>
-                  </div>
-                ))}
-                {w.atRisk.map((p) => (
-                  <div key={p.playerId} className="warn-strip" data-testid="at-risk-player">
-                    <strong>{p.playerName}</strong> <span className="badge yellow">En varning från avstängning</span>
-                  </div>
-                ))}
-              </>
-            )}
-            <p className="meta">
-              Gäller {competitionLabel(w.competition)} {w.season}. Regel: {w.rule}.
-            </p>
-          </div>
+        {discipline.length === 0 ? (
+          <div className="card empty">Ingen varningsstatus kunde beräknas — kortdata saknas för säsongen.</div>
+        ) : flagged.length === 0 ? (
+          <div className="card empty">Inga spelare är avstängda eller nära avstängning.</div>
         ) : (
-          <div className="card empty">Varningsstatus kunde inte beräknas.</div>
+          <div data-testid="warnings">
+            {flagged.map((d) => {
+              return (
+                <div key={d.playerId} className={`warn-strip${d.status === "suspended_next" || d.status === "red_suspended" ? " suspended" : ""}`} data-testid={d.status === "suspended_next" || d.status === "red_suspended" ? "suspended-player" : "at-risk-player"}>
+                  <strong>{d.playerName}</strong> <span className={`badge ${DISCIPLINE_BADGE[d.status]?.kind ?? "yellow"}`}>{DISCIPLINE_BADGE[d.status]?.label}</span>
+                  <div className="meta">{d.warningCount} varningar denna säsong{d.incomplete ? " · ofullständig kortdata" : ""}</div>
+                </div>
+              );
+            })}
+            {data.disciplineRule && (
+              <p className="meta">
+                Regel: {data.disciplineRule.threshold} varningar i olika matcher → {data.disciplineRule.suspensionMatches} match(es) avstängning. Källa: {data.disciplineRule.ruleSource}
+              </p>
+            )}
+          </div>
         )}
       </section>
 

@@ -258,6 +258,8 @@ export interface AppData {
   discipline?: PlayerDiscipline[];
   /** Number of finished matches whose card events were inspected. */
   cardMatchesInspected?: number;
+  /** The disciplinary rule applied (for UI provenance). */
+  disciplineRule?: { rule: string; ruleSource: string; ruleSourceUrl: string; threshold: number; suspensionMatches: number };
   /** Set when current data could not be retrieved — UI must show this. */
   currentDataUnavailable?: CurrentDataUnavailable;
 }

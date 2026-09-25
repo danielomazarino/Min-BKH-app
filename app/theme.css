@@ -281,3 +281,7 @@ table.stats td.num, table.stats th.num { text-align: right; }
   background: var(--bkh-border);
   margin: 0 auto 12px;
 }
+
+/* Squad position groups */
+.pos-group h3 { color: var(--bkh-text-dim); }
+.pos-group .row { min-height: 44px; }

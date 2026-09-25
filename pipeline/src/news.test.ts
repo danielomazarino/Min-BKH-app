@@ -65,10 +65,14 @@ describe("news deduplication", () => {
     expect(dedupeNews([a, b])).toHaveLength(1);
   });
 
-  it("dedupes same normalized title within 3 days", () => {
+  it("groups same normalized title within 3 days into one event (keeps both sources)", () => {
     const a = news({ id: "1", title: "Häcken vinner mot Kalmar", publishedAt: "2026-09-20T10:00:00Z", url: "https://a.com/1" });
     const b = news({ id: "2", title: "Häcken vinner mot Kalmar", publishedAt: "2026-09-21T10:00:00Z", url: "https://b.com/2" });
-    expect(dedupeNews([a, b])).toHaveLength(1);
+    const out = dedupeNews([a, b]);
+    // Event-level dedup: both articles survive with a shared dedupeKey so
+    // buildNewsEvents can merge them into one event with two source pills.
+    expect(out).toHaveLength(2);
+    expect(out[0].dedupeKey).toBe(out[1].dedupeKey);
   });
 
   it("keeps same title outside the date window", () => {

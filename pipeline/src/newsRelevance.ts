@@ -49,9 +49,10 @@ function norm(s: string): string {
 /** Explicit Häcken mention in relevant context. */
 export function mentionsHäcken(title: string, summary: string): boolean {
   // norm() strips diacritics, so "häcken" becomes "hacken" — match the
-  // normalized form (also covers "BK Häcken" spacing variants).
+  // normalized form. "hackens?" also covers the possessive form "Häckens"
+  // (e.g. "Häckens CL-premiär"), which \bhacken\b alone rejected.
   const text = norm(`${title} ${summary}`);
-  return /\bhacken\b/.test(text) || /\bbk ?hacken\b/.test(text);
+  return /\bhackens?\b/.test(text) || /\bbk ?hackens?\b/.test(text);
 }
 
 /** Does the article mention a known Häcken person by name? */

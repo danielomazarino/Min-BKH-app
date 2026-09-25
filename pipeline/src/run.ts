@@ -108,6 +108,8 @@ interface FootballData {
   discipline: ReturnType<typeof computeSeasonDiscipline>;
   /** How many finished matches contributed card events. */
   cardMatchesInspected: number;
+  /** The disciplinary rule applied. */
+  disciplineRule?: AppData["disciplineRule"];
 }
 
 const SM_QUERY_VERSION = "sm-2026-09-25";
@@ -251,6 +253,9 @@ async function collectCurrentFootballData(): Promise<FootballData> {
     squadStats,
     discipline,
     cardMatchesInspected,
+    disciplineRule: rule
+      ? { rule: rule.rule, ruleSource: rule.ruleSource, ruleSourceUrl: rule.ruleSourceUrl, threshold: rule.threshold, suspensionMatches: rule.suspensionMatches }
+      : undefined,
   };
 }
 
@@ -360,6 +365,7 @@ async function main() {
     warnings: null,
     discipline: foot.discipline,
     cardMatchesInspected: foot.cardMatchesInspected,
+    disciplineRule: foot.disciplineRule,
     news: relevantNews,
     newsEvents: buildNewsEvents(relevantNews),
     formerPlayers: [],
@@ -412,10 +418,13 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
     table: next.table.length ? next.table : prev.table,
     tablePosition: next.tablePosition ?? prev.tablePosition,
     warnings: next.warnings ?? prev.warnings,
+    discipline: next.discipline?.length ? next.discipline : prev.discipline ?? [],
+    cardMatchesInspected: next.cardMatchesInspected || prev.cardMatchesInspected || 0,
     news: next.news.length ? next.news : prev.news,
     newsEvents: next.newsEvents.length ? next.newsEvents : (prev.newsEvents ?? []),
     formerPlayers: [],
     squadStats: next.squadStats?.length ? next.squadStats : prev.squadStats,
+    disciplineRule: next.disciplineRule ?? prev.disciplineRule,
     currentDataUnavailable: next.currentDataUnavailable ?? prev.currentDataUnavailable,
   };
   writeFileSync(path, JSON.stringify(merged, null, 2));
