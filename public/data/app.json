@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-25T21:12:05.940Z",
+    "generatedAt": "2026-09-26T03:43:17.006Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -17,7 +17,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-25T21:08:59.920Z",
+    "retrievedAt": "2026-09-26T03:42:30.169Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -505,6 +505,7 @@
       "playerId": "fogis:1564471",
       "playerName": "Abdoulaye Doumbia",
       "warningCount": 6,
+      "warningsUntilSuspension": 3,
       "redCards": 0,
       "status": "suspended_next",
       "relevantWarnings": [
@@ -540,6 +541,7 @@
       "playerId": "fogis:1251827",
       "playerName": "Mikkel Rygaard Jensen",
       "warningCount": 5,
+      "warningsUntilSuspension": 2,
       "redCards": 0,
       "status": "at_risk",
       "relevantWarnings": [
@@ -571,6 +573,7 @@
       "playerId": "fogis:453737",
       "playerName": "Filip Helander",
       "warningCount": 4,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "served",
       "relevantWarnings": [
@@ -598,6 +601,7 @@
       "playerId": "name:silas sinan erhen thorup andersen",
       "playerName": "Silas Sinan Erhen Thorup Andersen",
       "warningCount": 4,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "served",
       "relevantWarnings": [
@@ -625,6 +629,7 @@
       "playerId": "fogis:478646",
       "playerName": "Adam Lundkvist",
       "warningCount": 3,
+      "warningsUntilSuspension": 0,
       "redCards": 0,
       "status": "served",
       "relevantWarnings": [
@@ -648,6 +653,7 @@
       "playerId": "fogis:770195",
       "playerName": "Gustav Lindgren",
       "warningCount": 3,
+      "warningsUntilSuspension": 0,
       "redCards": 0,
       "status": "served",
       "relevantWarnings": [
@@ -671,6 +677,7 @@
       "playerId": "name:jeremy agbonifo",
       "playerName": "Jeremy Agbonifo",
       "warningCount": 3,
+      "warningsUntilSuspension": 0,
       "redCards": 0,
       "status": "served",
       "relevantWarnings": [
@@ -694,6 +701,7 @@
       "playerId": "fogis:705320",
       "playerName": "Julius Lindberg",
       "warningCount": 3,
+      "warningsUntilSuspension": 0,
       "redCards": 0,
       "status": "served",
       "relevantWarnings": [
@@ -717,6 +725,7 @@
       "playerId": "fogis:758301",
       "playerName": "Adrian Svanbäck",
       "warningCount": 2,
+      "warningsUntilSuspension": 2,
       "redCards": 0,
       "status": "at_risk",
       "relevantWarnings": [
@@ -735,6 +744,7 @@
       "playerId": "name:amor layouni",
       "playerName": "Amor Layouni",
       "warningCount": 2,
+      "warningsUntilSuspension": 2,
       "redCards": 0,
       "status": "at_risk",
       "relevantWarnings": [
@@ -753,6 +763,7 @@
       "playerId": "fogis:1499101",
       "playerName": "Brice Wembangomo",
       "warningCount": 2,
+      "warningsUntilSuspension": 2,
       "redCards": 0,
       "status": "at_risk",
       "relevantWarnings": [
@@ -771,6 +782,7 @@
       "playerId": "fogis:480798",
       "playerName": "Andreas Linde",
       "warningCount": 1,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "none",
       "relevantWarnings": [
@@ -785,6 +797,7 @@
       "playerId": "name:christ ivan alex wawa",
       "playerName": "Christ Ivan Alex Wawa",
       "warningCount": 1,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "none",
       "relevantWarnings": [
@@ -799,6 +812,7 @@
       "playerId": "fogis:750969",
       "playerName": "David Seger",
       "warningCount": 1,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "none",
       "relevantWarnings": [
@@ -813,6 +827,7 @@
       "playerId": "fogis:540307",
       "playerName": "Etrit Berisha",
       "warningCount": 1,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "none",
       "relevantWarnings": [
@@ -827,6 +842,7 @@
       "playerId": "fogis:801089",
       "playerName": "Harun Ibrahim",
       "warningCount": 1,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "none",
       "relevantWarnings": [
@@ -841,6 +857,7 @@
       "playerId": "fogis:919310",
       "playerName": "Olle Samuelsson",
       "warningCount": 1,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "none",
       "relevantWarnings": [
@@ -855,6 +872,7 @@
       "playerId": "fogis:1009627",
       "playerName": "Pontus Dahbo",
       "warningCount": 1,
+      "warningsUntilSuspension": 1,
       "redCards": 0,
       "status": "none",
       "relevantWarnings": [
@@ -1032,6 +1050,7 @@
       "publishedAt": "2026-09-22T20:15:00.000Z",
       "latestPublishedAt": "2026-09-22T20:15:00.000Z",
       "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/09390dde-d349-405e-80a4-c6ed869f8bf5.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1041,8 +1060,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/09390dde-d349-405e-80a4-c6ed869f8bf5.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-4-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -1051,6 +1069,7 @@
       "publishedAt": "2026-09-20T16:00:00.000Z",
       "latestPublishedAt": "2026-09-20T16:00:00.000Z",
       "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/acd01c89-2e09-4a89-ad64-9842a8244abf.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1060,8 +1079,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/acd01c89-2e09-4a89-ad64-9842a8244abf.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-6-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
@@ -1070,6 +1088,7 @@
       "publishedAt": "2026-09-19T13:50:05.000Z",
       "latestPublishedAt": "2026-09-19T13:50:05.000Z",
       "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/8463a6c2-df5f-4c36-a795-5785f03afa9e.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1079,8 +1098,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/8463a6c2-df5f-4c36-a795-5785f03afa9e.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-8-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
@@ -1089,6 +1107,7 @@
       "publishedAt": "2026-09-18T09:48:00.000Z",
       "latestPublishedAt": "2026-09-18T09:48:00.000Z",
       "category": "women",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/be6616a8-5920-4995-a48f-ff626101f488.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1098,8 +1117,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/be6616a8-5920-4995-a48f-ff626101f488.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-9-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
@@ -1108,6 +1126,7 @@
       "publishedAt": "2026-09-17T10:15:00.000Z",
       "latestPublishedAt": "2026-09-17T10:15:00.000Z",
       "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/7d1d0001-b357-43dd-b963-7bb1238fe3cb.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1117,8 +1136,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/7d1d0001-b357-43dd-b963-7bb1238fe3cb.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-13-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
@@ -1127,6 +1145,7 @@
       "publishedAt": "2026-09-11T19:40:00.000Z",
       "latestPublishedAt": "2026-09-11T19:40:00.000Z",
       "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/852c9212-e22f-4f90-8d06-900a6a0a7190.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1136,8 +1155,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/852c9212-e22f-4f90-8d06-900a6a0a7190.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-14-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
@@ -1146,6 +1164,7 @@
       "publishedAt": "2026-09-11T10:00:00.000Z",
       "latestPublishedAt": "2026-09-11T10:00:00.000Z",
       "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1770199263BB250713MI100.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1155,8 +1174,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1770199263BB250713MI100.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
@@ -1165,6 +1183,7 @@
       "publishedAt": "2026-09-11T09:45:00.000Z",
       "latestPublishedAt": "2026-09-11T09:45:00.000Z",
       "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/c38ac1aa-abde-4ed2-82ab-3725a9e73ad1.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1174,8 +1193,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/c38ac1aa-abde-4ed2-82ab-3725a9e73ad1.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
@@ -1184,6 +1202,7 @@
       "publishedAt": "2026-09-10T15:23:00.000Z",
       "latestPublishedAt": "2026-09-10T15:23:00.000Z",
       "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/19163131-107c-4b05-8785-e52a3ef6bde0.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1193,8 +1212,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/19163131-107c-4b05-8785-e52a3ef6bde0.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
@@ -1203,6 +1221,7 @@
       "publishedAt": "2026-09-10T10:16:00.000Z",
       "latestPublishedAt": "2026-09-10T10:16:00.000Z",
       "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/559af1ae-5db0-4dd5-a3a6-b64197dca002.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1212,8 +1231,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/559af1ae-5db0-4dd5-a3a6-b64197dca002.jpg"
+      "summaryMethod": "rss-description"
     },
     {
       "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
@@ -1222,6 +1240,7 @@
       "publishedAt": "2026-09-09T19:59:35.000Z",
       "latestPublishedAt": "2026-09-09T19:59:35.000Z",
       "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/aec70de3-1222-4db1-a805-5ae2e86e4fd6.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1231,8 +1250,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "excerpt",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/aec70de3-1222-4db1-a805-5ae2e86e4fd6.jpg"
+      "summaryMethod": "excerpt"
     },
     {
       "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
@@ -1241,6 +1259,7 @@
       "publishedAt": "2026-09-09T10:00:00.000Z",
       "latestPublishedAt": "2026-09-09T10:00:00.000Z",
       "category": "unknown",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/339428b3-c558-47b7-99c6-d4ebf96b8796.jpg",
       "sources": [
         {
           "publisher": "BK Häcken",
@@ -1250,8 +1269,7 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/339428b3-c558-47b7-99c6-d4ebf96b8796.jpg"
+      "summaryMethod": "rss-description"
     }
   ],
   "formerPlayers": [],
