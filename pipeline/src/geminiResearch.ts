@@ -45,6 +45,15 @@ export function candidateModels(): string[] {
 
 /** HTTP statuses worth retrying: capacity / rate limits only. */
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+
+/**
+ * A 429 that says the quota is EXHAUSTED is not a transient throttle — every
+ * further call with the same key will fail too, so retrying (and, worse,
+ * advancing to the next model) only burns quota and wall-clock. Detected from
+ * the response body; such a failure ends the loop immediately.
+ */
+const QUOTA_EXHAUSTED = /exceeded your current quota|quota exceeded|billing/i;
+
 export const MAX_RETRIES_PER_MODEL = 2;
 const RETRY_DELAY_MS = [5_000, 20_000];
 
@@ -420,6 +429,12 @@ export async function researchPlayer(
         calls++;
         const status = e instanceof GeminiHttpError ? e.status : 0;
         const msg = e instanceof Error ? e.message : String(e);
+        // An exhausted quota cannot succeed on retry or on another model, so
+        // stop the whole loop instead of spending the remaining attempts.
+        if (QUOTA_EXHAUSTED.test(msg)) {
+          console.warn(`research ${player.id}: quota exhausted — not retrying (${msg.slice(0, 120)})`);
+          return { research: null, model: null, calls, grounded: false, error: msg };
+        }
         const canRetry = status !== 0 && RETRYABLE.has(status) && attempt < MAX_RETRIES_PER_MODEL;
         console.warn(
           `research ${player.id}: model ${model} attempt ${attempt + 1}/${MAX_RETRIES_PER_MODEL + 1} failed — ${msg}` +

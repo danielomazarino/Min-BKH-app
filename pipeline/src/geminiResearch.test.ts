@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildResearchPayload,
   parseResearchResponse,
+  researchPlayer,
   PlayerResearchSchema,
   candidateModels,
 } from "./geminiResearch";
@@ -138,5 +139,39 @@ describe("parseResearchResponse", () => {
       careerNotes: { value: "Bytte klubb 2018.", status: "verified", confidence: "high", sourceUrl: "https://e.com" },
     })), PLAYER, opts)!;
     expect(p.contractExpiry.value).toBeNull();
+  });
+});
+
+describe("researchPlayer — quota exhaustion", () => {
+  const key = "test-key";
+
+  it("stops immediately on an exhausted-quota 429 instead of burning retries/models", async () => {
+    const quotaBody = JSON.stringify({
+      error: { code: 429, message: "You exceeded your current quota, please check your plan and billing details." },
+    });
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      new Response(quotaBody, { status: 429 }),
+    );
+    process.env.GEMINI_RETRY_DELAY_MS = "0";
+    delete process.env.GEMINI_MODEL;
+
+    const r = await researchPlayer(PLAYER, key);
+
+    // One call, not 3 retries x 4 models = 12.
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(r.research).toBeNull();
+    expect(r.calls).toBe(1);
+    expect(r.error).toMatch(/exceeded your current quota/);
+    fetchSpy.mockRestore();
+    delete process.env.GEMINI_RETRY_DELAY_MS;
+  });
+
+  it("returns an error without calling the API when no key is set", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const r = await researchPlayer(PLAYER, "");
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(r.calls).toBe(0);
+    expect(r.error).toMatch(/not set/);
+    fetchSpy.mockRestore();
   });
 });
