@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import type { AxeResults } from "axe-core";
 
@@ -60,6 +60,25 @@ test.describe("Accessibility (axe-core)", () => {
       });
   }
 
+  /**
+   * Wait until NOTHING is animating.
+   *
+   * `.sheet-backdrop` runs a 220ms `fade-in` from `opacity: 0`. axe samples
+   * the composited result, so a scan that lands mid-fade sees the dialog at
+   * ~71% opacity — every colour is scaled toward the black page and the
+   * measured contrast collapses. This is why the violation count CHANGED
+   * between runs (13, then 18, then 10): it depended purely on where in the
+   * fade the scan happened. `expect(...).toBeVisible()` returns as soon as
+   * the element is laid out, so it does not imply the animation has ended.
+   */
+  async function animationsSettled(page: Page) {
+    await page.waitForFunction(
+      () => document.getAnimations().every((a) => a.playState !== "running"),
+      undefined,
+      { timeout: 5000 },
+    );
+  }
+
   test("open sheets are scanned too", async ({ page }) => {
     // The previous suite never scanned a dialog, which is where the focus-trap
     // and backdrop bugs lived.
@@ -70,6 +89,7 @@ test.describe("Accessibility (axe-core)", () => {
     if ((await result.count()) > 0) {
       await result.click();
       await expect(page.getByTestId("sheet")).toBeVisible();
+      await animationsSettled(page);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
       expect(describe(results.violations).join("\n")).toEqual("");
       await page.keyboard.press("Escape");
@@ -77,6 +97,7 @@ test.describe("Accessibility (axe-core)", () => {
 
     await page.getByTestId("open-settings").click();
     await expect(page.getByTestId("settings-sheet")).toBeVisible();
+    await animationsSettled(page);
     const s = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
     expect(describe(s.violations).join("\n")).toEqual("");
   });

@@ -1163,3 +1163,53 @@ sequence, and config differences. The next run passed.
   out**. Otherwise the next session re-investigates from zero.
 - Do not "fix" a test you cannot reproduce. Change what is observable, and
   say plainly that the cause is unknown.
+
+## L-011  SOLVED — the CI-only a11y failure was a mid-animation sample
+
+**Root cause found and proven 2026-09-26.** Not a flake, and not a styling
+defect in the resting state.
+
+The improved assertion (L-010) made CI name the elements on run 36271880293:
+
+```
+color-contrast (serious): 10 nodes
+  .mod-label  "Aktualitet"  ratio=3.66 need=4.5  fg=#6a6a6a bg=#0a0a0a
+  .rl         "OK"          ratio=3.66 need=4.5  fg=#6a6a6a bg=#0a0a0a
+```
+
+`bg=#0a0a0a` is the tell. The sheet surface is `--surface: #0e0e0e` (14).
+A background *darker* than the sheet itself can only be the sheet scaled
+toward the black page — i.e. `.sheet-backdrop` part-way through its
+`--dur-dismiss: 220ms` `fade-in` from `opacity: 0`.
+
+Solving for the opacity that reproduces CI's numbers exactly:
+
+| opacity | bg | fg | ratio |
+|---|---|---|---|
+| 0.689 | `#0a0a0a` | `#6a6a6a` | **3.665** |
+| 1.0 (rest) | `#0e0e0e` | `#9a9a9a` | 6.84 — passes |
+
+`3.665` against CI's reported `3.66` is a match, so the sheet was sampled at
+~69% opacity. `.mod-label`/`.rl` use `var(--text-3)`
+(`rgba(255,255,255,0.58)`), which has **6.84:1** at rest. The colours were
+always fine; the scan just caught the fade.
+
+This also explains the varying counts (13 → 18 → 10): each run sampled a
+different point in the fade. And why it never reproduced locally — the test's
+`waitForTimeout(600)` usually outlasts the 220ms fade, and `toBeVisible()`
+returns as soon as the element is laid out, which says nothing about whether
+an animation has ended.
+
+**Fix:** `animationsSettled()` waits on
+`document.getAnimations().every(a => a.playState !== "running")` before each
+scan. Deterministic instead of hoping a timeout is long enough. Verified
+44/44 across `--repeat-each=4`.
+
+**Rules:**
+- **A count that changes between attempts is a timing signal.** Follow it to
+  the animation clock rather than the stylesheet.
+- **`toBeVisible()` does not mean "settled".** Any assertion about a pixel
+  property (colour, contrast, position) must wait for animations to finish.
+- Note this is a *transient* accessibility dip only: users under
+  `prefers-reduced-motion: reduce` get `animation: none` on `.sheet-backdrop`
+  and never see it. The resting state passes AA comfortably.
