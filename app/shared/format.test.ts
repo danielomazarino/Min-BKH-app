@@ -2,17 +2,19 @@ import { describe, expect, it } from "vitest";
 import {
   buildTimeline,
   cstatFor,
+  currentSquadDiscipline,
   daysUntil,
   formGuide,
   resultOf,
   scoreFor,
   scorerLine,
+  squadByPosition,
   urgentDiscipline,
   groupLabel,
   fmtWhen,
   type TimelineRowItem,
 } from "./format";
-import type { MatchEvents, PlayerDiscipline } from "../../pipeline/src/types";
+import type { MatchEvents, PlayerDiscipline, SeasonPlayerStat } from "../../pipeline/src/types";
 
 describe("scoreFor", () => {
   // Regression: the old Home rendered "BK Häcken Kalmar FF 5–0" for this match
@@ -228,5 +230,102 @@ describe("time helpers", () => {
     expect(groupLabel("2026-09-25T08:00:00Z", now)).toBe("I dag");
     expect(groupLabel("2026-09-24T08:00:00Z", now)).toBe("I går");
     expect(groupLabel("2026-09-22T08:00:00Z", now)).toBe("För 3 dagar sedan");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Squad — the Trupp destination
+// ---------------------------------------------------------------------------
+
+describe("squadByPosition", () => {
+  const p = (name: string, group: SeasonPlayerStat["positionGroup"], played = 0) =>
+    ({
+      playerId: `fogis:${name}`,
+      playerName: name,
+      positionGroup: group,
+      matchesPlayed: played,
+      matchesStarted: played,
+      goals: 0,
+      assists: 0,
+      yellowCards: 0,
+      redCards: 0,
+      competition: "Allsvenskan 2026",
+    }) as SeasonPlayerStat;
+
+  it("orders groups the way a team sheet reads: keepers, defence, midfield, attack", () => {
+    const groups = squadByPosition([
+      p("Anfallare", "forwards"),
+      p("Mittfältare", "midfields"),
+      p("Försvarare", "defenders"),
+      p("Målvakt", "goalkeepers"),
+    ]);
+    expect(groups.map((g) => g.group)).toEqual(["goalkeepers", "defenders", "midfields", "forwards"]);
+    expect(groups.map((g) => g.label)).toEqual(["Målvakter", "Försvar", "Mittfält", "Anfall"]);
+  });
+
+  it("omits position groups that have no players", () => {
+    const groups = squadByPosition([p("Målvakt", "goalkeepers"), p("Anfallare", "forwards")]);
+    expect(groups.map((g) => g.group)).toEqual(["goalkeepers", "forwards"]);
+  });
+
+  it("returns an empty array for an empty squad rather than throwing", () => {
+    expect(squadByPosition([])).toEqual([]);
+  });
+
+  it("sorts regulars first, and the order is stable across calls", () => {
+    const squad = [
+      p("Nils Nyby", "midfields", 2),
+      p("Adam Adofsson", "midfields", 20),
+      p("Bo Bertilsson", "midfields", 11),
+    ];
+    const once = squadByPosition(squad)[0].players.map((x) => x.playerName);
+    const twice = squadByPosition([...squad].reverse())[0].players.map((x) => x.playerName);
+    expect(once).toEqual(["Adam Adofsson", "Bo Bertilsson", "Nils Nyby"]);
+    expect(twice).toEqual(once);
+  });
+});
+
+describe("currentSquadDiscipline", () => {
+  const squad = [
+    { playerId: "fogis:1", playerName: "Abdoulaye Doumbia", positionGroup: "defenders", matchesPlayed: 1, matchesStarted: 1, goals: 0, assists: 0, yellowCards: 0, redCards: 0, competition: null },
+    { playerId: "fogis:2", playerName: "Brice Wembangomo", positionGroup: "midfields", matchesPlayed: 1, matchesStarted: 1, goals: 0, assists: 0, yellowCards: 0, redCards: 0, competition: null },
+  ] as SeasonPlayerStat[];
+
+  const d = (playerId: string, playerName: string, status: PlayerDiscipline["status"]): PlayerDiscipline => ({
+    playerId,
+    playerName,
+    warningCount: 3,
+    warningsUntilSuspension: 1,
+    redCards: 0,
+    status,
+    relevantWarnings: [],
+    incomplete: false,
+  });
+
+  it("keeps a departed player out of the current-squad ledger", () => {
+    // The real regression: Amor Layouni had left the club but was still
+    // listed as "at_risk", so Brief told supporters he was one card from a
+    // suspension for a team he no longer played for.
+    const ledger = [
+      d("fogis:1", "Abdoulaye Doumbia", "suspended_next"),
+      d("name:amor layouni", "Amor Layouni", "at_risk"),
+    ];
+    const kept = currentSquadDiscipline(ledger, squad);
+    expect(kept.map((x) => x.playerName)).toEqual(["Abdoulaye Doumbia"]);
+  });
+
+  it("matches on the canonical id, not on name similarity", () => {
+    const ledger = [d("fogis:2", "Brice Wembangomo", "at_risk")];
+    expect(currentSquadDiscipline(ledger, squad)).toHaveLength(1);
+  });
+
+  it("falls back to a diacritic-insensitive name match when only a name survived", () => {
+    const ledger = [d("name:brice wembaNgomo", "Brice Wembangomo", "at_risk")];
+    expect(currentSquadDiscipline(ledger, squad)).toHaveLength(1);
+  });
+
+  it("returns an empty list when there is no squad to scope against", () => {
+    expect(currentSquadDiscipline([d("fogis:1", "Abdoulaye Doumbia", "at_risk")], [])).toEqual([]);
+    expect(currentSquadDiscipline(undefined, squad)).toEqual([]);
   });
 });

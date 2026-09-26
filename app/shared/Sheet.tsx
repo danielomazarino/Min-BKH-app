@@ -47,11 +47,26 @@ export function Sheet({
     const first = sheetRef.current?.querySelector<HTMLElement>(FOCUSABLE);
     (first ?? sheetRef.current)?.focus();
     return () => {
+      // Prefer the exact control that opened the sheet.
+      //
+      // Two cases make that impossible, and both are normal here:
+      //   1. The opener has been unmounted. Opening a match detail from
+      //      Brief navigates, so Brief — and the button — are gone before
+      //      the sheet ever closes.
+      //   2. The recorded element is <body>, which happens when the previous
+      //      route was already torn down. body.focus() is a silent no-op, so
+      //      calling it achieves nothing and leaves focus nowhere.
+      // Falling back to <main> (focusable by design) gives screen-reader
+      // users a real, meaningful stopping point instead of the document root.
       const el = restoreRef.current;
-      // Only restore if the element is still in the document and focusable.
-      if (el && document.contains(el)) {
+      const usable =
+        el && el !== document.body && el !== document.documentElement && document.contains(el);
+      if (usable) {
         el.focus();
+        return;
       }
+      const main = document.getElementById("main");
+      if (main && document.contains(main)) main.focus({ preventScroll: true });
     };
   }, []);
 

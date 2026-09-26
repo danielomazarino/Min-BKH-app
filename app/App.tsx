@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
-import { HashRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { HashRouter, Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
 import { Settings as SettingsIcon } from "lucide-react";
-import Home from "./pages/Home";
+import Brief from "./pages/Brief";
+import News from "./pages/News";
 import Matches from "./pages/Matches";
+import Squad from "./pages/Squad";
 import FormerPlayers from "./pages/FormerPlayers";
-import { loadAppData, loadFormerPlayers, type AppDataState } from "./data";
+import NotFound from "./pages/NotFound";
+import { loadAppData, type AppDataState } from "./data";
+import { FloatingTabBar } from "./shared/FloatingTabBar";
+import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
 
@@ -25,43 +30,77 @@ export default function App() {
 /**
  * The shell.
  *
- * Navigation is deliberately reduced to TWO persistent destinations: the
- * supporter brief and former-player search. Matches and Settings are reached
- * contextually (module chevrons and the header glyph) because they are
- * archives and reference surfaces, not daily destinations. The current squad
- * is NOT a destination at all — it appears inside match context.
+ * Navigation is reduced to FIVE persistent destinations, each owning a stable
+ * route. Everything else - settings, news detail, match detail, player detail -
+ * is a URL-addressable CHILD of one of those five, so the browser/iOS back
+ * gesture always closes the most recent thing the user opened.
+ *
+ * There is no catch-all route any more. An unknown hash renders an explicit
+ * "not found" surface that keeps the navigation bar usable, rather than
+ * silently pretending to be Brief.
  */
 function AppShell({ state }: { state: AppDataState }) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [from, setFrom] = useState<string | null>(null);
 
-  // Settings is a sheet, not a page. It is reachable from the header glyph
-  // and from the "Om appen" link on the brief, and it is hash-addressable so
-  // the iOS back gesture closes it.
-  useEffect(() => {
-    const onHash = () => {
-      if (window.location.hash.startsWith("#/installningar")) setSettingsOpen(true);
-    };
-    onHash();
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
+  const settingsOpen = pathname === SETTINGS_PATH;
+  const active = destinationFor(settingsOpen && from ? from : pathname);
 
+  const go = (to: string) => {
+    setFrom(null);
+    navigate(to);
+  };
+
+  /**
+   * Settings is a sheet over the current section. Opening it records where
+   * the user came from and puts it in the URL, so both the back gesture and a
+   * cold load of `#/installningar?id=%2Ftrupp` restore the same section.
+   */
   const openSettings = () => {
-    setSettingsOpen(true);
-    window.location.hash = "#/installningar";
+    const here = from ?? pathname;
+    setFrom(here);
+    navigate(`${SETTINGS_PATH}${searchWithId(here)}`);
   };
   const closeSettings = () => {
-    setSettingsOpen(false);
-    window.location.hash = pathname === "/" || pathname === "/installningar" ? "#/" : `#${pathname}`;
+    const back = from ?? "/";
+    setFrom(null);
+    navigate(back);
   };
+
+  // A back/forward or a cold load that lands on #/installningar must recover
+  // the underlying section from the URL, not from ephemeral component state.
+  useEffect(() => {
+    if (settingsOpen) {
+      const f = idFromSearch(search);
+      setFrom((prev) => (f && f !== prev ? f : prev));
+    } else {
+      setFrom(null);
+    }
+  }, [pathname, search, settingsOpen]);
+
+  // Escape closes the sheet, matching every other detail surface.
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        closeSettings();
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [settingsOpen, from]);
 
   const generatedAt = state.status === "ready" ? state.data.freshness.generatedAt : null;
   const stale = generatedAt ? (Date.now() - new Date(generatedAt).getTime()) / 3600000 > 36 : false;
 
   return (
     <>
+      <a href="#main" className="skip-link">
+        Hoppa till innehållet
+      </a>
+
       <header className="app-header">
         <img src={ICON} alt="" className="mark" width={22} height={22} />
         <span className="brand">
@@ -84,54 +123,25 @@ function AppShell({ state }: { state: AppDataState }) {
           onClick={openSettings}
           aria-label="Inställningar och data"
           data-testid="open-settings"
+          aria-expanded={settingsOpen}
         >
           <SettingsIcon aria-hidden />
         </button>
       </header>
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <Routes>
-          <Route
-            path="*"
-            element={
-              <Home
-                state={state}
-                onOpenSettings={openSettings}
-                onGoMatches={() => navigate("/matcher")}
-                onGoNews={() => navigate("/nyheter")}
-              />
-            }
-          />
+          <Route path="/" element={<Brief state={state} />} />
+          <Route path="/nyheter" element={<News state={state} />} />
           <Route path="/matcher" element={<Matches state={state} />} />
-          <Route path="/tidigare" element={<FormerPlayers />} />
+          <Route path="/trupp" element={<Squad state={state} />} />
+          <Route path="/spelare" element={<FormerPlayers />} />
+          <Route path={SETTINGS_PATH} element={null} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
-      <nav className="tabbar" aria-label="Huvudnavigation">
-        <a
-          href="#/"
-          aria-current={pathname === "/" || pathname === "/nyheter" || pathname === "/matcher" ? "page" : undefined}
-          data-testid="tab-home"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 10.5 12 3l9 7.5" />
-            <path d="M5.5 9.5V20h13V9.5" />
-            <path d="M9.5 20v-5.5h5V20" />
-          </svg>
-          <span>Brief</span>
-        </a>
-        <a
-          href="#/tidigare"
-          aria-current={pathname === "/tidigare" ? "page" : undefined}
-          data-testid="tab-former"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
-          <span>Tidigare</span>
-        </a>
-      </nav>
+      <FloatingTabBar active={active} onSelect={(d) => go(d.path)} />
 
       {settingsOpen && (
         <div className="sheet-backdrop">
@@ -140,13 +150,7 @@ function AppShell({ state }: { state: AppDataState }) {
             <div className="sheet-grab" aria-hidden="true" />
             <div className="sheet-head">
               <h2 id="settings-title">Data &amp; källor</h2>
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={closeSettings}
-                aria-label="Stäng inställningar"
-                data-testid="close-settings"
-              >
+              <button type="button" className="icon-btn" onClick={closeSettings} aria-label="Stäng inställningar" data-testid="close-settings">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6 6 18" />
                 </svg>
@@ -169,14 +173,10 @@ function AppShell({ state }: { state: AppDataState }) {
  * No secrets are ever exposed here.
  */
 function SettingsPanel({ state }: { state: AppDataState }) {
-  const [formerCount, setFormerCount] = useState<number | null>(null);
-  useEffect(() => {
-    loadFormerPlayers().then((r) => setFormerCount(r.status === "ready" ? r.data.players.length : null));
-  }, []);
-
   const data = state.status === "ready" ? state.data : null;
   const unavailable = data?.currentDataUnavailable;
   const source = data?.footballSource;
+  const squadCount = data?.squadStats?.length ?? null;
 
   return (
     <div className="stack-4">
@@ -197,6 +197,15 @@ function SettingsPanel({ state }: { state: AppDataState }) {
             Aktuell matchdata saknas just nu: {unavailable.reason}
           </p>
         )}
+      </section>
+
+      <section>
+        <div className="mod-label">Vyer</div>
+        <p className="small muted" data-testid="settings-squad">
+          {squadCount != null
+            ? `Aktuell herrtrupp: ${squadCount} spelare. Spelarhistoriken söks live mot Wikidata.`
+            : "Truppuppgifter kunde inte läsas."}
+        </p>
       </section>
 
       <section>
@@ -247,7 +256,7 @@ function SettingsPanel({ state }: { state: AppDataState }) {
               : ""}
           </p>
           <p className="small dim">
-            Nyhetshändelser: {data?.newsEvents?.length ?? 0} · Spelare i registret: {formerCount ?? "—"}
+            Nyhetshändelser: {data?.newsEvents?.length ?? 0} · Spelare: sökning mot Wikidata (ingen lokal lista)
           </p>
           {data?.disciplineRule && (
             <p className="small dim" data-testid="rule-text">
@@ -264,6 +273,13 @@ function SettingsPanel({ state }: { state: AppDataState }) {
           </p>
         </div>
       </details>
+
+      <p className="small dim" data-testid="settings-nav-hint">
+        <Link className="link" to="/">
+          Till startsidan
+        </Link>{" "}
+        · {DESTINATIONS.length} huvudvyer
+      </p>
     </div>
   );
 }

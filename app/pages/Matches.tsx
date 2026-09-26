@@ -1,32 +1,41 @@
 /**
- * Matches — a compact archive, reached contextually from the brief rather than
- * holding a permanent tab slot.
+ * Matcher — fixtures, results, table and match detail.
  *
- * Rows carry W/D/L as a coloured edge AND a letter, so the result never depends
- * on colour alone. Only the last match has event data, so only the last match
- * opens a timeline sheet — the archive rows for other matches are not
- * clickable dead ends.
+ * A compact archive, reached from the floating bar as its own destination.
+ * Rows carry W/D/L as a coloured edge AND a letter, so the result never
+ * depends on colour alone. Only the last match has event data, so only the
+ * last match opens a timeline sheet — the other rows are not clickable dead
+ * ends.
+ *
+ * Match detail is a URL-addressable CHILD state (`#/matcher?id=<match-id>`),
+ * so the browser/iOS back gesture closes the detail rather than leaving the
+ * page.
  */
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { AppDataState } from "../data";
-import type { MatchDetail, MatchRef } from "../../pipeline/src/types";
-import { MatchSheet } from "./Home";
-import { competitionLabel, fmtDateTime, fmtDay, RESULT_WORD, resultOf, scoreFor } from "../shared/format";
+import type { MatchRef } from "../../pipeline/src/types";
+import { MatchSheet } from "../shared/MatchSheet";
+import { competitionLabel, daysUntil, fmtDateTime, fmtDay, RESULT_WORD, resultOf, scoreFor } from "../shared/format";
+import { idFromSearch } from "../shared/nav";
 
 export default function Matches({ state }: { state: AppDataState }) {
   const [tab, setTab] = useState<"spelade" | "kommande">("spelade");
-  const [open, setOpen] = useState<MatchDetail | null>(null);
+  const { search } = useLocation();
+  const navigate = useNavigate();
 
   if (state.status === "loading") {
     return (
-      <div className="layer" aria-busy="true" aria-label="Laddar">
-        <div className="skeleton" style={{ height: 200 }} />
+      <div className="layer" aria-busy="true" aria-label="Laddar" data-testid="matches-page">
+        <div className="module">
+          <div className="skeleton" style={{ height: 200 }} />
+        </div>
       </div>
     );
   }
   if (state.status === "error") {
     return (
-      <div className="layer">
+      <div className="layer" data-testid="matches-page">
         <div className="empty" role="status">
           <strong>Kunde inte läsa matchdata</strong>
           Försök igen om en stund.
@@ -40,13 +49,22 @@ export default function Matches({ state }: { state: AppDataState }) {
   const detail = data.lastMatchDetail;
   const detailId = detail?.id;
 
+  // Deep link: only the match that actually has events can open a sheet.
+  const openId = idFromSearch(search);
+  const openMatch = openId && detailId != null && String(detailId) === openId ? detail : null;
+  const closeMatch = () => navigate("/matcher");
+
   return (
     <>
       <div className="layer" data-testid="matches-page">
-        <div style={{ paddingTop: 16, position: "sticky", top: 0, zIndex: 10, background: "var(--bg)" }}>
-          <h1 className="mod-label" style={{ marginBottom: 12 }}>
-            Matcher
-          </h1>
+        <h1 className="sr-only">Matcher — BK Häcken</h1>
+
+        {/* Next match is repeated here deliberately: "when do we play" is the
+            first question this destination must answer. It is the only piece
+            of information duplicated from Brief, and it is one line. */}
+        {data.nextMatch && <NextMatchStrip next={data.nextMatch} />}
+
+        <div className="match-tabs" style={{ paddingTop: 12 }}>
           <div className="seg" role="tablist" aria-label="Matchtyp">
             <button role="tab" aria-selected={tab === "spelade"} onClick={() => setTab("spelade")} data-testid="tab-played">
               Spelade
@@ -57,7 +75,7 @@ export default function Matches({ state }: { state: AppDataState }) {
           </div>
         </div>
 
-        <div style={{ paddingTop: 12 }}>
+        <div className="module" style={{ paddingTop: 12 }}>
           {list.length === 0 ? (
             <p className="empty">
               <strong>{tab === "spelade" ? "Inga spelade matcher" : "Inga kommande matcher"}</strong>
@@ -68,14 +86,14 @@ export default function Matches({ state }: { state: AppDataState }) {
               <MatchRow
                 key={m.id}
                 m={m}
-                onOpen={tab === "spelade" && m.id === detailId && detail ? () => setOpen(detail) : undefined}
+                onOpen={tab === "spelade" && m.id === detailId && detail ? () => navigate(`/matcher?id=${m.id}`) : undefined}
               />
             ))
           )}
         </div>
 
         {data.table.length > 0 && (
-          <section className="module" aria-labelledby="table-h" style={{ marginTop: 20 }}>
+          <section className="module" aria-labelledby="table-h" data-testid="league-table">
             <h2 className="mod-label" id="table-h">
               Tabellen
             </h2>
@@ -102,8 +120,32 @@ export default function Matches({ state }: { state: AppDataState }) {
           </section>
         )}
       </div>
-      {open && <MatchSheet detail={open} onClose={() => setOpen(null)} />}
+      {openMatch && <MatchSheet detail={openMatch} onClose={closeMatch} />}
     </>
+  );
+}
+
+function NextMatchStrip({ next }: { next: MatchRef }) {
+  const days = daysUntil(next.date);
+  const isHome = next.homeAway === "home";
+  return (
+    <section className="module" data-testid="matcher-next">
+      <h2 className="mod-label">Nästa match</h2>
+      <div className="strip">
+        <span className="strip-when">
+          <b>{days != null ? (days === 0 ? "Idag" : days === 1 ? "Imorgon" : `Om ${days} dagar`) : "—"}</b>
+          <span>
+            {fmtDay(next.date)} · {isHome ? "Hemma" : "Borta"}
+          </span>
+        </span>
+        <span className="strip-teams">
+          <span className="dim">{competitionLabel(next.competition)}</span>
+          <b>
+            {isHome ? "Häcken" : next.opponent} – {isHome ? next.opponent : "Häcken"}
+          </b>
+        </span>
+      </div>
+    </section>
   );
 }
 
@@ -114,7 +156,7 @@ function MatchRow({ m, onOpen }: { m: MatchRef; onOpen?: () => void }) {
   const cls = res ?? "";
   const inner = (
     <>
-      <span className="score">{score ?? (isHome ? "–" : "–")}</span>
+      <span className="score">{score ?? "–"}</span>
       <span className="body">
         <span className="opponent">{m.opponent}</span>
         <span className="meta">

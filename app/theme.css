@@ -66,9 +66,11 @@
 
   /* Chrome heights */
   --header-h: 44px;
-  --tabbar-h: 49px;
-  /* Content must clear: tab bar + home indicator. */
-  --chrome-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  /* The floating bar is ~58px tall and floats 12px above the safe area, so
+     content needs ~70px + the inset of clearance to scroll fully clear. */
+  --fabnav-h: 58px;
+  --fabnav-gap: 12px;
+  --chrome-bottom: calc(var(--fabnav-h) + var(--fabnav-gap) * 2 + env(safe-area-inset-bottom, 0px));
 
   --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-sheet: 300ms;
@@ -227,9 +229,15 @@ a {
 main {
   flex: 1;
   min-height: 0;
-  /* Room for the fixed tab bar + home indicator. Without this the last
-     content and the pager dots end up underneath it. */
-  padding-bottom: var(--chrome-bottom);
+  /* NO bottom padding here, deliberately.
+     The floating nav must genuinely float OVER scrolling content, so the
+     scroll viewport has to extend all the way to the bottom of the screen
+     and behind the bar. Clearance for the bar is applied once, on the
+     scroll container's content padding (.layer), which lets content pass
+     behind the translucent bar mid-scroll while still letting the last
+     item be scrolled up clear of it. Padding both elements — the previous
+     state — shrank the viewport AND padded the content, leaving a dead
+     strip that made the bar read as an opaque full-width tab bar. */
   display: flex;
   flex-direction: column;
 }
@@ -239,6 +247,8 @@ main {
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Bottom padding = bar height + its float offset, so the final content can
+     always be scrolled up out from under the bar. */
   padding: 0 var(--s4) var(--chrome-bottom);
   scrollbar-width: none;
 }
@@ -247,47 +257,149 @@ main {
 }
 
 /* ==========================================================================
-   Tab bar — reduced to two destinations, translucent
+   Floating navigation — the app's only primary navigation
+   --------------------------------------------------------------------------
+   A floating pill: translucent, blurred, restrained. Content scrolls VISIBLY
+   behind it, so the bar reads as floating over the app rather than consuming a
+   permanent band of screen.
+
+   Progressive enhancement: the opaque fallback colour is declared first, so
+   the bar is perfectly readable when backdrop-filter is unsupported. The blur
+   is additive, never load-bearing.
    ========================================================================== */
 
-.tabbar {
+.fabnav {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 30;
-  display: flex;
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-top: 1px solid var(--hairline);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  left: 50%;
+  bottom: calc(var(--s3) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  width: min(calc(100% - var(--s5) * 2), 420px);
+  transform: translateX(-50%);
+  /* Fallback first: opaque enough for 4.5:1 text even without blur. */
+  background: rgba(14, 14, 14, 0.94);
+  border: 1px solid var(--hairline);
+  border-radius: 22px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+  transition: transform var(--dur-dismiss) var(--ease-ios);
+  touch-action: pan-y; /* we own horizontal; the page keeps vertical */
+  /* A horizontal swipe that STARTS on a link would otherwise sweep up an
+     implicit text selection, which swallows the remaining pointer events and
+     stops the gesture dead. The bar is chrome, not prose, so nothing here
+     should ever be selectable — which is also what a thumb-drag expects. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.tabbar a {
-  flex: 1;
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fabnav {
+    background: rgba(14, 14, 14, 0.72);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    backdrop-filter: saturate(160%) blur(18px);
+  }
+}
+
+/* While a drag is in flight the bar tracks the finger 1:1, so the gesture
+   feels physical. No transition, so it never lags behind the pointer. */
+.fabnav[data-dragging] {
+  transition: none;
+}
+
+.fabnav-list {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fabnav-item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.fabnav-link {
+  /* 44px is the accessible minimum hit area; the visual chrome around it is
+     deliberately restrained so the bar does not look oversized. */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  height: var(--tabbar-h);
+  min-height: 46px;
+  padding: 5px 2px;
   color: var(--text-3);
-  font-size: 10px;
+  text-decoration: none;
+  border-radius: 18px;
+  transition: color var(--dur-tap) ease;
+}
+
+.fabnav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  transition: transform var(--dur-tap) var(--ease-ios);
+}
+.fabnav-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.fabnav-label {
+  font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.tabbar a svg {
-  width: 21px;
-  height: 21px;
-}
-.tabbar a[aria-current="page"] {
-  color: var(--text);
-}
-/* Active indicator uses Häcken yellow sparingly: the one place chrome is
-   allowed to reference the brand. */
-.tabbar a[aria-current="page"] svg {
+
+/* Active state is carried by THREE signals, not colour alone: a yellow tint,
+   a heavier stroke, and a small dot beneath the label. */
+.fabnav-link[data-active] {
   color: var(--yellow);
+}
+.fabnav-link[data-active] .fabnav-icon {
+  transform: translateY(-1px);
+}
+.fabnav-link[data-active] .fabnav-label {
+  font-weight: 700;
+}
+.fabnav-link[data-active]::after {
+  content: "";
+  position: absolute;
+  margin-top: 30px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+.fabnav-link {
+  position: relative;
+}
+.fabnav-link:active .fabnav-icon {
+  transform: scale(0.92);
+}
+
+/* Skip link: keyboard users reach main content without tabbing the bar. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--t-body);
+  font-weight: 600;
+  border-radius: 0 0 var(--r-sm) 0;
+}
+.skip-link:focus {
+  left: 0;
 }
 
 /* ==========================================================================
@@ -1364,68 +1476,315 @@ details.disc .disc-body {
 }
 
 /* ==========================================================================
-   Layer pager — horizontal swipe between Home layers
+   News — compact 2x2 "latest" grid
+   --------------------------------------------------------------------------
+   Replaces the 296px horizontal rail. Four small cards fit in one block, so a
+   supporter reads the day's news without any horizontal gesture.
    ========================================================================== */
 
-/* The pager fills the space between header and tab bar and never exceeds it,
-   so the dots always sit above the bar. */
-.pager {
-  position: relative;
-  flex: 1;
-  min-height: 0;
+.news-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+}
+
+.ncard {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  background: var(--surface);
+  border-radius: var(--r-md);
   overflow: hidden;
+  /* A grid cell must be able to shrink, or the 1fr track is blown out by the
+     headline's intrinsic min-width. */
+  min-width: 0;
+}
+
+.ncard-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.ncard-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Placeholder hue while loading/failed — never a broken image box. */
+.ncard-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 210, 0, 0.1), transparent 60%);
+  pointer-events: none;
+}
+
+.ncard-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--s2) var(--s3) var(--s3);
+  min-width: 0;
+}
+.ncard-meta {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 3px;
+}
+.ncard-title {
+  font-size: var(--t-body);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ncard-src {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: var(--s2);
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 359px) {
+  .news-grid {
+    gap: var(--s1);
+  }
+  .ncard-title {
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* ==========================================================================
+   Squad — the current men's squad list
+   ========================================================================== */
+
+.squad-list {
   display: flex;
   flex-direction: column;
 }
-.pager-track {
+
+.srow {
   display: flex;
-  flex: 1;
-  min-height: 0;
-  will-change: transform;
-  transition: transform var(--dur-sheet) var(--ease-ios);
-}
-.pager-track.free {
-  transition: none;
-}
-.pager-layer {
-  flex: 0 0 100%;
+  align-items: center;
+  gap: var(--s3);
   width: 100%;
-  min-width: 0;
-  min-height: 0;
-  height: 100%;
+  min-height: 44px;
+  padding: 9px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--hairline);
+}
+.srow:last-child {
+  border-bottom: none;
 }
 
-/* The DOT is a 6px visual, but the target must be WCAG 2.2 AA compliant
-   (24px minimum). A 32px hit area keeps the control thumb-friendly without
-   making the indicator visually heavy. */
-.pager-dots {
+.srow-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-title);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A card-risk flag is a word, not a colour: the yellow edge and the label
+   reinforce each other so neither carries the meaning alone. */
+.srow.flagged {
+  box-shadow: inset 2px 0 0 var(--caution);
+  padding-left: var(--s2);
+  margin-left: calc(var(--s2) * -1);
+}
+.srow-flag {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--caution);
+  margin-top: 1px;
+}
+
+.srow-nums {
   flex: none;
   display: flex;
-  justify-content: center;
-  gap: 2px;
-  padding: var(--s2) 0;
+  align-items: baseline;
+  gap: 3px;
+  font-variant-numeric: tabular-nums;
 }
-.pager-dots button {
+.srow-nums b {
+  font-size: var(--t-body);
+  font-weight: 700;
+  min-width: 12px;
+  text-align: right;
+}
+.srow-nums em {
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-right: 5px;
+}
+.srow-nums em:last-child {
+  margin-right: 0;
+}
+
+.danger-text {
+  color: var(--danger);
+}
+
+/* ==========================================================================
+   Match — next-match strip on the Matcher screen
+   ========================================================================== */
+
+.match-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding-bottom: var(--s2);
+}
+
+.strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3);
+  background: linear-gradient(180deg, var(--yellow-dim), rgba(255, 210, 0, 0) 80%);
+  border-radius: var(--r-md);
+}
+.strip-when {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  font-variant-numeric: tabular-nums;
+}
+.strip-when b {
+  font-size: var(--t-lead);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.strip-when span {
+  font-size: var(--t-meta);
+  color: var(--text-2);
+}
+.strip-teams {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  font-size: var(--t-meta);
+}
+.strip-teams b {
+  font-size: var(--t-body);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Brief — small additions
+   ========================================================================== */
+
+/* Tappable hero: same visual as the old div hero, plus an affordance. */
+.hero-tap {
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+.hero-tap .ven,
+.result .ven {
+  display: inline-flex;
+  flex: none;
+  align-self: center;
+  color: var(--text-3);
+}
+.result .ven svg,
+.hero-tap .ven svg {
+  width: 15px;
+  height: 15px;
+}
+
+.t-rank {
+  color: var(--text);
+  font-size: 15px;
+}
+
+/* A section heading that doubles as a link to its full destination. */
+.mod-more {
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: none;
+  gap: 1px;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--text-3);
+  text-decoration: none;
+  font-weight: 600;
 }
-/* The visible pip, sized independently of the hit area. */
-.pager-dots button::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--hairline-strong);
-  transition: width var(--dur-tap) ease, background var(--dur-tap) linear;
+.mod-more svg {
+  width: 12px;
+  height: 12px;
 }
-.pager-dots button[aria-current="true"]::before {
-  width: 16px;
-  border-radius: 3px;
-  background: var(--yellow);
+
+/* A whole block acting as a link (e.g. "Alla matcher och kort"). */
+.mod-link {
+  text-decoration: none;
+  color: var(--text-3);
+  padding-top: var(--s3);
+  align-items: center;
+  gap: 2px;
+}
+.mod-link svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Source dots inside a row are inline <i>, so they need the flex fix. */
+.news-row .pub {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+/* ==========================================================================
+   Player sheet — a cited quote, not a data dump
+   ========================================================================== */
+
+.quote {
+  margin: 0;
+  padding: var(--s2) 0 var(--s2) var(--s3);
+  border-left: 2px solid var(--hairline-strong);
+  font-size: var(--t-body);
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.prov {
+  margin-top: var(--s2);
 }
 
 /* ==========================================================================
@@ -1500,7 +1859,8 @@ details.disc .disc-body {
 
 /* ==========================================================================
    Reduced motion — every animation collapses to a short opacity change.
-   No information is lost: the pager dots still convey position.
+   No information is lost: the active tab is marked by colour, weight AND a
+   dot, none of which depend on motion.
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1510,9 +1870,6 @@ details.disc .disc-body {
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
-  }
-  .pager-track {
-    transition: opacity 80ms linear !important;
   }
   .sheet,
   .sheet-backdrop {
@@ -1535,12 +1892,6 @@ details.disc .disc-body {
   }
   .hero-score {
     font-size: 60px;
-  }
-  .tabbar {
-    justify-content: center;
-  }
-  .tabbar a {
-    flex: 0 0 110px;
   }
   .sheet {
     max-width: 560px;

@@ -7,6 +7,7 @@
  * labelled 2-warning players "one warning from suspension".
  */
 import type { MatchEvents, MatchRef, PlayerDiscipline, SeasonPlayerStat } from "../../pipeline/src/types";
+import { nameKeyOf } from "../../pipeline/src/playerIdentity";
 
 export function competitionLabel(c: string): string {
   switch (c) {
@@ -284,14 +285,68 @@ export function scorerLine(events: MatchEvents | null | undefined, limit = 5): s
 }
 
 // ---------------------------------------------------------------------------
-// Squad helpers — current players are shown in MATCH context, never as a
-// directory. These exist for contextual use (lineup, cards), not for a list.
+// Squad — the current men's squad
+//
+// These helpers back the Trupp destination. The squad statistics were always
+// in app.json and were previously unreachable from the UI.
 // ---------------------------------------------------------------------------
 
-export function squadByPosition(squad: SeasonPlayerStat[]): Record<string, SeasonPlayerStat[]> {
-  const groups: Record<string, SeasonPlayerStat[]> = { goalkeepers: [], defenders: [], midfields: [], forwards: [] };
-  for (const p of squad) groups[p.positionGroup]?.push(p);
-  return groups;
+/** Position groups in the order a supporter reads a team sheet. */
+export const POSITION_ORDER: SeasonPlayerStat["positionGroup"][] = [
+  "goalkeepers",
+  "defenders",
+  "midfields",
+  "forwards",
+];
+
+/** Group the current squad by position, preserving the display order. */
+export function squadByPosition(
+  squad: SeasonPlayerStat[],
+): Array<{ group: SeasonPlayerStat["positionGroup"]; label: string; players: SeasonPlayerStat[] }> {
+  const groups = new Map<SeasonPlayerStat["positionGroup"], SeasonPlayerStat[]>();
+  for (const p of squad) {
+    const list = groups.get(p.positionGroup) ?? [];
+    list.push(p);
+    groups.set(p.positionGroup, list);
+  }
+  return POSITION_ORDER.filter((g) => (groups.get(g)?.length ?? 0) > 0).map((g) => ({
+    group: g,
+    label: POSITION_LABEL[g] ?? g,
+    players: sortSquad(groups.get(g) ?? []),
+  }));
+}
+
+/**
+ * Squad order: most matches played first (the regulars lead the group), then
+ * most starts, then surname. Deterministic, so the list never reshuffles
+ * between renders.
+ */
+export function sortSquad(players: SeasonPlayerStat[]): SeasonPlayerStat[] {
+  return [...players].sort(
+    (a, b) =>
+      b.matchesPlayed - a.matchesPlayed ||
+      b.matchesStarted - a.matchesStarted ||
+      a.playerName.split(" ").slice(-1)[0].localeCompare(b.playerName.split(" ").slice(-1)[0], "sv"),
+  );
+}
+
+/**
+ * Discipline restricted to the CURRENT men's squad.
+ *
+ * The season ledger spans the whole season, including players who have since
+ * left the club. A supporter asking "who is one card from being suspended?"
+ * means "who in the squad I can watch next week", so departed players are
+ * excluded. Membership is decided on the canonical id the pipeline already
+ * assigned, with a name fallback for entries where only the name survived.
+ */
+export function currentSquadDiscipline(
+  discipline: PlayerDiscipline[] | undefined,
+  squad: SeasonPlayerStat[] | undefined,
+): PlayerDiscipline[] {
+  if (!discipline) return [];
+  const ids = new Set((squad ?? []).map((p) => p.playerId));
+  const names = new Set((squad ?? []).map((p) => nameKeyOf(p.playerName)));
+  return discipline.filter((d) => ids.has(d.playerId) || names.has(nameKeyOf(d.playerName)));
 }
 
 export const POSITION_LABEL: Record<string, string> = {

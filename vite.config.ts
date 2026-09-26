@@ -16,12 +16,27 @@ export default defineConfig({
         theme_color: "#000000",
         background_color: "#000000",
         display: "standalone",
-        start_url: "/",
+        // PRODUCTION BLOCKER FIX.
+        //
+        // This app is served from a GitHub Pages PROJECT sub-path
+        // (https://<user>.github.io/Min-BKH-app/), not a domain root.
+        // An origin-absolute start_url of "/" therefore resolves to
+        // https://<user>.github.io/ — which GitHub Pages does not serve, and
+        // which returns 404. Adding to the Home Screen worked (the manifest,
+        // the icons and the scope were all found) but LAUNCHING the installed
+        // app hit that 404 and showed nothing.
+        //
+        // "./" keeps the launch URL inside the app's own directory, so the
+        // installed PWA resolves exactly the same document as the Safari URL.
+        // The same reasoning applies to every icon `src`: "/icons/icon-512.png"
+        // pointed at the domain root and 404'd too, even though the file is
+        // present under the project path.
+        start_url: "./",
         icons: [
-          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-          { src: "/icons/maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
-          { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
+          { src: "icons/maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+          { src: "icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
       workbox: {

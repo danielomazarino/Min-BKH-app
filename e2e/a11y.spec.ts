@@ -1,11 +1,13 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-/** All top-level surfaces, including the two-tab navigation model. */
+/** All five primary destinations, plus the not-found surface. */
 const PAGES = [
   { hash: "#/", name: "Brief" },
+  { hash: "#/nyheter", name: "Nyheter" },
   { hash: "#/matcher", name: "Matcher" },
-  { hash: "#/tidigare", name: "Tidigare" },
+  { hash: "#/trupp", name: "Trupp" },
+  { hash: "#/spelare", name: "Spelare" },
 ];
 
 test.describe("Accessibility (axe-core)", () => {
@@ -61,13 +63,31 @@ test.describe("Accessibility (axe-core)", () => {
     }
   });
 
-  test("reduced motion does not break interaction", async ({ page }) => {
+  test("reduced motion does not break navigation", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/#/");
-    await expect(page.getByTestId("layer-oversikt")).toBeAttached();
-    // The pager must still be operable when transitions are suppressed.
-    await page.getByTestId("pager-dot-nyheter").click();
-    await expect(page.getByTestId("pager-dot-nyheter")).toHaveAttribute("aria-current", "true");
+    await expect(page.getByTestId("brief-page")).toBeAttached();
+    // Navigation must still be operable when transitions are suppressed, and
+    // the active state must not depend on motion.
+    await page.getByTestId("tab-nyheter").click();
+    await expect(page.getByTestId("tab-nyheter")).toHaveAttribute("aria-current", "page");
+    await expect(page.getByTestId("news-page")).toBeAttached();
+  });
+
+  test("the not-found surface is not a silent blank", async ({ page }) => {
+    await page.goto("/#/hittades-inte");
+    await expect(page.getByTestId("not-found")).toBeVisible();
+    await expect(page.getByTestId("not-found")).toContainText("Sidan finns inte");
+  });
+
+  test("the five destinations are distinguishable to a screen reader", async ({ page }) => {
+    await page.goto("/#/");
+    const nav = page.getByRole("navigation", { name: "Huvudnavigation" });
+    await expect(nav).toBeVisible();
+    const names = await nav.locator("a").allInnerTexts();
+    expect(names).toEqual(["Brief", "Nyheter", "Matcher", "Trupp", "Spelare"]);
+    // The active destination is announced, not only coloured.
+    await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
   });
 
   test("every icon-only control has an accessible name", async ({ page }) => {
