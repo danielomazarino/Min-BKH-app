@@ -197,6 +197,16 @@ test.describe("Swipe on the navigation bar", () => {
 
     const y = before.y + before.height / 2;
     const sx = before.x + before.width * 0.85;
+    // The bar is centred with `transform: translateX(-50%)`, so it is never at
+    // the identity. Pin the resting value and require it to be INVARIANT for
+    // the whole gesture: a drag would make it track the pointer.
+    const resting = await page
+      .locator(".fabnav")
+      .evaluate((el) => getComputedStyle(el).transform);
+    expect(resting, "the bar is transformed by something other than its centring").toBe(
+      "matrix(1, 0, 0, 1, -171, 0)",
+    );
+
     await page.mouse.move(sx, y);
     await page.mouse.down();
     for (let i = 1; i <= 8; i++) {
@@ -204,12 +214,16 @@ test.describe("Swipe on the navigation bar", () => {
       // Assert DURING the gesture, while the pointer is still down.
       const mid = await barBox(page);
       expect(Math.abs(mid.x - before.x), "the bar moved horizontally mid-swipe").toBeLessThanOrEqual(1);
+      const midTf = await page.locator(".fabnav").evaluate((el) => getComputedStyle(el).transform);
+      expect(midTf, "the bar's transform changed during a swipe — it is being dragged").toBe(resting);
     }
     await page.mouse.up();
     await page.waitForTimeout(400);
 
     const after = await barBox(page);
     expect(Math.abs(after.x - before.x), "the bar did not return to its resting position").toBeLessThanOrEqual(1);
+    const afterTf = await page.locator(".fabnav").evaluate((el) => getComputedStyle(el).transform);
+    expect(afterTf, "the bar's transform did not settle back after the swipe").toBe(resting);
     // ...and the swipe still navigated.
     await expect(page).toHaveURL(/\u0023\/matcher$/);
   });
