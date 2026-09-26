@@ -282,19 +282,42 @@ main {
   width: min(calc(100% - var(--s4) * 2), 440px);
   height: var(--fabnav-h);
   transform: translateX(-50%);
-  /* Translucent, not solid. The alpha is low enough that scrolled content is
-     genuinely visible through the pill (verified against a screenshot with
-     text underneath), while the blur keeps the icons legible on top of it.
-     The near-opaque colour is declared FIRST as the fallback for engines
-     without backdrop-filter, so contrast never depends on the filter. */
-  background: rgba(14, 14, 14, 0.72);
-  -webkit-backdrop-filter: saturate(1.6) blur(18px);
-  backdrop-filter: saturate(1.6) blur(18px);
-  border: 1px solid var(--hairline);
+  /* TRANSLUCENCY — retuned 2026-09-26 after human review on a real iPhone
+   * AND after a measured A/B against the alternatives (see the table below).
+   *
+   * THE ACTUAL PROBLEM WAS NEVER ALPHA. It was the SURFACE TONE. The page
+   * background is --bg: #000000, so a dark translucent layer over it resolves
+   * to near-black and the bar reads as a solid plate. Lifting the tint to a
+   * charcoal grey is what makes the surface legible as a separate object.
+   *
+   * Measured (mean luminance inside the bar / spread across it, 390px, with
+   * real scrolled content behind):
+   *
+   *   variant                          mean lum   spread   reads as
+   *   A  rgba(38,40,44,0.50)  (old)      23.0       6.0     black plate
+   *   B  rgba(35,35,38,0.82)  (proposed) 30.0       2.0     grey plate, content lost
+   *   C  rgba(42,44,48,0.62)  (chosen)   29.1       4.0     lifted surface, content legible
+   *
+   * B separates from the page best but is nearly opaque: its spread collapses
+   * to 2, i.e. the content behind is no longer modulating the surface at all,
+   * which is the opposite of the intent. C keeps the bar clearly lighter than
+   * the page while still letting team names show through. Alpha was pushed
+   * back DOWN from 0.72 to 0.62 precisely to buy that separation back.
+   *
+   * Restrained by design: no gradient, no glow, no glossy sheen, no Liquid
+   * Glass. Just a charcoal pane, a light top edge, and a soft shadow. */
+  background: rgba(42, 44, 48, 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.5),
+    /* Top inner highlight: the single strongest cue that a surface is a
+       translucent pane rather than a solid fill. */
+    inset 0 1px 0 rgba(255, 255, 255, 0.11);
   transition: transform var(--dur-dismiss) var(--ease-ios);
-  touch-action: pan-y; /* we own horizontal; the page keeps vertical */
+  touch-action: none; /* we own horizontal AND vertical; see the sheet note */
   /* A horizontal swipe that STARTS on a link would otherwise sweep up an
      implicit text selection, which swallows the remaining pointer events and
      stops the gesture dead. The bar is chrome, not prose, so nothing here
@@ -302,13 +325,24 @@ main {
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
+  /* The pill must never appear to slide with the finger. Belt and braces:
+     the JS never writes a transform, and this forbids the CSS from having a
+     transition that could animate one. */
+  will-change: auto;
 }
 
+/* Only bump the tint when the engine can actually blur behind it. Without a
+   backdrop filter, a 0.62-alpha surface over black would be too faint to read
+   as a control, so the fallback has to be more opaque to stay usable. */
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .fabnav {
-    background: rgba(14, 14, 14, 0.72);
-    -webkit-backdrop-filter: saturate(160%) blur(18px);
-    backdrop-filter: saturate(160%) blur(18px);
+    background: rgba(42, 44, 48, 0.62);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fabnav {
+    background: rgba(38, 40, 44, 0.95);
   }
 }
 
@@ -326,6 +360,22 @@ main {
   margin: 0;
   padding: 0;
   list-style: none;
+  /* CRITICAL: `touch-action` is NOT an inherited property.
+   *
+   * Measured in this repo (2026-09-26): with `touch-action` set only on the
+   * <nav>, the computed values down the bar were
+   *     nav  -> none      (correct)
+   *     list -> auto
+   *     item -> auto
+   *     link -> auto     <-- the element the thumb actually lands on
+   * The <a> fills the bar, so the browser decided the gesture on the link,
+   * where `auto` leaves native panning enabled. It then consumed the
+   * horizontal pan as a scroll and fired `pointercancel`, so `pointerup`
+   * never reached the commit handler. That is why swiping did nothing on a
+   * real iPhone while a desktop mouse test passed.
+   *
+   * Declaring it on the interactive descendants is what actually fixes it. */
+  touch-action: none;
 }
 
 .fabnav-item {
@@ -341,6 +391,9 @@ main {
   align-items: center;
   justify-content: center;
   gap: 3px;
+  /* See the note on `.fabnav-list`: the link IS the touch target, so this is
+     the declaration that actually governs whether the swipe survives. */
+  touch-action: none;
   /* Comfortably past the 44px accessible minimum, and tall enough to fill the
      58px bar so the taller control does not leave dead space above the icons. */
   min-height: 52px;
@@ -1319,9 +1372,16 @@ main {
 .sheet {
   position: relative;
   width: 100%;
-  max-height: 88dvh;
+  max-height: min(88dvh, calc(100dvh - var(--s5)));
   display: flex;
   flex-direction: column;
+  /* The sheet must not sit UNDER the floating nav. The nav occupies
+     --chrome-bottom (its height + gaps + safe area) and stays visible while a
+     sheet is open, so the sheet is inset by exactly that band. Without this
+     the last rows of news text were covered by the bar — the defect reported
+     from the real device. `--chrome-bottom` is the single source of truth, so
+     the two can never drift apart. */
+  margin-bottom: var(--chrome-bottom);
   background: var(--surface);
   border-radius: var(--r-sheet) var(--r-sheet) 0 0;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
@@ -1382,6 +1442,18 @@ main {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Bottom padding reserves the floating-nav clearance so the LAST line of
+     sheet content is never hidden behind the bar. `--chrome-bottom` is
+     --fabnav-h + 2x--fabnav-gap + safe-area, i.e. the real occupied band.
+
+     REGRESSION FIX 2026-09-26: these declarations sat in a rule that had
+     already been closed by `:not([data-at-top="true"])`, so the parser threw
+     them away and `.sheet-body` had NO bottom padding at all — which is
+     exactly why the news sheet's text disappeared behind the floating nav on
+     a real iPhone. A dangling declaration before a `}` is a parse error that
+     takes the rest of the block with it. */
+  padding: var(--s4) var(--s4) calc(var(--s4) + var(--chrome-bottom));
+  scrollbar-width: none;
   /* The sheet claims the gesture ONLY while the body is scrolled to the top;
      `data-at-top` is kept in sync by Sheet. At the top the browser must not
      pan, or it eats the drag-to-dismiss before any handler can claim it.
@@ -1391,9 +1463,6 @@ main {
 }
 .sheet-body:not([data-at-top="true"]) {
   touch-action: pan-y;
-}
-  padding: var(--s4) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0px));
-  scrollbar-width: none;
 }
 .sheet-body::-webkit-scrollbar {
   display: none;

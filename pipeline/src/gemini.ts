@@ -199,6 +199,22 @@ class GeminiHttpError extends Error {
 
 /** Maximum retries per model, AFTER the initial request. Bounded on purpose. */
 const MAX_RETRIES_PER_MODEL = 2;
+/**
+ * HARD CAP on total calls for one pipeline run.
+ *
+ * The quota problem is multiplicative, not additive. With 4 candidate models
+ * x 3 attempts each, one run costs up to 12 calls. The Free Tier budget is
+ * assumed to be 20 requests/day, so a single bad night (every model 503ing)
+ * spends 60% of the day's quota, and several such runs exhaust it outright.
+ * Observed 12 calls in run 36189893618.
+ *
+ * This cap makes the worst case a NUMBER rather than a product, so an
+ * unattended nightly run cannot quietly eat the quota. It is deliberately
+ * generous enough that one healthy run (1 call) plus a full retry storm on the
+ * first model still gets a fair attempt, while leaving the remaining budget
+ * for a manual retry.
+ */
+const MAX_TOTAL_CALLS = 6;
 /** Backoff before retry N (1-based). Short — this is a nightly batch job. */
 const RETRY_DELAY_MS = [5_000, 20_000];
 /** Test seam: GEMINI_RETRY_DELAY_MS=0 makes retry-backoff tests instant. */
@@ -249,6 +265,16 @@ async function callGemini(articles: GeminiArticleInput[]): Promise<GeminiCallRes
   let calls = 0;
   for (const model of candidateModels()) {
     for (let attempt = 0; attempt <= MAX_RETRIES_PER_MODEL; attempt++) {
+      // The hard cap. Checked BEFORE the call, so the worst case is exactly
+      // MAX_TOTAL_CALLS requests and never one more.
+      if (calls >= MAX_TOTAL_CALLS) {
+        console.warn(
+          `gemini: stopping after ${calls} calls (cap ${MAX_TOTAL_CALLS}) — ` +
+            `keeping deterministic events to protect the daily quota`,
+        );
+        errors.push(`call cap ${MAX_TOTAL_CALLS} reached`);
+        throw new Error(errors.join(" | "));
+      }
       try {
         const r = await callModel(model, articles, key);
         return { ...r, calls: calls + 1 };
@@ -341,9 +367,61 @@ export async function synthesizeWithGemini(
   try {
     const { text, calls, model } = await callGemini(articles);
     const ids = articles.map((a) => a.id);
-    const { result, unknownIds } = parseGeminiResponse(text, ids);
+
+    // Persist the raw model output BEFORE parsing it.
+    //
+    // A real run (36215617435, 2026-09-26) returned HTTP 200 with a response
+    // that parsed but yielded ZERO events. Without the raw text, "no usable
+    // events" is indistinguishable between three very different causes:
+    //   1. the model correctly scoped every article to women/club/youth
+    //      (a CORRECT empty answer, and the fallback firing needlessly),
+    //   2. the model invented events referencing article ids we never sent
+    //      (a prompt/format bug we must fix), or
+    //   3. the model returned an empty events array for some other reason.
+    // We logged only the summary, so the run was undiagnosable after the fact.
+    // This is the same gap that made the earlier 503 investigation blind.
+    try {
+      if (process.env.GEMINI_DEBUG_RAW === "1" && text) {
+        const { writeFileSync } = await import("node:fs");
+        const { resolve } = await import("node:path");
+        const dir = resolve(import.meta.dirname, "../../pipeline/data");
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const file = resolve(dir, `gemini-raw-${stamp}.json`);
+        writeFileSync(file, text, "utf8");
+        console.warn(`gemini: raw response written to ${file} (${text.length} chars)`);
+      }
+    } catch (e) {
+      // Diagnostics must never break the pipeline.
+      console.warn(`gemini: could not write raw response: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
+    // Parse defensively so the failure reason is reportable rather than thrown.
+    let parsed: ReturnType<typeof parseGeminiResponse> | null = null;
+    let parseError: string | null = null;
+    try {
+      parsed = parseGeminiResponse(text, ids);
+    } catch (e) {
+      parseError = e instanceof Error ? e.message : String(e);
+    }
+    if (parsed === null) {
+      console.warn(`gemini: response did not parse — ${parseError}`);
+      return {
+        result: null,
+        status: { ok: false, error: `Gemini response invalid: ${parseError}`, calls, model },
+        raw: text,
+      };
+    }
+
+    const { result, unknownIds } = parsed;
     if (result.events.length === 0) {
-      return { result: null, status: { ok: false, error: "Gemini returned no usable events", calls, model }, raw: text };
+      // Say WHICH of the three causes above this was, so the next run is
+      // actionable without re-running the model by hand.
+      const detail =
+        unknownIds.length > 0
+          ? `all events referenced article ids we never sent (${unknownIds.slice(0, 3).join(", ")})`
+          : `model returned ${result.verdicts.length} verdicts but 0 events (every article was scoped non-men, or events were empty)`;
+      console.warn(`gemini: no usable events — ${detail}`);
+      return { result: null, status: { ok: false, error: `Gemini returned no usable events: ${detail}`, calls, model }, raw: text };
     }
     if (unknownIds.length) {
       console.warn(`gemini: ignored unknown article ids: ${unknownIds.join(", ")}`);

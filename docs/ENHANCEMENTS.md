@@ -872,3 +872,244 @@ source URL, publisher, title and date preserved.
   GitHub Pages site in a fresh browser context**. The PWA service worker
   (`registerType: "autoUpdate"`) will serve the previous release and make a
   successful deploy look like a failure.
+
+---
+
+## Player-first Spelare — implementation record (2026-09-26)
+
+The investigation above concluded that the 31-player registry was the wrong
+product model. This section records what was actually built, and — more
+importantly — the measurements that changed the design along the way.
+
+### What replaced the registry
+
+`app/players/playerSearch.ts` (no I/O, pure matching) and
+`app/players/wikidata.ts` (network) replace `pipeline/src/registry.ts`,
+`registry.json`, `former-players.json`, `collectFormerPlayers*()`,
+`writeFormerIfBetter()`, `loadFormerPlayers()` and the whole `FormerPlayer*`
+type family. `search.ts` keeps `normalizeSearch` and loses `searchPlayers`.
+
+The Spelare page now searches live. **No Häcken connection is required before
+a player can be found** — the Häcken link is enrichment shown on the result,
+never a filter. Gating on it would reproduce the closed list in a new costume.
+
+### Measured facts that changed the design
+
+| Question | Measurement | Consequence |
+|---|---|---|
+| SPARQL for name search | **57 s**; targeted P734 variant **45 s timeout** | SPARQL is unusable from a browser. Indexed `wbsearchentities` only (~1–2 s). |
+| CORS | `origin=*` required, else browser `TypeError: Failed to fetch` while curl returns 200 | Invisible to server-side tests; asserted in the URL builder and re-checked in a real browser. |
+| User-Agent | node `fetch` **without** UA → hard 429; with UA → 200 | Mandatory. Browsers forbid setting it, so the browser path relies on the browser's own UA. |
+| Surname search | `"Jeremejeff"` returns **only** the surname entity `Q47466482`; the player `Q16633101` exists via P734 | Added a backlinks fallback, used only when the normal path finds zero people, so the common case still costs 2 requests. |
+
+### Four real bugs, all caught by tests or live runs
+
+1. **`const A_PERSON = 5`** — Q-IDs are `"Q5"`, not `5`. This made `isPerson()`
+   always false, so **every single search returned not-found**. A live run
+   caught it; a mocked test never would have.
+2. **Ranking demoted footballers.** Sorting final candidates by `matchScore`
+   put five non-footballers named "David Marek" above David Frölund `Q727444`,
+   who is the actual former Häcken player. `rankCandidates` now returns the
+   final `ordered` list and callers must not re-sort.
+3. **Aliases were not scored.** A player found by a former name scored 0,
+   because only the display label was compared. Aliases now count for matching
+   but never for display.
+4. **Query variants were one-sided.** Only the *candidate* was expanded, so
+   `"A. Jeremejeff"` never matched "Alexander Jeremejeff". Both sides are now
+   expanded.
+
+### Product rules encoded in the UI
+
+- **Six honest result states.** `idle | searching | results | not-found |
+  rate-limited | failed`. A 429 means *we did not look* and says so in words;
+  it is never rendered as "no such player".
+- **Häcken is three-valued**: men's / women's / not recorded. "Not recorded"
+  states that missing data is not a denial — Bjärsmyr has ten P54 clubs and
+  BK Häcken is not among them, which is *absence of evidence*, not evidence of
+  absence.
+- **Status is never inferred.** Wikidata does not record active/retired, so
+  the sheet says exactly that. No "pensionerad", no "fri agent".
+- **Identity is the Q-ID**, never the name. Favourites key on it, so they work
+  for any player found by search.
+- **Submit-driven search, never per keystroke**, with a 5-minute in-memory
+  session cache (40 entries) so repeated and back-spaced searches do not burn
+  Wikidata's ~10 requests/minute budget. Transient failures are never cached.
+
+### The e2e trap worth remembering
+
+`page.route` and `context.route` **do not intercept** these cross-origin
+`fetch` calls — measured, handler invoked 0 times, request reached the real
+network; `serviceWorkers: "block"` did not help. The first draft of
+`e2e/former-players.spec.ts` therefore looked green while quietly hitting the
+live Wikidata API, and its "429" and "no results" cases failed because the
+real API answered them.
+
+The fix is `addInitScript` replacing `window.fetch`. **The stub must delegate
+non-Wikidata requests to the real fetch** — an all-answering stub broke app
+boot with `Cannot read properties of undefined (reading 'generatedAt')`,
+because `data/app.json` was being faked as `{}`.
+
+### Wikidata is discovery, not an authoritative registry
+
+Coverage is uneven and that is stated in the UI, not hidden. Häcken links are
+enrichment. TheSportsDB cross-checking is **not implemented**; it remains an
+optional follow-up and must never be used to claim completeness.
+
+## Gemini nightly news — still unproven (2026-09-26)
+
+**Gemini has never produced a validated usable news event.** Do not report
+otherwise on the basis of an HTTP 200.
+
+Models tried in order: `gemini-3.8/3.7/3.6/3.5-flash` (`2.5-flash` 404s for
+this key). One run sends 20–21 candidates in a **single batched call**, but
+retry × model fallback could reach **4 models × 3 attempts = 12 calls**. The
+assumed Free Tier budget is **RPD 20**, so repeated manual
+`workflow_dispatch` runs in one day could exhaust it.
+
+**FIXED (2026-09-26): `MAX_TOTAL_CALLS = 6`** in `gemini.ts`. The cap is
+checked *before* each call, so the worst case is a constant rather than a
+product, and an unattended nightly run can no longer spend 60% of the day's
+quota on one bad night. A healthy run still costs exactly 1 call. Pinned by 4
+tests, including one that asserts the cap leaves `gem.result === null` so
+`run.ts` keeps using the deterministic fallback.
+
+Real outcomes from workflow logs:
+- `36187045238` — 12 × HTTP 503 across 4 models.
+- `36189893618` — 12 × HTTP 503.
+- `36215617435` (latest) — **`calls=1`, no 503, HTTP 200, yet "no usable
+  events"**. A failure mode never seen before.
+
+All these runs report `conclusion: success` because the pipeline exits 0.
+**That is not Gemini succeeding.**
+
+The third case was undiagnosable: the raw response was returned by
+`synthesizeWithGemini` and then **discarded** by `run.ts`, and three very
+different causes collapsed into one message. `gemini.ts` now names which cause
+occurred (unparseable / unknown article ids / empty events) and
+`GEMINI_DEBUG_RAW=1` persists the raw body to `pipeline/data/`.
+
+**Still unproven:** that one normal nightly run fits the quota and reliably
+produces usable semantic output. The deterministic fallback
+(`buildNewsEvents` + `menRelevantNews`) is intact and the app is healthy
+without Gemini, so nothing is at risk while this stays open.
+
+---
+
+# Lessons from the human-acceptance pass (2026-09-26)
+
+Three defects shipped as "verified" and were found by a person holding a real
+iPhone 13. All three root causes were wrong in my original diagnosis, and two
+of them had nothing to do with the numbers I had been tuning.
+
+## L-001  `page.mouse` can never catch a touch bug
+
+Every pre-existing navigation and sheet test drove the UI with `page.mouse`,
+which emits synthetic **mouse** pointer events. A phone emits **touch**
+pointer events, and a browser treats them differently:
+
+- `touch-action` is only consulted for touch input, so a mouse drag sails
+  straight past a value that will make a real finger scroll the page;
+- a touch gesture is arbitrated by the browser and can be **cancelled** with
+  `pointercancel`, so the `pointerup` that commits the gesture never arrives.
+
+`e2e/navigation.spec.ts` reported the swipe as working. On iPhone it was dead.
+
+**Rule:** any gesture that must work on a phone is tested with CDP
+`Input.dispatchTouchEvent`, never `page.mouse`. Chromium's *touch emulation*
+is also insufficient — it passes while the code is still broken on iOS. Only
+real dispatched touch events with an explicit `pointercancel` assertion
+reproduce this class of failure.
+
+## L-002  `touch-action` is NOT inherited
+
+The fix for the dead swipe looked obviously correct: `touch-action: none` was
+set on the `<nav>`. Measuring the computed value **down the bar** showed why
+it did nothing:
+
+```
+nav  -> none   (correct)
+list -> auto
+item -> auto
+link -> auto   <-- the element the thumb actually lands on
+```
+
+The `<a>` fills the bar, so the browser arbitrated the gesture *there* with
+`auto`, consumed the horizontal pan as a scroll, and fired `pointercancel`.
+
+**Rule:** assert the computed `touch-action` on the **innermost element the
+finger lands on** (`.fabnav-link`), never on an ancestor. A parent's value
+proves nothing.
+
+## L-003  A dangling declaration silently deletes a whole block
+
+`.sheet-body` had `padding` and `scrollbar-width` written *after* the closing
+`}` of a preceding rule. A declaration that appears where a selector is
+expected is a parse error, and it takes the rest of the block with it — so
+`.sheet-body` had **no bottom padding at all**, and news/sheet text sat behind
+the nav bar. No error, no warning, no test failure.
+
+**Rule:** when a rule appears to be ignored entirely, check the text
+immediately *preceding* it for orphaned declarations before anything else.
+
+## L-004  Translucency over pure black needs tone, not alpha
+
+The nav bar "looked like a solid black pill" over content. Raising alpha did
+not help and eventually destroyed the content behind it, because the page
+background is `--bg: #000000`: a translucent *black* over pure black is still
+black. What lifts the surface is a **lighter base colour**, not more opacity.
+
+Measured mean luminance and spread inside the bar at 390px with real content
+behind it:
+
+| variant | mean | spread | verdict |
+|---|---|---|---|
+| A `rgba(38,40,44,0.50)` (old) | 23.0 | 6.0 | black plate |
+| B `rgba(35,35,38,0.82)` (proposed) | 30.0 | 2.0 | grey plate, content lost |
+| C `rgba(42,44,48,0.62)` (**shipped**) | 29.1 | 4.0 | lifted, content legible |
+
+`spread` is the discriminator: variant B separates best from `#000` but its
+spread collapses to 2, meaning the content behind it has been painted out.
+
+**Rule:** judge translucent chrome by *measured* luminance and spread, not by
+reading the alpha value. A screenshot alone will not separate these.
+
+## L-005  Acceptance means element movement, not a route change
+
+The old swipe tests asserted only that the URL changed. A bar that slid out
+from under the finger also changed the URL while feeling broken. The new
+tests assert that the **bar's own `x` never moves** and that
+`scrollWidth - clientWidth` stays 0 mid-gesture.
+
+**Rule:** a gesture test must assert (a) the outcome and (b) that the
+intended element stayed put. "It navigated" and "it felt right" are different
+claims.
+
+## L-006  Floating chrome needs viewport clearance, asserted numerically
+
+A sheet overlapped the nav by an unknown amount. It is now asserted as a
+number: sheet bottom 754 vs nav top 770 = **16px clearance**, driven by
+`--chrome-bottom`. Re-check this if the bar height, the safe-area inset, or
+the bar's own padding ever changes.
+
+## L-007  A short drag correctly reads as a tap
+
+While writing the tests I assumed a 10px drag must leave the route unchanged.
+Measured, it navigates — and correctly so: it is under `FLICK_MIN_PX` (14), so
+it is not a swipe, and the browser fires a `click` on the link under the
+finger, whose `href` is that link's own destination. Nothing to fix.
+
+The lesson is about the test, not the app: the first version of that test
+started at `frac = 0.5`, which is the **boundary between tabs 1 and 2**, so
+it was asserting the wrong destination. Starting on the already-active tab and
+dragging the other way makes tap / swipe / no-op all distinguishable. Assert
+against a start position you have measured, not one you assumed.
+
+## L-008  Player search must not regress to a registry
+
+The 31-entry hand-maintained registry was deleted and replaced with live
+Wikidata search (`app/players/`). The registry was stale by construction: it
+could only ever contain names someone remembered to add. Online search is the
+only version that can answer a name the app has never seen.
+
+**Rule:** do not reintroduce a curated player list. If enrichment dies, the
+search must degrade to "search returned nothing" — never to a stale list.

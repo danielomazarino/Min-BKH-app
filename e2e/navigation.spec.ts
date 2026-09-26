@@ -101,6 +101,233 @@ test.describe("Swipe on the navigation bar", () => {
     await page.mouse.up();
   };
 
+  /**
+   * REAL TOUCH SWIPE.
+   *
+   * The `swipe()` helper above drives `page.mouse`, which is why this whole
+   * suite was green while the gesture did nothing on a real iPhone. A mouse
+   * drag has no `touch-action` arbitration and never fires `pointercancel`,
+   * so it cannot reproduce the failure that human testing found.
+   *
+   * This dispatches genuine touch input through CDP, which is what the browser
+   * does with a finger — and therefore what exercises `touch-action`, native
+   * pan-vs-custom gesture arbitration, and `pointercancel`.
+   */
+  const touchSwipe = async (page: Page, dir: 1 | -1, opts: { steps?: number; stepPx?: number } = {}) => {
+    const steps = opts.steps ?? 8;
+    const stepPx = opts.stepPx ?? 9;
+    const b = await barBox(page);
+    const y = b.y + b.height / 2;
+    const startX = b.x + b.width / 2;
+    const client = await page.context().newCDPSession(page);
+    const pts = (x: number) => [{ x, y, id: 1 }];
+    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(startX) });
+    for (let i = 1; i <= steps; i++) {
+      await client.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: pts(startX - dir * stepPx * i),
+      });
+    }
+    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await client.detach();
+  };
+
+  /** Record the pointer events a gesture produced, so we can assert on them. */
+  const recordPointerEvents = async (page: Page) => {
+    await page.evaluate(() => {
+      const w = window as unknown as { __pe: string[] };
+      w.__pe = [];
+      for (const t of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) {
+        window.addEventListener(t, () => w.__pe.push(t), true);
+      }
+    });
+  };
+  const pointerEvents = (page: Page) =>
+    page.evaluate(() => (window as unknown as { __pe: string[] }).__pe);
+
+  /**
+   * The regression that mattered. `touch-action` is NOT an inherited CSS
+   * property: with it declared only on the <nav>, the computed value on the
+   * <a> — the element the thumb actually lands on — was `auto`, so the
+   * browser claimed the horizontal pan as a scroll and fired
+   * `pointercancel`, killing the swipe. This asserts the value on the real
+   * touch target, not on an ancestor.
+   */
+  test("the touch target itself disallows native panning", async ({ page }) => {
+    await page.goto("/#/");
+    await ready(page);
+    const values = await page.evaluate(() => {
+      const read = (sel: string) => {
+        const el = document.querySelector(sel);
+        return el ? getComputedStyle(el).touchAction : "MISSING";
+      };
+      return {
+        nav: read("[data-testid=tabbar]"),
+        link: read(".fabnav-link"),
+        item: read(".fabnav-item"),
+      };
+    });
+    expect(values.nav).toBe("none");
+    // The link fills the bar and is what the finger hits.
+    expect(values.link).toBe("none");
+  });
+
+  test("a REAL touch swipe advances, and the browser never cancels it", async ({ page }) => {
+    await page.goto("/#/");
+    await ready(page);
+    await recordPointerEvents(page);
+    await touchSwipe(page, 1);
+    await expect(page).toHaveURL(/\u0023\/nyheter$/);
+
+    const events = await pointerEvents(page);
+    expect(events).toContain("pointerup");
+    // The failure mode on iOS: the pan was claimed as a scroll, so the
+    // stream was torn down before pointerup could commit.
+    expect(events).not.toContain("pointercancel");
+  });
+
+  test("a REAL touch swipe goes back", async ({ page }) => {
+    await page.goto("/#/matcher");
+    await ready(page);
+    await touchSwipe(page, -1);
+    await expect(page).toHaveURL(/\u0023\/nyheter$/);
+  });
+
+  test("a REAL touch swipe works from EVERY destination", async ({ page }) => {
+    const starts = [
+      { hash: "#/", left: "#/nyheter" },
+      { hash: "#/nyheter", left: "#/matcher", right: "#/" },
+      { hash: "#/matcher", left: "#/trupp", right: "#/nyheter" },
+      { hash: "#/trupp", left: "#/spelare", right: "#/matcher" },
+      { hash: "#/spelare", right: "#/trupp" },
+    ];
+    for (const s of starts) {
+      await page.goto(`/${s.hash}`);
+      await ready(page);
+      await touchSwipe(page, 1);
+      if (s.left) {
+        await expect(page, `swipe left from ${s.hash}`).toHaveURL(new RegExp(`${s.left}$`));
+      } else {
+        // No wraparound at the last destination.
+        await expect(page, `no wraparound from ${s.hash}`).toHaveURL(new RegExp(`${s.hash.replace("/", "\\/")}$`));
+      }
+    }
+    for (const s of starts) {
+      if (!s.right) continue;
+      await page.goto(`/${s.hash}`);
+      await ready(page);
+      await touchSwipe(page, -1);
+      await expect(page, `swipe right from ${s.hash}`).toHaveURL(new RegExp(`${s.right}$`));
+    }
+  });
+
+  test("a real touch swipe from ONTO an individual nav item also works", async ({ page }) => {
+    // The gesture must not depend on starting at the bar's centre: a thumb
+    // lands on whichever icon it aimed at.
+    await page.goto("/#/");
+    await ready(page);
+    const b = await barBox(page);
+    const client = await page.context().newCDPSession(page);
+    const y = b.y + b.height / 2;
+    const startX = b.x + b.width * 0.12;
+    const pts = (x: number) => [{ x, y, id: 1 }];
+    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(startX) });
+    for (let i = 1; i <= 8; i++) {
+      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(startX - 9 * i) });
+    }
+    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await client.detach();
+    await expect(page).toHaveURL(/\u0023\/nyheter$/);
+  });
+
+  test("a real tap still activates, and a short touch drag stays a tap", async ({ page }) => {
+    await page.goto("/#/");
+    await ready(page);
+
+    // A genuine TOUCH tap, dispatched through CDP. `locator.tap()` is not
+    // available because the context is not created with hasTouch, and a
+    // mouse click would not prove the touch path works.
+    const touchTap = async (testId: string) => {
+      const b = (await page.getByTestId(testId).boundingBox())!;
+      const client = await page.context().newCDPSession(page);
+      const x = b.x + b.width / 2;
+      const y = b.y + b.height / 2;
+      const pt = [{ x, y, id: 1 }];
+      await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pt });
+      await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await client.detach();
+    };
+
+    await touchTap("tab-trupp");
+    await expect(page).toHaveURL(/\u0023\/trupp$/);
+
+    // A short, slow drag — under BOTH the distance and flick thresholds —
+    // must be read as a TAP, not a swipe.
+    //
+    // Started on the ALREADY-ACTIVE tab and dragged 10px the other way, so
+    // the three possible outcomes are distinguishable:
+    //   tap        -> stays on the current tab (asserted)
+    //   swipe      -> would move one destination backwards
+    //   nothing    -> indistinguishable from a tap here, but the tap itself
+    //                 is already proven above, so the only risk left to
+    //                 exclude is a drag over-committing into a swipe.
+    await page.goto("/#/nyheter");
+    await ready(page);
+    const b = await barBox(page);
+    const client = await page.context().newCDPSession(page);
+    const y = b.y + b.height / 2;
+    // 0.3 of the bar is the CENTRE of the second link, so a 10px drag in
+    // either direction still ends on that same link.
+    const x0 = b.x + b.width * 0.3;
+    const pts = (x: number) => [{ x, y, id: 1 }];
+    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(x0) });
+    await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(x0 + 5) });
+    await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(x0 + 10) });
+    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await client.detach();
+    await expect(page).toHaveURL(/\u0023\/nyheter$/);
+  });
+
+  test("the bar does not move during a REAL touch swipe", async ({ page }) => {
+    await page.goto("/#/");
+    await ready(page);
+    const before = await barBox(page);
+    const client = await page.context().newCDPSession(page);
+    const y = before.y + before.height / 2;
+    const x0 = before.x + before.width / 2;
+    const pts = (x: number) => [{ x, y, id: 1 }];
+    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(x0) });
+    for (let i = 1; i <= 8; i++) {
+      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(x0 - 9 * i) });
+    }
+    // Mid-gesture: the bar must be exactly where it started.
+    const during = await barBox(page);
+    expect(Math.abs(during.x - before.x)).toBeLessThan(1);
+    expect(Math.abs(during.y - before.y)).toBeLessThan(1);
+    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await client.detach();
+    const after = await barBox(page);
+    expect(Math.abs(after.x - before.x)).toBeLessThan(1);
+  });
+
+  test("a REAL touch swipe on the CONTENT does not navigate", async ({ page }) => {
+    await page.goto("/#/");
+    await ready(page);
+    const b = await barBox(page);
+    const client = await page.context().newCDPSession(page);
+    // Start well above the bar, in the content area.
+    const y = Math.max(80, b.y - 220);
+    const x0 = 200;
+    const pts = (x: number) => [{ x, y, id: 1 }];
+    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(x0) });
+    for (let i = 1; i <= 8; i++) {
+      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(x0 - 12 * i) });
+    }
+    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await client.detach();
+    await expect(page).toHaveURL(/\u0023\/$/);
+  });
+
   test("swiping the bar left advances to the next destination", async ({ page }) => {
     await page.goto("/#/");
     await ready(page);

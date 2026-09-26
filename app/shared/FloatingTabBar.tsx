@@ -123,21 +123,40 @@ export function FloatingTabBar({
   const index = active ? DESTINATIONS.findIndex((d) => d.path === active.path) : -1;
   const current = index >= 0 ? index : 0;
 
-  const commit = useCallback(
-    (delta: number, velocity: number) => {
-      // Distance OR speed commits. Velocity is signed like delta, so a fast
-      // leftward flick is a negative velocity.
-      if (!isSwipeCommit(delta, velocity)) return;
-      const next = clampIndex(current + (delta < 0 ? 1 : -1));
-      if (next === current) return; // at an end: do nothing, do not wrap
-      onSelect(DESTINATIONS[next]);
-    },
-    [current, onSelect],
-  );
+  // The index lives in a ref so `commit` can stay referentially stable. The
+  // window listeners are registered once, so they must not close over a value
+  // that changes on every navigation — a stale closure here would swipe from
+  // the wrong tab.
+  const indexRef = useRef(current);
+  indexRef.current = current;
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
+
+  const commit = useCallback((delta: number, velocity: number) => {
+    // Distance OR speed commits. Velocity is signed like delta, so a fast
+    // leftward flick is a negative velocity.
+    if (!isSwipeCommit(delta, velocity)) return;
+    const from = indexRef.current;
+    const next = clampIndex(from + (delta < 0 ? 1 : -1));
+    if (next === from) return; // at an end: do nothing, do not wrap
+    onSelectRef.current(DESTINATIONS[next]);
+  }, []);
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
     // Ignore secondary buttons so a right-click never starts a drag.
-    if (e.button !== 0) return;
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+
+    // A gesture that begins on the bar is OURS from the first pixel.
+    //
+    // Without this, iOS is free to let the pan start, and when it decides the
+    // gesture was a scroll it fires `pointercancel` and stops delivering
+    // pointermove/pointerup. The swipe then silently does nothing. The
+    // `touch-action: none` in theme.css is what actually prevents that, and it
+    // MUST be declared on `.fabnav-link` — the element the thumb lands on —
+    // because `touch-action` is not an inherited property. This call is a
+    // belt-and-braces guard for engines that ignore it.
+    if (e.cancelable) e.preventDefault();
+
     drag.current = {
       live: true,
       startX: e.clientX,
@@ -151,7 +170,7 @@ export function FloatingTabBar({
     };
   };
 
-  const onPointerMove = (e: PointerEvent) => {
+  const onPointerMove = useCallback((e: PointerEvent) => {
     const d = drag.current;
     if (!d.live) return;
     if (d.axis === "x" && e.cancelable) e.preventDefault();
@@ -181,9 +200,9 @@ export function FloatingTabBar({
       d.lastX = e.clientX;
       d.lastT = now;
     }
-  };
+  }, []);
 
-  const endDrag = (commitIt: boolean) => {
+  const endDrag = useCallback((commitIt: boolean) => {
     const d = drag.current;
     if (d.axis === "x") {
       // A horizontal swipe is a GESTURE, not a tap. The browser still
@@ -197,7 +216,7 @@ export function FloatingTabBar({
     d.live = false;
     d.axis = "none";
     setArmed(false);
-  };
+  }, [commit]);
 
   /**
    * The gesture is tracked on `window`, not on the bar.
@@ -214,6 +233,12 @@ export function FloatingTabBar({
    * dispatch the subsequent `click` on the NAV rather than the anchor under
    * the finger, which kills every tap. Killing the native link drag (below)
    * is what lets the pointer stream survive at all.
+   *
+   * The handlers read from refs, so the listener effect deliberately has NO
+   * dependency array. Re-attaching on every render (the previous version)
+   * meant a mid-gesture re-render could tear down and rebuild the listener
+   * set, and any event landing in that window was lost. Registering once is
+   * both cheaper and more robust on a device that drops frames.
    */
   useEffect(() => {
     const move = (e: PointerEvent) => onPointerMove(e);
@@ -227,7 +252,7 @@ export function FloatingTabBar({
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", cancel);
     };
-  });
+  }, []);
 
   return (
     <nav

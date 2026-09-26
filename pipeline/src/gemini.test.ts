@@ -436,3 +436,174 @@ describe("article text extraction", () => {
     expect(text).not.toContain("<p>");
   });
 });
+
+// ---------- diagnosing "HTTP 200 but zero events" ----------
+//
+// Run 36215617435 (2026-09-26) hit this: calls=1, no 503, but
+// "Gemini returned no usable events". Before the diagnostics below, all three
+// causes collapsed into one indistinguishable message and the run could not be
+// diagnosed without a manual, quota-consuming re-run.
+
+describe("zero-event diagnosis", () => {
+  const ARTICLE: GeminiArticleInput[] = [
+    { id: "a4", publisher: "SVT", title: "T", url: "u", publishedAt: "d", categoryHint: "unknown" },
+  ];
+
+  function stubOk(body: unknown) {
+    // The real endpoint wraps the model's text in a candidates envelope, so the
+    // stub must too — otherwise the code reads an empty string and throws
+    // before the code path under test is ever reached.
+    const text = typeof body === "string" ? body : JSON.stringify(body);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+      ),
+    );
+    process.env.GEMINI_API_KEY = "test-key";
+  }
+
+  /** Gemini returned verdicts but an empty events array. */
+  it("blames an empty events array, not a transport problem", async () => {
+    stubOk({
+      verdicts: [{ articleId: "a4", scope: "women", confidence: "high", reason: "damlaget" }],
+      events: [],
+    });
+    const { result, status } = await synthesizeWithGemini(ARTICLE);
+    expect(result).toBeNull();
+    expect(status.error).toContain("1 verdicts but 0 events");
+  });
+
+  /**
+   * The most valuable diagnosis: the model invents events pointing at article
+   * ids we never sent. That is a PROMPT/FORMAT BUG on our side, not a Gemini
+   * failure, and it must be distinguishable from a legitimately empty answer.
+   */
+  it("blames unknown article ids when every event cites ids we never sent", async () => {
+    stubOk({
+      verdicts: [{ articleId: "a4", scope: "men", confidence: "high", reason: "herrlaget" }],
+      events: [{ title: "T", summary: "S", articleIds: ["ghost-1", "ghost-2"] }],
+    });
+    const { result, status } = await synthesizeWithGemini(ARTICLE);
+    expect(result).toBeNull();
+    expect(status.error).toContain("article ids we never sent");
+    expect(status.error).toContain("ghost-1");
+  });
+
+  it("distinguishes an unparseable body from a parsed-but-empty one", async () => {
+    stubOk("this is not the expected shape");
+    const { result, status } = await synthesizeWithGemini(ARTICLE);
+    expect(result).toBeNull();
+    expect(status.error).toContain("response invalid");
+    expect(status.error).not.toContain("no usable events");
+  });
+
+  /** A 200 that fails to parse must NOT be retried across models. */
+  it("makes exactly one call when the model answers 200 with garbage", async () => {
+    stubOk("not the expected shape");
+    const { status } = await synthesizeWithGemini(ARTICLE);
+    expect(status.calls).toBe(1);
+  });
+
+  it("still returns the raw text so it can be inspected", async () => {
+    stubOk({
+      verdicts: [{ articleId: "a4", scope: "women", confidence: "high", reason: "damlaget" }],
+      events: [],
+    });
+    const { raw } = await synthesizeWithGemini(ARTICLE);
+    expect(raw).toContain("verdicts");
+  });
+});
+
+/**
+ * Quota safety: one pipeline run must never be able to eat the daily budget.
+ *
+ * The failure mode this guards is multiplicative. With 4 candidate models and
+ * 3 attempts each, an all-503 night costs 12 calls against an assumed Free
+ * Tier limit of 20 requests/day. Observed in run 36189893618. The cap turns
+ * that product into a constant.
+ */
+describe("daily quota protection", () => {
+  const ARTICLE: GeminiArticleInput[] = [
+    { id: "a4", publisher: "SVT", title: "T", url: "u", publishedAt: "d", categoryHint: "unknown" },
+  ];
+
+  it("stops at the call cap when every model returns 503", async () => {
+    process.env.GEMINI_RETRY_DELAY_MS = "0";
+    const mock = vi.fn().mockImplementation(() => Promise.resolve(new Response("busy", { status: 503 })));
+    vi.stubGlobal("fetch", mock);
+    process.env.GEMINI_API_KEY = "test-key";
+
+    const { result, status } = await synthesizeWithGemini(ARTICLE);
+
+    expect(result).toBeNull();
+    // The cap is 6. Without it this would be 4 models x 3 attempts = 12.
+    expect(mock.mock.calls.length).toBeLessThanOrEqual(6);
+    expect(status.error).toContain("call cap");
+    delete process.env.GEMINI_RETRY_DELAY_MS;
+  });
+
+  it("reports how many calls were spent when the cap stops the run", async () => {
+    process.env.GEMINI_RETRY_DELAY_MS = "0";
+    const mock = vi.fn().mockImplementation(() => Promise.resolve(new Response("busy", { status: 503 })));
+    vi.stubGlobal("fetch", mock);
+    process.env.GEMINI_API_KEY = "test-key";
+
+    const { status } = await synthesizeWithGemini(ARTICLE);
+    // The status must be honest about the spend, so a run can be audited from
+    // the log alone without re-running the model.
+    expect(status.ok).toBe(false);
+    expect(status.calls).toBeLessThanOrEqual(6);
+    delete process.env.GEMINI_RETRY_DELAY_MS;
+  });
+
+  it("a single healthy run still costs exactly one call", async () => {
+    const mock = vi.fn().mockImplementation(
+      () =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              candidates: [
+                {
+                  content: {
+                    parts: [
+                      {
+                        text: JSON.stringify({
+                          verdicts: [{ articleId: "a4", scope: "men", confidence: "high", reason: "herrlaget" }],
+                          events: [{ title: "T", summary: "S", articleIds: ["a4"] }],
+                        }),
+                      },
+                    ],
+                  },
+                },
+              ],
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          ),
+        ),
+    );
+    vi.stubGlobal("fetch", mock);
+    process.env.GEMINI_API_KEY = "test-key";
+
+    const { result, status } = await synthesizeWithGemini(ARTICLE);
+    expect(result?.events).toHaveLength(1);
+    expect(status.calls).toBe(1);
+    expect(mock.mock.calls.length).toBe(1);
+  });
+
+  it("the cap leaves the deterministic fallback in charge", async () => {
+    // run.ts decides this by gem.result === null. If the cap ever returned a
+    // result, the app would render half-built events instead of falling back.
+    process.env.GEMINI_RETRY_DELAY_MS = "0";
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("busy", { status: 503 }))));
+    process.env.GEMINI_API_KEY = "test-key";
+
+    const { result } = await synthesizeWithGemini(ARTICLE);
+    expect(result).toBeNull();
+    delete process.env.GEMINI_RETRY_DELAY_MS;
+  });
+});
