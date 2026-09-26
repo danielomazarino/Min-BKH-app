@@ -33,6 +33,7 @@ export function Sheet({
   children,
   headExtra,
   labelledBy,
+  testId = "sheet",
 }: {
   title: string;
   subtitle?: string;
@@ -40,6 +41,15 @@ export function Sheet({
   children: ReactNode;
   headExtra?: ReactNode;
   labelledBy?: string;
+  /**
+   * Overrides the dialog's `data-testid`.
+   *
+   * The settings sheet used to hand-roll its own copy of this markup, which
+   * meant it silently diverged: it kept `tabIndex={-1}` on the scroll body
+   * and so failed axe's `scrollable-region-focusable`, while every sheet
+   * built on this component passed. One implementation, one behaviour.
+   */
+  testId?: string;
 }) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -224,7 +234,7 @@ export function Sheet({
         onPointerMove={onDragMove}
         onPointerUp={() => endDrag(true)}
         onPointerCancel={() => endDrag(false)}
-        data-testid="sheet"
+        data-testid={testId}
         style={dragY ? { transform: `translateY(${dragY}px)`, transition: "none" } : undefined}
       >
         {/* The grabber stays as an affordance — it is the conventional place a
@@ -247,7 +257,26 @@ export function Sheet({
             <X aria-hidden />
           </button>
         </div>
-        <div className="sheet-body" ref={bodyRef} data-at-top="true">
+        {/* tabIndex={0} puts this scroll container in the TAB ORDER, which is
+            what axe rule `scrollable-region-focusable` requires (WCAG 2.1.1).
+
+            Measured, not assumed: with tabIndex={-1} the rule FAILS
+            ("scrollable-region-focusable: 1") and with tabIndex={0} it is
+            CLEAN. The rule accepts `focusable-content` (a focusable
+            descendant) OR `focusable-element` (the region itself being in the
+            tab order) — and the match sheet's timeline is text only, so
+            there is no focusable descendant to fall back on.
+
+            The original failure was caused by the new match sheet: the older
+            sheets all contain buttons, so the region passed via
+            `focusable-content` and nobody noticed the gap.
+
+            -1 would have been wrong twice over: axe rejects it, and a
+            programmatic-only focus target is not reachable by a keyboard
+            user at all, which is the opposite of what this attribute is
+            for. The focus ring is suppressed below because this is a
+            scroll surface, not a control. */}
+        <div className="sheet-body" ref={bodyRef} data-at-top="true" tabIndex={0}>
           {children}
         </div>
       </div>

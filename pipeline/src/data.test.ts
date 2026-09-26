@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildContractInfo, contractExpiryPhrase, contractVerificationStatus, type ContractClaimInput } from "./contract";
 import { isStale, formatLastUpdated, readLastKnownGood, writeProtected } from "./stale";
-import { loadFavorites, saveFavorites, toggleFavorite } from "../../app/data";
+import { loadFavorites, toggleFavorite } from "../../app/data";
 import { normalizeFixture, pickNextAndLast } from "./normalize";
 import type { FixtureResponse } from "./apifootball";
 
@@ -69,22 +69,65 @@ describe("stale-data logic", () => {
 });
 
 describe("favorite persistence", () => {
-  it("toggles favorites and persists to localStorage", () => {
+  const setupStore = () => {
     const store = new Map<string, string>();
     const ls = {
       getItem: (k: string) => store.get(k) ?? null,
       setItem: (k: string, v: string) => void store.set(k, v),
     };
     Object.defineProperty(globalThis, "localStorage", { value: ls, configurable: true });
+    return store;
+  };
 
+  const p1 = { qid: "Q1", name: "Mats Hedén", dateOfBirth: "1976-05-20", citizenship: "Sverige", hackenTeam: null };
+  const p2 = { qid: "Q2", name: "Martin Ericsson", dateOfBirth: "1980-01-01", citizenship: "Sverige", hackenTeam: "men" as const };
+
+  it("stars and unstars, persisting the snapshot to localStorage", () => {
+    setupStore();
     expect(loadFavorites()).toEqual([]);
-    let favs = toggleFavorite("p1");
-    expect(favs).toEqual(["p1"]);
-    expect(saveFavorites).toBeDefined();
-    favs = toggleFavorite("p1");
+
+    let favs = toggleFavorite(p1);
+    expect(favs).toHaveLength(1);
+    // The NAME must be stored, not just the id: the starred list has to be
+    // renderable without re-running the search that found the player.
+    expect(favs[0]).toMatchObject({ qid: "Q1", name: "Mats Hedén" });
+    expect(favs[0].starredAt).toBeTypeOf("number");
+
+    favs = toggleFavorite(p1);
     expect(favs).toEqual([]);
-    toggleFavorite("p2");
-    expect(loadFavorites()).toEqual(["p2"]);
+    toggleFavorite(p2);
+    expect(loadFavorites().map((f) => f.qid)).toEqual(["Q2"]);
+  });
+
+  it("a player with NO recorded Häcken link can still be starred (section D)", () => {
+    // The whole point of the player-first model: supporters remember people
+    // the data does not know about. Gating on a verified club link would
+    // reintroduce the closed list this feature replaced.
+    setupStore();
+    const favs = toggleFavorite({ ...p1, hackenTeam: null });
+    expect(favs).toHaveLength(1);
+    expect(favs[0].hackenTeam).toBeNull();
+    expect(favs[0].name).toBe("Mats Hedén");
+  });
+
+  it("newest star is first", () => {
+    setupStore();
+    toggleFavorite(p1);
+    toggleFavorite(p2);
+    expect(loadFavorites().map((f) => f.qid)).toEqual(["Q2", "Q1"]);
+  });
+
+  it("ignores legacy id-only entries, which have no name to display", () => {
+    const store = setupStore();
+    store.set("minbkh.favorites", JSON.stringify(["Q9", { qid: "Q8", name: "X", starredAt: 1 }]));
+    // "Q9" cannot be rendered, so it is dropped rather than shown as a blank row.
+    expect(loadFavorites().map((f) => f.qid)).toEqual(["Q8"]);
+  });
+
+  it("survives corrupt storage without throwing", () => {
+    const store = setupStore();
+    store.set("minbkh.favorites", "{not json");
+    expect(loadFavorites()).toEqual([]);
   });
 });
 

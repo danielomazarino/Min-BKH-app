@@ -96,9 +96,59 @@ export function groupLabel(iso: string, now = Date.now()): string {
 export type Result = "w" | "d" | "l";
 
 /** Häcken's goals-first score, e.g. "5–0" for an away 0-5. */
-export function scoreFor(m: { scoreHome?: number; scoreAway?: number; homeAway: "home" | "away" }): string | null {
+/**
+ * The two teams of a match, in the order a Swedish supporter expects to read
+ * them: HOME on the left, AWAY on the right. This is a presentational
+ * ordering only — it says nothing about which side Häcken was on, which is
+ * carried separately as `hackenSide`.
+ *
+ * This exists because the data is stored in provider order (`scoreHome` /
+ * `scoreAway`), while the UI used to render "Häcken first". For the away leg
+ * at Kalmar that produced "5–0" when the Swedish reading of
+ * Kalmar 0–5 Häcken is "0–5". A supporter glancing at the fixture should
+ * never have to remember which way round the provider happened to store it.
+ */
+export function matchTeams(m: { opponent: string; homeAway: "home" | "away" }): {
+  left: string;
+  right: string;
+  hackenSide: "left" | "right";
+} {
+  return m.homeAway === "home"
+    ? { left: "Häcken", right: m.opponent, hackenSide: "left" }
+    : { left: m.opponent, right: "Häcken", hackenSide: "right" };
+}
+
+/**
+ * Score in HOME–AWAY order, matching `matchTeams`.
+ *
+ * `scoreForHacken` is kept for the places that genuinely want the result
+ * from Häcken's point of view (result colouring, the form guide); this one
+ * is for anything that puts the two teams side by side.
+ */
+export function scoreForHomeAway(m: {
+  scoreHome?: number;
+  scoreAway?: number;
+}): string | null {
+  if (m.scoreHome == null || m.scoreAway == null) return null;
+  return `${m.scoreHome}–${m.scoreAway}`;
+}
+
+export function scoreForHacken(m: {
+  scoreHome?: number;
+  scoreAway?: number;
+  homeAway: "home" | "away";
+}): string | null {
   if (m.scoreHome == null || m.scoreAway == null) return null;
   return m.homeAway === "home" ? `${m.scoreHome}–${m.scoreAway}` : `${m.scoreAway}–${m.scoreHome}`;
+}
+
+/** @deprecated Use scoreForHomeAway (home left) or scoreForHacken (Häcken first) explicitly. */
+export function scoreFor(m: {
+  scoreHome?: number;
+  scoreAway?: number;
+  homeAway: "home" | "away";
+}): string | null {
+  return scoreForHacken(m);
 }
 
 export function resultOf(m: { scoreHome?: number; scoreAway?: number; homeAway: "home" | "away" }): Result | null {

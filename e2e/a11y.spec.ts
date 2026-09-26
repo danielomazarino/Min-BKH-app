@@ -4,7 +4,7 @@ import type { AxeResults } from "axe-core";
 
 /** All five primary destinations, plus the not-found surface. */
 const PAGES = [
-  { hash: "#/", name: "Brief" },
+  { hash: "#/", name: "Hem" },
   { hash: "#/nyheter", name: "Nyheter" },
   { hash: "#/matcher", name: "Matcher" },
   { hash: "#/trupp", name: "Trupp" },
@@ -138,7 +138,7 @@ test.describe("Accessibility (axe-core)", () => {
     const nav = page.getByRole("navigation", { name: "Huvudnavigation" });
     await expect(nav).toBeVisible();
     const names = await nav.locator("a").allInnerTexts();
-    expect(names).toEqual(["Brief", "Nyheter", "Matcher", "Trupp", "Spelare"]);
+    expect(names).toEqual(["Hem", "Nyheter", "Matcher", "Trupp", "Spelare"]);
     // The active destination is announced, not only coloured.
     await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
   });
@@ -158,4 +158,101 @@ test.describe("Accessibility (axe-core)", () => {
     });
     expect(unnamed).toEqual([]);
   });
+});
+
+/**
+ * Every sheet's scroll container must be keyboard-reachable.
+ *
+ * axe rule `scrollable-region-focusable` (WCAG 2.1.1) accepts EITHER a
+ * focusable descendant OR the region itself being in the tab order. The
+ * older sheets all contain buttons and so passed via the first route, which
+ * hid the gap until the match sheet arrived with a text-only timeline.
+ *
+ * Asserted here for EVERY sheet, because "it passed for the other four" is
+ * not a reason to stop checking — the property belongs to the container, not
+ * to whichever content happens to be inside it.
+ */
+test.describe("Sheet scroll containers are keyboard reachable", () => {
+  // `testId` is per-sheet: the settings dialog keeps its own historical id
+  // so deep links and existing tests do not break, even though it now renders
+  // through the shared <Sheet>. Asserting a hard-coded "sheet" would have
+  // silently skipped this sheet.
+  const OPENERS: Array<{
+    name: string;
+    testId: string;
+    open: (page: import("@playwright/test").Page) => Promise<void>;
+  }> = [
+    {
+      name: "match sheet",
+      testId: "sheet",
+      open: async (page) => {
+        await page.goto("/#/");
+        await expect(page.getByTestId("last-result")).toBeVisible();
+        await page.getByTestId("last-result").click();
+      },
+    },
+    {
+      name: "settings sheet",
+      testId: "settings-sheet",
+      open: async (page) => {
+        await page.goto("/#/");
+        await page.getByTestId("open-settings").click();
+      },
+    },
+    {
+      name: "news sheet",
+      testId: "sheet",
+      open: async (page) => {
+        await page.goto("/#/nyheter");
+        await expect(page.getByTestId("news-card").first()).toBeVisible();
+        await page.getByTestId("news-card").first().click();
+      },
+    },
+  ];
+
+  for (const { name, testId, open } of OPENERS) {
+    test(`the ${name} body is in the tab order`, async ({ page }) => {
+      await open(page);
+      const dialog = page.getByTestId(testId);
+      await expect(dialog).toBeVisible();
+      await page.waitForFunction(
+        () => document.getAnimations().every((a) => a.playState !== "running"),
+        undefined,
+        { timeout: 5000 },
+      );
+
+      const body = dialog.locator(".sheet-body");
+      const tabindex = await body.getAttribute("tabindex");
+      // "0" puts it in the tab order; "-1" is programmatic-only and axe
+      // rejects it. Measured: -1 -> rule fails, 0 -> clean.
+      expect(tabindex, `${name} body must be tabbable, not programmatic-only`).toBe("0");
+
+      const scrollable = await body.evaluate((el) => el.scrollHeight > el.clientHeight);
+      if (scrollable) {
+        // A keyboard user must be able to move it.
+        const moved = await body.evaluate((el) => {
+          el.focus();
+          const start = el.scrollTop;
+          el.scrollTop = 40;
+          return el.scrollTop !== start;
+        });
+        expect(moved, `${name} body could not be scrolled programmatically once focused`).toBe(true);
+      }
+
+      // The REAL requirement is that axe passes, not that an attribute is
+      // present. Assert the rule directly so the test fails for the actual
+      // user-facing reason, and so a future axe version that tightens the
+      // rule is caught here rather than in a later, more confusing failure.
+      const scan = await new AxeBuilder({ page })
+        .withRules(["scrollable-region-focusable"])
+        .analyze();
+      const hits = scan.violations.filter(
+        (v) => (v.nodes ?? []).some((n) => (n.target ?? []).some((t) => String(t).includes("sheet-body"))),
+      );
+      expect(
+        hits.map((v) => `${v.id}: ${v.nodes.length}`),
+        `${name} scroll region is not keyboard reachable (WCAG 2.1.1)`,
+      ).toEqual([]);
+    });
+  }
 });

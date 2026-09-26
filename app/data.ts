@@ -26,24 +26,72 @@ export async function loadAppData(): Promise<AppDataState> {
 
 const FAV_KEY = "minbkh.favorites";
 
-export function loadFavorites(): string[] {
+/**
+ * A starred player, stored with enough to RENDER the list again later.
+ *
+ * Storing only the Q-ID (as this did originally) is not enough: a starred
+ * player has to be listed without re-running the search that found them, and
+ * a bare "Q103846058" cannot be shown to a supporter. So the name and the
+ * few identifying facts are saved alongside the id.
+ *
+ * The Häcken link is saved as evidence OF WHAT WAS SHOWN, not as a filter.
+ * A player with no recorded Häcken connection must still be starable —
+ * gating that would reintroduce the closed-list problem this feature exists
+ * to remove (see docs/ENHANCEMENTS.md).
+ */
+export type StarredPlayer = {
+  qid: string;
+  name: string;
+  /** ISO date, as Wikidata reports it. */
+  dateOfBirth?: string | null;
+  dateOfDeath?: string | null;
+  citizenship?: string | null;
+  /** "men" | "women" | null — null means NOT RECORDED, not "no". */
+  hackenTeam?: "men" | "women" | null;
+  /** ISO timestamp of when the user starred them, newest first. */
+  starredAt: number;
+};
+
+/** Reads the stored list, tolerating both the old id-only shape and the new one. */
+export function loadFavorites(): StarredPlayer[] {
   try {
     const raw = localStorage.getItem(FAV_KEY);
-    return raw ? (JSON.parse(raw) as string[]) : [];
+    if (!raw) return [];
+    const v = JSON.parse(raw) as unknown;
+    if (!Array.isArray(v)) return [];
+    const out: StarredPlayer[] = [];
+    for (const item of v) {
+      if (typeof item === "string") continue; // legacy id-only entry, no name to show
+      if (item && typeof item === "object" && typeof (item as StarredPlayer).qid === "string") {
+        out.push(item as StarredPlayer);
+      }
+    }
+    return out.sort((a, b) => b.starredAt - a.starredAt);
   } catch {
     return [];
   }
 }
 
-export function saveFavorites(ids: string[]): void {
-  localStorage.setItem(FAV_KEY, JSON.stringify(ids));
+export function saveFavorites(list: StarredPlayer[]): void {
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify(list));
+  } catch {
+    /* storage is a convenience, never a requirement */
+  }
 }
 
-export function toggleFavorite(id: string): string[] {
+/**
+ * Star or unstar. Returns the whole new list so the caller can render it.
+ * Starring an already-starred player refreshes the stored snapshot rather
+ * than duplicating the entry.
+ */
+export function toggleFavorite(player: Omit<StarredPlayer, "starredAt">): StarredPlayer[] {
   const cur = loadFavorites();
-  const next = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
+  const next = cur.some((p) => p.qid === player.qid)
+    ? cur.filter((p) => p.qid !== player.qid)
+    : [{ ...player, starredAt: Date.now() }, ...cur];
   saveFavorites(next);
-  return next;
+  return next.sort((a, b) => b.starredAt - a.starredAt);
 }
 
 // ---------- formatting helpers ----------

@@ -14,7 +14,7 @@ import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import type { AppDataState } from "../data";
-import type { AppData, MatchEvents, MatchRef, PlayerDiscipline } from "../../pipeline/src/types";
+import type { AppData, MatchRef, PlayerDiscipline } from "../../pipeline/src/types";
 import {
   competitionLabel,
   cstatFor,
@@ -23,10 +23,10 @@ import {
   fmtDateTime,
   fmtDay,
   formGuide,
+  matchTeams,
   RESULT_WORD,
   resultOf,
-  scoreFor,
-  scorerLine,
+  scoreForHomeAway,
   urgentDiscipline,
 } from "../shared/format";
 
@@ -102,7 +102,6 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
         {data.lastResult ? (
           <ResultRow
             match={data.lastResult}
-            events={data.lastMatchDetail?.events}
             onOpen={canOpenDetail ? () => goMatch(data.lastResult!.id) : undefined}
           />
         ) : (
@@ -127,7 +126,12 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
         ) : (
           <div data-testid="discipline" data-count={urgent.length}>
             {urgent.map((d: PlayerDiscipline) => (
-              <CstatRow key={d.playerId} d={d} threshold={threshold} />
+              <CstatRow
+                key={d.playerId}
+                d={d}
+                threshold={threshold}
+                onOpen={() => navigate(`/trupp?id=${encodeURIComponent(d.playerId)}`)}
+              />
             ))}
             <Link className="mod-label mod-link" to="/matcher" data-testid="discipline-more">
               Alla matcher och kort <ChevronRight aria-hidden />
@@ -239,26 +243,41 @@ function NextMatchHero({
   );
 }
 
-function ResultRow({ match, events, onOpen }: { match: MatchRef; events?: MatchEvents; onOpen?: () => void }) {
-  const score = scoreFor(match);
+/**
+ * The last result, as a compact supporter-facing row.
+ *
+ * Section J: the goal scorers used to be printed here, which turned the
+ * dashboard's most important line into an event list. They now live in the
+ * match sheet, where there is room for the whole timeline (goals, assists,
+ * cards, substitutions) instead of a truncated one-line summary. Hem stays
+ * a dashboard; the detail belongs one tap away.
+ *
+ * Section I: the score is HOME–AWAY, so Kalmar 0–5 Häcken reads "0–5" and
+ * Häcken's own result is carried by the row's colour and the explicit
+ * "Borta"/"Hemma" label rather than by silently reversing the numbers.
+ */
+function ResultRow({ match, onOpen }: { match: MatchRef; onOpen?: () => void }) {
+  const score = scoreForHomeAway(match);
   const res = resultOf(match);
-  const scorers = scorerLine(events);
-  const label = `${match.opponent}, ${score ?? "resultat"}, ${fmtDateTime(match.date)}.`;
+  const teams = matchTeams(match);
+  const label = `${teams.left} ${score ?? "resultat"} ${teams.right}, ${fmtDateTime(match.date)}.`;
   const inner = (
     <>
       <span className={`score ${res ?? ""}`} data-testid="last-score">
         {score ?? "–"}
       </span>
       <span className="body">
-        <span className="opponent">{match.opponent}</span>
-        <span className="meta">
-          {fmtDay(match.date)} · {match.homeAway === "home" ? "Hemma" : "Borta"} · {competitionLabel(match.competition)}
-        </span>
-        {scorers && (
-          <span className="scorers" data-testid="last-scorers">
-            {scorers}
+        <span className="teams">
+          <span className="opponent">{teams.left}</span>
+          <span className="vs" aria-hidden="true">
+            –
           </span>
-        )}
+          <span className="opponent right">{teams.right}</span>
+        </span>
+        <span className="meta">
+          {fmtDay(match.date)} · {match.homeAway === "home" ? "Hemma" : "Borta"} ·{" "}
+          {competitionLabel(match.competition)}
+        </span>
       </span>
       {onOpen ? (
         <span className="ven" aria-hidden="true">
@@ -282,16 +301,32 @@ function ResultRow({ match, events, onOpen }: { match: MatchRef; events?: MatchE
 }
 
 /**
- * One player's card situation. The state text is derived from the PENDING
- * warning count, so it can never contradict the season total the way the old
- * fixed label did ("En varning från avstängning" next to "5 varningar").
+ * One player's card situation.
+ *
+ * The state text is derived from the PENDING warning count, so it can never
+ * contradict the season total the way the old fixed label did ("En varning
+ * från avstängning" next to "5 varningar").
+ *
+ * Section L: the row is a BUTTON and opens that player's sheet, and the
+ * actual season card total is printed. The number comes from
+ * `warningCount` in the data — it is never hard-coded per player, because a
+ * hard-coded count is a fact that silently rots.
  */
-function CstatRow({ d, threshold }: { d: PlayerDiscipline; threshold: number }) {
+function CstatRow({
+  d,
+  threshold,
+  onOpen,
+}: {
+  d: PlayerDiscipline;
+  threshold: number;
+  onOpen?: () => void;
+}) {
   const { state, severity } = cstatFor(d, threshold);
   const pending = d.warningsUntilSuspension ?? d.warningCount;
   const on = Math.min(threshold, pending);
-  return (
-    <div className={`cstat ${severity}`} data-testid={severity === "suspended" ? "suspended-player" : "at-risk-player"}>
+  const total = d.warningCount;
+  const inner = (
+    <>
       <span className={`mark ${severity}`} aria-hidden="true" />
       <span className="body">
         <span className="who">{d.playerName}</span>
@@ -302,7 +337,33 @@ function CstatRow({ d, threshold }: { d: PlayerDiscipline; threshold: number }) 
           ))}
         </span>
       </span>
-    </div>
+      {/* The real season total, straight from the data. */}
+      <span className="tally" data-testid="discipline-count">
+        {total}
+        <span className="tally-l" aria-hidden="true">
+          kort
+        </span>
+      </span>
+    </>
+  );
+  const label = `${d.playerName}, ${state}. ${total} gula kort den här säsongen.`;
+  if (!onOpen) {
+    return (
+      <div className={`cstat ${severity}`} aria-label={label} data-testid={severity === "suspended" ? "suspended-player" : "at-risk-player"}>
+        {inner}
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className={`cstat ${severity} cstat-tap`}
+      onClick={onOpen}
+      aria-label={`${label} Visa uppgifter.`}
+      data-testid={severity === "suspended" ? "suspended-player" : "at-risk-player"}
+    >
+      {inner}
+    </button>
   );
 }
 

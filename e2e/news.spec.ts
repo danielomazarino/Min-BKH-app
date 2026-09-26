@@ -191,3 +191,67 @@ test.describe("Matches archive", () => {
     expect(await row.innerText()).toMatch(/\d+–\d+/);
   });
 });
+
+/**
+ * Section H — content correctness in the news surfaces.
+ *
+ * The heading counted the WHOLE feed while the "Senast" section only renders
+ * GRID_COUNT (4) cards above a separate "Tidigare" list, so it read
+ * "Senast · 6 nyheter" with four cards on screen. A count must describe what
+ * the reader can actually see in that section.
+ */
+test.describe("News content correctness (Section H)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/#/nyheter");
+    await expect(page.getByTestId("news-page")).toBeVisible();
+  });
+
+  test("the Senast count matches the number of cards actually rendered", async ({ page }) => {
+    if ((await page.getByTestId("news-grid").count()) === 0) {
+      test.skip(true, "no news in the feed");
+    }
+    const cards = await page.getByTestId("news-card").count();
+    expect(cards).toBeGreaterThan(0);
+
+    const heading = page.getByRole("heading", { name: /Senast/i });
+    // The heading is uppercased by CSS, so innerText is "SENAST · 4 NYHETER".
+    const m = (await heading.innerText()).match(/(\d+)\s*NYHETER/i);
+    expect(m, `heading had no count: "${await heading.innerText()}"`).not.toBeNull();
+    expect(Number(m![1]), "the heading count must equal the rendered card count").toBe(cards);
+    // And exactly four, per the product decision.
+    expect(cards).toBeLessThanOrEqual(4);
+  });
+
+  test("no duplicate date is printed on a single card", async ({ page }) => {
+    const cards = page.getByTestId("news-card");
+    const n = await cards.count();
+    if (n === 0) test.skip(true, "no news in the feed");
+    for (let i = 0; i < Math.min(n, 6); i++) {
+      const text = await cards.nth(i).innerText();
+      const dates = text.match(/\d{1,2}\s+\w{3}/g) ?? [];
+      const unique = new Set(dates);
+      expect(unique.size, `card ${i} repeats a date: "${text.replace(/\n/g, " | ")}"`).toBe(dates.length);
+    }
+  });
+
+  test("long titles wrap instead of overflowing their card", async ({ page }) => {
+    const cards = page.getByTestId("news-card");
+    const n = await cards.count();
+    if (n === 0) test.skip(true, "no news in the feed");
+    for (let i = 0; i < Math.min(n, 6); i++) {
+      const over = await cards.nth(i).evaluate((el) => {
+        const d = document.documentElement;
+        return Math.round((el.getBoundingClientRect().right - d.clientWidth) * 100) / 100;
+      });
+      expect(over, `card ${i} overflows the viewport`).toBeLessThanOrEqual(0);
+    }
+  });
+
+  test("the feed stays men's football — no women's items leak in", async ({ page }) => {
+    const cards = page.getByTestId("news-card");
+    const n = await cards.count();
+    for (let i = 0; i < n; i++) {
+      await expect(cards.nth(i)).not.toContainText("Dam");
+    }
+  });
+});

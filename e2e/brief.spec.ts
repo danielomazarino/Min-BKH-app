@@ -18,11 +18,101 @@ test.describe("Brief (dashboard)", () => {
     expect(await page.locator(".hero").count()).toBe(1);
   });
 
-  test("last result shows a correctly ordered Häcken-first score", async ({ page }) => {
+  test("last result shows the score in HOME–AWAY order (Swedish convention)", async ({ page }) => {
     const result = page.getByTestId("last-result");
     await expect(result).toBeVisible();
-    // Regression guard: the old UI rendered "BK Häcken Kalmar FF 5–0".
     await expect(page.getByTestId("last-score")).toHaveText(/^\d+–\d+$/);
+
+    // Section I: the two teams must read home on the left, away on the right,
+    // and the score must belong to THAT order. The data is provider-ordered
+    // (scoreHome/scoreAway) and the old UI rendered "Häcken first", which
+    // silently reversed the numbers for every away match — the Kalmar game
+    // read "5–0" when the Swedish reading of Kalmar 0–5 Häcken is "0–5".
+    const teams = result.locator(".teams .opponent");
+    await expect(teams).toHaveCount(2);
+    const [left, right] = await teams.allInnerTexts();
+
+    const meta = await result.locator(".meta").innerText();
+    const isHome = /Hemma/.test(meta);
+    // The side that is NOT Häcken is the opponent.
+    if (isHome) {
+      expect(left).toBe("Häcken");
+      expect(right).not.toBe("Häcken");
+    } else {
+      expect(right).toBe("Häcken");
+      expect(left).not.toBe("Häcken");
+    }
+  });
+
+  test("the away result reads Kalmar 0–5 Häcken, not 5–0", async ({ page }) => {
+    // Concrete guard for the real fixture in app.json, so the convention
+    // cannot silently regress on the exact match that exposed it.
+    const result = page.getByTestId("last-result");
+    const meta = await result.locator(".meta").innerText();
+    test.skip(!/Borta/.test(meta), "the current last result is not an away match");
+    const teams = result.locator(".teams .opponent");
+    await expect(teams.first()).toHaveText("Kalmar FF");
+    await expect(teams.last()).toHaveText("Häcken");
+    await expect(page.getByTestId("last-score")).toHaveText("0–5");
+  });
+
+  test("Hem does not print a goalscorer event list (Section J)", async ({ page }) => {
+    // The scorers moved into the match sheet. Hem is a dashboard; the
+    // truncated one-line event log made its most important row unreadable.
+    await expect(page.getByTestId("last-scorers")).toHaveCount(0);
+  });
+
+  test("the match sheet carries the goalscorers instead", async ({ page }) => {
+    const result = page.getByTestId("last-result");
+    if ((await result.locator("button").count()) === 0) {
+      test.skip(true, "this row does not open a detail sheet");
+    }
+    await result.click();
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    // Fixture/competition/date, the two teams home-left, and the scorers.
+    await expect(page.getByTestId("fixture")).toBeVisible();
+    await expect(page.getByTestId("fixture-home")).toBeVisible();
+    await expect(page.getByTestId("fixture-away")).toBeVisible();
+    await expect(page.getByTestId("fixture-meta")).toBeVisible();
+    await expect(page.getByTestId("sheet-scorers")).toBeVisible();
+    await expect(page.getByTestId("sheet-scorers")).toContainText("Lindgren");
+  });
+
+  test("the match sheet states plainly that no real statistics exist (Section K)", async ({ page }) => {
+    // The provider records no playerStats for this competition. The sheet must
+    // say so rather than deriving a substitute from the event list — an
+    // invented number that looks like data is worse than an admitted gap.
+    const result = page.getByTestId("last-result");
+    if ((await result.locator("button").count()) === 0) {
+      test.skip(true, "this row does not open a detail sheet");
+    }
+    await result.click();
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    await expect(page.getByTestId("no-stats")).toBeVisible();
+    // Explicitly no event-derived pseudo-statistic.
+    await expect(page.getByTestId("sheet")).not.toContainText(/per minut/i);
+  });
+
+  test("discipline players are tappable and show their real card count (Section L)", async ({ page }) => {
+    const rows = page.getByTestId("discipline").locator(".cstat");
+    if ((await rows.count()) === 0) test.skip(true, "no discipline cases in data");
+
+    // Every qualifying player must be reachable, not just the first.
+    await expect(page.getByTestId("discipline")).toHaveAttribute("data-count", String(await rows.count()));
+
+    const first = rows.first();
+    // The count comes from the data, never hard-coded per player.
+    const tally = first.getByTestId("discipline-count");
+    await expect(tally).toBeVisible();
+    const n = Number((await tally.innerText()).replace(/\D+/g, ""));
+    expect(Number.isInteger(n)).toBe(true);
+    expect(n).toBeGreaterThan(0);
+
+    // And it opens that player's card.
+    await first.click();
+    await expect(page).toHaveURL(/\u0023\/trupp\?id=/);
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    await expect(page.getByTestId("squad-card-status")).toBeVisible();
   });
 
   test("the next match is tappable and leads to the match section", async ({ page }) => {

@@ -72,6 +72,45 @@ const ENTITIES: Record<string, unknown> = {
   Q639723: { id: "Q639723", labels: { sv: { value: "BK Häcken" } } },
   Q204881: { id: "Q204881", labels: { sv: { value: "Malmö FF" } } },
   Q186785: { id: "Q186785", labels: { sv: { value: "Rosenborg BK" } } },
+
+  /**
+   * Mats Hedén, b. 1976 — the ACCEPTANCE CASE from the field.
+   *
+   * A real supporter found him through search, but the app could not confirm
+   * any BK Häcken connection: P54 is absent entirely, there are no clubs, and
+   * there is no active/retired flag. He is a person, a footballer, and nothing
+   * more is known.
+   *
+   * He is here to pin the rule that such a player must still be findable AND
+   * starable. A verified Häcken link is ENRICHMENT, never a gate — gating on
+   * it would rebuild the closed list this page replaced.
+   */
+  Q103846058: {
+    id: "Q103846058",
+    labels: { sv: { value: "Mats Hedén" } },
+    descriptions: { en: { value: "Swedish footballer" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: "Q937857" } } } }],
+      P569: [{ mainsnak: { datavalue: { value: { time: "+1976-05-20T00:00:00Z", precision: 11 } } } }],
+      P27: [{ mainsnak: { datavalue: { value: { id: "Q34" } } } }],
+      // NOTE: no P54 at all. Wikidata simply does not record a club for him.
+    },
+  },
+
+  /** Martin Ericsson — the second named acceptance case, WITH a Häcken link. */
+  Q20000001: {
+    id: "Q20000001",
+    labels: { sv: { value: "Martin Ericsson" } },
+    descriptions: { sv: { value: "svensk fotbollsspelare" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: "Q937857" } } } }],
+      P569: [{ mainsnak: { datavalue: { value: { time: "+1980-01-01T00:00:00Z", precision: 11 } } } }],
+      P27: [{ mainsnak: { datavalue: { value: { id: "Q34" } } } }],
+      P54: [{ mainsnak: { datavalue: { value: { id: "Q639723" } } } }],
+    },
+  },
 };
 
 /**
@@ -115,6 +154,17 @@ async function stubWikidata(page: Page, mode: Mode = "ok") {
 
         if (action === "wbsearchentities") {
           if (stubMode === "empty") return Response.json({ search: [] });
+          const term = (url.searchParams.get("search") ?? "").toLowerCase();
+          if (term.includes("hedén") || term.includes("heden")) {
+            return Response.json({
+              search: [{ id: "Q103846058", label: "Mats Hedén", description: "Swedish footballer" }],
+            });
+          }
+          if (term.includes("ericsson")) {
+            return Response.json({
+              search: [{ id: "Q20000001", label: "Martin Ericsson", description: "svensk fotbollsspelare" }],
+            });
+          }
           const search = [
             { id: "Q16633101", label: "Alexander Jeremejeff", description: "svensk fotbollsspelare" },
           ];
@@ -328,6 +378,216 @@ test.describe("Spelare (footballer search)", () => {
     await expect(page.getByTestId("az-index")).toHaveCount(0);
     await expect(page.getByTestId("az-letter")).toHaveCount(0);
   });
+});
+
+
+/**
+ * Section D — the acceptance case from the field.
+ *
+ * A supporter found Mats Hedén (b. 1976) through search, but the app could
+ * not identify or verify a BK Häcken connection for him. That is a DATA
+ * gap, not a reason to hide him: the Häcken link is ENRICHMENT, and making
+ * it a precondition for finding or saving a player would rebuild the closed
+ * list this page was created to replace.
+ */
+test.describe("Mats Hedén — findable and starable without a Häcken link", () => {
+  test("he is found by search and opens into a player card", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    const card = page.getByTestId("former-player").first();
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("Mats Hedén");
+    await expect(card).toContainText("1976-05-20");
+
+    await card.getByRole("button", { name: /Visa uppgifter/ }).click();
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    await expect(page.getByTestId("sheet")).toContainText("Mats Hedén");
+  });
+
+  test("the missing Häcken link is stated honestly, not hidden", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByRole("button", { name: /Visa uppgifter/ }).click();
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    // Says "not recorded", and explicitly that this does NOT mean he never
+    // played there.
+    await expect(page.getByTestId("hacken-unknown")).toBeVisible();
+    await expect(page.getByTestId("hacken-unknown")).toContainText("Det betyder inte att hen inte spelat där");
+    // And no status is invented.
+    await expect(page.getByTestId("status-unknown")).toBeVisible();
+  });
+
+  test("he can be starred even though the Häcken link is unverified", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await expect(page.getByTestId("hacken-yes")).toHaveCount(0);
+
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+    await expect(page.getByTestId("starred-player").first()).toContainText("Mats Hedén");
+  });
+
+  test("a verified Häcken player is starred through the same control", async ({ page }) => {
+    await search(page, "Martin Ericsson");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+    // The confirmed link is labelled; the unverified one is labelled too, so
+    // the two are never confused.
+    await expect(page.getByTestId("starred-player").first()).toContainText("HÄCKEN");
+  });
+});
+
+/**
+ * Section C — the star/favourite interaction.
+ *
+ * The reported defect: after starring someone the search result stayed on
+ * screen and there was NO visible list of starred players, so the save looked
+ * like it had done nothing. The mental model is
+ * SEARCH -> find -> star -> the player is now in "Följda spelare".
+ */
+test.describe("Starred players (Section C)", () => {
+  test("the starred list appears as soon as something is starred", async ({ page }) => {
+    await expect(page.getByTestId("starred")).toHaveCount(0);
+    await search(page, "Mats Hedén");
+    // Still nothing — the point is that starring CREATES it.
+    await expect(page.getByTestId("starred")).toHaveCount(0);
+
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await expect(page.getByTestId("starred")).toBeVisible();
+    await expect(page.getByTestId("starred")).toContainText("Följda spelare");
+  });
+
+  test("a starred player stays visibly starred in the results", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    const toggle = page.getByTestId("former-player").first().getByTestId("fav-toggle");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(toggle).toHaveAttribute("aria-label", /Sluta följa/);
+  });
+
+  test("the starred list survives clearing the search", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+
+    // This is the exact complaint: the user was left looking at a stale
+    // search result with no sign the save had happened.
+    await page.getByTestId("clear-search").click();
+    await expect(page.getByTestId("results")).toHaveCount(0);
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+    await expect(page.getByTestId("starred-player").first()).toContainText("Mats Hedén");
+  });
+
+  test("a starred player can be opened from the starred list", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await page.getByTestId("clear-search").click();
+
+    await page.getByTestId("starred-player").first().getByRole("button", { name: /Visa uppgifter/ }).click();
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    await expect(page.getByTestId("sheet")).toContainText("Mats Hedén");
+  });
+
+  test("a star can be removed, and the list empties", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+
+    await page.getByTestId("unstar").first().click();
+    await expect(page.getByTestId("starred-player")).toHaveCount(0);
+    await expect(page.getByTestId("starred")).toHaveCount(0);
+  });
+
+  test("the starred set survives a reload", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+
+    await page.reload();
+    await expect(page.getByTestId("former-page")).toBeVisible();
+    // Rendered from the stored snapshot — no search, no network needed.
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+    await expect(page.getByTestId("starred-player").first()).toContainText("Mats Hedén");
+  });
+
+  test("the starred set survives navigating away and back", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await page.getByTestId("tab-trupp").click();
+    await expect(page).toHaveURL(/\u0023\/trupp$/);
+    await page.getByTestId("tab-spelare").click();
+    await expect(page.getByTestId("starred-player")).toHaveCount(1);
+  });
+
+  test("two starred players are both listed, newest first", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await page.getByTestId("clear-search").click();
+    await search(page, "Martin Ericsson");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+
+    await expect(page.getByTestId("starred-player")).toHaveCount(2);
+    await expect(page.getByTestId("starred-player").first()).toContainText("Martin Ericsson");
+  });
+
+  test("with nothing starred there is an understandable empty state", async ({ page }) => {
+    await expect(page.getByTestId("starred")).toHaveCount(0);
+    await expect(page.getByTestId("no-stars-hint")).toBeVisible();
+    // It must say the Häcken link is not required, or the page contradicts
+    // its own architecture.
+    await expect(page.getByTestId("no-stars-hint")).toContainText("behöver inte ha spelat för Häcken");
+  });
+});
+
+/**
+ * Section B — focusing the search field must not shift the page sideways.
+ *
+ * The reported defect was a real mobile interaction problem. It does NOT
+ * reproduce in desktop Chromium, so the assertions here are the invariants
+ * that must hold on any engine: no horizontal document scroll range, and no
+ * movement of the field or its surroundings. `font-size >= 16px` is asserted
+ * explicitly because that is the iOS zoom trigger — and because
+ * `maximum-scale` is deliberately NOT used to suppress it (WCAG 1.4.4).
+ */
+test.describe("Search field focus does not move the page (Section B)", () => {
+  for (const vp of [
+    { width: 390, height: 844, name: "390 (iPhone 13)" },
+    { width: 375, height: 812, name: "375 (iPhone SE)" },
+  ]) {
+    test(`no horizontal shift on focus at ${vp.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto("/#/spelare");
+      await expect(page.getByTestId("former-page")).toBeVisible();
+
+      const geom = () =>
+        page.evaluate(() => {
+          const d = document.documentElement;
+          const field = document.querySelector(".searchbar .field")!.getBoundingClientRect();
+          const input = document.querySelector("#player-search") as HTMLInputElement;
+          return {
+            scrollLeft: d.scrollLeft,
+            bodyScrollLeft: document.body.scrollLeft,
+            overflow: d.scrollWidth - d.clientWidth,
+            fieldLeft: Math.round(field.left),
+            fieldRight: Math.round(field.right),
+            fontSize: parseFloat(getComputedStyle(input).fontSize),
+            viewportOffset: Math.round(window.visualViewport?.offsetLeft ?? 0),
+          };
+        });
+
+      const before = await geom();
+      await page.getByLabel("Sök fotbollsspelare").click();
+      await page.getByLabel("Sök fotbollsspelare").pressSequentially("Mats", { delay: 20 });
+      await page.waitForTimeout(400);
+      const after = await geom();
+
+      expect(after.overflow, "the document gained a horizontal scroll range").toBeLessThanOrEqual(0);
+      expect(after.scrollLeft, "the document was scrolled sideways").toBe(0);
+      expect(after.bodyScrollLeft, "the body was scrolled sideways").toBe(0);
+      expect(after.viewportOffset, "the visual viewport was panned sideways").toBe(0);
+      expect(after.fieldLeft, "the search field moved horizontally").toBe(before.fieldLeft);
+      expect(after.fieldRight, "the search field changed width").toBe(before.fieldRight);
+      // iOS zooms on focus below 16px, and that zoom is what moves content.
+      expect(after.fontSize, "focused input font-size triggers the iOS zoom").toBeGreaterThanOrEqual(16);
+    });
+  }
 });
 
 declare global {

@@ -74,7 +74,11 @@ export default function News({ state }: { state: AppDataState }) {
           <section className="module" aria-labelledby="latest-h">
             <h2 className="mod-label" id="latest-h">
               Senast
-              <span className="count"> · {events.length} nyheter</span>
+              {/* The count describes THIS section, not the whole feed. It used
+                  to read "{events.length} nyheter" while only GRID_COUNT (4)
+                  cards were rendered above a separate "Tidigare" list, so the
+                  number described something the reader could not see. */}
+              <span className="count"> · {grid.length} nyheter</span>
             </h2>
             <div className="news-grid" data-testid="news-grid">
               {grid.map((e) => (

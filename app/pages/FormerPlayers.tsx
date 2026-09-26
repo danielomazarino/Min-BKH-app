@@ -30,7 +30,7 @@ import { useCallback, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, Star, X, AlertTriangle, RefreshCw } from "lucide-react";
 import { Sheet } from "../shared/Sheet";
-import { loadFavorites, toggleFavorite } from "../data";
+import { loadFavorites, toggleFavorite, type StarredPlayer } from "../data";
 import { idFromSearch } from "../shared/nav";
 import {
   searchPlayersOnline,
@@ -68,7 +68,7 @@ function pushRecent(q: string): string[] {
 }
 
 export default function FormerPlayers() {
-  const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
+  const [favorites, setFavorites] = useState<StarredPlayer[]>(() => loadFavorites());
   const [draft, setDraft] = useState("");
   const [recent, setRecent] = useState<string[]>(() => loadRecent());
   const [state, setState] = useState<SearchState>({ status: "idle" });
@@ -117,13 +117,72 @@ export default function FormerPlayers() {
     void runSearch(q);
   };
 
-  const onToggleFav = (qid: string) => setFavorites(toggleFavorite(qid));
+  /**
+   * Star/unstar. The whole snapshot is saved, not just the id, so the
+   * starred list can be rendered later without re-searching. No Häcken
+   * connection is required — see the note on `toggleFavorite`.
+   */
+  const onToggleFav = (c: PlayerCandidate) =>
+    setFavorites(
+      toggleFavorite({
+        qid: c.qid,
+        name: c.name,
+        dateOfBirth: c.dateOfBirth,
+        dateOfDeath: c.dateOfDeath,
+        citizenship: c.citizenship[0] ?? null,
+        hackenTeam: c.hackenTeam ?? null,
+      }),
+    );
 
+  const favIds = favorites.map((f) => f.qid);
   const candidates = state.status === "results" ? state.candidates : [];
   const selected = openQid ? candidates.find((c) => c.qid === openQid) ?? null : null;
-  // A deep link to a player that is not in the current result set must say so
-  // rather than silently doing nothing.
-  const selectedMissing = !!openQid && !selected;
+
+  /**
+   * A STARRED player must be openable even when the search that found them
+   * is long gone.
+   *
+   * `selected` above only looks in the current result set, so tapping a row
+   * in "Följda spelare" after clearing the search did nothing at all — the
+   * exact dead end the starred section exists to avoid. The stored snapshot
+   * carries enough to render the card, so a starred id always resolves.
+   *
+   * The rebuilt candidate is marked `fromSnapshot` and its card says so,
+   * because a snapshot is what was true when the user starred the player,
+   * not a fresh lookup.
+   */
+  const starredFallback: PlayerCandidate | null =
+    !selected && openQid
+      ? (() => {
+          const f = favorites.find((x) => x.qid === openQid);
+          if (!f) return null;
+          return {
+            qid: f.qid,
+            name: f.name,
+            description: undefined,
+            alsoKnownAs: [],
+            dateOfBirth: f.dateOfBirth ?? undefined,
+            dateOfDeath: f.dateOfDeath ?? undefined,
+            citizenship: f.citizenship ? [f.citizenship] : [],
+            gender: undefined,
+            heightCm: undefined,
+            clubs: [],
+            // The snapshot records what was VERIFIED when the user starred
+            // him, so `hackenClub` mirrors it rather than claiming a fresh
+            // verification that never happened.
+            hackenClub: f.hackenTeam != null,
+            hackenTeam: f.hackenTeam ?? null,
+            matchScore: 0,
+            pageUrl: `https://www.wikidata.org/wiki/Special:EntityPage/${f.qid}`,
+            fromSnapshot: true,
+          } satisfies PlayerCandidate;
+        })()
+      : null;
+
+  const open = selected ?? starredFallback;
+  // A deep link to a player that is neither in the results nor starred must
+  // say so rather than silently doing nothing.
+  const selectedMissing = !!openQid && !open;
 
   return (
     <div className="layer" data-testid="former-page">
@@ -166,6 +225,46 @@ export default function FormerPlayers() {
           )}
         </form>
       </div>
+
+      {favorites.length > 0 && (
+        <section className="module" style={{ paddingTop: 4 }} aria-labelledby="starred-h" data-testid="starred">
+          <h2 className="mod-label" id="starred-h">
+            Följda spelare
+            <span className="count"> · {favorites.length}</span>
+          </h2>
+          <p className="small dim" style={{ margin: "0 0 8px" }}>
+            Dina sparade spelare. De ligger kvar här även om du rensar sökningen, och påverkar inte om
+            uppgifterna om dem är kompletta.
+          </p>
+          {favorites.map((f) => (
+            <StarredRow
+              key={f.qid}
+              f={f}
+              onOpen={() => openPlayer(f.qid)}
+              onUnstar={() =>
+                setFavorites(
+                  toggleFavorite({
+                    qid: f.qid,
+                    name: f.name,
+                    dateOfBirth: f.dateOfBirth,
+                    dateOfDeath: f.dateOfDeath,
+                    citizenship: f.citizenship,
+                    hackenTeam: f.hackenTeam ?? null,
+                  }),
+                )
+              }
+            />
+          ))}
+        </section>
+      )}
+
+      {state.status === "idle" && favorites.length === 0 && recent.length === 0 && (
+        <p className="empty" style={{ paddingTop: 20 }} data-testid="no-stars-hint">
+          <strong>Hittar du ingen du känner igen?</strong>
+          Sök på förnamn, efternamn eller ett smeknamn. Appen söker mot Wikidata, som har spelare från hela
+          världen — den behöver inte ha spelat för Häcken för att vara rätt person.
+        </p>
+      )}
 
       {state.status === "idle" && (
         <>
@@ -212,9 +311,9 @@ export default function FormerPlayers() {
             <CandidateCard
               key={c.qid}
               c={c}
-              fav={favorites.includes(c.qid)}
+              fav={favIds.includes(c.qid)}
               onOpen={() => openPlayer(c.qid)}
-              onFav={() => onToggleFav(c.qid)}
+              onFav={() => onToggleFav(c)}
             />
           ))}
         </section>
@@ -262,14 +361,60 @@ export default function FormerPlayers() {
         </p>
       )}
 
-      {selected && (
+      {open && (
         <PlayerSheet
-          c={selected}
-          fav={favorites.includes(selected.qid)}
-          onFav={() => onToggleFav(selected.qid)}
+          c={open}
+          fav={favIds.includes(open.qid)}
+          onFav={() => onToggleFav(open)}
           onClose={closePlayer}
         />
       )}
+    </div>
+  );
+}
+
+/**
+ * One row of the starred list.
+ *
+ * This is the answer to "where did the player I just saved go?". It is
+ * rendered from the stored snapshot, so it survives a reload, a cleared
+ * search, and a Wikidata outage. The Häcken badge is shown as it was
+ * recorded at the time of starring and is explicitly not a filter: a player
+ * without a recorded link is listed exactly like one with it.
+ */
+function StarredRow({
+  f,
+  onOpen,
+  onUnstar,
+}: {
+  f: StarredPlayer;
+  onOpen: () => void;
+  onUnstar: () => void;
+}) {
+  return (
+    <div className="prow" data-testid="starred-player">
+      <button type="button" className="open" onClick={onOpen} aria-label={`${f.name}. Visa uppgifter.`}>
+        <span className="name">
+          {f.name}
+          {f.hackenTeam && <span className="tag">HÄCKEN{f.hackenTeam === "women" ? " DAM" : ""}</span>}
+          {!f.hackenTeam && <span className="tag tag-quiet">HÄCKEN OKÄNT</span>}
+        </span>
+        <span className="sub">
+          {f.dateOfBirth ? `f. ${f.dateOfBirth}` : "födelsedatum saknas"}
+          {f.dateOfDeath ? ` · d. ${f.dateOfDeath}` : ""}
+          {f.citizenship ? ` · ${f.citizenship}` : ""}
+        </span>
+      </button>
+      <button
+        type="button"
+        className="star"
+        onClick={onUnstar}
+        aria-label={`Sluta följa ${f.name}`}
+        aria-pressed
+        data-testid="unstar"
+      >
+        <Star fill="currentColor" aria-hidden />
+      </button>
     </div>
   );
 }
@@ -360,6 +505,13 @@ function PlayerSheet({
       }
     >
       <div className="stack-4">
+        {c.fromSnapshot && (
+          <p className="small dim" style={{ margin: 0 }} data-testid="from-snapshot">
+            <AlertTriangle aria-hidden style={{ width: 12, height: 12, verticalAlign: "-1px" }} /> Det här visas från
+            din sparade stjärna, inte från en ny sökning. Sök igen på namnet för att hämta aktuella uppgifter.
+          </p>
+        )}
+
         {c.alsoKnownAs.length > 0 && (
           <p className="small muted" style={{ margin: 0 }} data-testid="aka">
             Sökbar även som: {c.alsoKnownAs.join(", ")}

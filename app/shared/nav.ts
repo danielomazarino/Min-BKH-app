@@ -29,7 +29,7 @@ export interface Destination {
 }
 
 export const DESTINATIONS: readonly Destination[] = [
-  { path: "/", label: "Brief", icon: Home, testId: "tab-brief" },
+  { path: "/", label: "Hem", icon: Home, testId: "tab-brief" },
   { path: "/nyheter", label: "Nyheter", icon: Newspaper, testId: "tab-nyheter" },
   { path: "/matcher", label: "Matcher", icon: CalendarDays, testId: "tab-matcher" },
   { path: "/trupp", label: "Trupp", icon: Users, testId: "tab-trupp" },

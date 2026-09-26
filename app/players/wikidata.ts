@@ -94,6 +94,13 @@ export interface PlayerCandidate {
   heightCm?: number;
   imageUrl?: string;
   pageUrl: string;
+  /**
+   * True when this candidate was rebuilt from the user's saved STARRED
+   * snapshot rather than fetched now. It means "this is what was true when
+   * you starred him", not "this is current" — so the card must say so rather
+   * than presenting a stale value with the same confidence as a live one.
+   */
+  fromSnapshot?: boolean;
   /** 0-100, from local re-ranking of the index hits. */
   matchScore: number;
 }

@@ -439,15 +439,12 @@ main {
 .fabnav-link[data-active] .fabnav-label {
   font-weight: 700;
 }
-.fabnav-link[data-active]::after {
-  content: "";
-  position: absolute;
-  margin-top: 30px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--yellow);
-}
+/* The active destination is already indicated by the yellow label and the
+ * lifted icon. An earlier revision ALSO drew a 4px yellow dot via
+ * ::after with `margin-top: 30px`, which on a 9.5px label landed in the text
+ * itself: it overlapped and blurred the letters it was meant to support.
+ * There is deliberately NO dot, and no replacement indicator — a second cue
+ * for the same state is redundant, not clearer. */
 .fabnav-link {
   position: relative;
 }
@@ -668,12 +665,81 @@ main {
   min-width: 0;
 }
 .result .opponent {
-  display: block;
   font-size: var(--t-title);
   font-weight: 600;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Home left, away right. The two team names share one line and ellipsis
+   independently, so a long club name truncates instead of pushing the score
+   off the row. `min-width: 0` on the flex children is what makes the
+   ellipsis engage rather than overflow. */
+.result .teams {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  min-width: 0;
+}
+.result .teams .opponent {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.result .teams .opponent.right {
+  text-align: right;
+}
+.result .vs {
+  flex: none;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+/* The match sheet's fixture header: HOME on the left, AWAY on the right.
+   This is the Swedish reading order and it is asserted in e2e, because the
+   previous implementation rendered "Häcken first" and quietly reversed the
+   numbers for every away match. */
+.fixture {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-width: 0;
+}
+.fixture .ft {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: var(--t-title);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fixture .ft:last-of-type {
+  text-align: right;
+}
+.fixture .ft.hacken {
+  color: var(--yellow);
+}
+.fixture .fs {
+  flex: none;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A plain bulleted list with no markers, used for the goalscorers. The
+   default <ul> indentation wastes a scarce column on a phone. */
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.plain-list li {
+  font-size: var(--t-body);
+  color: var(--text-2);
 }
 .result .meta {
   display: block;
@@ -700,6 +766,44 @@ main {
   align-items: flex-start;
   gap: var(--s3);
   padding: var(--s2) 0;
+}
+/* Section L: the row is a real button so the player can be opened. The
+   reset matters — a <button> brings UA padding/background/border that would
+   otherwise break the row's alignment against the other modules. */
+.cstat-tap {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
+  color: inherit;
+  font: inherit;
+  padding: var(--s2) 0;
+  cursor: pointer;
+}
+.cstat-tap:active {
+  opacity: 0.7;
+}
+/* The player's ACTUAL season card total, from `warningCount` in the data.
+   Right-aligned so the numbers form a column, and tabular so a one-digit
+   and a two-digit count do not shift the row. */
+.cstat .tally {
+  flex: none;
+  align-self: center;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+.cstat .tally-l {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
 }
 .cstat .mark {
   flex: none;
@@ -1205,6 +1309,41 @@ main {
   -webkit-appearance: none;
 }
 
+/* Section B — focusing the search field must never move the page sideways.
+ *
+ * This was a real, reported mobile defect: tapping the field shifted the UI
+ * horizontally and pushed surrounding content partly out of view. It could
+ * not be reproduced in desktop Chromium (measured: field left edge stayed at
+ * x=16, scrollLeft 0, zero overflow at both 390x844 and 375x812), which is
+ * why it survived to production. The mechanisms that cause it on a real
+ * phone are all guarded here rather than guessed at:
+ *
+ *  1. iOS Safari zooms the viewport when a focused field's font-size is
+ *     < 16px. The zoom is what actually moves content sideways, and it is
+ *     also an accessibility problem. `--t-title` is 15px, so the field gets
+ *     an explicit 16px. `maximum-scale` is deliberately NOT used to block
+ *     the zoom — suppressing pinch-zoom fails WCAG 1.4.4.
+ *  2. A flex child that cannot shrink makes the field wider than its
+ *     container, so the document gains a horizontal scroll range and the
+ *     browser may scroll it to reveal the caret. `min-width: 0` on both the
+ *     input and the field is what actually removes the overflow.
+ *  3. `scroll-padding-inline` reserves the gutter so focusing an element
+ *     near the edge cannot scroll it under the viewport edge.
+ */
+.searchbar input {
+  /* 16px, not var(--t-title) (15px): anything smaller makes iOS zoom on
+     focus. See note 1 above. */
+  font-size: 16px;
+}
+.searchbar,
+.searchbar .field {
+  min-width: 0;
+  max-width: 100%;
+}
+:root {
+  scroll-padding-inline: var(--s4);
+}
+
 /* A–Z index */
 .az {
   display: flex;
@@ -1261,6 +1400,14 @@ main {
   letter-spacing: 0.07em;
   color: var(--text-3);
   margin-left: 6px;
+}
+/* "Häcken okänt" on a starred player. Deliberately DIMMER than the
+   confirmed HÄCKEN tag, not a second accent colour: an unverified link must
+   never look like a verified one at a glance. */
+.prow .tag-quiet {
+  color: var(--text-3);
+  opacity: 0.72;
+  font-weight: 600;
 }
 .prow .sub {
   display: block;
@@ -1442,7 +1589,12 @@ main {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Bottom padding reserves the floating-nav clearance so the LAST line of
+  /* `.sheet-body` is in the tab order (tabIndex 0) so a keyboard user can
+     scroll it — see the note in Sheet.tsx. It is a scroll SURFACE, not a
+     control, so it must not draw a focus ring: the ring is the browser's way
+     of saying "this is where Tab is", and showing it around a scrolling text
+     area is misleading. Keyboard users still get the position. */
+  outline: none;  /* Bottom padding reserves the floating-nav clearance so the LAST line of
      sheet content is never hidden behind the bar. `--chrome-bottom` is
      --fabnav-h + 2x--fabnav-gap + safe-area, i.e. the real occupied band.
 

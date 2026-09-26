@@ -10,7 +10,7 @@ import { test, expect } from "@playwright/test";
  * nothing to do with Settings.
  */
 const PAGES = [
-  { hash: "#/", name: "Brief", page: "brief-page" },
+  { hash: "#/", name: "Hem", page: "brief-page" },
   { hash: "#/nyheter", name: "Nyheter", page: "news-page" },
   { hash: "#/matcher", name: "Matcher", page: "matches-page" },
   { hash: "#/trupp", name: "Trupp", page: "squad-page" },
@@ -290,7 +290,7 @@ test.describe("Settings", () => {
     await page.getByTestId("open-settings").click();
     await expect(page.getByTestId("settings-sheet")).toBeVisible();
     await expect(page.getByTestId("diagnostics")).toBeVisible();
-    await page.getByTestId("close-settings").click();
+    await page.getByTestId("sheet-close").click();
     await expect(page.getByTestId("settings-sheet")).toHaveCount(0);
     // It must NOT be one of the five bar destinations.
     await expect(page.locator(".fabnav a")).toHaveCount(5);
@@ -304,7 +304,7 @@ test.describe("Settings", () => {
       await expect(page.locator(".fabnav")).toBeVisible();
       await page.getByTestId("open-settings").click();
       await expect(page.getByTestId("settings-sheet")).toBeVisible();
-      await page.getByTestId("close-settings").click();
+      await page.getByTestId("sheet-close").click();
       await expect(page.getByTestId("settings-sheet")).toHaveCount(0);
       await expect(page, `returned to the wrong place from ${p.name}`).toHaveURL(
         new RegExp(`${p.hash.replace("#", "\\u0023")}$`),

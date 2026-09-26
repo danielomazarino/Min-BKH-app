@@ -16,7 +16,7 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 const TABS = [
-  { id: "tab-brief", label: "Brief", hash: "#/", page: "brief-page" },
+  { id: "tab-brief", label: "Hem", hash: "#/", page: "brief-page" },
   { id: "tab-nyheter", label: "Nyheter", hash: "#/nyheter", page: "news-page" },
   { id: "tab-matcher", label: "Matcher", hash: "#/matcher", page: "matches-page" },
   { id: "tab-trupp", label: "Trupp", hash: "#/trupp", page: "squad-page" },
@@ -571,5 +571,74 @@ test.describe("Unknown routes claim no destination", () => {
     await page.getByTestId("tab-nyheter").click();
     await expect(page).toHaveURL(/\u0023\/nyheter$/);
     await expect(page.getByTestId("tab-nyheter")).toHaveAttribute("aria-current", "page");
+  });
+});
+
+/**
+ * Section G2 — the redundant active-state dot.
+ *
+ * The active destination already reads as active because its label turns
+ * yellow. A 4px yellow dot was ALSO drawn via `::after` with `margin-top:
+ * 30px`, which on a 9.5px label put it inside the text: it overlapped and
+ * blurred the letters it was meant to support. It is removed, and nothing
+ * replaces it — a second cue for the same state is redundant, not clearer.
+ */
+test.describe("Active state is the label, not a dot", () => {
+  test("the active link paints no ::after marker at any viewport", async ({ page }) => {
+    for (const vp of [
+      { width: 390, height: 844, name: "phone" },
+      { width: 1024, height: 768, name: "desktop" },
+    ]) {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto("/#/");
+      await expect(page.getByTestId("tabbar")).toBeVisible();
+
+      for (const sel of [".fabnav-link", ".tabbar-link", ".fabnav a"]) {
+        const n = await page.locator(sel).count();
+        if (n === 0) continue;
+        const markers = await page.evaluate((s) => {
+          return [...document.querySelectorAll(s)].map((el) => {
+            const cs = getComputedStyle(el, "::after");
+            return {
+              content: cs.content,
+              w: cs.width,
+              h: cs.height,
+              bg: cs.backgroundColor,
+            };
+          });
+        }, sel);
+        for (const m of markers) {
+          const drawsBox = m.content !== "none" && m.content !== '""' && parseFloat(m.w) > 0;
+          expect(drawsBox, `${sel} still draws an ::after marker (${vp.name}): ${JSON.stringify(m)}`).toBe(false);
+        }
+      }
+    }
+  });
+
+  test("the active destination is still unmistakable — by colour, on the label", async ({ page }) => {
+    await page.goto("/#/");
+    await expect(page.getByTestId("tabbar")).toBeVisible();
+    const active = page.locator('.fabnav-link[data-active], .tabbar-link[data-active]');
+    await expect(active).toHaveCount(1);
+    const color = await active.evaluate((el) => getComputedStyle(el).color);
+    const inactive = await page
+      .locator(".fabnav-link:not([data-active])")
+      .first()
+      .evaluate((el) => getComputedStyle(el).color);
+    expect(color, "the active label must differ from the inactive ones").not.toBe(inactive);
+    // The yellow brand token, not merely "different".
+    expect(color).toBe("rgb(255, 210, 0)");
+  });
+
+  test("the label is not obscured by anything painted over it", async ({ page }) => {
+    await page.goto("/#/");
+    await expect(page.getByTestId("tabbar")).toBeVisible();
+    const label = page.locator(".fabnav-link[data-active] .fabnav-label");
+    await expect(label).toBeVisible();
+    // The label has real width and its own line box — a 4px dot with a
+    // 30px margin used to sit inside exactly this box.
+    const box = (await label.boundingBox())!;
+    expect(box.width).toBeGreaterThan(8);
+    expect(box.height).toBeGreaterThan(4);
   });
 });

@@ -9,6 +9,7 @@ import FormerPlayers from "./pages/FormerPlayers";
 import NotFound from "./pages/NotFound";
 import { loadAppData, type AppDataState } from "./data";
 import { FloatingTabBar } from "./shared/FloatingTabBar";
+import { Sheet } from "./shared/Sheet";
 import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
@@ -144,23 +145,9 @@ function AppShell({ state }: { state: AppDataState }) {
       <FloatingTabBar active={active} onSelect={(d) => go(d.path)} />
 
       {settingsOpen && (
-        <div className="sheet-backdrop">
-          <button type="button" className="sr-only" aria-label="Stäng inställningar" onClick={closeSettings} data-testid="settings-dismiss" />
-          <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabIndex={-1} data-testid="settings-sheet">
-            <div className="sheet-grab" aria-hidden="true" />
-            <div className="sheet-head">
-              <h2 id="settings-title">Data &amp; källor</h2>
-              <button type="button" className="icon-btn" onClick={closeSettings} aria-label="Stäng inställningar" data-testid="close-settings">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6 6 18" />
-                </svg>
-              </button>
-            </div>
-            <div className="sheet-body">
-              <SettingsPanel state={state} />
-            </div>
-          </div>
-        </div>
+        <Sheet title="Data & källor" onClose={closeSettings} testId="settings-sheet">
+          <SettingsPanel state={state} />
+        </Sheet>
       )}
     </>
   );

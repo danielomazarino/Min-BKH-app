@@ -1234,3 +1234,200 @@ same measurement returned `margin-bottom: 90px` and **16px clearance**.
 - This is the third time the stale SW has produced a false "the deploy
   failed" conclusion in this project. It is the default hypothesis when a
   shipped change appears to have no effect.
+
+---
+
+# Product / UX / content pass (2026-09-26)
+
+Driven by human observation on the real app, not by a test failure. Each
+item below records the DECISION, not just the change, because the reasoning
+is what stops the same thing being reintroduced.
+
+## P-001  The player model: search-first, and enrichment is never a gate
+
+**Spelare is a football-player search, not a former-player list.**
+
+The premise is "a footballer you are looking for". A BK Häcken connection is
+**enrichment shown alongside, never a precondition**. Gating on it would
+reproduce the closed list this page replaced, in new clothing: a supporter
+who remembers a player the data does not know about would again be told
+"nothing found", and the app would be lying by omission.
+
+Consequences that are now enforced by tests:
+- a player with **no** recorded club is found, shown, and **starable**;
+- the card says "Wikidata anger inte BK Häcken som klubb" *and* adds "Det
+  betyder inte att hen inte spelat där" — absence of evidence is never
+  rendered as evidence of absence;
+- status is never inferred. No club recorded does not mean retired, and does
+  not mean free agent. "Okänd" is a legitimate, common answer.
+
+## P-002  Mats Hedén — the acceptance finding
+
+A supporter found **Mats Hedén (b. 1976)** through search, but the app could
+not identify or verify the BK Häcken connection for him.
+
+Verified in production: he resolves to **Q103846058**, a person and a
+footballer, with **no P54 at all** — Wikidata records no club for him, so
+there is nothing to verify. That is a **data gap, not a reason to hide
+him**, and he is now the pinned acceptance case in
+`e2e/former-players.spec.ts`.
+
+He is starable. That is the whole point of the architecture.
+
+## P-003  Starred players are a visible collection, not a silent save
+
+The reported defect: after starring someone the search result stayed on
+screen and **there was no visible list of starred players**, so the save
+looked like it had done nothing.
+
+The mental model is `SEARCH → find → star → the player is now in "Följda
+spelare"`. So the starred set is rendered as its own section, above the
+search results, and it **survives clearing the search, navigating away, and
+a reload**.
+
+This required a storage change. Favourites were persisted as bare Q-IDs,
+which cannot be rendered — a starred player had to be listed without
+re-running the search that found them, and `"Q103846058"` is not something a
+supporter can read. The store now holds a **snapshot** (name, life dates,
+nationality, Häcken link, starred-at) alongside the id. Legacy id-only
+entries are dropped rather than shown as blank rows.
+
+## P-004  Häcken enrichment is not a gatekeeper for starring
+
+Starring requires only that the player was found. The stored Häcken link is
+recorded as **what was shown at the time**, not as a filter. A starred player
+with no verified link is listed exactly like one with it, and is labelled
+`HÄCKEN OKÄNT` in a deliberately dimmer style than the confirmed `HÄCKEN`
+tag — an unverified link must never look like a verified one at a glance.
+
+## P-005  Former-player information model — what exists and what does not
+
+| Field | State | Note |
+|---|---|---|
+| name | implemented | Wikidata label |
+| photo | **not implemented** | no reliable per-player image; a wrong or generic face is worse than none |
+| active / retired / unknown | implemented | three-valued; never inferred |
+| current / latest club | partial | the club list Wikidata holds; **current** club is NOT derivable |
+| Häcken connection + provenance | implemented | men / women / not recorded, with the Q-ID shown |
+| career / transfer context | **not implemented** | would need a per-stint source |
+| season statistics | **not available** | see P-007 |
+| matches / starts / minutes | **not available** | provider does not record them |
+| goals / assists | **not available** | only per-match event data for the latest match |
+| cards | available for current squad only | via the discipline ledger, not for former players |
+| contract expiry | **not implemented** | a verified contract source does not exist here; inventing one is forbidden |
+
+**Nothing above was invented to fill a gap.** Where the data is absent the UI
+says so in words. A speculative data source will not be added merely to
+populate an empty field.
+
+## P-006  Swedish home/away convention: HOME left, AWAY right
+
+Every match presentation now reads **home team on the left, away team on the
+right**, and the score belongs to that order.
+
+The data is provider-ordered (`scoreHome` / `scoreAway`) and the old UI
+rendered "Häcken first", which **silently reversed the numbers for every away
+match**. Concretely, the 20 Sep game at Kalmar (`homeAway: "away"`,
+`scoreHome: 0`, `scoreAway: 5`) read **"5–0"**, where the Swedish reading of
+*Kalmar 0–5 Häcken* is **"0–5"**. A supporter glancing at a result should
+never have to remember which way round the provider happened to store it.
+
+`scoreForHacken` is kept where Häcken's own point of view is genuinely wanted
+(result colouring, the form guide); `scoreForHomeAway` is used wherever the
+two teams sit side by side. Häcken's result is still carried explicitly, by
+the row's colour and the "Hemma"/"Borta" label.
+
+## P-007  Match sheet: purpose, and the goalscorers move
+
+Hem printed a truncated one-line goalscorer list inline, which turned the
+dashboard's most important row into an event log. **Hem stays a concise
+supporter dashboard**; the detail moved into the match sheet, which now
+presents the fixture (home left), an explicit **Målskyttar** list with
+assists, the full chronological timeline, and statistics.
+
+## P-008  Actual statistics only — and an honest absence
+
+"Events per minute" and other event-derived calculations are **not football
+statistics** and are not presented anywhere. (Verified: no such calculation
+existed in the codebase — the rule is now pinned by a test so it cannot be
+added casually.)
+
+`MatchDetail.playerStats` is **never populated** by the current pipeline, so
+the sheet states that plainly instead of deriving a substitute from the event
+list. An invented number that looks like data is worse than an admitted gap.
+
+## P-009  Discipline rows are interactive and show the real count
+
+The players in Hem's card/suspension section are now buttons that open that
+player's sheet, and each row prints the player's **actual season card total**
+from `warningCount` in the data. The number is **never hard-coded per
+player** — a hard-coded count is a fact that silently rots.
+
+## P-010  The redundant yellow dot is removed, not replaced
+
+The active destination already reads as active: its label turns yellow. A 4px
+yellow dot was *also* drawn via `::after` with `margin-top: 30px`, which on a
+9.5px label landed **inside the text** — overlapping and blurring the letters
+it was meant to support. It is removed and **nothing replaces it**: a second
+cue for the same state is redundant, not clearer.
+
+## P-011  Hem, not "Brief"
+
+The first destination is labelled **Hem**. "Brief" was internal jargon that
+leaked into the navigation. The component and file keep their names (`Brief`,
+`tab-brief`) because renaming internals is churn with no user benefit — but
+the label the supporter reads is Hem.
+
+## P-012  News: a count must describe what is visible
+
+"Senast · 6 nyheter" sat above **four** cards, because the count came from
+the whole feed while the section renders `GRID_COUNT` (4) with the remainder
+under "Tidigare". The count now describes **its own section**. A number the
+reader cannot see on screen is a wrong number.
+
+## P-013  Search focus must not move the page (Section B)
+
+**Not reproducible in desktop Chromium** — measured at 390×844 and 375×812:
+the field's left edge stayed at x=16, `scrollLeft` 0, zero overflow, on both
+a programmatic `.focus()` and a real CDP touch tap. It is a real mobile
+defect, so the three mechanisms that cause it on a phone are guarded rather
+than assumed:
+
+1. **iOS zooms when a focused field is under 16px**, and that zoom is what
+   moves content sideways. The field is now explicitly 16px.
+   `maximum-scale` is deliberately **not** used to suppress the zoom — that
+   fails WCAG 1.4.4.
+2. `min-width: 0` on the field and input, so the flex row cannot outgrow its
+   container and give the document a horizontal scroll range.
+3. `scroll-padding-inline`, so focusing an edge element cannot scroll it
+   under the viewport edge.
+
+The e2e test asserts the **invariants** (no scroll range, no movement,
+`font-size >= 16px`) rather than a pixel offset, so it is meaningful on any
+engine. **Human confirmation on the actual iPhone is still required.**
+
+## P-014  Starred players are the future research set
+
+Preserved as product direction, deliberately **not** implemented in this pass:
+the user's starred players are the natural candidates for deeper research
+later (current club, recent news, contract status), via LLM-assisted research
+and complementary sources.
+
+Two things must never happen: **no master database of all former Häcken
+players**, and **no automatic research of all former players**. The
+user-curated starred set is the intended research set. This pass only makes
+the starring architecture correct enough to support that later.
+
+## P-015  Real-touch navigation is the only acceptable proof
+
+The nav swipe must be verified with dispatched touch events and an explicit
+`pointercancel` assertion. `page.mouse` cannot catch this class of bug — a
+mouse drag has no `touch-action` arbitration, which is exactly why the swipe
+shipped broken while the suite was green. See L-001.
+
+## P-016  Responsive sheet clearance is asserted, not assumed
+
+All bottom sheets are checked at 390×844, 375×812 and 1024×768, because a
+suite pinned to one viewport structurally cannot see a `min-width: 700px`
+cascade bug — which is exactly how the sheet spent a release 74px underneath
+the nav while every phone-sized test passed. See L-009.
