@@ -1431,3 +1431,34 @@ All bottom sheets are checked at 390×844, 375×812 and 1024×768, because a
 suite pinned to one viewport structurally cannot see a `min-width: 700px`
 cascade bug — which is exactly how the sheet spent a release 74px underneath
 the nav while every phone-sized test passed. See L-009.
+
+## N-001  Post-pass findings — NOT fixed in this pass
+
+Recorded per the change-control rule: discovered during browser acceptance,
+reported, deliberately not fixed.
+
+### N-001a  `playerStats` is declared but never populated
+`MatchDetail.playerStats` exists in the type and the sheet renders it when
+present, but the pipeline never fills it for this competition, so the sheet
+always shows the honest "no statistics recorded" note. **This is correct
+behaviour today** and is documented in P-005/P-008. The finding is that a
+declared-but-dead field invites someone to assume statistics exist.
+
+### N-001b  Section B could not be reproduced on desktop Chromium
+The search-focus horizontal shift was reported from a real phone. Measured
+at 390×844 and 375×812, on both a programmatic `.focus()` and a real CDP
+touch tap: field left edge stayed at x=16, `scrollLeft` 0, `visualViewport
+.offsetLeft` 0, zero document overflow. The three iOS-specific mechanisms are
+guarded (16px font, `min-width: 0`, `scroll-padding-inline`) and the e2e test
+asserts the invariants rather than a pixel offset. **Human confirmation on
+the actual iPhone is still outstanding** — this is the one item in the pass
+that is reasoned + guarded, not observed fixed.
+
+### N-001c  A one-off pitfall worth keeping: measure sheets at rest
+A first production measurement of sheet clearance returned −727px and −661px
+at two viewports. The cause was the probe, not the app: it waited for "no
+running animations" and measured while `sheet-in` was still translating the
+sheet up from `translateY(100%)`. Waiting for the transform to actually
+settle (`none` / identity matrix) returned **16px everywhere**. A sheet
+geometry assertion that does not wait for the resting state will report a
+large negative clearance and look like a catastrophic overlap.
