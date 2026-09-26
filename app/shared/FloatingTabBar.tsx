@@ -35,10 +35,37 @@ import { DESTINATIONS, clampIndex, hrefFor, type Destination } from "./nav";
 
 /** px of movement before we decide whether this is a horizontal or vertical drag. */
 const AXIS_GUARD = 14;
-/** fraction of the bar width that must be travelled to commit a swipe. */
-const SWIPE_RATIO = 0.18;
-/** below this many pixels of travel, a horizontal drag is treated as a tap. */
-const DEAD_ZONE = 8;
+/**
+ * A swipe commits on EITHER distance or speed.
+ *
+ * Distance alone was too strict: the old rule needed 18% of the bar width
+ * (~62px on a 342px bar), and a real thumb flick on a 62px-tall control is
+ * routinely shorter than that — so swipes simply did nothing, which is what
+ * human testing reported. The nav bar is also the ONLY place this gesture
+ * exists (there is deliberately no page-level horizontal swipe), so a missed
+ * swipe leaves the user with no way forward except tapping.
+ *
+ * The distance rule is now a flat, generous 34px, and a deliberate flick
+ * commits on velocity even when it travels less than that. A flick still has
+ * to clear FLICK_MIN_PX, so a jittery tap can never be read as a swipe.
+ */
+export const SWIPE_MIN_PX = 34;
+/** px/ms that counts as a deliberate flick. A normal thumb swipe is 0.3–0.6. */
+export const FLICK_VELOCITY = 0.35;
+/** even a flick must travel this far, so a tap is never mistaken for one. */
+export const FLICK_MIN_PX = 14;
+
+/**
+ * The whole swipe decision, extracted so it can be tested directly.
+ *
+ * `delta` is signed travel (negative = finger moved left = go forward) and
+ * `velocity` is signed px/ms measured over the last few samples of the
+ * gesture. Returns true when the gesture should change destination.
+ */
+export function isSwipeCommit(delta: number, velocity: number): boolean {
+  if (Math.abs(delta) >= SWIPE_MIN_PX) return true;
+  return Math.abs(delta) >= FLICK_MIN_PX && Math.abs(velocity) >= FLICK_VELOCITY;
+}
 
 /**
  * Swallow the click that the browser synthesises at the end of a swipe.
@@ -75,7 +102,18 @@ export function FloatingTabBar({
   const navRef = useRef<HTMLElement | null>(null);
   // `live` gates the window listeners: they are always attached, but do
   // nothing until a gesture actually starts on the bar.
-  const drag = useRef({ live: false, startX: 0, startY: 0, dx: 0, axis: "none" as "none" | "x" | "y" });
+  // `t`/`lastX` let us measure a flick's velocity on release.
+  const drag = useRef({
+    live: false,
+    startX: 0,
+    startY: 0,
+    dx: 0,
+    axis: "none" as "none" | "x" | "y",
+    t: 0,
+    lastX: 0,
+    lastT: 0,
+    v: 0,
+  });
   // `armed` records that a horizontal gesture was recognised, purely so the
   // CSS can suppress the tap highlight. The bar NEVER moves with the finger:
   // see the interaction-model note in the file header.
@@ -86,9 +124,10 @@ export function FloatingTabBar({
   const current = index >= 0 ? index : 0;
 
   const commit = useCallback(
-    (delta: number) => {
-      const width = navRef.current?.offsetWidth ?? window.innerWidth;
-      if (Math.abs(delta) < Math.max(DEAD_ZONE * 2, width * SWIPE_RATIO)) return;
+    (delta: number, velocity: number) => {
+      // Distance OR speed commits. Velocity is signed like delta, so a fast
+      // leftward flick is a negative velocity.
+      if (!isSwipeCommit(delta, velocity)) return;
       const next = clampIndex(current + (delta < 0 ? 1 : -1));
       if (next === current) return; // at an end: do nothing, do not wrap
       onSelect(DESTINATIONS[next]);
@@ -99,7 +138,17 @@ export function FloatingTabBar({
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
     // Ignore secondary buttons so a right-click never starts a drag.
     if (e.button !== 0) return;
-    drag.current = { live: true, startX: e.clientX, startY: e.clientY, dx: 0, axis: "none" };
+    drag.current = {
+      live: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      dx: 0,
+      axis: "none",
+      t: performance.now(),
+      lastX: e.clientX,
+      lastT: performance.now(),
+      v: 0,
+    };
   };
 
   const onPointerMove = (e: PointerEvent) => {
@@ -121,6 +170,17 @@ export function FloatingTabBar({
     // WhatsApp tab bar, which stays pinned while the same swipe steps through
     // its tabs.
     d.dx = e.clientX - d.startX;
+
+    // Instantaneous velocity over the last few px, smoothed. A short fast
+    // flick is a deliberate swipe even though it never travels far.
+    const now = performance.now();
+    const dt = now - d.lastT;
+    if (dt > 0) {
+      const instant = (e.clientX - d.lastX) / dt;
+      d.v = d.v === 0 ? instant : d.v * 0.7 + instant * 0.3;
+      d.lastX = e.clientX;
+      d.lastT = now;
+    }
   };
 
   const endDrag = (commitIt: boolean) => {
@@ -131,7 +191,7 @@ export function FloatingTabBar({
       // same link, so without suppression the destination under the finger
       // would ALSO fire. Swipe and tap must be mutually exclusive, and BOTH
       // must still run: the commit first, the suppression second.
-      if (commitIt) commit(d.dx);
+      if (commitIt) commit(d.dx, d.v);
       stopNextClick(navRef.current);
     }
     d.live = false;
@@ -205,7 +265,7 @@ export function FloatingTabBar({
                 }}
               >
                 <span className="fabnav-icon" aria-hidden="true">
-                  <Icon x={20} y={20} strokeWidth={isActive ? 2.15 : 1.75} />
+                  <Icon x={23} y={23} strokeWidth={isActive ? 2.2 : 1.8} />
                 </span>
                 <span className="fabnav-label">{d.label}</span>
               </a>

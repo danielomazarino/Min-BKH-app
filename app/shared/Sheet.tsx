@@ -21,6 +21,11 @@ import { X } from "lucide-react";
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
 
+/** Drag past this many px downward and the sheet dismisses on release. */
+const DISMISS_PX = 96;
+/** Downward movement needed before we claim the gesture as a drag, not a scroll. */
+const DRAG_GUARD = 8;
+
 export function Sheet({
   title,
   subtitle,
@@ -39,7 +44,42 @@ export function Sheet({
   const sheetRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
   const [dragY, setDragY] = useState(0);
-  const dragRef = useRef<{ startY: number; active: boolean }>({ startY: 0, active: false });
+  // `mode` is null until the first significant movement:
+  //  - "drag"   the sheet owns the gesture and follows the finger
+  //  - "scroll" we claimed the gesture, so we must scroll the body ourselves
+  const dragRef = useRef<{
+    startY: number;
+    pointerId: number;
+    mode: null | "drag" | "scroll";
+    fromScrollTop: number;
+  }>({ startY: 0, pointerId: -1, mode: null, fromScrollTop: 0 });
+
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * `touch-action` decides whether the BROWSER may claim a vertical pan, and it
+   * is evaluated once, when the finger lands — before any of our handlers run.
+   * So a static `pan-y` on the body means a downward drag on the body is
+   * always eaten by the scroller and the sheet never moves, which is exactly
+   * the reported bug.
+   *
+   * The rule instead follows the platform convention: while the body is
+   * scrolled to the top the sheet claims the gesture, and once there is
+   * content to scroll the body takes it back. `data-at-top` is kept in sync on
+   * every scroll, so the two never disagree.
+   */
+  const syncAtTop = useCallback(() => {
+    const body = bodyRef.current;
+    if (body) body.dataset.atTop = String(body.scrollTop <= 0);
+  }, []);
+
+  useEffect(() => {
+    syncAtTop();
+    const body = bodyRef.current;
+    if (!body) return;
+    body.addEventListener("scroll", syncAtTop, { passive: true });
+    return () => body.removeEventListener("scroll", syncAtTop);
+  }, [syncAtTop]);
 
   // Remember what had focus BEFORE we move focus into the sheet.
   useEffect(() => {
@@ -99,19 +139,64 @@ export function Sheet({
     [onClose],
   );
 
-  // Drag-to-dismiss. Purely additive — never the only dismissal path.
-  const onGrabDown = (e: React.PointerEvent) => {
-    dragRef.current = { startY: e.clientY, active: true };
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  /**
+   * Drag-to-dismiss. Purely additive — never the only dismissal path.
+   *
+   * The gesture is owned by the WHOLE SHEET, not the 22px grabber. Human
+   * testing showed the grabber-only version did nothing: a finger naturally
+   * lands on the title or the body, and `touch-action: pan-y` let the browser
+   * start a scroll instead, so the sheet stayed put and the page behind it
+   * appeared to move. Because the whole sheet is now draggable, the sheet has
+   * to decide between dragging itself and scrolling its own content.
+   *
+   * The rule matches the platform convention: once the body is scrolled away
+   * from the top, a downward drag scrolls the content back first; only at the
+   * top does it start pulling the sheet down. Upward drags always scroll.
+   */
+  const onDragStart = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    const body = bodyRef.current;
+    dragRef.current = {
+      startY: e.clientY,
+      pointerId: e.pointerId,
+      mode: null,
+      fromScrollTop: body?.scrollTop ?? 0,
+    };
   };
-  const onGrabMove = (e: React.PointerEvent) => {
-    if (!dragRef.current.active) return;
-    const dy = e.clientY - dragRef.current.startY;
+
+  const onDragMove = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (d.pointerId !== e.pointerId) return;
+    const dy = e.clientY - d.startY;
+
+    if (d.mode === null) {
+      if (Math.abs(dy) < DRAG_GUARD) return;
+      // The body only lets us own the gesture while it is at the top (see
+      // `data-at-top`), so this branch is only reached for such a gesture.
+      // Downward at the top moves the SHEET; anything else scrolls the body,
+      // and since the browser will not scroll for us here we must do it.
+      d.mode = dy > 0 ? "drag" : "scroll";
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    }
+
+    if (e.cancelable) e.preventDefault();
+
+    if (d.mode === "scroll") {
+      const body = bodyRef.current;
+      if (body) {
+        body.scrollTop = d.fromScrollTop - dy;
+        syncAtTop();
+      }
+      return;
+    }
     setDragY(dy > 0 ? dy : dy * 0.2); // resist upward drag
   };
-  const onGrabUp = () => {
-    if (dragRef.current.active && dragY > 96) onClose();
-    dragRef.current.active = false;
+
+  const endDrag = (commitIt: boolean) => {
+    const d = dragRef.current;
+    if (commitIt && d.mode === "drag" && dragY >= DISMISS_PX) onClose();
+    d.mode = null;
+    d.pointerId = -1;
     setDragY(0);
   };
 
@@ -135,18 +220,16 @@ export function Sheet({
         aria-labelledby={headingId}
         tabIndex={-1}
         onKeyDown={onKeyDown}
+        onPointerDown={onDragStart}
+        onPointerMove={onDragMove}
+        onPointerUp={() => endDrag(true)}
+        onPointerCancel={() => endDrag(false)}
         data-testid="sheet"
         style={dragY ? { transform: `translateY(${dragY}px)`, transition: "none" } : undefined}
       >
-        <div
-          className="sheet-grab"
-          onPointerDown={onGrabDown}
-          onPointerMove={onGrabMove}
-          onPointerUp={onGrabUp}
-          onPointerCancel={onGrabUp}
-          aria-hidden="true"
-          data-testid="sheet-grab"
-        />
+        {/* The grabber stays as an affordance — it is the conventional place a
+            user looks for the handle — but it no longer owns the gesture. */}
+        <div className="sheet-grab" aria-hidden="true" data-testid="sheet-grab" />
         <div className="sheet-head">
           <h2 id={headingId}>
             {title}
@@ -164,7 +247,9 @@ export function Sheet({
             <X aria-hidden />
           </button>
         </div>
-        <div className="sheet-body">{children}</div>
+        <div className="sheet-body" ref={bodyRef} data-at-top="true">
+          {children}
+        </div>
       </div>
     </div>
   );

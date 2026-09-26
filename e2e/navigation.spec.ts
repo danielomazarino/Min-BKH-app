@@ -198,14 +198,13 @@ test.describe("Swipe on the navigation bar", () => {
     const y = before.y + before.height / 2;
     const sx = before.x + before.width * 0.85;
     // The bar is centred with `transform: translateX(-50%)`, so it is never at
-    // the identity. Pin the resting value and require it to be INVARIANT for
-    // the whole gesture: a drag would make it track the pointer.
-    const resting = await page
-      .locator(".fabnav")
-      .evaluate((el) => getComputedStyle(el).transform);
-    expect(resting, "the bar is transformed by something other than its centring").toBe(
-      "matrix(1, 0, 0, 1, -171, 0)",
-    );
+    // the identity. Derive the expected value from the MEASURED width instead
+    // of hard-coding it — the bar got wider, and a literal here would fail for
+    // the wrong reason. What matters is INVARIANCE across the gesture: a drag
+    // would make the transform track the pointer.
+    const expected = `matrix(1, 0, 0, 1, ${-before.width / 2}, 0)`;
+    const resting = await page.locator(".fabnav").evaluate((el) => getComputedStyle(el).transform);
+    expect(resting, "the bar is transformed by something other than its centring").toBe(expected);
 
     await page.mouse.move(sx, y);
     await page.mouse.down();
