@@ -1041,7 +1041,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/09390dde-d349-405e-80a4-c6ed869f8bf5.jpg"
     },
     {
       "id": "event-BK Häcken-4-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -1059,7 +1060,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/acd01c89-2e09-4a89-ad64-9842a8244abf.jpg"
     },
     {
       "id": "event-BK Häcken-6-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
@@ -1077,7 +1079,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/8463a6c2-df5f-4c36-a795-5785f03afa9e.jpg"
     },
     {
       "id": "event-BK Häcken-8-https://bkhacken.se/nyhet/gafotboll-pa-slatta-damm-for-halsan-och-gladjens-skull",
@@ -1095,7 +1098,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/be6616a8-5920-4995-a48f-ff626101f488.jpg"
     },
     {
       "id": "event-BK Häcken-9-https://bkhacken.se/nyhet/biljettinformation-infor-bortamatcherna-i-champions-league",
@@ -1113,7 +1117,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/7d1d0001-b357-43dd-b963-7bb1238fe3cb.jpg"
     },
     {
       "id": "event-BK Häcken-13-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
@@ -1131,7 +1136,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/852c9212-e22f-4f90-8d06-900a6a0a7190.jpg"
     },
     {
       "id": "event-BK Häcken-14-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
@@ -1149,7 +1155,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1770199263BB250713MI100.jpg"
     },
     {
       "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
@@ -1167,7 +1174,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/c38ac1aa-abde-4ed2-82ab-3725a9e73ad1.jpg"
     },
     {
       "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
@@ -1185,7 +1193,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/19163131-107c-4b05-8785-e52a3ef6bde0.jpg"
     },
     {
       "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/matchtrojehelg-pa-nordic-wellness-arena",
@@ -1203,7 +1212,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/559af1ae-5db0-4dd5-a3a6-b64197dca002.jpg"
     },
     {
       "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/bk-hacken-ar-vidare-i-svenska-cupen-efter-kvallens-derbyvinst",
@@ -1221,7 +1231,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "excerpt"
+      "summaryMethod": "excerpt",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/aec70de3-1222-4db1-a805-5ae2e86e4fd6.jpg"
     },
     {
       "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/biljettslapp-till-hemmamatcherna-i-uefa-womens-champions-leauge",
@@ -1239,7 +1250,8 @@
           "discoveredVia": "rss"
         }
       ],
-      "summaryMethod": "rss-description"
+      "summaryMethod": "rss-description",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/339428b3-c558-47b7-99c6-d4ebf96b8796.jpg"
     }
   ],
   "formerPlayers": [],

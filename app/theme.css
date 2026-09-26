@@ -1,287 +1,1565 @@
-/* BK Häcken black/yellow design tokens — central visual identity. */
+/* ==========================================================================
+   Min BKH-app — design system
+   --------------------------------------------------------------------------
+   Principles (see docs/ux-spec.md):
+   - Black/yellow Häcken identity, but yellow is RESERVED for Häcken-owned or
+     genuinely important data. Never for chrome, labels, or focus rings.
+   - No decorative card containers. Grouping is done with whitespace and a
+     single hairline, not with filled surfaces + borders.
+   - Compact type with a defined role per step. Page H1s are gone; the header
+     carries identity.
+   - Motion only where it communicates state, spatial position, or input
+     confirmation. Everything collapses under prefers-reduced-motion.
+   ========================================================================== */
+
 :root {
-  --bkh-black: #0a0a0a;
-  --bkh-surface: #141414;
-  --bkh-surface-2: #1e1e1e;
-  --bkh-border: #2c2c2c;
-  --bkh-yellow: #ffd200;
-  --bkh-yellow-dark: #b89700;
-  --bkh-text: #f5f5f5;
-  --bkh-text-dim: #a8a8a8;
-  --bkh-red: #d93a3f;
-  --bkh-green: #46a758;
+  /* Surfaces — a dark ramp, not a card-and-border system */
+  --bg: #000000;
+  --surface: #0e0e0e;
+  --surface-2: #161616;
+  --surface-3: #1e1e1e;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.16);
+
+  /* Häcken yellow — restricted duty */
+  --yellow: #ffd200;
+  --yellow-dim: rgba(255, 210, 0, 0.12);
+  --yellow-ink: #1a1500; /* text on a yellow fill */
+  --yellow-text: #ffd200; /* yellow text on black — 14.6:1 */
+
+  /* Text
+     Contrast verified with axe-core (WCAG 2.2 AA) on every surface used:
+     #000, #0e0e0e, #161616, #1e1e1e. text-3 at 45% white was 4.43:1 on
+     black and 3.82:1 on surface-2 — it failed. 58% clears 4.5:1 everywhere
+     with margin, and still reads as a clearly secondary tone. */
+  --text: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.72);
+  --text-3: rgba(255, 255, 255, 0.58);
+
+  /* Status — always paired with a word or glyph, never colour alone */
+  --danger: #ff5a5f; /* suspended / loss */
+  --danger-dim: rgba(255, 90, 95, 0.16);
+  --caution: #ffb020; /* one warning from suspension */
+  --caution-dim: rgba(255, 176, 32, 0.14);
+  --ok: #46a758;
+
+  /* Spacing scale (4px base) */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+
+  /* Radii — deliberately few. Modules have none. */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-sheet: 20px;
+
+  /* Type scale */
+  --t-hero: 52px;
+  --t-lead: 17px;
+  --t-title: 15px;
+  --t-body: 13px;
+  --t-meta: 12px;
+  --t-label: 11px;
+
+  /* Chrome heights */
+  --header-h: 44px;
+  --tabbar-h: 49px;
+  /* Content must clear: tab bar + home indicator. */
+  --chrome-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-sheet: 300ms;
+  --dur-dismiss: 220ms;
+  --dur-tap: 80ms;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  background: var(--bkh-black);
-  color: var(--bkh-text);
+  background: var(--bg);
+  color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   font-size: 16px;
-  line-height: 1.45;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
+  /* iOS: no grey tap flash, no accidental text selection on chrome */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
 
-#root { min-height: 100dvh; display: flex; flex-direction: column; }
+/* `height` (not just min-height) is essential: the app is a fixed-viewport
+   shell with internal scrolling layers. Without it, #root grows to the full
+   content height, `main` overflows, and the fixed tab bar ends up covering
+   the pager dots — making them physically untappable. */
+#root {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-main { flex: 1; padding: 12px 14px 88px; max-width: 640px; width: 100%; margin: 0 auto; }
+body {
+  /* Prevents iOS rubber-band revealing white below a black app */
+  background: var(--bg);
+}
 
-h1, h2, h3 { margin: 0.4em 0 0.4em; font-weight: 700; }
-h2 { font-size: 1.05rem; color: var(--bkh-text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1.6em; }
+/* --------------------------------------------------------------------------
+   Focus — visible for EVERY interactive element, not just a couple.
+   This is a keyboard/Switch Control requirement, not decoration.
+   -------------------------------------------------------------------------- */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
 
-a { color: var(--bkh-yellow); text-decoration: none; }
-a:hover { text-decoration: underline; }
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
 
-button { font: inherit; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Numeric alignment for scores and dates so digits never reflow */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Header — translucent, safe-area aware, no second nav system
+   ========================================================================== */
 
 .app-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--bkh-border);
-  background: var(--bkh-black);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) var(--s4) 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--hairline);
 }
-.app-header .crest { width: 32px; height: 32px; }
-.app-header .title { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.02em; flex: 1; }
-.app-header .title span { color: var(--bkh-yellow); }
 
-.settings-btn {
-  position: fixed;
-  top: 8px;
-  right: 8px;
-  z-index: 20;
-  width: 48px;
-  height: 48px;
+.app-header .mark {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.app-header .brand {
+  font-size: var(--t-title);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-header .brand b {
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+/* Freshness dot: quiet, always present, never alarming by colour alone */
+.freshness {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--t-label);
+  color: var(--text-3);
+  flex: none;
+}
+.freshness .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+}
+.freshness[data-stale="true"] .dot {
+  background: var(--caution);
+}
+
+.icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--bkh-black);
-  border: 1px solid var(--bkh-border);
-  border-radius: 12px;
-  color: var(--bkh-text-dim);
-  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  color: var(--text-2);
+  border-radius: 50%;
 }
-.settings-btn svg { width: 22px; height: 22px; }
-.settings-btn:focus-visible { outline: 2px solid var(--bkh-yellow); }
-.app-header .title span { color: var(--bkh-yellow); }
-
-/* Cards & rows */
-.card {
-  background: var(--bkh-surface);
-  border: 1px solid var(--bkh-border);
-  border-radius: 12px;
-  padding: 14px;
-  margin: 10px 0;
+.icon-btn svg {
+  width: 19px;
+  height: 19px;
 }
-.card.next-match {
-  border-color: var(--bkh-yellow);
-  border-width: 2px;
+.icon-btn:active {
+  background: var(--surface-2);
 }
 
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--bkh-border);
-  min-height: 48px;
-}
-.row:last-child { border-bottom: none; }
+/* ==========================================================================
+   Main / layer surfaces
+   ========================================================================== */
 
-.badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: var(--bkh-surface-2);
-  color: var(--bkh-text-dim);
-}
-.badge.yellow { background: var(--bkh-yellow); color: var(--bkh-black); }
-.badge.red { background: var(--bkh-red); color: #fff; font-weight: 600; }
-.badge.green { background: var(--bkh-green); color: #fff; }
-
-.meta { color: var(--bkh-text-dim); font-size: 0.85rem; }
-
-/* Source pills */
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-.pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 4px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--bkh-border);
-  background: var(--bkh-surface-2);
-  color: var(--bkh-text);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-.pill-primary { border-color: var(--bkh-yellow); color: var(--bkh-yellow); }
-.pill-discovery { color: var(--bkh-text-dim); font-style: italic; }
-
-/* Search field */
-.search-field {
-  width: 100%;
-  min-height: 52px;
-  padding: 12px 16px;
-  margin: 8px 0 4px;
-  font-size: 1rem;
-  background: var(--bkh-surface);
-  color: var(--bkh-text);
-  border: 1px solid var(--bkh-border);
-  border-radius: 12px;
-}
-.search-field:focus-visible { outline: 2px solid var(--bkh-yellow); }
-
-/* Settings */
-.settings-section { margin: 14px 0; }
-.source-row {
+main {
+  flex: 1;
+  min-height: 0;
+  /* Room for the fixed tab bar + home indicator. Without this the last
+     content and the pager dots end up underneath it. */
+  padding-bottom: var(--chrome-bottom);
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--bkh-border);
 }
-.source-row .name { font-weight: 600; }
-.source-row .role { font-size: 0.8rem; }
 
-/* Bottom navigation */
-.bottom-nav {
+/* A layer is a full-height scroll surface. Only one is visible at a time. */
+.layer {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 var(--s4) var(--chrome-bottom);
+  scrollbar-width: none;
+}
+.layer::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================================================
+   Tab bar — reduced to two destinations, translucent
+   ========================================================================== */
+
+.tabbar {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
+  bottom: 0;
+  z-index: 30;
   display: flex;
-  background: var(--bkh-black);
-  border-top: 1px solid var(--bkh-border);
-  padding-bottom: env(safe-area-inset-bottom);
-  z-index: 10;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid var(--hairline);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-.bottom-nav a {
+
+.tabbar a {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 3px;
+  height: var(--tabbar-h);
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.tabbar a svg {
+  width: 21px;
+  height: 21px;
+}
+.tabbar a[aria-current="page"] {
+  color: var(--text);
+}
+/* Active indicator uses Häcken yellow sparingly: the one place chrome is
+   allowed to reference the brand. */
+.tabbar a[aria-current="page"] svg {
+  color: var(--yellow);
+}
+
+/* ==========================================================================
+   Modules — the unit of the brief. No borders, no fills; whitespace divides.
+   ========================================================================== */
+
+.module {
+  padding: var(--s5) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.module:last-child {
+  border-bottom: none;
+}
+.module:first-child {
+  padding-top: var(--s4);
+}
+
+/* Tracked uppercase label — the identity move, at 11px. */
+.mod-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0 0 var(--s3);
+}
+.mod-label .count {
+  color: var(--text-3);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+/* The chevron affordance: tapping the label opens the relevant destination. */
+.mod-label button {
+  display: inline-flex;
+  align-items: center;
   gap: 2px;
-  min-height: 64px;
-  min-width: 48px;
-  color: var(--bkh-text-dim);
-  font-size: 0.72rem;
+  color: var(--text-2);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
 }
-.bottom-nav a.active { color: var(--bkh-yellow); }
-.bottom-nav a svg { width: 24px; height: 24px; }
-
-/* Warning highlight */
-.warn-strip {
-  border-left: 4px solid var(--bkh-yellow);
-  padding: 8px 12px;
-  margin: 6px 0;
-  background: var(--bkh-surface);
-}
-.warn-strip.suspended {
-  border-left-color: var(--bkh-red);
+.mod-label button svg {
+  width: 12px;
+  height: 12px;
+  color: var(--text-3);
 }
 
-/* Favorite star */
-.fav-btn {
+/* ==========================================================================
+   Hero — the next match. Exactly one per screen.
+   ========================================================================== */
+
+.hero {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(180deg, var(--yellow-dim), rgba(255, 210, 0, 0) 70%);
+  border-radius: var(--r-md);
+  padding: var(--s4);
+}
+
+.hero-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: var(--s3);
+}
+
+.hero-comp {
+  color: var(--yellow);
+}
+
+.hero-countdown {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.hero-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+
+.hero-team {
+  flex: 1;
+  min-width: 0;
+}
+.hero-team.opponent {
+  text-align: right;
+}
+.hero-team .name {
+  font-size: var(--t-title);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero-team.hacken .name {
+  color: var(--yellow);
+}
+
+.hero-score {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--t-hero);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.hero-score .sep {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.hero-score .v {
+  color: var(--text);
+}
+
+.hero-when {
+  margin-top: var(--s3);
+  font-size: var(--t-meta);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Form guide — five dots answering "how are we doing" pre-attentively */
+.form {
+  display: flex;
+  gap: 4px;
+  margin-top: var(--s3);
+}
+.form .r {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--hairline-strong);
+}
+.form .r.w {
+  background: var(--yellow);
+}
+.form .r.d {
+  background: var(--text-2);
+}
+.form .r.l {
+  background: var(--danger);
+}
+
+/* ==========================================================================
+   Result row — last result + form of the match
+   ========================================================================== */
+
+.result {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  width: 100%;
+  text-align: left;
+  padding: var(--s2) 0;
+}
+
+.result .score {
+  flex: none;
+  min-width: 52px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.result .score.win {
+  color: var(--yellow);
+}
+.result .score.loss {
+  color: var(--danger);
+}
+.result .score.draw {
+  color: var(--text);
+}
+
+.result .body {
+  flex: 1;
+  min-width: 0;
+}
+.result .opponent {
+  display: block;
+  font-size: var(--t-title);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.result .meta {
+  display: block;
+  font-size: var(--t-meta);
+  color: var(--text-3);
+  margin-top: 1px;
+}
+.result .scorers {
+  display: block;
+  font-size: var(--t-body);
+  color: var(--text-2);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Discipline — a meter, not a badge. Colour is always paired with a word.
+   ========================================================================== */
+
+.cstat {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  padding: var(--s2) 0;
+}
+.cstat .mark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+.cstat .mark.suspended {
+  background: var(--danger);
+}
+.cstat .mark.at-risk {
+  background: transparent;
+  border: 2px solid var(--caution);
+}
+.cstat .mark.other {
+  background: var(--hairline-strong);
+}
+.cstat .body {
+  flex: 1;
+  min-width: 0;
+}
+/* These are <span>s inside a flex row; without display:block they stay inline
+   and `white-space: nowrap` / `text-overflow` silently do nothing, which made
+   the name and the state run together on one line. */
+.cstat .who {
+  display: block;
+  font-size: var(--t-title);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cstat .state {
+  display: block;
+  font-size: var(--t-meta);
+  color: var(--text-2);
+  margin-top: 1px;
+}
+.cstat.suspended .state {
+  color: var(--danger);
+}
+.cstat.at-risk .state {
+  color: var(--caution);
+}
+
+/* Card meter: how close to a suspension, at a glance */
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 6px;
+}
+.meter .notch {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--hairline-strong);
+}
+.meter .notch.on {
+  background: var(--caution);
+}
+.meter.served .notch.on {
+  background: var(--danger);
+}
+
+/* ==========================================================================
+   Match rows (archive)
+   ========================================================================== */
+
+.mrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  text-align: left;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--hairline);
+  position: relative;
+}
+.mrow:last-child {
+  border-bottom: none;
+}
+/* W/D/L as a coloured edge AND a letter — never colour alone */
+.mrow::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--hairline-strong);
+}
+.mrow.w::before {
+  background: var(--yellow);
+}
+.mrow.l::before {
+  background: var(--danger);
+}
+.mrow.d::before {
+  background: var(--text-2);
+}
+
+.mrow .score {
+  flex: none;
+  min-width: 46px;
+  font-size: var(--t-lead);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.mrow .body {
+  flex: 1;
+  min-width: 0;
+}
+.mrow .opponent {
+  display: block;
+  font-size: var(--t-title);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mrow .meta {
+  display: block;
+  font-size: var(--t-meta);
+  color: var(--text-3);
+  margin-top: 1px;
+}
+.mrow .ven {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+.mrow .res {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+/* ==========================================================================
+   Match timeline — the last match's events, which the old UI never showed
+   ========================================================================== */
+
+.tl {
+  position: relative;
+  padding-left: 20px;
+  margin: var(--s2) 0 0;
+}
+.tl::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--hairline);
+}
+
+.tl-item {
+  position: relative;
+  padding: 5px 0;
+  display: flex;
+  gap: var(--s3);
+  align-items: flex-start;
+}
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  top: 12px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--hairline-strong);
+}
+.tl-item.goal::before {
+  background: var(--yellow);
+  border-color: var(--yellow);
+}
+.tl-item.yellow::before {
+  background: var(--caution);
+  border-color: var(--caution);
+}
+.tl-item.red::before {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.tl-item .min {
+  flex: none;
+  width: 34px;
+  font-size: var(--t-meta);
+  font-weight: 700;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+}
+.tl-item .what {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-body);
+}
+.tl-item .what .who {
+  font-weight: 600;
+}
+.tl-item .what .assist {
+  color: var(--text-3);
+  font-size: var(--t-meta);
+  margin-top: 1px;
+}
+.tl-item.opponent .what .who {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.tl-break {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3) 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.tl-break::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  width: 9px;
+  height: 1px;
+  background: var(--hairline-strong);
+}
+.tl-break::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* ==========================================================================
+   Snap rails — horizontal browse inside a module
+   ========================================================================== */
+
+.rail {
+  display: flex;
+  gap: var(--s3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* Bleed to the screen edge so the next card peeks — the "there's more" cue */
+  margin: 0 calc(var(--s4) * -1);
+  padding: 0 var(--s4) var(--s1);
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.rail > * {
+  scroll-snap-align: start;
+  flex: none;
+}
+
+/* ==========================================================================
+   News
+   ========================================================================== */
+
+.news-card {
+  width: 264px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+.news-card.wide {
+  width: 296px;
+}
+
+.news-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.news-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Fallback hue while loading/failed — never a broken image box */
+.news-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 210, 0, 0.1), transparent 60%);
+  pointer-events: none;
+}
+
+.news-body {
+  padding: var(--s3);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.news-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 5px;
+}
+.news-title {
+  font-size: var(--t-lead);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-sum {
+  font-size: var(--t-body);
+  color: var(--text-2);
+  line-height: 1.35;
+  margin-top: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-src {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: var(--s3);
+  font-size: var(--t-meta);
+  color: var(--text-3);
+}
+.news-src .go {
+  margin-left: auto;
+  width: 13px;
+  height: 13px;
+  color: var(--text-3);
+  flex: none;
+}
+
+/* Source marker: solid = primary, hollow = secondary. Spatial, not verbal. */
+.sdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--text-3);
+}
+.sdot.primary {
+  background: var(--yellow);
+}
+.sdot.secondary {
+  background: transparent;
+  border: 1.5px solid var(--text-3);
+}
+
+/* Collapsed ordinary news — one 44px line, not a 150px card */
+.news-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  width: 100%;
+  text-align: left;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.news-row:last-child {
+  border-bottom: none;
+}
+.news-row .when {
+  flex: none;
+  width: 44px;
+  font-size: var(--t-meta);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.news-row .head {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-body);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.news-row .pub {
+  flex: none;
+  width: 6px;
+}
+
+/* Date group headers */
+.group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: var(--s4) 0 var(--s1);
+}
+
+/* Source list inside a story sheet */
+.src {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  text-align: left;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.src:last-child {
+  border-bottom: none;
+}
+.src .name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-body);
+  font-weight: 600;
+}
+.src .when {
+  flex: none;
+  font-size: var(--t-meta);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.src .ext {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+}
+
+/* ==========================================================================
+   Search
+   ========================================================================== */
+
+.searchbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: var(--s3) 0 var(--s2);
+  background: linear-gradient(180deg, var(--bg) 62%, rgba(0, 0, 0, 0));
+}
+.searchbar .field {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 38px;
+  padding: 0 var(--s3);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+}
+.searchbar .field:focus-within {
+  border-color: var(--hairline-strong);
+}
+.searchbar .field svg {
+  width: 15px;
+  height: 15px;
+  color: var(--text-3);
+  flex: none;
+}
+.searchbar input {
+  flex: 1;
+  min-width: 0;
   background: none;
   border: none;
-  min-width: 48px;
-  min-height: 48px;
+  outline: none;
+  color: var(--text);
+  font-size: var(--t-title);
+}
+.searchbar input::placeholder {
+  color: var(--text-3);
+}
+.searchbar input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+/* A–Z index */
+.az {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: var(--s2) 0;
+}
+.az button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  font-size: var(--t-meta);
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+}
+.az button[aria-pressed="true"] {
+  background: var(--yellow);
+  color: var(--yellow-ink);
+}
+
+/* ==========================================================================
+   Player rows (former players ONLY — current squad is never a list here)
+   ========================================================================== */
+
+.prow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  border-bottom: 1px solid var(--hairline);
+}
+.prow:last-child {
+  border-bottom: none;
+}
+.prow .open {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  padding: 10px 0;
+}
+.prow .name {
+  display: block;
+  font-size: var(--t-title);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* "TIDIGARE" as a tracked label, not a yellow pill on every row */
+.prow .tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: var(--text-3);
+  margin-left: 6px;
+}
+.prow .sub {
+  display: block;
+  font-size: var(--t-meta);
+  color: var(--text-3);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prow .alias {
+  color: var(--text-2);
+}
+
+/* Star: state toggle, therefore a labelled, visible, 44px control. */
+.star {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--bkh-text-dim);
-  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  color: var(--text-3);
+  border-radius: 50%;
 }
-.fav-btn.active { color: var(--bkh-yellow); }
-
-/* Skeletons */
-.skeleton {
-  background: linear-gradient(90deg, var(--bkh-surface) 25%, var(--bkh-surface-2) 50%, var(--bkh-surface) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 8px;
-  min-height: 1em;
+.star svg {
+  width: 17px;
+  height: 17px;
 }
-@keyframes shimmer { to { background-position: -200% 0; } }
+.star[aria-pressed="true"] {
+  color: var(--yellow);
+}
+.star:active {
+  background: var(--surface-2);
+}
 
-.stale-note {
-  color: var(--bkh-text-dim);
-  font-size: 0.8rem;
+/* Compact stat grid in the player sheet */
+.kv {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  margin: var(--s3) 0;
+}
+.kv .k {
+  min-width: 46px;
+}
+.kv .k .v {
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.kv .k .l {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   Chips (favourites rail)
+   ========================================================================== */
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 78px;
+  height: 66px;
+  padding: var(--s2);
+  background: var(--surface);
+  border-radius: var(--r-md);
   text-align: center;
-  padding: 6px 0 0;
 }
-.stale-note.warn { color: var(--bkh-yellow-dark); }
-
-/* Tables */
-table.stats {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.92rem;
+.chip .ini {
+  font-size: var(--t-lead);
+  font-weight: 700;
+  color: var(--yellow);
+  line-height: 1;
 }
-table.stats th, table.stats td {
-  text-align: left;
-  padding: 8px 6px;
-  border-bottom: 1px solid var(--bkh-border);
-}
-table.stats th { color: var(--bkh-text-dim); font-weight: 600; font-size: 0.8rem; }
-table.stats td.num, table.stats th.num { text-align: right; }
-
-.empty {
-  color: var(--bkh-text-dim);
-  text-align: center;
-  padding: 28px 10px;
+.chip .nm {
+  font-size: 10px;
+  color: var(--text-2);
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-@media (min-width: 700px) {
-  main { padding-bottom: 24px; }
-  .bottom-nav { justify-content: center; }
-  .bottom-nav a { flex: 0 0 120px; }
-}
+/* ==========================================================================
+   Sheet — the only detail surface. Focus-trapped, drag-dismissible.
+   ========================================================================== */
 
-/* Player detail bottom sheet */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
   z-index: 60;
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: flex-end;
-}
-.sheet {
-  width: 100%;
-  max-height: 82vh;
-  overflow-y: auto;
-  background: var(--bkh-black);
-  border-radius: 16px 16px 0 0;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
-}
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--bkh-border);
-  margin: 0 auto 12px;
+  animation: fade-in var(--dur-dismiss) ease-out;
 }
 
-/* Squad position groups */
-.pos-group h3 { color: var(--bkh-text-dim); }
-.pos-group .row { min-height: 44px; }
+.sheet {
+  position: relative;
+  width: 100%;
+  max-height: 88dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+  animation: sheet-in var(--dur-sheet) var(--ease-ios);
+  touch-action: pan-y;
+}
+/* Drag region: large, invisible, and NOT a required interaction */
+.sheet-grab {
+  flex: none;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.sheet-grab::before {
+  content: "";
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--hairline-strong);
+}
+
+.sheet-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 0 var(--s4) var(--s3);
+  border-bottom: 1px solid var(--hairline);
+}
+.sheet-head h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--t-lead);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sheet-head .sub {
+  font-size: var(--t-meta);
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--s4) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0px));
+  scrollbar-width: none;
+}
+.sheet-body::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Disclosure (Settings) — native <details>, keyboard accessible for free
+   ========================================================================== */
+
+details.disc {
+  border-top: 1px solid var(--hairline);
+}
+details.disc > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3) 0;
+  font-size: var(--t-meta);
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+}
+details.disc > summary::-webkit-details-marker {
+  display: none;
+}
+details.disc > summary svg {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  color: var(--text-3);
+  transition: transform var(--dur-tap) ease;
+}
+details.disc[open] > summary svg {
+  transform: rotate(180deg);
+}
+details.disc .disc-body {
+  padding-bottom: var(--s3);
+}
+
+/* Source list (settings) */
+.srcrow {
+  display: flex;
+  gap: var(--s3);
+  padding: 9px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: var(--t-body);
+}
+.srcrow:last-child {
+  border-bottom: none;
+}
+.srcrow .nm {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+.srcrow .rl {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 1px 4px;
+  height: fit-content;
+}
+.srcrow .meta {
+  font-size: var(--t-meta);
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   Segmented control — replaces the old pill tab bar
+   ========================================================================== */
+
+.seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+}
+.seg button {
+  flex: 1;
+  height: 30px;
+  border-radius: 6px;
+  font-size: var(--t-meta);
+  font-weight: 600;
+  color: var(--text-3);
+}
+.seg button[aria-selected="true"] {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* ==========================================================================
+   Layer pager — horizontal swipe between Home layers
+   ========================================================================== */
+
+/* The pager fills the space between header and tab bar and never exceeds it,
+   so the dots always sit above the bar. */
+.pager {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.pager-track {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  will-change: transform;
+  transition: transform var(--dur-sheet) var(--ease-ios);
+}
+.pager-track.free {
+  transition: none;
+}
+.pager-layer {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+/* The DOT is a 6px visual, but the target must be WCAG 2.2 AA compliant
+   (24px minimum). A 32px hit area keeps the control thumb-friendly without
+   making the indicator visually heavy. */
+.pager-dots {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--s2) 0;
+}
+.pager-dots button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+}
+/* The visible pip, sized independently of the hit area. */
+.pager-dots button::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hairline-strong);
+  transition: width var(--dur-tap) ease, background var(--dur-tap) linear;
+}
+.pager-dots button[aria-current="true"]::before {
+  width: 16px;
+  border-radius: 3px;
+  background: var(--yellow);
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.muted {
+  color: var(--text-2);
+}
+.dim {
+  color: var(--text-3);
+}
+.small {
+  font-size: var(--t-meta);
+}
+.xsmall {
+  font-size: 10px;
+}
+.stack-2 > * + * {
+  margin-top: var(--s2);
+}
+.stack-3 > * + * {
+  margin-top: var(--s3);
+}
+.stack-4 > * + * {
+  margin-top: var(--s4);
+}
+.hr {
+  height: 1px;
+  background: var(--hairline);
+  border: none;
+  margin: var(--s4) 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.empty {
+  padding: var(--s5) var(--s3);
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--t-body);
+}
+.empty strong {
+  display: block;
+  color: var(--text-2);
+  font-size: var(--t-title);
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+.link {
+  color: var(--yellow-text);
+  font-weight: 600;
+}
+
+.skeleton {
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  height: 1em;
+  /* No shimmer: the loudest element on screen was marking the least
+     important thing (a loading list). */
+}
+
+/* ==========================================================================
+   Reduced motion — every animation collapses to a short opacity change.
+   No information is lost: the pager dots still convey position.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .pager-track {
+    transition: opacity 80ms linear !important;
+  }
+  .sheet,
+  .sheet-backdrop {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Responsive — mobile-first; desktop is a centred, un-embellished column
+   ========================================================================== */
+
+@media (min-width: 700px) {
+  .layer {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .news-card,
+  .news-card.wide {
+    width: 320px;
+  }
+  .hero-score {
+    font-size: 60px;
+  }
+  .tabbar {
+    justify-content: center;
+  }
+  .tabbar a {
+    flex: 0 0 110px;
+  }
+  .sheet {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .sheet-backdrop {
+    justify-content: center;
+  }
+}
+
+/* Small phones: 320px must not overflow */
+@media (max-width: 359px) {
+  .news-card {
+    width: 240px;
+  }
+  .hero-score {
+    font-size: 44px;
+  }
+  .hero {
+    padding: var(--s3);
+  }
+}

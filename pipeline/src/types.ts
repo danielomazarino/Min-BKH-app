@@ -46,6 +46,7 @@ export interface CurrentDataUnavailable {
 /** Season-level disciplinary status for one player. */
 export type DisciplineStatus =
   | "none"
+  /** Exactly one warning short of a suspension. */
   | "at_risk"
   | "suspended_next"
   | "served"
@@ -55,7 +56,15 @@ export type DisciplineStatus =
 export interface PlayerDiscipline {
   playerId: string;
   playerName: string;
+  /** Total distinct-match yellow cards this season. */
   warningCount: number;
+  /**
+   * Warnings still counting toward the NEXT suspension — excludes any already
+   * consumed by a served suspension. The UI must prefer this over
+   * `warningCount`, otherwise a player who served a suspension appears to be
+   * "one warning away" while showing a season total of 5 or 6.
+   */
+  warningsUntilSuspension: number;
   redCards: number;
   status: DisciplineStatus;
   relevantWarnings: Array<{ matchId: number; date: string }>;
@@ -144,6 +153,11 @@ export interface NewsEvent {
   category: NewsCategory;
   /** Newest publication date among sources. */
   latestPublishedAt: string;
+  /**
+   * Editorial image for the lead article, when a source provides one.
+   * Used for compact story thumbnails — never as a hero image.
+   */
+  imageUrl?: string;
   sources: Array<{
     publisher: string;
     /** Original article headline, preserved for provenance. */

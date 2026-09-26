@@ -1,109 +1,148 @@
+/**
+ * Matches — a compact archive, reached contextually from the brief rather than
+ * holding a permanent tab slot.
+ *
+ * Rows carry W/D/L as a coloured edge AND a letter, so the result never depends
+ * on colour alone. Only the last match has event data, so only the last match
+ * opens a timeline sheet — the archive rows for other matches are not
+ * clickable dead ends.
+ */
 import { useState } from "react";
 import type { AppDataState } from "../data";
-import { competitionLabel, fmtDateTime } from "../data";
-import type { MatchRef } from "../../pipeline/src/types";
+import type { MatchDetail, MatchRef } from "../../pipeline/src/types";
+import { MatchSheet } from "./Home";
+import { competitionLabel, fmtDateTime, fmtDay, RESULT_WORD, resultOf, scoreFor } from "../shared/format";
 
 export default function Matches({ state }: { state: AppDataState }) {
-  const [tab, setTab] = useState<"kommande" | "spelade">("kommande");
+  const [tab, setTab] = useState<"spelade" | "kommande">("spelade");
+  const [open, setOpen] = useState<MatchDetail | null>(null);
 
-  if (state.status === "loading") return <div className="skeleton" style={{ height: 300 }} aria-busy="true" />;
-  if (state.status === "error") return <div className="empty">Kunde inte läsa data. Försök igen senare.</div>;
+  if (state.status === "loading") {
+    return (
+      <div className="layer" aria-busy="true" aria-label="Laddar">
+        <div className="skeleton" style={{ height: 200 }} />
+      </div>
+    );
+  }
+  if (state.status === "error") {
+    return (
+      <div className="layer">
+        <div className="empty" role="status">
+          <strong>Kunde inte läsa matchdata</strong>
+          Försök igen om en stund.
+        </div>
+      </div>
+    );
+  }
 
   const { data } = state;
-  const list = tab === "kommande" ? data.upcoming : data.recent;
+  const list = tab === "spelade" ? data.recent : data.upcoming;
   const detail = data.lastMatchDetail;
+  const detailId = detail?.id;
 
   return (
-    <div>
-      <h1>Matcher</h1>
-
-      <div role="tablist" aria-label="Matchtyp" style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-        <TabButton active={tab === "kommande"} onClick={() => setTab("kommande")} label="Kommande" />
-        <TabButton active={tab === "spelade"} onClick={() => setTab("spelade")} label="Spelade" />
-      </div>
-
-      {list.length === 0 ? (
-        <div className="card empty">{tab === "kommande" ? "Inga kommande matcher inlagda." : "Inga spelade matcher ännu."}</div>
-      ) : (
-        list.map((m) => <MatchRow key={m.id} m={m} />)
-      )}
-
-      {tab === "spelade" && detail?.playerStats && detail.playerStats.length > 0 && (
-        <section aria-labelledby="stats-h">
-          <h2 id="stats-h">Senaste matchens spelare</h2>
-          <div className="card" data-testid="last-match-stats">
-            <div className="meta" style={{ marginBottom: 8 }}>
-              {competitionLabel(detail.competition)} · {fmtDateTime(detail.date)}
-            </div>
-            <table className="stats">
-              <thead>
-                <tr>
-                  <th>Spelare</th>
-                  <th className="num">Min</th>
-                  <th className="num">Mål</th>
-                  <th className="num">Ass</th>
-                  <th className="num">Gul</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detail.playerStats.map((s) => (
-                  <tr key={s.playerId}>
-                    <td>{s.playerName}</td>
-                    <td className="num">{s.minutes ?? "–"}</td>
-                    <td className="num">{s.goals}</td>
-                    <td className="num">{s.assists}</td>
-                    <td className="num">{s.yellowCards}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <>
+      <div className="layer" data-testid="matches-page">
+        <div style={{ paddingTop: 16, position: "sticky", top: 0, zIndex: 10, background: "var(--bg)" }}>
+          <h1 className="mod-label" style={{ marginBottom: 12 }}>
+            Matcher
+          </h1>
+          <div className="seg" role="tablist" aria-label="Matchtyp">
+            <button role="tab" aria-selected={tab === "spelade"} onClick={() => setTab("spelade")} data-testid="tab-played">
+              Spelade
+            </button>
+            <button role="tab" aria-selected={tab === "kommande"} onClick={() => setTab("kommande")} data-testid="tab-upcoming">
+              Kommande
+            </button>
           </div>
-        </section>
-      )}
-    </div>
-  );
-}
-
-function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      style={{
-        minHeight: 48,
-        padding: "0 20px",
-        borderRadius: 999,
-        border: "1px solid var(--bkh-border)",
-        background: active ? "var(--bkh-yellow)" : "var(--bkh-surface)",
-        color: active ? "var(--bkh-black)" : "var(--bkh-text-dim)",
-        fontWeight: 600,
-        cursor: "pointer",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
-function MatchRow({ m }: { m: MatchRef }) {
-  const score =
-    m.status === "finished" && m.scoreHome != null && m.scoreAway != null
-      ? m.homeAway === "home"
-        ? `${m.scoreHome}–${m.scoreAway}`
-        : `${m.scoreAway}–${m.scoreHome}`
-      : null;
-  return (
-    <div className="row" data-testid="match-row">
-      <div>
-        <div>
-          {m.homeAway === "home" ? "Hemma" : "Borta"} mot <strong>{m.opponent}</strong>
         </div>
-        <div className="meta">
-          {competitionLabel(m.competition)} · {fmtDateTime(m.date)}
+
+        <div style={{ paddingTop: 12 }}>
+          {list.length === 0 ? (
+            <p className="empty">
+              <strong>{tab === "spelade" ? "Inga spelade matcher" : "Inga kommande matcher"}</strong>
+              {tab === "spelade" ? "Säsongen har inte börjat om." : "Inget schema är inlagt just nu."}
+            </p>
+          ) : (
+            list.map((m) => (
+              <MatchRow
+                key={m.id}
+                m={m}
+                onOpen={tab === "spelade" && m.id === detailId && detail ? () => setOpen(detail) : undefined}
+              />
+            ))
+          )}
         </div>
+
+        {data.table.length > 0 && (
+          <section className="module" aria-labelledby="table-h" style={{ marginTop: 20 }}>
+            <h2 className="mod-label" id="table-h">
+              Tabellen
+            </h2>
+            {data.table.map((t) => {
+              const self = t.team === "BK Häcken";
+              return (
+                <div className="mrow" key={t.team} style={self ? { color: "var(--text)" } : undefined} data-testid="table-row">
+                  <span className="score" style={{ fontSize: 13, color: self ? "var(--yellow)" : "var(--text-3)" }}>
+                    {t.rank}
+                  </span>
+                  <span className="body">
+                    <span className="opponent" style={self ? { color: "var(--yellow)" } : undefined}>
+                      {t.team}
+                    </span>
+                    <span className="meta">
+                      {t.played} matcher · {t.goalDiff > 0 ? "+" : ""}
+                      {t.goalDiff}
+                    </span>
+                  </span>
+                  <span className="res">{t.points} p</span>
+                </div>
+              );
+            })}
+          </section>
+        )}
       </div>
-      {score && <span className="badge yellow">{score}</span>}
+      {open && <MatchSheet detail={open} onClose={() => setOpen(null)} />}
+    </>
+  );
+}
+
+function MatchRow({ m, onOpen }: { m: MatchRef; onOpen?: () => void }) {
+  const score = scoreFor(m);
+  const res = resultOf(m);
+  const isHome = m.homeAway === "home";
+  const cls = res ?? "";
+  const inner = (
+    <>
+      <span className="score">{score ?? (isHome ? "–" : "–")}</span>
+      <span className="body">
+        <span className="opponent">{m.opponent}</span>
+        <span className="meta">
+          {fmtDateTime(m.date)} · {competitionLabel(m.competition)}
+        </span>
+      </span>
+      {res ? (
+        <span className="res" aria-hidden="true">
+          {RESULT_WORD[res]}
+        </span>
+      ) : null}
+      <span className="ven" aria-hidden="true">
+        {isHome ? "H" : "B"}
+      </span>
+    </>
+  );
+
+  const label = `${isHome ? "Hemma" : "Borta"} mot ${m.opponent}, ${score ?? "inget resultat"} ${fmtDay(m.date)}${
+    res ? `, ${res === "w" ? "seger" : res === "d" ? "oavgjort" : "förlust"}` : ""
+  }`;
+
+  return onOpen ? (
+    <button type="button" className={`mrow ${cls}`} onClick={onOpen} aria-label={`${label}. Visa matchen.`} data-testid="match-row">
+      {inner}
+    </button>
+  ) : (
+    <div className={`mrow ${cls}`} aria-label={label} data-testid="match-row">
+      {inner}
     </div>
   );
 }

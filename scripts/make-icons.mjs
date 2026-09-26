@@ -1,63 +1,111 @@
-// Generates the Min BKH-app PWA icons: black/yellow crest with a Gothenburg
-// crane, a hedge (hack) and a football - coherent composition, legible at
-// small sizes. Run: node scripts/make-icons.mjs
+/**
+ * Generates the Min BKH-app PWA icons.
+ *
+ * Design brief (all four elements MUST survive, none may be dropped):
+ *   1. BKH identity      — a wordmark band, readable at 60pt
+ *   2. crane             — the Göteborg landmark, the dominant silhouette
+ *   3. hedge             — the ground/horizon rule it stands on
+ *   4. football          — the hook's load
+ *
+ * The previous icon lost all four at small sizes: the wordmark shrank to a
+ * texture, the crane's rigging went sub-pixel, and the hedge ran edge to edge
+ * with no safe margin for Android's maskable crop. The fix is hierarchy, not
+ * removal — one dominant form, three supporting forms, each simplified into
+ * the fewest possible strokes.
+ *
+ * Maskable is a genuinely separate composition: every element is inset inside
+ * the 80% safe circle that Android guarantees, so nothing is ever cropped.
+ * It is NOT a copy of the regular icon.
+ *
+ * Run: node scripts/make-icons.mjs
+ */
 import sharp from "sharp";
 import { mkdirSync } from "node:fs";
 
-const svg = (size) => `
-<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="100" fill="#0a0a0a"/>
+const BLACK = "#0a0a0a";
+const YELLOW = "#ffd200";
 
-  <!-- ground -->
-  <rect x="70" y="396" width="372" height="12" rx="6" fill="#ffd200"/>
-
-  <!-- hedge: clear horizontal slat fence with vertical posts -->
-  <g fill="#ffd200">
-    <rect x="80" y="336" width="352" height="16" rx="5"/>
-    <rect x="80" y="364" width="352" height="16" rx="5"/>
-    <rect x="80" y="322" width="14" height="74" rx="4"/>
-    <rect x="196" y="322" width="14" height="74" rx="4"/>
-    <rect x="262" y="322" width="14" height="74" rx="4"/>
-    <rect x="418" y="322" width="14" height="74" rx="4"/>
+/**
+ * Shared art, drawn in a 512 box. `s` scales the whole composition about the
+ * centre: 1 = full bleed, <1 = inset for the maskable safe area.
+ */
+const art = (s) => {
+  const t = (v) => 256 + (v - 256) * s; // transform about centre
+  const k = (v) => v * s; // scale a length
+  return `
+  <!-- hedge: two heavy rails + posts, the horizon Häcken stands on -->
+  <g fill="${YELLOW}">
+    <rect x="${t(74)}" y="${t(330)}" width="${k(364)}" height="${k(18)}" rx="${k(5)}"/>
+    <rect x="${t(74)}" y="${t(372)}" width="${k(364)}" height="${k(18)}" rx="${k(5)}"/>
+    <rect x="${t(84)}" y="${t(318)}" width="${k(22)}" height="${k(86)}" rx="${k(6)}"/>
+    <rect x="${t(245)}" y="${t(318)}" width="${k(22)}" height="${k(86)}" rx="${k(6)}"/>
+    <rect x="${t(406)}" y="${t(318)}" width="${k(22)}" height="${k(86)}" rx="${k(6)}"/>
   </g>
 
-  <!-- crane: tower + jib + counterweight + hook, clearly recognizable -->
-  <g stroke="#ffd200" stroke-linecap="round" fill="none">
-    <path d="M150 396 L150 140" stroke-width="22"/>
-    <path d="M150 140 L340 100" stroke-width="16"/>
-    <path d="M150 140 L92 118" stroke-width="14"/>
-    <path d="M150 100 L340 100" stroke-width="5" opacity="0.8"/>
-    <path d="M150 100 L92 118" stroke-width="5" opacity="0.8"/>
-    <path d="M330 104 L330 160" stroke-width="8"/>
-    <path d="M322 160 a8 8 0 0 0 16 0" stroke-width="8"/>
+  <!-- crane: tower, jib, counter-jib, tie, hook. Fewest strokes that still
+       read as a crane rather than a letter L. -->
+  <g stroke="${YELLOW}" stroke-linecap="round" fill="none">
+    <path d="M156 318 L156 116" stroke-width="${k(26)}"/>
+    <path d="M156 116 L372 84" stroke-width="${k(20)}"/>
+    <path d="M156 116 L96 100" stroke-width="${k(17)}"/>
+    <path d="M362 88 L362 150" stroke-width="${k(11)}"/>
   </g>
-  <rect x="134" y="188" width="36" height="32" rx="6" fill="#ffd200"/>
+  <rect x="${t(139)}" y="${t(176)}" width="${k(40)}" height="${k(38)}" rx="${k(7)}" fill="${YELLOW}"/>
 
-  <!-- football: right side, above hedge line -->
-  <g transform="translate(388 216)">
-    <circle r="62" fill="#ffd200"/>
-    <path d="M0 -26 L25 -8 L15 22 L-15 22 L-25 -8 Z" fill="#0a0a0a"/>
-    <g stroke="#0a0a0a" stroke-width="7" fill="none">
-      <path d="M0 -26 L0 -62"/>
-      <path d="M25 -8 L58 -19"/>
-      <path d="M-25 -8 L-58 -19"/>
-      <path d="M15 22 L29 54"/>
-      <path d="M-15 22 L-29 54"/>
-    </g>
+  <!-- football as the hook's load: filled disc with a cut pentagon, so it
+       still reads at 60pt where a thin outline would disappear. -->
+  <g transform="translate(${t(362)} ${t(196)})">
+    <circle r="${k(60)}" fill="${YELLOW}"/>
+    <path d="M0 -25 L24 -8 L14 21 L-14 21 L-24 -8 Z" fill="${BLACK}"/>
   </g>
 
-  <!-- wordmark -->
-  <text x="256" y="474" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="56" letter-spacing="6" fill="#ffd200">BKH</text>
+  <!-- BKH wordmark: a band, not a caption. Heaviest weight in the mark so it
+       survives as legible text at 180px and as a recognisable texture at 60. -->
+  <text x="256" y="${t(474)}" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif"
+        font-weight="900" font-size="${k(62)}" letter-spacing="${k(4)}" fill="${YELLOW}">BKH</text>`;
+};
+
+const regular = () => `
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="${BLACK}"/>
+  ${art(1)}
+</svg>`;
+
+/**
+ * Maskable: full-bleed background, composition scaled to 0.78 and centred, so
+ * the art sits inside the 80% safe circle. Wordmark is dropped from the
+ * maskable variant only if it cannot fit — at 0.78 the band still lands well
+ * inside the circle, so it is kept (the brief requires BKH to remain).
+ */
+const maskable = () => `
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="${BLACK}"/>
+  ${art(0.78)}
+</svg>`;
+
+/** iOS home screen icons are square — iOS applies the mask itself. */
+const ios = () => `
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="${BLACK}"/>
+  ${art(0.88)}
 </svg>`;
 
 mkdirSync("public/icons", { recursive: true });
 
-for (const [name, size] of [
-  ["icon-192.png", 192],
-  ["icon-512.png", 512],
-  ["maskable-512.png", 512],
-  ["apple-touch-icon.png", 180],
-]) {
-  await sharp(Buffer.from(svg(512))).resize(size, size).png().toFile(`public/icons/${name}`);
+const jobs = [
+  ["icon-192.png", 192, regular],
+  ["icon-512.png", 512, regular],
+  ["apple-touch-icon.png", 180, ios],
+  ["maskable-512.png", 512, maskable],
+  ["maskable-192.png", 192, maskable],
+];
+
+for (const [name, size, fn] of jobs) {
+  await sharp(Buffer.from(fn(size))).resize(size, size).png().toFile(`public/icons/${name}`);
+  console.log(`  ${name} (${size}px)`);
 }
+
+// A 60px proof, so small-size legibility can actually be inspected.
+await sharp(Buffer.from(regular(512))).resize(60, 60).png().toFile("test-results/icon-60.png");
+await sharp(Buffer.from(regular(512))).resize(120, 120).png().toFile("test-results/icon-120.png");
 console.log("icons generated");

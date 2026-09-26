@@ -133,6 +133,87 @@ describe("computeSeasonDiscipline", () => {
   });
 });
 
+describe("warningsUntilSuspension", () => {
+  // Regression guard for the Home-screen defect: a player with 5 season
+  // warnings who already served a suspension was labelled "one warning from
+  // suspension" next to the text "5 warnings this season". Both were true and
+  // together they were self-contradictory. The engine must expose the number
+  // of warnings still counting toward the NEXT suspension.
+  it("equals the season total when no suspension has been served", () => {
+    const res = computeSeasonDiscipline(
+      [yellow("fogis:1", "A", 1, "2026-04-01"), yellow("fogis:1", "A", 2, "2026-04-10")],
+      RULE,
+      ["2026-04-01", "2026-04-10"],
+      { matchId: 3, date: "2026-04-20" },
+    );
+    expect(res[0].warningCount).toBe(2);
+    expect(res[0].warningsUntilSuspension).toBe(2);
+    expect(res[0].status).toBe("at_risk");
+  });
+
+  it("excludes warnings consumed by a served suspension", () => {
+    // 3 warnings reach the threshold, one suspension is served on 04-27, then
+    // 2 more warnings. Season total is 5 but only 2 count toward the next one.
+    const res = computeSeasonDiscipline(
+      [
+        yellow("fogis:1", "A", 1, "2026-04-01"),
+        yellow("fogis:1", "A", 2, "2026-04-10"),
+        yellow("fogis:1", "A", 3, "2026-04-20"),
+        yellow("fogis:1", "A", 5, "2026-05-10"),
+        yellow("fogis:1", "A", 6, "2026-05-20"),
+      ],
+      RULE,
+      ["2026-04-01", "2026-04-10", "2026-04-20", "2026-04-27", "2026-05-10", "2026-05-20"],
+      { matchId: 7, date: "2026-05-27" },
+    );
+    expect(res[0].warningCount).toBe(5);
+    expect(res[0].warningsUntilSuspension).toBe(2);
+    // Correctly one warning short — for the NEXT suspension.
+    expect(res[0].status).toBe("at_risk");
+  });
+
+  it("keeps at_risk exclusive to exactly one warning short, after serving", () => {
+    // Serves a suspension, then collects only ONE further warning. The player
+    // is 2 short of the next suspension, so `at_risk` would overstate the
+    // danger. `at_risk` is reserved for warningsUntilSuspension === threshold-1;
+    // consumers must read warningsUntilSuspension to express anything finer.
+    const res = computeSeasonDiscipline(
+      [
+        yellow("fogis:1", "A", 1, "2026-04-01"),
+        yellow("fogis:1", "A", 2, "2026-04-10"),
+        yellow("fogis:1", "A", 3, "2026-04-20"),
+        yellow("fogis:1", "A", 5, "2026-05-10"),
+      ],
+      RULE,
+      ["2026-04-01", "2026-04-10", "2026-04-20", "2026-04-27", "2026-05-10"],
+      { matchId: 7, date: "2026-05-27" },
+    );
+    expect(res[0].warningCount).toBe(4);
+    expect(res[0].warningsUntilSuspension).toBe(1);
+    // Status reflects that this suspension has been served; the pending
+    // distance (1 of 2) is what the UI must render.
+    expect(res[0].status).toBe("served");
+  });
+
+  it("marks suspended_next when the pending count reaches the threshold", () => {
+    const res = computeSeasonDiscipline(
+      [
+        yellow("fogis:1", "A", 1, "2026-04-01"),
+        yellow("fogis:1", "A", 2, "2026-04-10"),
+        yellow("fogis:1", "A", 3, "2026-04-20"),
+        yellow("fogis:1", "A", 5, "2026-05-10"),
+        yellow("fogis:1", "A", 6, "2026-05-20"),
+        yellow("fogis:1", "A", 7, "2026-05-30"),
+      ],
+      RULE,
+      ["2026-04-01", "2026-04-10", "2026-04-20", "2026-04-27", "2026-05-10", "2026-05-20", "2026-05-30"],
+      { matchId: 8, date: "2026-06-06" },
+    );
+    expect(res[0].warningsUntilSuspension).toBe(3);
+    expect(res[0].status).toBe("suspended_next");
+  });
+});
+
 describe("buildLedger", () => {
   it("maps event names to canonical ids via the resolver", () => {
     const events = buildLedger(

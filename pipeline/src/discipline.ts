@@ -30,7 +30,8 @@ export interface NextMatchInfo {
 
 export type DisciplineStatus =
   | "none"
-  | "at_risk" // threshold - 1 warnings
+  /** Exactly one warning short of a suspension (warningsUntilSuspension === threshold - 1). */
+  | "at_risk"
   | "suspended_next" // threshold reached, suspension not yet served
   | "served" // suspension already served
   | "red_suspended" // red card → suspension (serving window unknown)
@@ -40,6 +41,17 @@ export interface PlayerDiscipline {
   playerId: string;
   playerName: string;
   warningCount: number;
+  /**
+   * Warnings that still count toward the NEXT suspension, i.e. those not
+   * already consumed by a served suspension. Equals `warningCount` when no
+   * suspension has been served.
+   *
+   * This is the number the UI must use: a player with 5 season warnings who
+   * served a suspension 2 matches ago is NOT "one warning from suspension"
+   * because the earlier 3 no longer count. Showing the season total next to a
+   * fixed "one warning away" label is self-contradictory.
+   */
+  warningsUntilSuspension: number;
   redCards: number;
   status: DisciplineStatus;
   /** Warnings counting toward the next threshold (chronological). */
@@ -87,6 +99,8 @@ export function computeSeasonDiscipline(
     const relevant = [...distinctMatches.values()].sort((a, b) => a.matchDate.localeCompare(b.matchDate));
 
     const warningCount = relevant.length;
+    // Warnings still counting toward the next suspension.
+    let pending = warningCount;
     let status: DisciplineStatus = "none";
     let servedAt: string | undefined;
 
@@ -109,9 +123,10 @@ export function computeSeasonDiscipline(
           servedAt = finishedAfter[0];
           // Warnings after the served suspension count toward the NEXT threshold.
           const afterServed = relevant.filter((w) => w.matchDate > servedAt!);
-          if (afterServed.length >= rule.threshold) {
+          pending = afterServed.length;
+          if (pending >= rule.threshold) {
             status = "suspended_next";
-          } else if (afterServed.length === rule.threshold - 1) {
+          } else if (pending === rule.threshold - 1) {
             status = "at_risk";
           }
         } else {
@@ -132,6 +147,7 @@ export function computeSeasonDiscipline(
       playerId,
       playerName: name,
       warningCount,
+      warningsUntilSuspension: pending,
       redCards: reds.length,
       status,
       relevantWarnings: relevant.map((w) => ({ matchId: w.matchId, date: w.matchDate })),

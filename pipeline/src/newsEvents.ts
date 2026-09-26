@@ -45,6 +45,10 @@ export function buildNewsEvents(items: NewsItem[]): NewsEvent[] {
     const sorted = [...list].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
     const lead = sorted[0];
     const summary = pickSummary(sorted);
+    // The lead article's image represents the event; fall back to any source
+    // that has one so a story never loses its thumbnail just because the
+    // newest article happened to have no image.
+    const imageUrl = lead.imageUrl ?? sorted.find((s) => s.imageUrl)?.imageUrl;
     events.push({
       id: `event-${lead.id}`,
       title: lead.title,
@@ -52,6 +56,13 @@ export function buildNewsEvents(items: NewsItem[]): NewsEvent[] {
       publishedAt: lead.publishedAt,
       latestPublishedAt: lead.publishedAt,
       category: lead.category,
+      ...(imageUrl ? { imageUrl } : {}),
+      // The lead article's image represents the event; fall back to any
+      // source that has one so a story never loses its thumbnail because the
+      // newest article happens to have no image.
+      ...(lead.imageUrl ?? sorted.find((s) => s.imageUrl)?.imageUrl
+        ? { imageUrl: lead.imageUrl ?? sorted.find((s) => s.imageUrl)?.imageUrl }
+        : {}),
       sources: sorted.map((s) => ({
         publisher: s.publisher,
         url: s.url,
