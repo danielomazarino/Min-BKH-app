@@ -5,6 +5,9 @@
  *  - TAP an icon to select a destination. This is the deterministic path and
  *    is always available.
  *  - SWIPE horizontally ON THE BAR to move one destination left or right.
+ *    The bar does NOT move with the finger: like the iOS WhatsApp tab bar it
+ *    stays pinned in place, and the swipe only decides WHICH destination
+ *    becomes active. Only the pressed/highlight state changes mid-gesture.
  *    The gesture is bound to the bar element itself, so a swipe that starts
  *    in the content area can never change the primary section.
  *  - An ambiguous gesture does nothing. The axis is only decided after
@@ -73,8 +76,10 @@ export function FloatingTabBar({
   // `live` gates the window listeners: they are always attached, but do
   // nothing until a gesture actually starts on the bar.
   const drag = useRef({ live: false, startX: 0, startY: 0, dx: 0, axis: "none" as "none" | "x" | "y" });
-  const [offset, setOffset] = useState(0);
-  const [dragging, setDragging] = useState(false);
+  // `armed` records that a horizontal gesture was recognised, purely so the
+  // CSS can suppress the tap highlight. The bar NEVER moves with the finger:
+  // see the interaction-model note in the file header.
+  const [armed, setArmed] = useState(false);
 
   // An unknown route has no index, and no icon is marked active.
   const index = active ? DESTINATIONS.findIndex((d) => d.path === active.path) : -1;
@@ -107,15 +112,15 @@ export function FloatingTabBar({
       if (Math.abs(dx) < AXIS_GUARD && Math.abs(dy) < AXIS_GUARD) return;
       // A mostly-vertical drag is not ours: release it to the page.
       d.axis = Math.abs(dx) > Math.abs(dy) * 1.4 ? "x" : "y";
-      if (d.axis === "x") setDragging(true);
+      if (d.axis === "x") setArmed(true);
       else d.live = false;
     }
     if (d.axis !== "x") return;
+    // Track distance only. The bar deliberately does NOT translate with the
+    // finger — that is what made it feel draggable rather than like the iOS
+    // WhatsApp tab bar, which stays pinned while the same swipe steps through
+    // its tabs.
     d.dx = e.clientX - d.startX;
-    // Rubber-band past the ends so the bar feels bounded rather than broken.
-    const atStart = current === 0 && d.dx > 0;
-    const atEnd = current === DESTINATIONS.length - 1 && d.dx < 0;
-    setOffset(atStart || atEnd ? d.dx * 0.22 : d.dx);
   };
 
   const endDrag = (commitIt: boolean) => {
@@ -131,8 +136,7 @@ export function FloatingTabBar({
     }
     d.live = false;
     d.axis = "none";
-    setOffset(0);
-    setDragging(false);
+    setArmed(false);
   };
 
   /**
@@ -173,8 +177,7 @@ export function FloatingTabBar({
       data-testid="tabbar"
       onPointerDown={onPointerDown}
       onDragStart={(e) => e.preventDefault()}
-      style={offset ? { transform: `translateX(${offset}px)` } : undefined}
-      data-dragging={dragging || undefined}
+      data-dragging={armed || undefined}
     >
       <ul className="fabnav-list">
         {DESTINATIONS.map((d) => {

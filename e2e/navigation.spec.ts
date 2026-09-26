@@ -187,6 +187,33 @@ test.describe("Swipe on the navigation bar", () => {
     expect(drags, "a native drag started on the navigation bar").toBe(0);
   });
 
+  test("the bar stays pinned while swiping — it does not drag with the finger", async ({ page }) => {
+    // The interaction is the iOS WhatsApp one: the bar is FIXED on screen and
+    // the swipe only changes which destination is active. A bar that follows
+    // the pointer reads as a draggable element and is the wrong model here.
+    await page.goto("/#/nyheter");
+    await ready(page);
+    const before = await barBox(page);
+
+    const y = before.y + before.height / 2;
+    const sx = before.x + before.width * 0.85;
+    await page.mouse.move(sx, y);
+    await page.mouse.down();
+    for (let i = 1; i <= 8; i++) {
+      await page.mouse.move(sx - before.width * 0.09 * i, y);
+      // Assert DURING the gesture, while the pointer is still down.
+      const mid = await barBox(page);
+      expect(Math.abs(mid.x - before.x), "the bar moved horizontally mid-swipe").toBeLessThanOrEqual(1);
+    }
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+
+    const after = await barBox(page);
+    expect(Math.abs(after.x - before.x), "the bar did not return to its resting position").toBeLessThanOrEqual(1);
+    // ...and the swipe still navigated.
+    await expect(page).toHaveURL(/\u0023\/matcher$/);
+  });
+
   test("a small drag on the bar is treated as a tap, not a swipe", async ({ page }) => {
     // A 6px drag is below AXIS_GUARD, so no axis is ever decided and no swipe
     // commits. It must therefore behave exactly like a plain tap: start on

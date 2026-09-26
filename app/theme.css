@@ -299,10 +299,12 @@ main {
   }
 }
 
-/* While a drag is in flight the bar tracks the finger 1:1, so the gesture
-   feels physical. No transition, so it never lags behind the pointer. */
-.fabnav[data-dragging] {
-  transition: none;
+/* The bar is PINNED: it never tracks the finger. A horizontal swipe over it
+   only decides which destination becomes active, exactly like the iOS
+   WhatsApp tab bar. The only mid-gesture cue is the press highlight, so the
+   transition is kept (no `transition: none`) and nothing is transformed. */
+.fabnav[data-dragging] .fabnav-link {
+  opacity: 0.75;
 }
 
 .fabnav-list {
