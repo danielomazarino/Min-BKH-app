@@ -238,7 +238,75 @@ export interface FormerPlayer {
   contract: ContractInfo | null;
   latestEvent: FormerPlayerCareerEvent | null;
   retrievedAt?: string;
+  /**
+   * Researched identity / current status with full provenance.
+   * Optional so the feature is additive: an absent value means "never
+   * researched", which is distinct from "researched and unknown".
+   */
+  research?: FormerPlayerResearch;
 }
+
+/**
+ * A researched fact: the value AND why we believe it.
+ *
+ * `value: null` with `status: "unknown"` is a first-class, successful result
+ * meaning "researched, no reliable evidence found". It must never be
+ * collapsed into a bare null, and a value is never stored without its
+ * source, verification date and confidence.
+ */
+export interface ResearchedFact {
+  value: string | null;
+  status: "verified" | "reported" | "conflicting" | "unknown";
+  confidence: "high" | "medium" | "low";
+  sourceUrl?: string;
+  sourceName?: string;
+  /** When the underlying fact was published, if the source says so. */
+  sourcePublishedAt?: string;
+  /** When WE checked. A verified value is only true as of this date. */
+  verifiedAt: string;
+  /** Short note on what the evidence does and does not establish. */
+  note?: string;
+}
+
+/**
+ * Current football status. Deliberately does NOT include a "no club found
+ * therefore free agent" shortcut: absence of a club is not evidence of a
+ * status, so ambiguity resolves to UNKNOWN rather than FREE_AGENT.
+ */
+export type PlayerActivityStatus = "ACTIVE_AT_CLUB" | "FREE_AGENT" | "RETIRED" | "UNKNOWN";
+
+/** One piece of grounded evidence, retained so claims stay auditable. */
+export interface ResearchSource {
+  url: string;
+  title?: string;
+  publisher?: string;
+  retrievedAt: string;
+  /** True when the model cited this as grounding for a stored value. */
+  supportsClaim: boolean;
+}
+
+export interface FormerPlayerResearch {
+  researchId: string;
+  researchModel: string;
+  researchedAt: string;
+  grounded: boolean;
+
+  /** Identity resolution: is this the same person as our registry entry? */
+  identity: ResearchedFact & { aliases?: string[] };
+  /** Did this person actually play for BK Häcken, and for which team? */
+  bkhackenRelationship: ResearchedFact & { team?: "Herr" | "Dam" | "Okänd"; period?: string };
+  activityStatus: ResearchedFact & { value?: PlayerActivityStatus };
+  currentClub: ResearchedFact;
+  currentLeague: ResearchedFact;
+  currentCountry: ResearchedFact;
+  /** Contract expiry. UNKNOWN unless explicitly published. Never estimated. */
+  contractExpiry: ResearchedFact;
+  contractNature: ResearchedFact & { value?: "signing" | "extension" | "loan" | "unknown" };
+  /** Free-text career moves, each already carrying its own source. */
+  careerNotes: ResearchedFact;
+  sources: ResearchSource[];
+}
+
 
 export interface FormerPlayersData extends Freshness {
   players: FormerPlayer[];
