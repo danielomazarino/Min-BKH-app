@@ -1113,3 +1113,53 @@ only version that can answer a name the app has never seen.
 
 **Rule:** do not reintroduce a curated player list. If enrichment dies, the
 search must degrade to "search returned nothing" — never to a stale list.
+
+## L-009  A shorthand in a later rule discards a longhand set in an earlier one
+
+**Found 2026-09-26, in production, at a width no test covers.**
+
+`@media (min-width: 700px) { .sheet { margin: 0 auto; } }` reset
+`margin-bottom` to `0`, discarding the `margin-bottom: var(--chrome-bottom)`
+that keeps the sheet clear of the floating nav. Measured on the deployed
+site at 1222px: sheet bottom `y=1122`, nav top `y=1048` — the sheet sat
+**74px under the nav** and its last rows were covered.
+
+At 390px the clearance was the correct 16px, so the entire phone-sized e2e
+suite passed, CI passed, and the deploy was green.
+
+**Rules:**
+- After any `margin`/`padding` shorthand, re-declare any longhand that
+  matters. `margin: 0 auto` means "centre it", not "reset everything".
+- **A suite pinned to one viewport cannot see layout bugs at other widths.**
+  `playwright.config.ts` fixes `viewport: 390x844`, so 700px+ code was
+  effectively untested. `e2e/layout.spec.ts` now loops VIEWPORTS
+  (320/390/430/1024) and asserts numeric `nav.top - sheet.bottom >= 0`.
+- **Verify the artifact you ship, in the artifact's real conditions.** The
+  built CSS contained the correct rule; the bug was a *different* rule
+  winning the cascade. Reading the source was not enough — I had to query
+  which rules actually matched in the running page.
+- **Playwright serves `dist`, not source.** After editing CSS, run
+  `npm run build` before running Playwright, or you debug a stale bundle.
+  This cost one confusing "the fix didn't work" cycle.
+
+## L-010  A green CI run is not proof the flaky thing is fixed
+
+`a11y.spec.ts › open sheets are scanned too` failed in CI on three
+consecutive commits with `color-contrast: 13`, then `color-contrast: 18` on
+the retry, while passing 11/11 locally. A varying node count is a race, not
+a fixed styling defect.
+
+Ruled out by measurement, not assumption: the nav labels (new surface
+measures 5.84–6.52:1 against real content; the *old* surface was worse at
+2.02:1, so the change improved it), animation timing (0–900ms, zero running
+animations, identical result), the sheet content in isolation and in
+sequence, and config differences. The next run passed.
+
+**Rules:**
+- A count that changes between attempts is evidence of a race. Fix the
+  observability first: make the assertion name the element, the measured
+  ratio and the resolved colours, so the next failure is a diagnosis.
+- When a test is red somewhere you cannot reproduce, **record what you ruled
+  out**. Otherwise the next session re-investigates from zero.
+- Do not "fix" a test you cannot reproduce. Change what is observable, and
+  say plainly that the cause is unknown.
