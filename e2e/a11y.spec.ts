@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import type { AxeResults } from "axe-core";
 
 /** All five primary destinations, plus the not-found surface. */
 const PAGES = [
@@ -26,6 +27,39 @@ test.describe("Accessibility (axe-core)", () => {
     });
   }
 
+  /**
+   * Render a violation as something a human can act on.
+   *
+   * A bare `["color-contrast: 13"]` says a count and nothing else — and this
+   * assertion has failed only in CI, with a DIFFERENT count on each attempt
+   * (13, then 18), which is the signature of a scan that races the page
+   * rather than a fixed styling defect. Reporting the offending selectors,
+   * the measured ratio and the resolved colours turns the next failure into
+   * a diagnosis instead of a mystery.
+   */
+  function describe(violations: AxeResults["violations"]): string[] {
+    return violations
+      .filter((v) => ["critical", "serious"].includes(v.impact ?? ""))
+      .map((v) => {
+        const nodes = v.nodes.map((n) => {
+          const d = (n.any[0]?.data ?? {}) as {
+            contrastRatio?: number;
+            fgColor?: string;
+            bgColor?: string;
+            fontSize?: string;
+            expectedContrastRatio?: string;
+          };
+          return [
+            `      target=${JSON.stringify(n.target)}`,
+            `      html=${n.html.replace(/\s+/g, " ").slice(0, 140)}`,
+            `      ratio=${d.contrastRatio} need=${d.expectedContrastRatio} ` +
+              `fg=${d.fgColor} bg=${d.bgColor} size=${d.fontSize}`,
+          ].join("\n");
+        });
+        return [`${v.id} (${v.impact}): ${v.nodes.length} nodes`, ...nodes].join("\n");
+      });
+  }
+
   test("open sheets are scanned too", async ({ page }) => {
     // The previous suite never scanned a dialog, which is where the focus-trap
     // and backdrop bugs lived.
@@ -37,16 +71,14 @@ test.describe("Accessibility (axe-core)", () => {
       await result.click();
       await expect(page.getByTestId("sheet")).toBeVisible();
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
-      const serious = results.violations.filter((v) => ["critical", "serious"].includes(v.impact ?? ""));
-      expect(serious.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
+      expect(describe(results.violations).join("\n")).toEqual("");
       await page.keyboard.press("Escape");
     }
 
     await page.getByTestId("open-settings").click();
     await expect(page.getByTestId("settings-sheet")).toBeVisible();
     const s = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
-    const bad = s.violations.filter((v) => ["critical", "serious"].includes(v.impact ?? ""));
-    expect(bad.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([]);
+    expect(describe(s.violations).join("\n")).toEqual("");
   });
 
   test("status is never conveyed by colour alone", async ({ page }) => {
