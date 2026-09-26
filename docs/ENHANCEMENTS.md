@@ -114,7 +114,59 @@ club. A supporter reading the Brief is misinformed.
 
 ---
 
-### E-004 · Discipline ledger must be scoped to current squad membership
+### E-004 · Swipe-down to dismiss does not work on a real iPhone
+`OPEN — bug (reported on device)`
+
+**Reported 2026-09-26 on an iPhone.** Dragging a sheet downwards does nothing
+anywhere in the app. The match sheet (last game) and the player detail sheet can
+only be closed by pressing the X. This affects every `Sheet` in the app, because
+they all share one component.
+
+**Current cause.** `app/shared/Sheet.tsx` implements drag-to-dismiss with
+pointer events bound to the grabber only:
+
+```ts
+<div className="sheet-grab" onPointerDown={onGrabDown} onPointerMove={...} onPointerUp={...} />
+```
+
+Two things make it effectively dead on touch:
+
+1. **The drag target is 22px tall** (`.sheet-grab { height: 22px }`) with a 4px
+   visible bar. Aiming at a 4px line on a 390px-wide sheet is not a gesture
+   anyone performs.
+2. **`.sheet` sets `touch-action: pan-y` while the body scrolls.** Safari
+   treats a downward drag on the sheet body as page scroll intent and can claim
+   the gesture before the element's pointer handlers see a usable move. Only the
+   grabber has `touch-action: none`, so only the grabber *can* work — and it is
+   the one place nobody tries.
+
+There is also no regression test: nothing in `e2e/` or `app/` references
+`sheet-grab`, so the gesture has never been exercised.
+
+**Note.** The X, the backdrop, Escape and the iOS back gesture all still work, so
+nothing is *unreachable* — this is a lost affordance, not a lockout. The
+component's own contract already states the drag must never be the only way out,
+so the fix must keep it additive.
+
+**Fix direction (smallest first)**
+1. Enlarge the grabber to a comfortable touch target (~44px) and widen the
+   visual bar, so the affordance is discoverable.
+2. Accept the drag from the sheet header as well as the grabber, which is where
+   a thumb naturally lands.
+3. Only if that is still unreliable on device: add a velocity check alongside the
+   96px distance threshold, so a fast flick closes even if the finger barely
+   moved.
+
+**Acceptance**
+- On a real iPhone, dragging the sheet down or flicking it down closes it, for
+  the match sheet, the player sheet and the settings sheet.
+- Dragging **up** does not close it and does not break body scrolling.
+- The X, backdrop, Escape and back-gesture paths keep working unchanged.
+- A test covers the drag, so this cannot silently regress again.
+
+---
+
+### E-005 · Discipline ledger must be scoped to current squad membership
 `OPEN — pipeline/domain`
 
 Current suspension-risk calculations must cross-check **current men's squad
@@ -139,7 +191,7 @@ is the mechanism that prevents it recurring for every future transfer.
 
 ---
 
-### E-005 · Former-player search must not depend on the stale local registry
+### E-006 · Former-player search must not depend on the stale local registry
 `OPEN — architecture/data`
 
 The existing local former-player register (~28–30 entries) must **not** define
@@ -168,7 +220,7 @@ the problem this item addresses.
 
 ---
 
-### E-006 · Former-player identity and status must be time-aware
+### E-007 · Former-player identity and status must be time-aware
 `OPEN — data model`
 
 Distinguish:
@@ -187,7 +239,7 @@ Häcken history, and the UI can state the current relationship honestly.
 
 ---
 
-### E-007 · Former-player enrichment must discover identifiers
+### E-008 · Former-player enrichment must discover identifiers
 `OPEN — data pipeline`
 
 Do not require an external identifier to already exist in a local registry.
@@ -212,7 +264,7 @@ manual prerequisite.
 
 ---
 
-### E-008 · Former-player facts require provenance
+### E-009 · Former-player facts require provenance
 `OPEN — data quality`
 
 Current club, statistics, contract and transfer information must retain
@@ -304,11 +356,16 @@ source URL, publisher, title and date preserved.
   verbatim on the Brief from `disciplineRule` in `app.json`
   (`threshold` + `ruleSource`), so the text lives in the pipeline, not the UI.
 - `registry.json` has 31 entries and **no** external identifiers at all. Any
-  work on E-005/E-007 starts from that fact.
+  work on E-006/E-008 starts from that fact.
+- All detail surfaces in the app are the same `app/shared/Sheet.tsx`. Fixing
+  E-4 once fixes the match sheet, the player sheet, the settings sheet and any
+  future sheet — but verify on a real iPhone, not just in an emulator, because
+  the original miss was exactly that.
 - **Suggested order.** E-002 first — the grouped layout is what E-001 and E-003
   both slot into, so fixing the cap and the departed-player handling can happen
-  in one pass through the same component. E-004 follows once E-003 is decided.
-  B-002 is independent and safe whenever.
+  in one pass through the same component. E-005 follows once E-003 is decided.
+  E-004 is independent and is the only bug a supporter can hit right now. B-002
+  is independent and safe whenever.
 - After changing anything under `app/` or `pipeline/`, verify on the **live
   GitHub Pages site in a fresh browser context**. The PWA service worker
   (`registerType: "autoUpdate"`) will serve the previous release and make a
