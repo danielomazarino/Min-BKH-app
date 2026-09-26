@@ -1997,7 +1997,13 @@ details.disc .disc-body {
   }
   .sheet {
     max-width: 560px;
+    /* `margin: 0 auto` is a SHORTHAND, so it resets margin-bottom back to 0
+       and silently discards the `margin-bottom: var(--chrome-bottom)` that
+       keeps the sheet clear of the floating nav. That shipped broken: the
+       sheet sat 74px UNDER the nav at every width >= 700px. Only the
+       horizontal auto margins are wanted here. */
     margin: 0 auto;
+    margin-bottom: var(--chrome-bottom);
   }
   .sheet-backdrop {
     justify-content: center;

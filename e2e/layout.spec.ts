@@ -239,6 +239,49 @@ test.describe("Layout", () => {
     expect(typeof padding).toBe("string");
     expect(declared).toBe(true);
   });
+
+  /**
+   * REGRESSION: the sheet must clear the floating nav at EVERY width.
+   *
+   * This was broken at >= 700px only, so the 390px iPhone suite could never
+   * see it. `@media (min-width: 700px) { .sheet { margin: 0 auto; } }` is a
+   * SHORTHAND and therefore reset `margin-bottom` to 0, discarding the
+   * `margin-bottom: var(--chrome-bottom)` that insets the sheet. Measured on
+   * the deployed site at 1222px: the sheet bottom sat 74px UNDER the nav
+   * top, i.e. the last rows of the sheet were covered.
+   *
+   * The assertion is numeric rather than visual on purpose: a shorthand
+   * silently reverting one longhand is exactly the kind of defect that
+   * survives a screenshot review.
+   */
+  for (const vp of VIEWPORTS) {
+    test(`the open sheet clears the floating nav at ${vp.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto("/#/nyheter");
+      await expect(page.getByTestId("tabbar")).toBeVisible();
+      await page.getByTestId("open-settings").click();
+      await expect(page.getByTestId("settings-sheet")).toBeVisible();
+      // Let sheet-in finish so the geometry is the resting state.
+      await page.waitForTimeout(500);
+
+      const geo = await page.evaluate(() => {
+        const sheet = document.querySelector('[data-testid="settings-sheet"]')!;
+        const nav = document.querySelector("[data-testid=tabbar]")!;
+        const s = sheet.getBoundingClientRect();
+        const n = nav.getBoundingClientRect();
+        return {
+          clearance: Math.round(n.top - s.bottom),
+          marginBottom: getComputedStyle(sheet).marginBottom,
+        };
+      });
+
+      expect(geo.marginBottom, `margin-bottom was reset at ${vp.width}px`).not.toBe("0px");
+      expect(
+        geo.clearance,
+        `sheet/nav overlap at ${vp.width}px (margin-bottom=${geo.marginBottom})`,
+      ).toBeGreaterThanOrEqual(0);
+    });
+  }
 });
 
 test.describe("Settings", () => {
