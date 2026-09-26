@@ -2,18 +2,6 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { z } from "zod";
 
-const Verification = z.enum(["confirmed", "reported", "unverified", "unknown"]);
-
-const Provenance = z.object({
-  sourceName: z.string(),
-  sourceUrl: z.string().optional(),
-  publishedAt: z.string().optional(),
-  retrievedAt: z.string(),
-  discoveredVia: z.string(),
-  verificationStatus: Verification,
-  confidence: z.number().optional(),
-});
-
 const MatchRef = z.object({
   id: z.number(),
   competition: z.enum(["allsvenskan", "svenska-cupen", "europa", "other"]),
@@ -165,7 +153,6 @@ const AppData = z.object({
   warnings: WarningsReport.nullable(),
   news: z.array(NewsItem),
   newsEvents: z.array(NewsEvent),
-  formerPlayers: z.array(z.unknown()),
   squadStats: z
     .array(
       z.object({
@@ -205,44 +192,6 @@ const AppData = z.object({
   cardMatchesInspected: z.number().optional(),
 });
 
-const FormerPlayersData = z.object({
-  generatedAt: z.string(),
-  sourceStatus: z.record(z.string()),
-  players: z.array(
-    z.object({
-      id: z.string(),
-      name: z.string(),
-      aliases: z.array(z.string()).optional(),
-      apiFootballId: z.number().optional(),
-      currentClub: z.string().nullable(),
-      currentLeague: z.string().nullable(),
-      currentCountry: z.string().nullable(),
-      clubVerified: z.boolean(),
-      stats: z
-        .object({
-          competition: z.string().optional(),
-          season: z.string().optional(),
-          appearances: z.number().nullable(),
-          starts: z.number().nullable(),
-          minutes: z.number().nullable(),
-          goals: z.number().nullable(),
-          assists: z.number().nullable(),
-          yellowCards: z.number().nullable(),
-          redCards: z.number().nullable(),
-        })
-        .nullable(),
-      contract: Provenance.extend({ contractStatus: z.string(), contractExpiry: z.string().optional() }).nullable(),
-      latestEvent: Provenance.extend({
-        playerId: z.string(),
-        playerName: z.string(),
-        topic: z.string(),
-        claim: z.string(),
-      }).nullable(),
-      retrievedAt: z.string().optional(),
-    }),
-  ),
-});
-
 function validate(file: string, schema: z.ZodTypeAny): boolean {
   const path = resolve(import.meta.dirname, "../../public/data", file);
   if (!existsSync(path)) {
@@ -266,7 +215,6 @@ function validate(file: string, schema: z.ZodTypeAny): boolean {
 }
 
 const ok1 = validate("app.json", AppData);
-const ok2 = validate("former-players.json", FormerPlayersData);
 
 // Guard: no API keys must ever leak into generated data.
 const raw = existsSync(resolve(import.meta.dirname, "../../public/data/app.json"))
@@ -278,4 +226,4 @@ if (keyLeak) {
   process.exit(1);
 }
 
-process.exit(ok1 && ok2 ? 0 : 1);
+process.exit(ok1 ? 0 : 1);

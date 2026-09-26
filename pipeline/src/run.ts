@@ -3,9 +3,6 @@ import { resolve } from "node:path";
 import type {
   AppData,
   Freshness,
-  FormerPlayer,
-  FormerPlayerCareerEvent,
-  FormerPlayersData,
   FootballSourceMeta,
   LeagueTableRow,
   MatchDetail,
@@ -19,8 +16,6 @@ import { classifyNews, menRelevantNews } from "./classify";
 import { dedupeNews } from "./dedupe";
 import { buildNewsEvents, publisherRole } from "./newsEvents";
 import type { WarningEvent } from "./warnings";
-import { loadRegistry } from "./registry";
-import { firecrawlSearch, playerQuery } from "./firecrawl";
 import { readLastKnownGood } from "./stale";
 import { prefilterNews, DEFAULT_WINDOW_DAYS } from "./newsPrefilter";
 import { fetchArticleTexts } from "./articleText";
@@ -31,11 +26,6 @@ import {
 } from "./gemini";
 import { pickNextAndLast } from "./normalize";
 import { normalizeSearch } from "./search";
-import {
-  ALLSVENSKAN_LEAGUE_ID,
-  API_FOOTBALL_MAX_SEASON,
-  fetchPlayerStatistics,
-} from "./apifootball";
 import {
   BKH_ABBRV,
   CURRENT_SEASON,
@@ -341,75 +331,6 @@ async function collectCurrentFootballData(): Promise<FootballData> {
   };
 }
 
-// ---------- former players ----------
-
-async function collectFormerPlayers(currentSquadNames: string[]): Promise<FormerPlayer[]> {
-  const registry = loadRegistry();
-  const out: FormerPlayer[] = [];
-
-  // B5 registry correction: a registry entry whose name matches a player in
-  // the CURRENT SportoMedia squad is not a former player — exclude them
-  // (e.g. Julius Lindberg, Filip Helander returned to the club). Uses the
-  // same ingestion-time matcher as card events so "Mikkel Rygaard" (registry)
-  // matches "Mikkel Rygaard Jensen" (squad).
-  for (const entry of registry) {
-    const isCurrent = currentSquadNames.some(
-      (squadName) => matchesSquadPlayer(entry.name, squadName) ||
-        (entry.aliases ?? []).some((a) => matchesSquadPlayer(a, squadName)),
-    );
-    if (isCurrent) continue;
-    const base: FormerPlayer = {
-      id: entry.id,
-      name: entry.name,
-      aliases: entry.aliases,
-      apiFootballId: entry.apiFootballId,
-      currentClub: null,
-      currentLeague: null,
-      currentCountry: null,
-      clubVerified: false,
-      stats: null,
-      contract: null,
-      latestEvent: null,
-    };
-
-    // Structured stats via API-Football when we know the id and have a key.
-    // API-Football Free is HISTORICAL ONLY (seasons 2022-2024, team ID 367).
-    if (entry.apiFootballId && process.env.API_FOOTBALL_KEY && STATUS.apiFootball === "ok") {
-      const res = await fetchPlayerStatistics(entry.apiFootballId, API_FOOTBALL_MAX_SEASON, ALLSVENSKAN_LEAGUE_ID);
-      if (res.status.ok && res.data) {
-        // Only fill what the API verifiably returns for a Häcken-connected league;
-        // former players mostly play abroad, so this stays conservative.
-      }
-    }
-
-    // Career news discovery via Firecrawl Keyless (only if it works; failure is silent).
-    const fc = await firecrawlSearch(playerQuery(entry.name), 3);
-    if (fc.status.ok && fc.results.length > 0) {
-      const first = fc.results[0];
-      const ev: FormerPlayerCareerEvent = {
-        playerId: entry.id,
-        playerName: entry.name,
-        topic: "other",
-        claim: first.description?.slice(0, 200) ?? first.title,
-        sourceName: new URL(first.url).hostname,
-        sourceUrl: first.url,
-        retrievedAt: generatedAt(),
-        discoveredVia: "firecrawl",
-        verificationStatus: "unverified",
-      };
-      base.latestEvent = ev;
-    }
-
-    out.push(base);
-  }
-  return out;
-}
-
-async function collectFormerPlayersData(currentSquadNames: string[]): Promise<FormerPlayersData> {
-  const players = await collectFormerPlayers(currentSquadNames);
-  return { ...freshness(), players };
-}
-
 // ---------- main ----------
 
 async function main() {
@@ -417,8 +338,6 @@ async function main() {
 
   const news = await collectNews();
   const foot = await collectCurrentFootballData();
-  const formerPlayers = await collectFormerPlayersData(foot.squadStats.map((p) => p.playerName));
-
   const { next, last, upcoming, recent } = pickNextAndLast(foot.matches);
 
   // Entity/relation-based news relevance (replaces generic keyword matching).
@@ -426,7 +345,6 @@ async function main() {
   // opponents. Sourced from bkhacken.se dam trupp (verified 2026-09-25).
   const known: KnownPersons = {
     currentPlayers: foot.squadStats.map((p) => p.playerName),
-    formerPlayers: formerPlayers.players.map((p) => p.name),
     womenPlayers: KNOWN_WOMEN_PLAYERS,
     womenContextTerms: [
       "damallsvenskan", "svenska cupen dam", "champions league dam", "europa cup dam",
@@ -529,25 +447,17 @@ async function main() {
     disciplineRule: foot.disciplineRule,
     news: relevantNews,
     newsEvents,
-    formerPlayers: [],
     squadStats: foot.squadStats,
     ...(foot.unavailableReason
       ? { currentDataUnavailable: { reason: foot.unavailableReason, checkedAt: generatedAt() } }
       : {}),
   };
 
-  const formerData: FormerPlayersData = {
-    ...formerPlayers,
-    players: formerPlayers.players,
-  };
-
   // Last-known-good protection: never overwrite valid data with empty data.
   const appEmpty = (d: AppData) =>
     !d.nextMatch && !d.lastResult && d.news.length === 0 && !d.lastMatchDetail;
-  const formerEmpty = (d: FormerPlayersData) => d.players.every((p) => !p.currentClub && !p.latestEvent && !p.contract);
 
   writeAppIfBetter(resolve(DATA_DIR, "app.json"), appData, appEmpty);
-  writeFormerIfBetter(resolve(DATA_DIR, "former-players.json"), formerData, formerEmpty, foot.squadStats.map((p) => p.playerName));
 
   console.log("Pipeline complete:", JSON.stringify(appData.freshness.sourceStatus));
 }
@@ -583,71 +493,11 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
     cardMatchesInspected: next.cardMatchesInspected || prev.cardMatchesInspected || 0,
     news: next.news.length ? next.news : prev.news,
     newsEvents: next.newsEvents.length ? next.newsEvents : (prev.newsEvents ?? []),
-    formerPlayers: [],
     squadStats: next.squadStats?.length ? next.squadStats : prev.squadStats,
     disciplineRule: next.disciplineRule ?? prev.disciplineRule,
     currentDataUnavailable: next.currentDataUnavailable ?? prev.currentDataUnavailable,
   };
   writeFileSync(path, JSON.stringify(merged, null, 2));
-}
-
-function writeFormerIfBetter(
-  path: string,
-  next: FormerPlayersData,
-  isEmpty: (d: FormerPlayersData) => boolean,
-  currentSquadNames: string[],
-): void {
-  // B5: players now in the current squad must never be resurrected from the
-  // last-known-good copy (e.g. Lindberg/Helander returned to Häcken).
-  const notCurrent = (p: FormerPlayer) =>
-    !currentSquadNames.some(
-      (s) => matchesSquadPlayer(p.name, s) || (p.aliases ?? []).some((a) => matchesSquadPlayer(a, s)),
-    );
-  const prev = readLastKnownGood<FormerPlayersData>(path);
-  if (!prev) {
-    writeFileSync(path, JSON.stringify(next, null, 2));
-    return;
-  }
-  if (isEmpty(next)) {
-    // Fresh enrichment is empty (e.g. Firecrawl 429), but the fresh LIST still
-    // reflects the current registry — new/removed registry entries must apply.
-    // Merge: keep prev's enriched fields for players still in the registry,
-    // add brand-new registry entries, drop players no longer in the registry.
-    const nextById = new Map(next.players.map((p) => [p.id, p]));
-    const merged: FormerPlayersData = {
-      generatedAt: next.generatedAt,
-      sourceStatus: next.sourceStatus,
-      players: [
-        ...prev.players
-          .filter(notCurrent)
-          .filter((p) => nextById.has(p.id))
-          .map((p) => {
-            const fresh = nextById.get(p.id)!;
-            return { ...p, aliases: fresh.aliases, name: fresh.name };
-          }),
-        ...next.players.filter((p) => !prev.players.some((o) => o.id === p.id)),
-      ],
-    };
-    writeFileSync(path, JSON.stringify(merged, null, 2));
-    return;
-  }
-  const prevById = new Map(prev.players.filter(notCurrent).map((p) => [p.id, p]));
-  const mergedPlayers = next.players.map((p) => {
-    const old = prevById.get(p.id);
-    if (!old) return p;
-    return {
-      ...p,
-      currentClub: p.currentClub ?? old.currentClub,
-      currentLeague: p.currentLeague ?? old.currentLeague,
-      currentCountry: p.currentCountry ?? old.currentCountry,
-      clubVerified: p.clubVerified || old.clubVerified,
-      stats: p.stats ?? old.stats,
-      contract: p.contract ?? old.contract,
-      latestEvent: p.latestEvent ?? old.latestEvent,
-      retrievedAt: p.retrievedAt ?? old.retrievedAt,
-    } satisfies FormerPlayer;
-  });
-  writeFileSync(path, JSON.stringify({ ...next, players: mergedPlayers }, null, 2));
 }
 
 main().catch((e) => {

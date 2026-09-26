@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildNewsEvents, publisherRole } from "./newsEvents";
-import { searchPlayers, normalizeSearch } from "./search";
-import type { NewsItem, FormerPlayer } from "./types";
+import type { NewsItem } from "./types";
 
 function news(overrides: Partial<NewsItem>): NewsItem {
   return {
@@ -12,21 +11,6 @@ function news(overrides: Partial<NewsItem>): NewsItem {
     publisher: "BK Häcken",
     category: "men",
     discoveredVia: "rss",
-    ...overrides,
-  };
-}
-
-function player(overrides: Partial<FormerPlayer>): FormerPlayer {
-  return {
-    id: "p1",
-    name: "Mikkel Rygaard",
-    currentClub: null,
-    currentLeague: null,
-    currentCountry: null,
-    clubVerified: false,
-    stats: null,
-    contract: null,
-    latestEvent: null,
     ...overrides,
   };
 }
@@ -91,71 +75,5 @@ describe("news events (one card per underlying story)", () => {
     const events = buildNewsEvents(items);
     expect(events[0].sources[0].role).toBe("secondary");
     expect(events[0].sources[0].discoveredVia).toBe("rss");
-  });
-});
-
-describe("former player search", () => {
-  const players = [
-    player({ id: "1", name: "Mikkel Rygaard", aliases: ["rygaard"] }),
-    player({ id: "2", name: "Samuel Gustafson", aliases: ["gustafson"] }),
-    player({ id: "3", name: "Mattias Bjärsmy", aliases: ["bjärsmy", "bjarsmy"] }),
-    player({ id: "4", name: "Jesper Karlström", aliases: ["karlström", "karlstrom"] }),
-  ];
-
-  it("finds by partial name", () => {
-    expect(searchPlayers(players, "ryg")).toHaveLength(1);
-    expect(searchPlayers(players, "Ryg")[0].name).toBe("Mikkel Rygaard");
-  });
-
-  it("is case-insensitive", () => {
-    expect(searchPlayers(players, "MIKKEL")).toHaveLength(1);
-  });
-
-  it("handles Swedish characters: bjärsmy matches bjarsmy", () => {
-    expect(searchPlayers(players, "bjarsmy")).toHaveLength(1);
-    expect(searchPlayers(players, "Bjärsmy")).toHaveLength(1);
-    expect(searchPlayers(players, "karlstrom")).toHaveLength(1);
-    expect(searchPlayers(players, "Karlström")).toHaveLength(1);
-  });
-
-  it("matches aliases", () => {
-    // "gustafson" matches Samuel Gustafson's name and Simon Gustafson's name.
-    expect(searchPlayers(players, "gustafson").map((p) => p.id)).toEqual(["2"]);
-    // Alias-only match: "rygaard" alias on player 1.
-    expect(searchPlayers(players, "rygaard")).toHaveLength(1);
-  });
-
-  it("resolves alias to same canonical player: David Marek → David Frölund", () => {
-    const frolund = player({
-      id: "david-frolund",
-      name: "David Frölund",
-      aliases: ["marek", "david marek", "frolund"],
-    });
-    const roster = [...players, frolund];
-    // Both names resolve to the same canonical player.
-    expect(searchPlayers(roster, "Frölund").map((p) => p.id)).toEqual(["david-frolund"]);
-    expect(searchPlayers(roster, "Marek").map((p) => p.id)).toEqual(["david-frolund"]);
-    expect(searchPlayers(roster, "david marek").map((p) => p.id)).toEqual(["david-frolund"]);
-    // Diacritic-insensitive: frolund matches Frölund.
-    expect(searchPlayers(roster, "frolund")).toHaveLength(1);
-  });
-
-  it("unknown person produces no fabricated result", () => {
-    expect(searchPlayers(players, "David Fredlund")).toHaveLength(0);
-    expect(searchPlayers(players, "Zlatan Ibrahimovic")).toHaveLength(0);
-  });
-
-  it("empty query returns all players", () => {
-    expect(searchPlayers(players, "")).toHaveLength(4);
-    expect(searchPlayers(players, "   ")).toHaveLength(4);
-  });
-
-  it("returns empty for no match", () => {
-    expect(searchPlayers(players, "zlatan")).toHaveLength(0);
-  });
-
-  it("normalizeSearch strips diacritics deterministically", () => {
-    expect(normalizeSearch("Bjärsmy")).toBe(normalizeSearch("bjarsmy"));
-    expect(normalizeSearch("Karlström")).toBe(normalizeSearch("karlstrom"));
   });
 });

@@ -35,7 +35,14 @@ void SECONDARY_SOURCES;
 /** Current squad names + well-known Häcken persons (normalized). */
 export interface KnownPersons {
   currentPlayers: string[];
-  formerPlayers: string[];
+  /**
+   * Known former players. Optional since 2026-09-26: the hand-curated
+   * registry was retired, and news relevance must NOT depend on a closed list
+   * of former players — an article about a former Häcken player we do not
+   * happen to know is still a Häcken article, and dropping the field keeps
+   * relevance working for every player rather than the 31 we remembered.
+   */
+  formerPlayers?: string[];
   staff?: string[];
   /** Known women's-team players — their presence marks an article as women's. */
   womenPlayers?: string[];
@@ -145,7 +152,10 @@ export function classifyRelevance(
   // 2) Explicit Häcken mention in relevant context.
   if (mentionsHäcken(title, summary)) {
     if (womenContext) return { relevance: "UNRELATED", category: "women", reason: "Häcken mention but women's context" };
-    const person = mentionsKnownPerson(title, summary, [...known.currentPlayers, ...known.formerPlayers]);
+    const person = mentionsKnownPerson(title, summary, [
+      ...known.currentPlayers,
+      ...(known.formerPlayers ?? []),
+    ]);
     if (person) {
       return {
         relevance: "CURRENT_HACKEN",
@@ -172,7 +182,10 @@ export function classifyRelevance(
   }
 
   // 3) Known Häcken person without explicit club mention (e.g. transfer story).
-  const person = mentionsKnownPerson(title, summary, [...known.currentPlayers, ...known.formerPlayers]);
+  const person = mentionsKnownPerson(title, summary, [
+    ...known.currentPlayers,
+    ...(known.formerPlayers ?? []),
+  ]);
   if (person) {
     const isCurrent = known.currentPlayers.some((c) => norm(c) === norm(person));
     return {

@@ -1,4 +1,4 @@
-import type { AppData, FormerPlayersData } from "./shared/types";
+import type { AppData } from "./shared/types";
 
 export type AppDataState =
   | { status: "loading" }
@@ -21,22 +21,6 @@ export async function loadAppData(): Promise<AppDataState> {
     return { status: "error", message: e instanceof Error ? e.message : String(e) };
   }
 }
-
-export async function loadFormerPlayers(): Promise<FormerPlayersState> {
-  try {
-    const res = await fetch(`${BASE}data/former-players.json`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    return { status: "ready", data };
-  } catch (e) {
-    return { status: "error", message: e instanceof Error ? e.message : String(e) };
-  }
-}
-
-export type FormerPlayersState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; data: FormerPlayersData };
 
 // ---------- favorites (localStorage, no account) ----------
 

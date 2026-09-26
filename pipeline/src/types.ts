@@ -201,51 +201,6 @@ export interface WarningsReport {
   generatedAt: string;
 }
 
-export interface FormerPlayerStats {
-  competition?: string;
-  season?: string;
-  appearances: number | null;
-  starts: number | null;
-  minutes: number | null;
-  goals: number | null;
-  assists: number | null;
-  yellowCards: number | null;
-  redCards: number | null;
-}
-
-export interface ContractInfo extends Provenance {
-  contractStatus: string;
-  contractExpiry?: string;
-}
-
-export interface FormerPlayerCareerEvent extends Provenance {
-  playerId: string;
-  playerName: string;
-  topic: "transfer" | "loan" | "contract" | "new-club" | "departure" | "return" | "injury" | "other";
-  claim: string;
-}
-
-export interface FormerPlayer {
-  id: string;
-  name: string;
-  aliases?: string[];
-  apiFootballId?: number;
-  currentClub: string | null;
-  currentLeague: string | null;
-  currentCountry: string | null;
-  clubVerified: boolean;
-  stats: FormerPlayerStats | null;
-  contract: ContractInfo | null;
-  latestEvent: FormerPlayerCareerEvent | null;
-  retrievedAt?: string;
-  /**
-   * Researched identity / current status with full provenance.
-   * Optional so the feature is additive: an absent value means "never
-   * researched", which is distinct from "researched and unknown".
-   */
-  research?: FormerPlayerResearch;
-}
-
 /**
  * A researched fact: the value AND why we believe it.
  *
@@ -307,11 +262,6 @@ export interface FormerPlayerResearch {
   sources: ResearchSource[];
 }
 
-
-export interface FormerPlayersData extends Freshness {
-  players: FormerPlayer[];
-}
-
 /** One player's current-season statistics (from SportoMedia squad query). */
 export interface SeasonPlayerStat {
   /** Canonical player id (fogis:N or name:NORMALIZED). */
@@ -342,7 +292,6 @@ export interface AppData {
   news: NewsItem[];
   /** Deduplicated news events (one card per underlying story). */
   newsEvents: NewsEvent[];
-  formerPlayers: FormerPlayer[];
   /** Current-season squad statistics (SportoMedia). */
   squadStats?: SeasonPlayerStat[];
   /** Season-level disciplinary ledger (chronological, rule-applied). */
