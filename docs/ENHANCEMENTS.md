@@ -1213,3 +1213,24 @@ scan. Deterministic instead of hoping a timeout is long enough. Verified
 - Note this is a *transient* accessibility dip only: users under
   `prefers-reduced-motion: reduce` get `animation: none` on `.sheet-backdrop`
   and never see it. The resting state passes AA comfortably.
+
+## L-012  A stale service worker will make a shipped fix look broken
+
+After deploying the sheet-clearance fix, the live app still measured
+`margin-bottom: 0px` and `-74px` clearance. The fix was in the served CSS —
+but the **page was running the previous bundle**:
+`index-suOhB03Q.css` instead of `index-NPUKbndc.css`, from the workbox
+precache of an earlier visit.
+
+After `getRegistrations().unregister()` + `caches.delete(...)` + reload, the
+same measurement returned `margin-bottom: 90px` and **16px clearance**.
+
+**Rules:**
+- Before believing any browser measurement of production, assert WHICH
+  asset is loaded. `document.styleSheets[0].href` compared against the
+  `index-*.css` you just built settles it in one call.
+- `curl`ing the asset is not enough. It proves the bytes are deployed, not
+  that the browser is using them.
+- This is the third time the stale SW has produced a false "the deploy
+  failed" conclusion in this project. It is the default hypothesis when a
+  shipped change appears to have no effect.
