@@ -18,9 +18,37 @@ export interface ArticleText {
   text?: string;
   /** HTTP status or extraction failure reason. */
   error?: string;
+  /**
+   * Authoritative category labels rendered by the source on the article page
+   * (BK Häcken: "Herr" / "Dam" / "Hållbarhet" / "Föreningen", ...).
+   * Absent for sources that expose no such labels.
+   */
+  sourceTags?: string[];
 }
 
 const UA = "MinBKH/0.1 (supporter PWA; news synthesis; contact: repo issues)";
+
+/**
+ * Extract the source's own category badge labels from an article page.
+ *
+ * BK Häcken renders one Livewire `category-badge` per article for each
+ * category it is filed under, e.g. ["Herr"], ["Dam"] or
+ * ["Hållbarhet","Föreningen"]. These are the club's authoritative team
+ * classification and are strictly better evidence than any keyword guess.
+ *
+ * Deliberately narrow: it reads only the badge component and never infers a
+ * team from the title, body text or URL, so a place name such as
+ * "Slätta Damm" can never be mistaken for a women's-team label.
+ */
+export function extractSourceTags(html: string): string[] {
+  const out: string[] = [];
+  const badge = /data-livewire-v2-component="category-badge"[^>]*>([\s\S]{0,200}?)<\/span>/g;
+  for (const m of html.matchAll(badge)) {
+    const label = m[1].replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    if (label && !out.includes(label)) out.push(label);
+  }
+  return out;
+}
 
 function decodeEntities(s: string): string {
   return s
@@ -62,8 +90,15 @@ export async function fetchArticleText(url: string): Promise<ArticleText> {
       return { url, ok: false, error: `unsupported content-type ${contentType || "unknown"}` };
     }
     const text = extractTextFromHtml(body);
-    if (text.length < 80) return { url, ok: false, error: "no readable text extracted" };
-    return { url, ok: true, text };
+    // Category badges are metadata, not prose: collect them whenever the page
+    // is readable, even if the body itself is too short to be useful.
+    const sourceTags = extractSourceTags(body);
+    if (text.length < 80) {
+      return sourceTags.length
+        ? { url, ok: false, error: "no readable text extracted", sourceTags }
+        : { url, ok: false, error: "no readable text extracted" };
+    }
+    return sourceTags.length ? { url, ok: true, text, sourceTags } : { url, ok: true, text };
   } catch (e) {
     return { url, ok: false, error: e instanceof Error ? e.message : String(e) };
   }

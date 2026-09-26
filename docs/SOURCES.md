@@ -107,6 +107,68 @@ Sökintervall varierar alltså per källa eftersom RSS-flöden har olika retenti
 Detta är dokumenterat, inte konstgjort utökat. Källspecifik skillnad är förväntad
 eftersom flödena publicerar olika många artiklar per dag.
 
+## BK Häckens artikelklassificering — auktoritativ kategori (2026-09-26)
+
+**Varför detta behövs.** RSS-flödet från bkhacken.se är **klubböverskridande** och
+exponerar **ingen** artikelklassificering alls. Kontrollerat mot det råa flödet:
+det innehåller bara `title`, `link`, `description`, `pubDate`, `guid` och
+`enclosure` — inga `category`-element. Varken RSS eller någon publik metadata
+berättar om en artikel gäller herrlaget, damlaget eller är allmän
+förenings-/hållbarhetsinnehåll.
+
+**Var den auktoritativa klassificeringen finns.** Den renderas på den enskilda
+artikelsidan som en Livewire-komponent, `data-livewire-v2-component="category-badge"`.
+Varje artikel har sin egen uppsättning badges, exempelvis:
+
+| Artikel | Badge |
+|---|---|
+| Gustav Lindgren, hattrick mot Kalmar | `Herr` |
+| Matchtruppen till Kalmar | `Herr` |
+| Champions League-premiären mot Inter | `Dam` |
+| Biljettsläpp, hemmamatcher i UEFA Women's Champions League | `Dam` |
+| Gåfotboll på Slätta Damm | `Hållbarhet`, `Föreningen` |
+
+**Hur pipelinen använder den.** `extractSourceTags()` i `pipeline/src/articleText.ts`
+läser badge-komponenten på bkhacken.se-artiklar. Hämtningen sker i samma
+`synthesizeWithGemini`-omslag som redan fanns för artikeltext, så det tillkommer
+**ingen extra HTTP-anrop** per artikel. Taggarna lagras i `NewsItem.sourceTags`
+och skickas vidare till `classifyNews()` som tredje argument — det fält som
+tidigare fanns deklarerat men aldrig ifylldes.
+
+**Tolkning av taggarna (produktregel).**
+
+- `Herr` = positivt bevis för att artikeln är herrlagsnyhet. Kan tas med, med
+  sedvanlig relevans-/datumregler.
+- `Dam` = damlagsnyhet. **Måste uteslutas** ur herrlagssektionen, oavsett vad
+  artikeltexten innehåller. Herrlagsterminologi (t.ex. "Champions League") får
+  aldrig åsidosätta en uttrycklig `Dam`-klassificering.
+- `Hållbarhet`, `Föreningen` m.fl. = allmänt klubb-/föreningsinnehåll. Inte
+  automatiskt herrlag och inte automatiskt damlag. Det ska t.ex. inte bli
+  "dam" bara för att det inte står `Herr`.
+
+**Konsekvens för herrlagssektionen — positiv klassificering.** Eftersom källan
+kan tala om vilken lag en artikel gäller använder herrlagssektionen en
+**positiv** regel: en artikel räknas som herrlagsnyhet endast om den bär en
+`Herr`-tagg, eller (för källor saknar badges) är lokalt klassad som `men`.
+Att vara "inte women's" räcker **inte** längre som tillräckligt villkor. En
+artikel som bara är allmänt föreningsinnehåll ("Gåfotboll på Slätta Damm",
+"Slätta Damm" är en plats — inte ett damlagsnamn) tas därför inte med.
+
+**Ordet "dam" är aldrig ett signalord i sig.** En tom strängmatchning på "dam"
+tidigare klassade "Slätta Damm" (ortnamn) som damnyhet. Sådan heuristik är
+borttagen; kvinnlig lagkontext måste nu antingen komma från källans `Dam`-badge
+eller från explicit namngivna damlagspelare/termer.
+
+** Externa källor (oförändrat beteende).** Artiklar från källor som saknar
+BK Häckens badge (Sportbladet, Expressen, SVT, Bollsvenskan, Allsvenskan)
+behåller oförändrad den befintliga textbaserade relevanslogiken.
+
+**Verifierat 2026-09-26:** 20/20 artiklar i bkhacken.se-flödet gav badge; 14 av 20
+föll bort från herrlagsmängden. Den tidigare herrlagslistan innehöll artiklar som
+är damlagsnyheter — bland dem "Tuff Champions League-premiär mot Inter"
+(huvudtränare Elena Sadiku, Haley Bugeja m.fl., badge `Dam`), trots att rubriken
+såg ut som herrlag.
+
 ## Produktregler för data (2026-09-25)
 
 - Aktuell säsong = 2026 (SportoMedia). Historiska säsonger får ALDRIG tyst ersätta 2026-data; om 2026-data saknas visas explicit banner (`currentDataUnavailable`).

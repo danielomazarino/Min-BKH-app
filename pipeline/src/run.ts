@@ -15,7 +15,7 @@ import type {
   SourceStatus,
 } from "./types";
 import { fetchRss } from "./rss";
-import { classifyNews } from "./classify";
+import { classifyNews, menRelevantNews } from "./classify";
 import { dedupeNews } from "./dedupe";
 import { buildNewsEvents, publisherRole } from "./newsEvents";
 import type { WarningEvent } from "./warnings";
@@ -124,13 +124,54 @@ async function collectNews(): Promise<NewsItem[]> {
     STATUS[`rss:${src.publisher}`] = feed.ok ? "ok" : "failed";
     if (feed.ok) {
       for (const item of feed.items) {
-        item.category = classifyNews(item.title, item.summary ?? "");
         item.sourceRole = publisherRole(src.publisher);
       }
       all.push(...feed.items);
     }
   }
-  return dedupeNews(all);
+  const deduped = dedupeNews(all);
+  await attachSourceTags(deduped);
+  for (const item of deduped) {
+    item.category = classifyNews(item.title, item.summary ?? "", item.sourceTags);
+  }
+  return deduped;
+}
+
+/** Hosts whose articles carry the source's own team/category labels. */
+function isTaggedSource(url: string): boolean {
+  try {
+    return new URL(url).hostname === "bkhacken.se";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetch the source's own category labels (BK Häcken: "Herr" / "Dam" /
+ * "Hållbarhet" / "Föreningen") for articles published on a source that uses
+ * them. Only these hosts are crawled, because only there is a team label
+ * authoritative. Everything else stays untagged and keeps the existing
+ * text-based relevance behaviour.
+ */
+async function attachSourceTags(items: NewsItem[]): Promise<void> {
+  const tagged = items.filter((i) => isTaggedSource(i.url));
+  if (tagged.length === 0) return;
+  const pages = await fetchArticleTexts(
+    tagged.map((i) => i.url),
+    4,
+  );
+  let found = 0;
+  for (const item of tagged) {
+    const tags = pages.get(item.url)?.sourceTags;
+    if (tags?.length) {
+      item.sourceTags = tags;
+      found++;
+    }
+  }
+  console.log(
+    `news: source category labels ${found}/${tagged.length} from ` +
+      `${[...new Set(tagged.map((i) => new URL(i.url).hostname))].join(", ")}`,
+  );
 }
 
 // ---------- football data ----------
@@ -399,8 +440,16 @@ async function main() {
   // articles describe the same underlying event. The pre-filter only removes
   // cheap, unambiguous noise (date window, ads, non-Häcken league coverage).
   const windowDays = Number(process.env.NEWS_WINDOW_DAYS ?? DEFAULT_WINDOW_DAYS);
-  const { candidates, dropped } = prefilterNews(news, { windowDays });
-  console.log(`news: ${candidates.length} candidates, ${dropped.length} dropped before Gemini`);
+  const { candidates: prefiltered, dropped } = prefilterNews(news, { windowDays });
+  // The men's news section is a POSITIVE set: anything the source labelled
+  // "Dam", or that we classified as women's, is removed here so neither the
+  // Gemini stage nor the deterministic fallback can reintroduce it.
+  const candidates = menRelevantNews(prefiltered);
+  const menExcluded = prefiltered.length - candidates.length;
+  console.log(
+    `news: ${candidates.length} candidates, ${dropped.length} dropped before Gemini` +
+      (menExcluded ? `, ${menExcluded} excluded as not men's-team news` : ""),
+  );
 
   // Server-side article text (the browser never fetches article bodies).
   const texts = await fetchArticleTexts(candidates.map((c) => c.url));
@@ -416,6 +465,8 @@ async function main() {
       publishedAt: c.publishedAt,
       text: t?.ok ? t.text : undefined,
       categoryHint: c.category,
+      // Authoritative team labels, so Gemini sees the same evidence we do.
+      ...(c.sourceTags?.length ? { sourceTags: c.sourceTags } : {}),
     };
   });
 
@@ -433,13 +484,17 @@ async function main() {
     if (newsEvents.length === 0) {
       console.error("Gemini produced no men's events — falling back to deterministic events");
       newsEvents = buildNewsEvents(
-        candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+        menRelevantNews(
+          candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+        ),
       );
     }
   } else {
     // Gemini unavailable: keep the previous deterministic behaviour unchanged.
     newsEvents = buildNewsEvents(
-      candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+      menRelevantNews(
+        candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+      ),
     );
   }
   const relevantNews = newsEvents.flatMap((ev) =>

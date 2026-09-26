@@ -139,6 +139,13 @@ export interface NewsItem {
   dedupeKey?: string;
   /** Provenance role of this specific article's reporting. */
   sourceRole?: SourceRole;
+  /**
+   * Authoritative team/category labels as published by the source itself
+   * (BK Häcken renders one badge per article: "Herr", "Dam", "Hållbarhet",
+   * "Föreningen", ...). These are evidence, never a substitute for the
+   * article's own content, and they take precedence over text heuristics.
+   */
+  sourceTags?: string[];
 }
 
 /**

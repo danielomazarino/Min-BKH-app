@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { classifyNews, menRelevantNews, isClubPromotional } from "./classify";
+import { classifyNews, menRelevantNews, isClubPromotional, isExplicitlyWomenTeam } from "./classify";
 import { dedupeNews, normalizeTitle, canonicalUrl } from "./dedupe";
 import { buildNewsEvents } from "./newsEvents";
 import { classifyRelevance } from "./newsRelevance";
+import { extractSourceTags } from "./articleText";
 import type { NewsItem } from "./types";
 
 function news(overrides: Partial<NewsItem>): NewsItem {
@@ -57,6 +58,137 @@ describe("news classification", () => {
   it("isClubPromotional detects tickets/shop/partners", () => {
     expect(isClubPromotional("Biljettinformation inför matchen")).toBe(true);
     expect(isClubPromotional("Matchtruppen mot Kalmar")).toBe(false);
+  });
+});
+
+/**
+ * The men's news section is a POSITIVE set. An article qualifies only when the
+ * SOURCE says "Herr", or when it is demonstrably men's-team content. An
+ * explicit "Dam" label always wins, whatever the text says.
+ */
+describe("authoritative BK Häcken source classification", () => {
+  // A. Explicit "Dam" is excluded from the men's set.
+  it("A: sourceTags ['Dam'] is classified women's and excluded from men's news", () => {
+    const title = "Tuff Champions League-premiär mot Inter";
+    const summary = "Champions League-premiären slutade 0–1.";
+    expect(classifyNews(title, summary, ["Dam"])).toBe("women");
+    const item = news({ id: "dam", title, summary, sourceTags: ["Dam"], category: "women" });
+    expect(menRelevantNews([item])).toEqual([]);
+    expect(isExplicitlyWomenTeam(item)).toBe(true);
+  });
+
+  // B. "Herr" is eligible, subject to the normal relevance rules.
+  it("B: sourceTags ['Herr'] is classified men's and is eligible", () => {
+    const title = "Gustav Lindgren: kändes väldigt bra från första minuten";
+    const summary = "BK Häcken tog 5–0 mot Kalmar FF i Allsvenskan.";
+    expect(classifyNews(title, summary, ["Herr"])).toBe("men");
+    const item = news({ id: "herr", title, summary, sourceTags: ["Herr"], category: "men" });
+    expect(menRelevantNews([item]).map((n) => n.id)).toEqual(["herr"]);
+  });
+
+  // C. Non-team labels are general club content — never "women", never "men".
+  it("C: sourceTags ['Hållbarhet','Föreningen'] is club content, not women's", () => {
+    const title = "Gåfotboll med BK Häcken – för hälsan och glädjens skull";
+    const summary = "Möt deltagarna på Slätta Damm och ta del av gemenskapen.";
+    const c = classifyNews(title, summary, ["Hållbarhet", "Föreningen"]);
+    expect(c).toBe("club");
+    expect(c).not.toBe("women");
+  });
+
+  // D. The bare substring "dam" must never imply women's football.
+  it("D: 'Slätta Damm' in title/summary/URL is not a women's signal", () => {
+    const tags = ["Hållbarhet", "Föreningen"];
+    const title = "Gåfotboll med BK Häcken – för hälsan och glädjens skull";
+    const summary = "Möt deltagarna på Slätta Damm.";
+    expect(classifyNews(title, summary, tags)).toBe("club");
+    // No authoritative label at all: still not women's football.
+    expect(classifyNews(title, summary, [])).not.toBe("women");
+    // The word must not be readable as a standalone team word either.
+    expect(classifyNews("Slätta Damm inviterar", "Gåfotboll på Slätta Damm.", [])).not.toBe("women");
+  });
+
+  // E. A locally classified women's article cannot reach the men's set.
+  it("E: category 'women' without source tags is still excluded", () => {
+    const item = news({ id: "w", title: "Damlaget spelar", category: "women" });
+    expect(menRelevantNews([item])).toEqual([]);
+  });
+
+  // F. A known men's-team article is still included.
+  it("F: known men's-team article is still included", () => {
+    const item = news({
+      id: "m",
+      title: "BK Häcken åker till Kalmar – här är matchtruppen",
+      summary: "Matchtruppen inför bortamatchen i Allsvenskan.",
+      category: "men",
+      sourceTags: ["Herr"],
+    });
+    expect(menRelevantNews([item]).map((n) => n.id)).toEqual(["m"]);
+  });
+
+  // G. The real Women's Champions League ticket article is excluded.
+  it("G: women's Champions League article tagged Dam is excluded", () => {
+    const item = news({
+      id: "wcl",
+      title: "Biljettsläpp till hemmamatcherna i Champions Leauge",
+      summary: "Biljetter till Champions League-hemmamatcher.",
+      sourceTags: ["Dam"],
+      category: "women",
+    });
+    expect(menRelevantNews([item])).toEqual([]);
+  });
+
+  // H. The community article is excluded from the men's team news, and is
+  // NOT classified as women's football.
+  it("H: Slätta Damm community article is excluded from men's news but not women's", () => {
+    const title = "Gåfotboll med BK Häcken – för hälsan och glädjens skull";
+    const item = news({
+      id: "c",
+      title,
+      summary: "Möt deltagarna på Slätta Damm.",
+      sourceTags: ["Hållbarhet", "Föreningen"],
+      category: "club",
+    });
+    expect(menRelevantNews([item])).toEqual([]);
+    expect(item.category).toBe("club");
+  });
+
+  // I. Untagged external men's articles keep the existing fallback behaviour.
+  it("I: untagged external men's article still passes the gate", () => {
+    const item = news({
+      id: "ext",
+      title: "Häcken krossar Kalmar",
+      summary: "Allsvenskanmatch mot Kalmar FF.",
+      publisher: "Sportbladet",
+      category: "men",
+    });
+    expect(menRelevantNews([item]).map((n) => n.id)).toEqual(["ext"]);
+  });
+});
+
+describe("source tag extraction", () => {
+  function page(...badges: string[]): string {
+    const blocks = badges
+      .map(
+        (b) =>
+          `<span data-livewire-v2-component="category-badge" class="inline-flex" style="background-color:#111"><span>${b}</span></span>`,
+      )
+      .join("");
+    return `<html><body><h1>Rubrik</h1>${blocks}</body></html>`;
+  }
+
+  it("reads every rendered category badge, in order", () => {
+    expect(extractSourceTags(page("Herr"))).toEqual(["Herr"]);
+    expect(extractSourceTags(page("Dam"))).toEqual(["Dam"]);
+    expect(extractSourceTags(page("Hållbarhet", "Föreningen"))).toEqual(["Hållbarhet", "Föreningen"]);
+  });
+
+  it("returns nothing when a page has no badges", () => {
+    expect(extractSourceTags("<html><body><p>Ingen badge</p></body></html>")).toEqual([]);
+  });
+
+  it("does not invent a team label from a place name in the body", () => {
+    const html = `<html><body><h1>Gåfotboll på Slätta Damm</h1><p>damallsvenskan nämns i texten</p></body></html>`;
+    expect(extractSourceTags(html)).toEqual([]);
   });
 });
 
