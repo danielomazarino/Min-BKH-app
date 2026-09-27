@@ -1770,6 +1770,39 @@ not the pipeline.**
 
 **Do not "fix" deterministic summaries. There is nothing to fix.**
 
+## Fixture summaries — DONE (prerequisite for the next step, now satisfied)
+
+The evaluation fixture articles now carry **`summary` values derived from their
+own fetched article text**, written after reading each body via
+`fetchArticleTexts` on 2026-09-27. Nothing was invented.
+
+The `excerpt` baseline described above is therefore no longer what the evaluator
+will produce: `pickSummary()` now finds a real description and reports
+`summaryMethod: "rss-description"`, so the deterministic baseline is a **fair**
+comparison instead of a strawman.
+
+Fairness was the constraint, and it cut both ways:
+
+- Summaries are **72–124 characters**, inside the real feed's 57–152 band.
+  They are RSS-register teasers, not 200-character article write-ups. A longer
+  summary would have made Gemini's synthesis look better by construction.
+- `t2` and `t4` intentionally still contain **no "Häcken"**, so they remain in
+  `EXPECTED_DROPPED` and the prefilter's literal rule is unchanged.
+- `t7`'s summary states **no result**, because its body states none — "uddamål"
+  appears nowhere, and the `6–0` on that page belongs to an unrelated sidebar
+  link. Inventing a scoreline would fabricate a fact *and* poison the
+  claim-traceability audit.
+
+New guard file `pipeline/src/geminiSemanticEval.fixture.test.ts` (9 tests) pins
+this so the fixture cannot silently rot: every article has a non-empty summary,
+no summary equals its own title, all fall within the length band, `t2`/`t4`
+stay Häcken-free, `t7` asserts no scoreline, and the **one-fetch guarantee**
+plus the pre-request guard are asserted in the same file. It reads the source as
+text rather than importing it, because importing `geminiSemanticEval.ts` would
+fire the single real Gemini request from a test.
+
+**Tests: 326 passing** (317 + 9). `tsc` and `lint` clean.
+
 ## KNOWN LIMITATION
 
 Deterministically grouping **differently-worded reports of the same underlying
@@ -1811,11 +1844,17 @@ hit a 429 or the call cap.
 > production news flow. That run must remain a ONE-REQUEST evaluation with no
 > retry and no model fallback, unless separately authorized.**
 
-Prerequisite, if not already done: the evaluation fixture articles must carry
-realistic `summary` values derived from their own fetched article text, so the
-deterministic baseline is a fair comparison. Fairness matters — summaries must
-be **comparable in length and register to real RSS descriptions**, not
-Gemini-like write-ups, or the comparison is rigged.
+The fixture prerequisite is now **satisfied** (see *Fixture summaries — DONE*
+above): the eight articles carry text-derived RSS-register summaries, so the
+baseline is a fair comparison. Nothing else is blocking this step.
+
+**Three consecutive manual full-size attempts returned 503** (12:44, 21:10,
+23:00 on 2026-09-27), while the production nightly succeeded **via retry**
+(`calls=2 events=3`, 503 on attempt 1, 200 on attempt 2). So the open question
+is unchanged and is still the same one: **is capacity the binding constraint,
+rather than architecture?** If the next one-request run also returns 503, that
+is a third data point for capacity — not a reason to retry, and not a reason to
+write the feature off either.
 
 ## EXPLICITLY OUT OF SCOPE
 

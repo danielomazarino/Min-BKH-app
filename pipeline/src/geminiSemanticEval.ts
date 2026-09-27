@@ -40,16 +40,42 @@ import type { NewsEvent, NewsItem } from "./types";
  * The eight reference articles. Six are men's-team; two (t7 CL guide, t8
  * Juventus keepers) are the women's/irrelevant material the semantic layer
  * must reject. Four describe ONE match story and must merge.
+ *
+ * SUMMARIES ARE PART OF THE FIXTURE, NOT AN AFTERTHOUGHT.
+ *
+ * Every `summary` below was written from that article's own fetched body text
+ * (`fetchArticleTexts`, 2026-09-27), not invented. They exist because the
+ * fixture originally carried NONE, which made `pickSummary()` always fall
+ * through to `sorted[0].title` and report every baseline event as
+ * `summaryMethod: "excerpt"` with the headline repeated as the summary. That
+ * produced the misleading impression that the deterministic pipeline can only
+ * emit headlines. It is a FIXTURE ARTEFACT, not a production defect: `rss.ts`
+ * maps `<description>` into `summary`, and the real bkhacken.se feed supplies
+ * prose of this length.
+ *
+ * They are deliberately short teasers in RSS register, not 200-character
+ * article summaries. Writing long, detailed summaries would manufacture the
+ * very result the evaluation is meant to measure, and would make merging look
+ * artificially easy. Real `<description>` runs roughly 57-152 chars.
+ *
+ * t2 and t4 intentionally do NOT contain the word "Hacken", which is what
+ * keeps them in `EXPECTED_DROPPED` - the prefilter's literal-mention rule is
+ * unchanged and these two must still drop on hard rules alone.
+ *
+ * t7's summary states NO RESULT on purpose: its body gives none ("uddamals"
+ * appears nowhere, and the "6-0" on the page is an unrelated sidebar link).
+ * Inventing a scoreline there would fabricate a fact and would also poison the
+ * claim-traceability audit.
  */
 const ARTICLES: NewsItem[] = [
-  { id: "t1", publisher: "BK Häcken", title: "BK Häcken åker till Kalmar – här är matchtruppen", url: "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen", publishedAt: "2026-09-19T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t2", publisher: "Kalmar FF", title: "Inför KFF-BKH: Tillsammans ska vi göra allt vi kan för att ta tre poäng", url: "https://kalmarff.se/infor-kff-bkh-tillsammans-ska-vi-gora-allt-vi-kan-for-att-ta-tre-poang/", publishedAt: "2026-09-19T09:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t3", publisher: "BK Häcken", title: "Gustav Lindgren: Det kändes väldigt bra från den första minuten", url: "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten", publishedAt: "2026-09-20T10:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t4", publisher: "SVT Sport", title: "Gustav Lindgren gör hattrick mot Kalmar", url: "https://www.svt.se/sport/fotboll/gustav-lindgren-gor-hattrick-mot-kalmar", publishedAt: "2026-09-20T12:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t5", publisher: "Sportbladet", title: "Häcken krossar Kalmar – hattrick av Lindgren", url: "https://www.aftonbladet.se/sportbladet/fotboll/a/Ex8Q0P/hacken-krossar-kalmar-hattrick-av-gustav-lindgren", publishedAt: "2026-09-20T13:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t6", publisher: "FotbollDirekt", title: "Hattrick från Lindgren – Häcken krossade Kalmar", url: "https://fotbolldirekt.se/allsvenskan/hattrick-fran-lindgren-hacken-krossade-kalmar/", publishedAt: "2026-09-20T14:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t7", publisher: "BK Häcken", title: "Matchguide: Champions League-premiär borta mot FC Inter", url: "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter", publishedAt: "2026-09-22T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t8", publisher: "Sportbladet", title: "Häckens målvakter mot Juventus – två tonåringar", url: "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris", publishedAt: "2026-09-23T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t1", publisher: "BK Häcken", title: "BK Häcken åker till Kalmar – här är matchtruppen", summary: "Imorgon klockan 14.00 ställs BK Häcken mot Kalmar FF borta i Allsvenskan. Huvudtränare Jens Gustafsson har tagit ut truppen.", url: "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen", publishedAt: "2026-09-19T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t2", publisher: "Kalmar FF", title: "Inför KFF-BKH: Tillsammans ska vi göra allt vi kan för att ta tre poäng", summary: "Kalmar FF jagar tre poäng hemma. Senast möttes lagen den 1 augusti, då slutade matchen 1–1 efter ett mål av Keita.", url: "https://kalmarff.se/infor-kff-bkh-tillsammans-ska-vi-gora-allt-vi-kan-for-att-ta-tre-poang/", publishedAt: "2026-09-19T09:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t3", publisher: "BK Häcken", title: "Gustav Lindgren: Det kändes väldigt bra från den första minuten", summary: "Matchhjälten Gustav Lindgren stod för tre mål när Häcken besegrade Kalmar FF med 5–0.", url: "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten", publishedAt: "2026-09-20T10:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t4", publisher: "SVT Sport", title: "Gustav Lindgren gör hattrick mot Kalmar", summary: "Anfallaren krossade Kalmar på egen hand med ett hattrick i bortamatchen.", url: "https://www.svt.se/sport/fotboll/gustav-lindgren-gor-hattrick-mot-kalmar", publishedAt: "2026-09-20T12:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t5", publisher: "Sportbladet", title: "Häcken krossar Kalmar – hattrick av Lindgren", summary: "Anfallaren gjorde hattrick när Häcken vann med 5–0. Krisen i Kalmar FF fortsätter.", url: "https://www.aftonbladet.se/sportbladet/fotboll/a/Ex8Q0P/hacken-krossar-kalmar-hattrick-av-gustav-lindgren", publishedAt: "2026-09-20T13:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t6", publisher: "FotbollDirekt", title: "Hattrick från Lindgren – Häcken krossade Kalmar", summary: "Gustav Lindgren sköt ett hattrick på bara 48 minuter och säkrade segern till 0–5.", url: "https://fotbolldirekt.se/allsvenskan/hattrick-fran-lindgren-hacken-krossade-kalmar/", publishedAt: "2026-09-20T14:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t7", publisher: "BK Häcken", title: "Matchguide: Champions League-premiär borta mot FC Inter", summary: "Ligafasen av UEFA Women's Champions League inleds borta mot Inter. Avspark klockan 18.45.", url: "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter", publishedAt: "2026-09-22T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t8", publisher: "Sportbladet", title: "Häckens målvakter mot Juventus – två tonåringar", summary: "Jennifer Falk är avstängd hemma mot Juventus efter ett rött kort i bortamatchen mot Inter.", url: "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris", publishedAt: "2026-09-23T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
 ];
 
 /** Deterministic prefilter drops these two on hard textual rules alone. */
