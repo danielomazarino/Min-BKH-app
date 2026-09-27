@@ -13,7 +13,7 @@
  * so a hard-coded women's-player list is no longer the gate.
  */
 import type { NewsItem } from "./types";
-import { mentionsHäcken, isGeneralAllsvenskan } from "./newsRelevance";
+import { mentionsHäcken, isGeneralAllsvenskan, classifyRelevance, type KnownPersons } from "./newsRelevance";
 
 /** Default window: 45 days back from `now`. Configurable via NEWS_WINDOW_DAYS. */
 export const DEFAULT_WINDOW_DAYS = 45;
@@ -32,6 +32,17 @@ export interface PrefilterOptions {
   windowDays?: number;
   now?: Date;
   maxItems?: number;
+  /**
+   * Known Häcken persons, used only to rescue articles that name a current
+   * player without ever saying "Häcken".
+   *
+   * OPTIONAL ON PURPOSE. When omitted the prefilter behaves exactly as it did
+   * before this field existed (title/summary Häcken mention or official
+   * source), so existing callers and tests are unaffected. The rescue is an
+   * addition, never a loosening of the women's / ambiguous-surname stances
+   * that `classifyRelevance` already enforces.
+   */
+  known?: KnownPersons;
 }
 
 export interface PrefilterResult {
@@ -65,8 +76,22 @@ export function prefilterNews(items: NewsItem[], opts: PrefilterOptions = {}): P
     }
     const official = item.publisher === "BK Häcken";
     const mentions = mentionsHäcken(item.title, item.summary ?? "");
+
+    // A secondary-source article that never says "Häcken" but names a current
+    // Häcken man is still Häcken news — "Gustav Lindgren gör hattrick mot
+    // Kalmar" is the single most newsworthy item in its set, and dropping it
+    // on a literal string match was a real false negative.
+    //
+    // This REUSES classifyRelevance rather than introducing a second person
+    // matcher, so the conservative stances stay exactly as they are: a
+    // women's player still wins, a Häcken mention with no men's evidence is
+    // still UNKNOWN, and ambiguous surnames are still excluded.
+    const namesCurrentPlayer = Boolean(
+      opts.known && classifyRelevance(item, opts.known).relevance === "CURRENT_HACKEN",
+    );
+
     // General Allsvenskan coverage without a Häcken mention is league noise.
-    if (!official && !mentions) {
+    if (!official && !mentions && !namesCurrentPlayer) {
       const reason = isGeneralAllsvenskan(item.title, item.summary ?? "")
         ? "general allsvenskan, no Häcken relation"
         : "no Häcken relation";

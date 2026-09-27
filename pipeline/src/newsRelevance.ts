@@ -182,11 +182,26 @@ export function classifyRelevance(
   }
 
   // 3) Known Häcken person without explicit club mention (e.g. transfer story).
+  //
+  // The women/youth veto is re-checked here, and it MUST be: branches 1 and 2
+  // both apply it, but this branch did not, so an article naming a men's
+  // player inside a women's context was returned CURRENT_HACKEN — directly
+  // contradicting this function's own contract ("women's/youth context always
+  // wins over men's relevance"). It was unreachable from production while the
+  // prefilter ignored known-person matching; wiring the prefilter to reuse
+  // this branch made it reachable, so the gap is closed here rather than
+  // worked around in the caller.
   const person = mentionsKnownPerson(title, summary, [
     ...known.currentPlayers,
     ...(known.formerPlayers ?? []),
   ]);
   if (person) {
+    if (womenContext) {
+      return { relevance: "UNRELATED", category: "women", reason: `women's context overrides known person: ${person}`, matchedPerson: person };
+    }
+    if (youthContext) {
+      return { relevance: "UNRELATED", category: "youth", reason: `youth context overrides known person: ${person}`, matchedPerson: person };
+    }
     const isCurrent = known.currentPlayers.some((c) => norm(c) === norm(person));
     return {
       relevance: isCurrent ? "CURRENT_HACKEN" : "FORMER_PLAYER",

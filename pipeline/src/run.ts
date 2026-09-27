@@ -358,7 +358,7 @@ async function main() {
   // articles describe the same underlying event. The pre-filter only removes
   // cheap, unambiguous noise (date window, ads, non-Häcken league coverage).
   const windowDays = Number(process.env.NEWS_WINDOW_DAYS ?? DEFAULT_WINDOW_DAYS);
-  const { candidates: prefiltered, dropped } = prefilterNews(news, { windowDays });
+  const { candidates: prefiltered, dropped } = prefilterNews(news, { windowDays, known });
   // The men's news section is a POSITIVE set: anything the source labelled
   // "Dam", or that we classified as women's, is removed here so neither the
   // Gemini stage nor the deterministic fallback can reintroduce it.

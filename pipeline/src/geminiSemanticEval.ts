@@ -48,7 +48,7 @@ const ARTICLES: NewsItem[] = [
   { id: "t4", publisher: "SVT Sport", title: "Gustav Lindgren gör hattrick mot Kalmar", url: "https://www.svt.se/sport/fotboll/gustav-lindgren-gor-hattrick-mot-kalmar", publishedAt: "2026-09-20T12:00:00.000Z", category: "unknown", discoveredVia: "rss" },
   { id: "t5", publisher: "Sportbladet", title: "Häcken krossar Kalmar – hattrick av Lindgren", url: "https://www.aftonbladet.se/sportbladet/fotboll/a/Ex8Q0P/hacken-krossar-kalmar-hattrick-av-gustav-lindgren", publishedAt: "2026-09-20T13:00:00.000Z", category: "unknown", discoveredVia: "rss" },
   { id: "t6", publisher: "FotbollDirekt", title: "Hattrick från Lindgren – Häcken krossade Kalmar", url: "https://fotbolldirekt.se/allsvenskan/hattrick-fran-lindgren-hacken-krossade-kalmar/", publishedAt: "2026-09-20T14:00:00.000Z", category: "unknown", discoveredVia: "rss" },
-  { id: "t7", publisher: "BK Häcken", title: "Matchguide: Champions League-premiär bota mot FC Inter", url: "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-bota-mot-fc-inter", publishedAt: "2026-09-22T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
+  { id: "t7", publisher: "BK Häcken", title: "Matchguide: Champions League-premiär borta mot FC Inter", url: "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter", publishedAt: "2026-09-22T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
   { id: "t8", publisher: "Sportbladet", title: "Häckens målvakter mot Juventus – två tonåringar", url: "https://www.aftonbladet.se/sportbladet/fotboll/a/6qaWy8/hacken-kan-sta-infor-en-malvaktskris", publishedAt: "2026-09-23T08:00:00.000Z", category: "unknown", discoveredVia: "rss" },
 ];
 
@@ -126,7 +126,14 @@ async function main() {
   }
 
   hr("1. INPUT — deterministic collection + prefilter");
-  const { candidates, dropped } = prefilterNews(ARTICLES, { now: new Date("2026-09-25T12:00:00Z") });
+  const { candidates, dropped } = prefilterNews(ARTICLES, {
+    now: new Date("2026-09-25T12:00:00Z"),
+    // The evaluation feeds a fixed 8-article fixture with no squad data, so it
+    // deliberately passes no `known`: the prefilter then behaves exactly as it
+    // did before the person-rescue existed, and the fixture's own expectations
+    // (t2/t4 dropped, t7/t8 reaching Gemini) stay valid.
+    // known: undefined,
+  });
   console.log(`candidates passed to Gemini: ${candidates.length} of ${ARTICLES.length}`);
   console.log(`dropped by hard prefilter  : ${dropped.map((d) => d.url).length}`);
   for (const d of dropped) console.log(`   dropped: ${d.reason} — ${d.url.slice(0, 70)}`);
@@ -153,6 +160,33 @@ async function main() {
   for (const a of geminiInput) {
     const t = texts.get(a.url);
     console.log(`   ${a.id}: ${a.text ? `${a.text.length} chars of article text` : `TEXT UNAVAILABLE (${t?.error ?? "unknown"})`}`);
+  }
+
+  // FIXTURE GUARD — a broken URL must not silently weaken the evaluation.
+  //
+  // `t7` is one of the two articles the semantic layer MUST reject as women's.
+  // When its URL 404s, the article reaches Gemini with no text at all, so the
+  // primary men/women discrimination test runs blind — and the run still looks
+  // perfectly valid. That is worse than a failure, because it is invisible.
+  //
+  // The guard is placed HERE, before the single request, so an invalid fixture
+  // costs ZERO Gemini quota rather than producing a meaningless answer.
+  const invalidFixture = MUST_BE_REJECTED.filter((id) => {
+    const item = candidates.find((c) => c.id === id);
+    if (!item) return false; // dropped by the prefilter, so not part of the test
+    return !textById.has(id);
+  });
+  if (invalidFixture.length > 0) {
+    console.log("\nFIXTURE INVALID — an article that MUST be rejected has no text:");
+    for (const id of invalidFixture) {
+      const item = ARTICLES.find((a) => a.id === id)!;
+      const t = texts.get(item.url);
+      console.log(`   ${id}: ${item.url}`);
+      console.log(`       reason: ${t?.error ?? "not fetched (dropped by prefilter?)"}`);
+    }
+    console.log("\nRESULT: fixture-invalid");
+    console.log("Spend: 0 Gemini requests. The guard runs before the request.");
+    process.exit(3);
   }
 
   hr("2. BASELINE — what deterministic filtering alone produces");
