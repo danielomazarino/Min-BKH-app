@@ -61,15 +61,18 @@ if [ "$AUTH_CODE" != "200" ]; then
 fi
 
 # Is our target model even listed for this key?
-if grep -q "\"${MODEL}\"" /tmp/gemini_models.json 2>/dev/null; then
+# NOTE: the API returns the fully-qualified "models/gemini-3.8-flash", so a
+# bare grep for "gemini-3.8-flash" matches too loosely and a strict grep for
+# the bare name reports a FALSE NEGATIVE. Match the qualified form.
+if grep -q "\"models/${MODEL}\"" /tmp/gemini_models.json 2>/dev/null; then
   printf 'model %s IS listed for this key\n' "$MODEL"
 else
   printf 'model %s is NOT listed for this key\n' "$MODEL"
   printf 'Available models this key can see:\n'
   grep -o '"name": *"models/[^"]*"' /tmp/gemini_models.json \
     | sed 's|.*models/||; s|"||' | sort -u | sed 's/^/  - /'
-  printf 'Not listing the model is NOT the same as no budget. A key without\n'
-  printf 'billing often sees 2.5-flash only. Proceeding to the generation probe.\n'
+  printf 'Not listing the model is NOT the same as no budget. Continuing to the\n'
+  printf 'generation probe, which is the only real test of reachability.\n'
 fi
 
 # --- Step 2: exactly one generation request -------------------------------

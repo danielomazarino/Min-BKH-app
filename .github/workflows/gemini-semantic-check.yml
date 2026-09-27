@@ -1,0 +1,54 @@
+name: Gemini semantic check
+
+# Answers the question the budget check deliberately does NOT answer:
+#
+#   Can Gemini actually produce USABLE news output from real articles?
+#
+# A 200 from the budget check proves the pipes work. It does NOT prove the
+# output is any good. Run 36215617435 returned HTTP 200 with zero usable
+# events, so liveness and quality are separate questions.
+#
+# This runs the existing DEV-ONLY regression harness
+# (pipeline/src/geminiRegression.ts) against the eight reference articles.
+# It does NOT run the data pipeline and does NOT write any data.
+#
+# COST: the harness makes ONE batched generateContent call for the whole
+# article set. There are no per-article calls. Total spend: 1 request.
+#
+# The harness also fetches article HTML server-side, which costs no Gemini
+# quota at all.
+#
+# There is no `schedule:` on purpose. This is a deliberate human decision.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: gemini-semantic-check
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Semantic regression (1 request)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+          # Persist the raw model response so a failure is diagnosable after
+          # the fact rather than collapsing into one generic message.
+          GEMINI_DEBUG_RAW: "1"
+        run: npx tsx pipeline/src/geminiRegression.ts
