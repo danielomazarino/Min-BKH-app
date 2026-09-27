@@ -1663,3 +1663,204 @@ authorized change pass.
 > **The previous pass is closed. The next Space Bunny session must treat this
 > section as the current handoff state and must not assume that unresolved
 > findings are automatically authorized for implementation.**
+
+---
+
+# 2026-09-28 — Gemini semantic layer: prefilter fix, two evaluations, closeout
+
+This section supersedes the status markers above it. **Read it before acting on
+anything about news or Gemini.** Several `OPEN` markers earlier in this file are
+stale — the items marked COMPLETED below were done in commits that never
+updated them.
+
+## COMPLETED and verified
+
+### News prefilter false-negative — `c69828e` (pushed to `main`)
+
+**The defect.** `prefilterNews()` kept an article only if the publisher was the
+official club feed, or the title/summary literally contained "Häcken". So
+**"Gustav Lindgren gör hattrick mot Kalmar" (SVT Sport)** was discarded as
+*"no Häcken relation"*. The most newsworthy item in its set never reached the
+app.
+
+**The fix is a wiring change, not a new system.** `classifyRelevance()` already
+implemented the correct rule, and `run.ts` already built the `KnownPersons`
+object. The prefilter simply never called it. `prefilterNews` now takes an
+optional `known`, and `run.ts` passes the object it already had.
+
+**A real pre-existing bug was exposed by that wiring.** `classifyRelevance`
+branch 3 (the known-person path) never applied the women/youth veto, while
+branches 1 and 2 both did — contradicting the function's own documented
+contract, *"Women's/youth context always wins over men's relevance."* The
+branch was unreachable in production **only** because the prefilter ignored
+known-person matching. Wiring it made it reachable, so the gap was closed in the
+classifier. The change is **strictly more conservative**: it can only turn
+`CURRENT_HACKEN` into `UNRELATED`, never the reverse. It also affects
+`run.ts:406` and `:414`, which call the same function.
+
+Verified empirically:
+
+| Article | With `known` | Without `known` |
+|---|---|---|
+| SVT "Gustav Lindgren gör hattrick mot Kalmar" | **kept** | dropped |
+| "Jennifer Falk … Champions League" (women's player) | dropped | dropped |
+| "Viktor Andersson …" (ambiguous surname) | dropped | dropped |
+| Generic football noise | dropped | dropped |
+
+Tests: **317 passing** (307 + 10). `tsc` and `lint` clean.
+
+### Gemini evaluation fixture — two fixes, same commit
+
+- **URL typo** `premiar-bota` → `premiar-borta`. The typo 404'd `t7`, so the
+  article that must be **rejected as women's** reached Gemini with no text at
+  all — the primary men/women discrimination test was running blind. Now
+  `t7: 2505 chars` and the guard correctly stays silent.
+- **Fixture guard.** If any `MUST_BE_REJECTED` article has no text, the run
+  reports `RESULT: fixture-invalid` and exits non-zero **before** the Gemini
+  request, so a stale fixture costs **zero** quota. Verified by reintroducing the
+  typo: it aborted at exit 3 with `Spend: 0 Gemini requests`.
+
+## The deliberate evaluations
+
+| Run | Result | Requests |
+|---|---|---|
+| `36350674419` (2026-09-27 21:10) | HTTP **503** capacity | 1 |
+| `36357217641` (2026-09-27 23:00, on `c69828e`) | HTTP **503** capacity | 1 |
+
+Verbatim body, both times:
+
+```json
+{"error":{"code":503,
+  "message":"This model is currently experiencing high demand. Spikes in
+             demand are usually temporary. Please try again later.",
+  "status":"UNAVAILABLE"}}
+```
+
+**No retry was made in either case. No semantic result was ever obtained.**
+
+## VERIFIED — and one finding that was a FIXTURE ARTEFACT
+
+### Deterministic grouping is not broken
+
+Verified by running the real `dedupeNews` + `buildNewsEvents`:
+
+| Case | Result |
+|---|---|
+| Identical titles, 2 outlets, 1 day apart | **merged** — 1 event, 2 sources |
+| Same match, 3 different wordings | **3 separate events** |
+| Canonical-URL duplicate | dropped to 1 item |
+
+So exact duplicates and verbatim reprints already merge correctly. Only
+*semantic* clustering is missing.
+
+### "Summaries are just headlines" was NOT a production defect
+
+A previous pass reported that the deterministic path produces only headlines,
+with the summary repeating the title. **That was caused by the test fixture,
+not the pipeline.**
+
+- The evaluation fixture articles carry **no `summary`**, so `pickSummary()`
+  always falls through to `return sorted[0].title`. Any fixture without
+  descriptions will produce `summaryMethod: "excerpt"` and summary == title.
+- **In production, `rss.ts` sets `summary` from `<description>`**, and the real
+  `bkhacken.se` feed populates it with genuine 57–152 character prose
+  descriptions, e.g. *"Bortamötet på Stadio Brianteo slutar i en uddamålsförlust."*
+- Live `app.json` contains **only** `gemini-synthesis` events. No `excerpt`
+  event exists in production.
+
+**Do not "fix" deterministic summaries. There is nothing to fix.**
+
+## KNOWN LIMITATION
+
+Deterministically grouping **differently-worded reports of the same underlying
+story** remains unsolved. This is the meaningful remaining Gemini use case.
+
+It is **deliberately not** being solved with rule-based clustering. The
+ambiguous cases — pre-match vs post-match, player interview vs match report,
+transfer vs match, unrelated stories sharing players, women's vs men's — would
+misfire and produce false merges. A rule set tuned only on the Kalmar fixture
+would look correct and then merge a transfer story into a match report.
+
+The deterministic layer is **scoped, not unfinished**: it handles what regex can
+do safely.
+
+## OPEN DECISION — do not describe Gemini as validated
+
+**Gemini adoption is undecided.** No successful controlled semantic evaluation
+has ever been obtained. Two manual full-size attempts returned 503; the
+production nightly succeeded by retrying:
+
+```
+news: 6 candidates, 88 dropped before Gemini, 16 excluded as not men's-team news
+gemini: model gemini-3.8-flash attempt 1/3 failed — Gemini HTTP 503
+news: gemini ok=true model=gemini-3.8-flash calls=2 events=3
+```
+
+That nightly produced 3 `gemini-synthesis` events, 2 of them multi-source. So
+Gemini **does** work in production — but the margin is one retry, and three
+consecutive manual single-shot runs failed (12:44, 21:10, 23:00 on 2026-09-27).
+
+**The open question is whether capacity is the binding constraint, not
+architecture.** Quota has never been observed as the problem: no nightly has
+hit a 429 or the call cap.
+
+## NEXT STEP
+
+> **Run one deliberate Gemini evaluation using the corrected, realistic fixture
+> and inspect the result before deciding whether Gemini belongs in the
+> production news flow. That run must remain a ONE-REQUEST evaluation with no
+> retry and no model fallback, unless separately authorized.**
+
+Prerequisite, if not already done: the evaluation fixture articles must carry
+realistic `summary` values derived from their own fetched article text, so the
+deterministic baseline is a fair comparison. Fairness matters — summaries must
+be **comparable in length and register to real RSS descriptions**, not
+Gemini-like write-ups, or the comparison is rigged.
+
+## EXPLICITLY OUT OF SCOPE
+
+- Deterministic semantic clustering — deliberately declined.
+- Production summary, RSS, dedup, relevance or Gemini-synthesis changes.
+- `geminiRecheck.ts` still carries the same `premiar-bota` typo at line 40 and
+  would 404 on `t7` if run. Not fixed.
+- **Observation only:** `rss.ts` sets `dedupeKey` to the article URL, which makes
+  the title-key fallback in `buildNewsEvents` unreachable in production. Merging
+  works regardless, because `dedupeNews` overwrites the key on an exact-title
+  match. Fragile, not broken.
+- The failing `e2e/news.spec.ts` "2 källor" assertion. It predates 2026-09-28
+  and reflects that multi-source events now occur — the test encodes the old
+  single-source world.
+- The weakened `discipline states never contradict the warning data` e2e test —
+  it now greps `innerText` for text that moved into `aria-label` when E-002
+  landed, so it passes without guarding anything visible.
+- Untracked `.github/prompts/` session files (4+ commits).
+
+## Data-shape traps that have caused false bug reports
+
+- **`squadStats` is a LIST, and the field is `playerName`, NOT `name`.** Reading
+  `p.name` yields an empty set, which makes **every** player look like a
+  departed player and silently inverts E-003. This happened during the
+  2026-09-28 investigation.
+- `newsEvents[].sources[]` may be **empty for `title`** even when
+  `summaryMethod: "excerpt"` — the deterministic path does not always carry
+  per-source titles.
+
+## Stale markers in this file
+
+`E-001`, `E-003` and `E-004` are marked `OPEN` above but are **fixed** — see the
+E-002 commit `10aa66e` and the E-003/E-004 work recorded in the 2026-09-26
+section. **Verify in the code before trusting any `OPEN` marker here.**
+
+## Mistakes made during this investigation — worth not repeating
+
+- A `listModels` grep for `"gemini-2.5-flash"` returned no match, and that was
+  recorded as *"the key cannot access this model"*, which led to a wrong
+  "no billing" conclusion held for two days. The model was listed all along as
+  `models/gemini-2.5-flash`. **A model listing is not a capability test; only a
+  generation call proves reachability.**
+- The claim "the deterministic pipeline produces only headlines" was made from
+  fixture output and was wrong for production. **Check the fixture before
+  believing a defect report about the pipeline.**
+- Prompt-file workflows were built for GitHub Actions dispatch while `gh` was
+  already authenticated with the `workflow` scope the whole time. **Check
+  `gh auth status` before designing a browser or manual workflow.**
