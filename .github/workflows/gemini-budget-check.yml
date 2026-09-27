@@ -1,0 +1,42 @@
+name: Gemini budget check
+
+# Proves, at the cost of AT MOST ONE generation request, whether the Gemini
+# free tier still has budget for the news and player use cases.
+#
+# This workflow deliberately does NOT run the data pipeline. The pipeline can
+# multiply one logical call into 4 models x 3 attempts = 12 requests, which is
+# how a previous session spent its entire daily allowance. This check cannot:
+# it makes 0 or 1 generation requests and then stops.
+#
+# It reads the key from the repository secret, so nothing has to be pasted,
+# exported, or written to disk locally.
+#
+# There is no `schedule:` on purpose. This must be run deliberately, by a human,
+# one at a time.
+
+on:
+  workflow_dispatch:
+
+# Serialise dispatches so two runs cannot spend concurrently.
+# cancel-in-progress is FALSE deliberately: cancelling a run that has already
+# issued its single request saves nothing and destroys the evidence.
+concurrency:
+  group: gemini-budget-check
+  cancel-in-progress: false
+
+# No write access. This workflow only reads a secret and prints to the log.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Budget check
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Override by editing this file, or leave as-is. Only ONE model is
+          # ever probed; there is no fallback list and no retry.
+          GEMINI_MODEL: gemini-3.8-flash
+        run: bash .github/scripts/gemini-budget-check.sh
