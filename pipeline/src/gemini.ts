@@ -258,6 +258,13 @@ async function callModel(
  * NOT retried, because retrying cannot help:
  *   400 malformed request, 401/403 bad key, 404 retired model — we break out.
  */
+export class GeminiCallError extends Error {
+  constructor(message: string, readonly calls: number) {
+    super(message);
+    this.name = "GeminiCallError";
+  }
+}
+
 async function callGemini(articles: GeminiArticleInput[]): Promise<GeminiCallResult> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY is not set");
@@ -273,7 +280,7 @@ async function callGemini(articles: GeminiArticleInput[]): Promise<GeminiCallRes
             `keeping deterministic events to protect the daily quota`,
         );
         errors.push(`call cap ${MAX_TOTAL_CALLS} reached`);
-        throw new Error(errors.join(" | "));
+        throw new GeminiCallError(errors.join(" | "), calls);
       }
       try {
         const r = await callModel(model, articles, key);
@@ -295,7 +302,10 @@ async function callGemini(articles: GeminiArticleInput[]): Promise<GeminiCallRes
       }
     }
   }
-  throw new Error(errors.join(" | "));
+  // The call count MUST survive the throw. Previously it was a plain local,
+  // so a 3-attempt failure reported `calls=0` in the summary line and made
+  // an expensive failure look free. Observed in workflow run 36319955524.
+  throw new GeminiCallError(errors.join(" | "), calls);
 }
 
 const Parsed = z.object({
@@ -430,7 +440,13 @@ export async function synthesizeWithGemini(
   } catch (e) {
     return {
       result: null,
-      status: { ok: false, error: e instanceof Error ? e.message : String(e), calls: 0 },
+      // Preserve the real call count. A 3-attempt 503 run costs 3 requests,
+      // and reporting 0 hid that from every summary and budget decision.
+      status: {
+        ok: false,
+        error: e instanceof Error ? e.message : String(e),
+        calls: e instanceof GeminiCallError ? e.calls : 0,
+      },
       raw: null,
     };
   }

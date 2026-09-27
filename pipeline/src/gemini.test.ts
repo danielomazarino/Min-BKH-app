@@ -607,3 +607,52 @@ describe("daily quota protection", () => {
     delete process.env.GEMINI_RETRY_DELAY_MS;
   });
 });
+
+// ---------- the call count must survive a failure ----------
+//
+// Workflow run 36319955524 (2026-09-27) retried 3 times against 503s and the
+// summary line reported `calls=0`. The count was a local variable in callGemini
+// that was lost when the error was thrown, so an expensive failure looked free.
+// Every budget decision is made from this number, so it is pinned here.
+
+describe("call accounting on failure", () => {
+  const ARTICLE: GeminiArticleInput[] = [
+    { id: "a4", publisher: "SVT", title: "T", url: "u", publishedAt: "d", categoryHint: "unknown" },
+  ];
+
+  it("reports the real number of calls spent when every attempt 503s", async () => {
+    process.env.GEMINI_RETRY_DELAY_MS = "0";
+    process.env.GEMINI_MODEL = "gemini-3.8-flash"; // pin to ONE model
+    const mock = vi.fn(() => Promise.resolve(new Response("busy", { status: 503 })));
+    vi.stubGlobal("fetch", mock);
+    process.env.GEMINI_API_KEY = "test-key";
+
+    const { result, status } = await synthesizeWithGemini(ARTICLE);
+
+    expect(result).toBeNull();
+    expect(status.ok).toBe(false);
+    // 1 initial attempt + 2 retries, all against the single pinned model.
+    expect(status.calls).toBe(3);
+    // The reported number must match what was actually sent, not a guess.
+    expect(status.calls).toBe(mock.mock.calls.length);
+
+    delete process.env.GEMINI_RETRY_DELAY_MS;
+    delete process.env.GEMINI_MODEL;
+  });
+
+  it("reports 0 calls when the model is retired immediately (404, never retried)", async () => {
+    process.env.GEMINI_MODEL = "gemini-3.8-flash";
+    const mock = vi.fn(() => Promise.resolve(new Response("gone", { status: 404 })));
+    vi.stubGlobal("fetch", mock);
+    process.env.GEMINI_API_KEY = "test-key";
+
+    const { status } = await synthesizeWithGemini(ARTICLE);
+
+    // 404 is not retryable, so exactly one attempt is spent. Reporting 0 here
+    // would understate the cost of a real request that was sent.
+    expect(status.calls).toBe(1);
+    expect(status.calls).toBe(mock.mock.calls.length);
+
+    delete process.env.GEMINI_MODEL;
+  });
+});

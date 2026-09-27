@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "pipeline": "tsx pipeline/src/run.ts",
-    "pipeline:validate": "tsx pipeline/src/validate.ts"
+    "pipeline:validate": "tsx pipeline/src/validate.ts",
+    "gemini:status": "bash .github/scripts/gemini-status.sh",
+    "gemini:history": "bash .github/scripts/gemini-status.sh --history"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
