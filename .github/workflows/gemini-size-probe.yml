@@ -1,0 +1,45 @@
+name: Gemini size probe
+
+# Tests whether HTTP 503 is caused by REQUEST SIZE or by random capacity.
+#
+# WHY: run 36319711479 returned HTTP 200 for a tiny probe (32 output tokens,
+# one sentence). Run 36319955524, ~5 minutes later, returned 503 three times
+# for a ~19K-char article batch on the SAME model. Same key, minutes apart,
+# different payload size. That is a correlation, not a proof.
+#
+# This walks a ladder of increasing payload sizes and reports where the API
+# stops answering. The threshold IS the answer.
+#
+# COST: 4 requests (one per rung), never retried. Edit SIZE_LADDER to change.
+#   There is no free way to run this — a size test requires real requests,
+#   so this is deliberately NOT part of `gemini:status`.
+#
+# It stops at the FIRST failure and does not climb further, so a fully
+# blocked model costs 1 request, not 4.
+#
+# No schedule. Deliberate human decision only.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: gemini-size-probe
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Size ladder
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+          # Comma/space separated character counts. Four rungs = four requests.
+          SIZE_LADDER: "200 2000 8000 19000"
+        run: bash .github/scripts/gemini-size-probe.sh

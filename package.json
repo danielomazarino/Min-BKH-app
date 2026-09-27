@@ -15,7 +15,8 @@
     "pipeline": "tsx pipeline/src/run.ts",
     "pipeline:validate": "tsx pipeline/src/validate.ts",
     "gemini:status": "bash .github/scripts/gemini-status.sh",
-    "gemini:history": "bash .github/scripts/gemini-status.sh --history"
+    "gemini:history": "bash .github/scripts/gemini-status.sh --history",
+    "gemini:size-probe": "bash .github/scripts/gemini-size-probe.sh"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
