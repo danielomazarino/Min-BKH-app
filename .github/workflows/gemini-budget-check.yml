@@ -33,6 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # REQUIRED. Without this the repository is never downloaded and the
+      # script below cannot exist on the runner.
+      # Omitting this caused run 36319588544 to fail with exit 127
+      # ("No such file or directory") after 0 Gemini requests were spent.
+      - uses: actions/checkout@v4
+
       - name: Budget check
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
