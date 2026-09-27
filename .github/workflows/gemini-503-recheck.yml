@@ -1,0 +1,50 @@
+name: Gemini 503 recheck
+
+# Answers exactly one question, at the cost of AT MOST ONE request:
+#
+#   Is the HTTP 503 still happening for a FULL-SIZE article payload?
+#
+# WHY NOT JUST USE THE BUDGET CHECK
+#   The budget check sends a 32-token probe. That probe returned HTTP 200 while
+#   the 503 was actively occurring (run 36319711479 vs 36319955524, five
+#   minutes apart). It is structurally incapable of detecting this problem.
+#   This check sends the REAL payload at the REAL size, so its result is
+#   directly comparable to the runs that failed.
+#
+# COST: exactly ONE generation request. `geminiRecheck.ts` calls fetch once and
+# has no retry and no model fallback. It does NOT use synthesizeWithGemini.
+#
+# A 200 here proves the API accepted a full-size payload. It does NOT prove the
+# output is usable — that needs `gemini-semantic-check.yml`.
+#
+# No schedule. Deliberate, one request at a time.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: gemini-503-recheck
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: One full-size request
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+        run: npm run --silent gemini:recheck
