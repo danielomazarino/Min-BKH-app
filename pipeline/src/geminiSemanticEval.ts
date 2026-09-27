@@ -62,21 +62,60 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 
 const hr = (s: string) => console.log(`\n${"=".repeat(72)}\n${s}\n${"=".repeat(72)}`);
 
-/** Numbers, names and facts in a summary that must trace to supplied text. */
+/** Names and scorelines that are part of the fixture, not claims to verify. */
 const GROUNDING_TOKENS = [
   "Lindgren", "Kalmar", "Häcken", "Mjällby", "Allsvenskan", "Champions League",
   "Inter", "Juve", "Bajen", "Feyenoord", "Samsung", "3-0", "2-1", "1-0", "hattrick",
 ];
 
-function auditSummary(summary: string, texts: Map<string, string>): string[] {
-  // Every capitalised proper noun or number in the summary must appear in the
-  // article text we supplied. A name that appears in neither is a fabrication
-  // risk and is surfaced rather than trusted.
-  const proper = summary.match(/\b[A-ZÅÄÖ][\wåäöÅÄÖ-]{2,}\b/g) ?? [];
-  const numbers = summary.match(/\b\d+[.,]?\d*\b/g) ?? [];
-  const all = [...new Set([...proper, ...numbers])];
-  const corpus = [...texts.values()].join(" ").toLowerCase();
-  return all.filter((t) => !corpus.includes(t.toLowerCase()) && !GROUNDING_TOKENS.includes(t));
+/** Ordinary Swedish words that begin a sentence or a name; never a claim. */
+const CLAIM_STOPWORDS = new Set([
+  "En", "Ett", "Och", "Men", "Det", "Den", "De", "Som", "För", "Med", "På", "Av",
+  "Om", "In", "Han", "Hon", "Vi", "De", "Här", "Nu", "Så", "Till", "Från", "Vid",
+  "Under", "Efter", "Innan", "När", "Där", "Då", "Alla", "Inga", "Bara", "Mer",
+  "Mest", "Mycket", "Ingen", "Inget", "Delad", "Seger", "Defensivt", "Offensivt",
+]);
+
+interface ClaimAudit {
+  /** Claim found in at least one supplied article, with which ones. */
+  traceable: Array<{ claim: string; sources: string[] }>;
+  /** Claim found in NO supplied article. Only these are fabrication risks. */
+  untraceable: string[];
+}
+
+/**
+ * Traceability audit of a Gemini synthesis.
+ *
+ * THE RULE: a factual claim must be traceable to AT LEAST ONE supplied source
+ * article. For a multi-source synthesis a claim may legitimately be supported
+ * COLLECTIVELY across several supplied articles, so "appears somewhere in the
+ * corpus" is the correct test, not "appears in the lead article".
+ *
+ * Only claims that cannot be traced to ANY supplied source are flagged. A
+ * supported claim is not a defect and must not be reported as one.
+ */
+function auditClaims(summary: string, textById: Map<string, string>): ClaimAudit {
+  // Unicode-aware: \w does NOT include letters like e-acute, which would
+  // split "Andrésen" into "Andr" and then wrongly report it as fabricated.
+  // The same class keeps hyphenated tokens such as "3-0" intact instead of
+  // splitting them into two meaningless single digits.
+  const proper = summary.match(/\p{Lu}[\p{L}\p{M}-]{2,}/gu) ?? [];
+  const numbers = summary.match(/\b\d+(?:[.,]\d+)*(?:-\d+)*\b/gu) ?? [];
+  const claims = [...new Set([...proper, ...numbers])].filter(
+    (c) => !GROUNDING_TOKENS.includes(c) && !CLAIM_STOPWORDS.has(c),
+  );
+
+  const traceable: ClaimAudit["traceable"] = [];
+  const untraceable: string[] = [];
+  for (const claim of claims) {
+    const needle = claim.toLowerCase();
+    const sources = [...textById.entries()]
+      .filter(([, body]) => body.toLowerCase().includes(needle))
+      .map(([id]) => id);
+    if (sources.length > 0) traceable.push({ claim, sources });
+    else untraceable.push(claim);
+  }
+  return { traceable, untraceable };
 }
 
 async function main() {
@@ -228,16 +267,25 @@ async function main() {
   }
   console.log(invented === 0 ? "  no invented URLs." : `  ${invented} invented URL(s).`);
 
-  console.log("\n  Claims in Gemini summaries not traceable to supplied article text:");
-  let anyUnsupported = false;
+  console.log("");
+  console.log("  Claim traceability — a claim needs AT LEAST ONE supplied source.");
+  console.log("  Multi-source synthesis may be supported collectively; that is fine.");
+  console.log("  Only claims traceable to NO supplied article are flagged.");
+  let anyUntraceable = false;
   for (const e of events) {
-    const unsup = auditSummary(e.summary, textById);
-    if (unsup.length) {
-      anyUnsupported = true;
-      console.log(`    "${e.title.slice(0, 50)}": ${unsup.join(", ")}`);
+    const { traceable, untraceable } = auditClaims(e.summary, textById);
+    if (traceable.length) {
+      console.log(`\n    "${e.title.slice(0, 52)}"`);
+      for (const t of traceable) {
+        console.log(`      supported: ${t.claim}  <- ${t.sources.join(", ")}`);
+      }
+    }
+    if (untraceable.length) {
+      anyUntraceable = true;
+      console.log(`      !! UNTRACEABLE (no supplied source): ${untraceable.join(", ")}`);
     }
   }
-  if (!anyUnsupported) console.log("    none detected.");
+  if (!anyUntraceable) console.log("\n    No untraceable claims. Every claim maps to a supplied article.");
 
   hr("8. WHAT GEMINI ADDED (vs deterministic alone)");
   const bSrc = baseline.reduce((n, e) => n + e.sources.length, 0);
