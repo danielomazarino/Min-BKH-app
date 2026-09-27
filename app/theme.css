@@ -761,6 +761,21 @@ main {
    Discipline — a meter, not a badge. Colour is always paired with a word.
    ========================================================================== */
 
+/* E-002: one status label per GROUP, not one per player. The header is an
+   <h3> so the screen-reader outline is Brief > Kortläget > Avstängd. */
+.cstat-group {
+  margin-top: var(--s2);
+}
+.cstat-group-h {
+  font-size: var(--t-meta);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+  margin: 0;
+  padding: 0 0 var(--s1);
+  border-bottom: 1px solid var(--hairline);
+}
+
 .cstat {
   display: flex;
   align-items: flex-start;

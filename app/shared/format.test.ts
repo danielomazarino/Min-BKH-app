@@ -5,6 +5,7 @@ import {
   currentSquadDiscipline,
   daysUntil,
   formGuide,
+  groupDiscipline,
   resultOf,
   scoreFor,
   scorerLine,
@@ -131,6 +132,95 @@ describe("urgentDiscipline", () => {
   it("excludes players who are not near a suspension", () => {
     const list = [mk("Clear", "none", 0, 0), mk("Served", "served", 4, 0), mk("AtRisk", "at_risk", 2, 2)];
     expect(urgentDiscipline(list).map((d) => d.playerName)).toEqual(["AtRisk"]);
+  });
+});
+
+describe("groupDiscipline — E-002, one status label per GROUP", () => {
+  const mk = (name: string, status: PlayerDiscipline["status"], total: number, pending: number): PlayerDiscipline => ({
+    playerId: name,
+    playerName: name,
+    warningCount: total,
+    warningsUntilSuspension: pending,
+    redCards: 0,
+    status,
+    relevantWarnings: [],
+    incomplete: false,
+  });
+
+  it("sorts suspended players into the suspended group and at-risk into the other", () => {
+    const groups = groupDiscipline(
+      [mk("Rygaard", "at_risk", 5, 2), mk("Doumbia", "suspended_next", 6, 3), mk("Svanback", "at_risk", 2, 2)],
+      3,
+    );
+    expect(groups.map((g) => g.severity)).toEqual(["suspended", "at-risk"]);
+    expect(groups[0].players.map((d) => d.playerName)).toEqual(["Doumbia"]);
+    expect(groups[1].players.map((d) => d.playerName)).toEqual(["Rygaard", "Svanback"]);
+  });
+
+  // THE REGRESSION THIS CHANGE COULD HAVE CAUSED.
+  // cstatFor renders "En varning kvar" for a player 1 away and
+  // "2 varningar kvar" for one 2 away. Grouping by that string would give
+  // three groups for three at-risk players and change nothing at all.
+  it("puts players with DIFFERENT state strings in the SAME group", () => {
+    const oneAway = mk("OneAway", "at_risk", 5, 2); // state: "En varning kvar"
+    const twoAway = mk("TwoAway", "at_risk", 4, 1); // state: "2 varningar kvar"
+    expect(cstatFor(oneAway, 3).state).not.toBe(cstatFor(twoAway, 3).state);
+    expect(cstatFor(oneAway, 3).severity).toBe(cstatFor(twoAway, 3).severity);
+
+    const groups = groupDiscipline([oneAway, twoAway], 3);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].severity).toBe("at-risk");
+    expect(groups[0].players).toHaveLength(2);
+  });
+
+  it("emits exactly ONE header per group, regardless of group size", () => {
+    const groups = groupDiscipline(
+      [mk("A", "at_risk", 2, 2), mk("B", "at_risk", 3, 2), mk("C", "at_risk", 4, 2), mk("D", "suspended_next", 6, 3)],
+      3,
+    );
+    // 2 groups for 4 players — the whole point of the change.
+    expect(groups).toHaveLength(2);
+    expect(groups.every((g) => typeof g.label === "string" && g.label.length > 0)).toBe(true);
+  });
+
+  it("returns no groups at all for an empty input, so the empty state can render", () => {
+    // A bare header with no rows is the failure mode this guards.
+    expect(groupDiscipline([], 3)).toEqual([]);
+  });
+
+  it("drops no player: group sizes sum to the input length", () => {
+    const input = [
+      mk("A", "suspended_next", 6, 3),
+      mk("B", "at_risk", 2, 2),
+      mk("C", "at_risk", 3, 2),
+      mk("D", "at_risk", 4, 1),
+    ];
+    const groups = groupDiscipline(input, 3);
+    expect(groups.reduce((n, g) => n + g.players.length, 0)).toBe(input.length);
+  });
+
+  it("preserves the caller's order WITHIN a group (closest-to-suspension first)", () => {
+    const input = urgentDiscipline([
+      mk("Zebra", "at_risk", 9, 1),
+      mk("Alpha", "at_risk", 2, 2),
+      mk("Middle", "at_risk", 3, 2),
+    ]);
+    const groups = groupDiscipline(input, 3);
+    expect(groups[0].players.map((d) => d.playerName)).toEqual(input.map((d) => d.playerName));
+  });
+
+  it("uses count-free header labels that cannot contradict a row", () => {
+    // A header reading "En varning kvar" would be false for a player who is
+    // two away, so the labels are deliberately neutral category names.
+    const groups = groupDiscipline([mk("A", "suspended_next", 6, 3), mk("B", "at_risk", 2, 1)], 3);
+    for (const g of groups) expect(g.label).not.toMatch(/\b[0-9]\b/);
+    expect(groups.map((g) => g.label)).toEqual(["Avstängd", "Varningar kvar"]);
+  });
+
+  it("keeps a red-card player in the suspended group", () => {
+    const groups = groupDiscipline([mk("Red", "red_suspended", 0, 0)], 3);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].severity).toBe("suspended");
   });
 });
 

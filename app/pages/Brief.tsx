@@ -23,6 +23,7 @@ import {
   fmtDateTime,
   fmtDay,
   formGuide,
+  groupDiscipline,
   matchTeams,
   RESULT_WORD,
   resultOf,
@@ -61,10 +62,15 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
   // Discipline is scoped to the current squad AND sorted by urgency. Every
   // qualifying player is rendered — the old UI capped at 2 suspended + 3
   // at-risk, so the heading said "5 att hålla koll på" while showing 4 rows.
+  // E-002: grouped by SEVERITY so the status label appears once per group
+  // instead of once per player. Never group by the `state` string — it is
+  // per-player text ("En varning kvar" vs "2 varningar kvar") and would
+  // produce one group per player.
   const urgent = useMemo(
     () => urgentDiscipline(currentSquadDiscipline(data.discipline, data.squadStats)),
     [data.discipline, data.squadStats],
   );
+  const groups = useMemo(() => groupDiscipline(urgent, threshold), [urgent, threshold]);
 
   const goMatch = (id: number) => navigate(`/matcher?id=${id}`);
   const lastId = data.lastResult?.id ?? null;
@@ -125,13 +131,22 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
           </p>
         ) : (
           <div data-testid="discipline" data-count={urgent.length}>
-            {urgent.map((d: PlayerDiscipline) => (
-              <CstatRow
-                key={d.playerId}
-                d={d}
-                threshold={threshold}
-                onOpen={() => navigate(`/trupp?id=${encodeURIComponent(d.playerId)}`)}
-              />
+            {groups.map((g) => (
+              <div className="cstat-group" key={g.severity} data-testid="discipline-group" data-severity={g.severity}>
+                {/* E-002: the status label appears ONCE per group, not once
+                    per player. Neutral wording — it never claims a count. */}
+                <h3 className="cstat-group-h" data-testid="discipline-group-label">
+                  {g.label}
+                </h3>
+                {g.players.map((d: PlayerDiscipline) => (
+                  <CstatRow
+                    key={d.playerId}
+                    d={d}
+                    threshold={threshold}
+                    onOpen={() => navigate(`/trupp?id=${encodeURIComponent(d.playerId)}`)}
+                  />
+                ))}
+              </div>
             ))}
             <Link className="mod-label mod-link" to="/matcher" data-testid="discipline-more">
               Alla matcher och kort <ChevronRight aria-hidden />
@@ -303,9 +318,12 @@ function ResultRow({ match, onOpen }: { match: MatchRef; onOpen?: () => void }) 
 /**
  * One player's card situation.
  *
- * The state text is derived from the PENDING warning count, so it can never
- * contradict the season total the way the old fixed label did ("En varning
- * från avstängning" next to "5 varningar").
+ * E-002: the status TEXT moved up to the group header, so this row no
+ * longer prints it. What remains is strictly per-player data: the name, the
+ * card meter (how full, i.e. how close to the threshold) and the real season
+ * total. The state string is still computed, but only for the row's
+ * accessible name — a screen reader user otherwise loses the one sentence
+ * that says whether this player is out or one warning away.
  *
  * Section L: the row is a BUTTON and opens that player's sheet, and the
  * actual season card total is printed. The number comes from
@@ -330,7 +348,7 @@ function CstatRow({
       <span className={`mark ${severity}`} aria-hidden="true" />
       <span className="body">
         <span className="who">{d.playerName}</span>
-        <span className="state">{state}</span>
+        {/* Per-player position is still shown visually by the meter below. */}
         <span className={`meter${severity === "suspended" ? " served" : ""}`} aria-hidden="true">
           {Array.from({ length: threshold }, (_, i) => (
             <span key={i} className={`notch${i < on ? " on" : ""}`} />

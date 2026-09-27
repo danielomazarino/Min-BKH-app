@@ -232,6 +232,66 @@ export function urgentDiscipline(all: PlayerDiscipline[]): PlayerDiscipline[] {
 }
 
 // ---------------------------------------------------------------------------
+// Discipline grouping — one label per STATUS, not per player
+//
+// The old UI printed `state` inside every row, so five qualifying players
+// restated the same idea five times. The status is a property of the group,
+// not of the individual, so it belongs in a group header.
+//
+// CRITICAL: group by `severity`, NEVER by the `state` string. `cstatFor`
+// renders "En varning kvar" and "2 varningar kvar" for two players of the
+// same severity, so grouping by `state` would produce N groups for N
+// players and defeat the whole change.
+// ---------------------------------------------------------------------------
+
+export type DisciplineGroup = {
+  severity: Cstat["severity"];
+  /** One label for the whole group. Neutral: it never asserts a count. */
+  label: string;
+  players: PlayerDiscipline[];
+};
+
+/**
+ * Neutral group labels, deliberately count-free.
+ *
+ * "En varning kvar" as a group heading would be a false claim for any
+ * at-risk player who is two warnings away, and "Avstängd nästa match"
+ * would contradict a red_suspended player whose suspension state is
+ * unknown. The exact position is still conveyed per player, by the
+ * notches in the card meter and the season tally.
+ */
+const DISCIPLINE_GROUP_LABEL: Record<Cstat["severity"], string> = {
+  suspended: "Avstängd",
+  "at-risk": "Varningar kvar",
+  other: "Övrigt kortläge",
+};
+
+/** Suspended first — being out matters more than being close. */
+const DISCIPLINE_GROUP_ORDER: Cstat["severity"][] = ["suspended", "at-risk", "other"];
+
+/**
+ * Group already-filtered discipline rows by severity, suspended first.
+ *
+ * Input order is preserved WITHIN each group, so the caller's sort (closest
+ * to suspension first) survives. Groups with no players are omitted, which
+ * is what makes the empty state reachable.
+ */
+export function groupDiscipline(all: PlayerDiscipline[], threshold = 3): DisciplineGroup[] {
+  const buckets = new Map<Cstat["severity"], PlayerDiscipline[]>();
+  for (const d of all) {
+    const { severity } = cstatFor(d, threshold);
+    const list = buckets.get(severity) ?? [];
+    list.push(d);
+    buckets.set(severity, list);
+  }
+  return DISCIPLINE_GROUP_ORDER.filter((s) => (buckets.get(s)?.length ?? 0) > 0).map((severity) => ({
+    severity,
+    label: DISCIPLINE_GROUP_LABEL[severity],
+    players: buckets.get(severity)!,
+  }));
+}
+
+// ---------------------------------------------------------------------------
 // Match timeline — turns MatchEvents into one ordered, readable list
 // ---------------------------------------------------------------------------
 
