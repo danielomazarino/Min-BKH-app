@@ -1462,3 +1462,204 @@ sheet up from `translateY(100%)`. Waiting for the transform to actually
 settle (`none` / identity matrix) returned **16px everywhere**. A sheet
 geometry assertion that does not wait for the resting state will report a
 large negative clearance and look like a catastrophic overlap.
+
+---
+
+# Next work after current production acceptance — 2026-09-27
+
+**Documentation-only closing pass.** No application code, tests or
+configuration were changed, no bugs were fixed, and nothing was deployed.
+This section exists so a fresh Space Bunny chat can continue from the exact
+current state of the completed product/UX/content pass without re-deriving
+anything.
+
+All sections above (E-*, B-*, L-*, P-*, N-001) are preserved history. This
+section supersedes nothing; it is the handoff.
+
+## Established workflow rule
+
+    USER AUTHORIZES SCOPE
+    → SPACE BUNNY IMPLEMENTS
+    → VALIDATES
+    → DEPLOYS
+    → REPORTS
+    → USER DECIDES WHETHER ANOTHER CHANGE PASS STARTS
+
+If a post-deployment finding appears **outside** the authorized scope, report
+it verbatim as:
+
+> **Post-deployment finding — not fixed in this pass**
+
+Do not silently expand scope. Do not begin exploratory investigation of new
+issues that were not named in the user's authorization.
+
+## Current verified state (2026-09-27) — do not re-derive
+
+This is the state the completed pass left behind. It is recorded here so a new
+chat does not repeat discovery. **Do not rerun these validations merely to
+document them.**
+
+| Item | Value |
+| --- | --- |
+| Production deployment | **green** |
+| Deployed assets | explicitly verified **after purging the stale service worker** |
+| Production ↔ local `dist` | **byte-match** |
+| Unit tests | **297 passing** |
+| E2E tests | **177 passing** |
+| `tsc -b` | clean |
+| eslint | clean |
+| `vite build` | clean |
+| `pipeline:validate` | clean |
+| CI run | **`36276855594` successful** |
+| Working tree | clean |
+| Latest commits | `586bc73` (product/UX pass), `d299722` (docs only) |
+
+## Outstanding items
+
+### N-001b — iPhone search-field acceptance · **HUMAN ACCEPTANCE REQUIRED**
+
+The search-field horizontal-shift problem **reported by the human user was
+NOT reproduced by Space Bunny.**
+
+Automated and browser verification showed, on the deployed application:
+
+- 390×844 — no horizontal movement
+- 375×812 — no horizontal movement
+- `scrollLeft` remained 0
+- `visualViewport.offsetLeft` remained 0
+- no overflow
+- iOS-related safeguards are present (16px field font, `min-width: 0`,
+  `scroll-padding-inline`)
+
+**This was not verified on the physical iPhone 13.** The e2e test asserts
+invariants (no scroll range, no movement, `font-size >= 16px`) rather than a
+pixel offset, so it is meaningful on any engine — but an invariant assertion
+is not the same as observing the defect gone on the device where it occurs.
+
+**Next action:** test the deployed application on the **physical iPhone 13**,
+especially focusing/tapping the **Spelare** search field, and observe whether
+the surrounding layout shifts horizontally.
+
+**Do not mark this accepted merely because browser tests pass.**
+
+### N-001a — `MatchDetail.playerStats` · **OPEN / FUTURE ENHANCEMENT**
+
+- `MatchDetail.playerStats` is **declared but currently not populated**.
+- The match sheet therefore honestly displays that no statistics are recorded.
+- **No statistics may be invented or inferred from event data.** The previous
+  implementation implied possession/shots from goal timestamps; that was
+  removed on purpose.
+- Actual match statistics should be added **only when a reliable source is
+  available.** See also P-008.
+
+### Former-player enrichment · **OPEN (future, conditional)**
+
+The player-first / search-first architecture is **now working** and has
+human/product acceptance (see below). Remaining enrichment fields, where
+reliable sources are **not currently available** — all **OPEN**:
+
+- photo
+- transfers / career detail
+- season statistics
+- matches / starts / minutes
+- goals / assists
+- cards, where appropriate
+- current / latest club
+- contract expiry
+- recent whereabouts / news
+
+**Architectural decisions that must be preserved (P-001, P-004, P-014):**
+
+- A player **can be searched and followed even when Häcken affiliation cannot
+  be verified.**
+- **"HÄCKEN OKÄNT" is preferable to inventing a connection.**
+- Following a player **must not depend on complete enrichment.**
+- **There is no master historical former-player database**, and none will be
+  built. Do not turn this into a requirement to research every former Häcken
+  player.
+- The intended future model is:
+
+      SEARCH → FOLLOW → optionally research the user's followed players later
+
+### Gemini news research · **NOT SOLVED**
+
+Gemini news research has **NOT yet produced a validated, usable news event.**
+Do not classify this as solved.
+
+- Do **not** spend additional Gemini quota in this closing pass.
+- Future work should be a **separate, deliberately bounded Gemini validation
+  experiment.**
+- **The Gemini experiment must not become release-critical** unless it produces
+  demonstrably useful, validated output. The safe fallback path is intact and
+  the app is healthy without it.
+- Background: free-tier key authenticates (`listModels` → HTTP 200) but has
+  **no generation capacity** — 404 "no longer available to new users" /
+  503 UNAVAILABLE. Bounded retry is in place. See the Gemini sections above.
+
+### E-003 — Amor Layouni in the discipline ledger · **OPEN**
+
+**E-003 — Amor Layouni remains in the discipline ledger as `at_risk` despite
+having been sold.**
+
+Correctly absent from the current squad (27 players), but still in the
+registry/former-player data and still carrying 2 warnings in the discipline
+ledger, which spans the full season including pre-transfer matches.
+
+Status: **OPEN.** Needs a **separate decision/fix pass. Do not fix now.**
+
+### 220ms sheet fade-in contrast dip · **OPEN DESIGN / ACCESSIBILITY DECISION**
+
+- There is a short **contrast dip during the ~220ms sheet fade-in** for users
+  without `prefers-reduced-motion`.
+- **At rest, contrast passes.**
+- **Reduced-motion removes the animation.**
+- The current implementation **deliberately preserves the iOS-style
+  transition.** Do not change it now.
+
+**Future decision:** either retain the animation as-is, or adjust the
+transition **if real-device / user testing demonstrates that the transient
+contrast is unacceptable.** Underlying analysis is in L-004 and L-011.
+
+## Human-verified player state
+
+The current player / followed-player UX has been **human-verified** to the
+following extent:
+
+- Former-player search works.
+- **Martin Ericsson** can be found and followed.
+- **Mats Hedén** (born 1976) can be found and followed.
+- Mats Hedén can be followed **even though Häcken enrichment is
+  `HÄCKEN OKÄNT`**.
+- Followed players are shown under **"Följda spelare"**.
+- The collection **remains visible after clearing the search**.
+- Saved players **can be opened from the followed-player list**.
+- The UI **does not invent a Häcken connection**.
+
+Observed collection state: `Följda spelare · 2` — Martin Ericsson (`HÄCKEN`),
+Mats Hedén (`HÄCKEN OKÄNT`).
+
+**Do not claim that every aspect of the player experience is fully accepted on
+physical iPhone** unless that has actually been tested. See N-001b.
+
+## Suggested continuation order
+
+**This is a suggested order only. It is NOT automatic authorization to
+implement any of it.** Each item still requires an explicit, separately
+authorized change pass.
+
+1. **Human acceptance on the physical iPhone 13** — especially N-001b.
+2. Review any findings from that real-device test.
+3. Decide whether any remaining Min BKH items warrant **another explicitly
+   authorized change pass**.
+4. Separately perform a **tightly bounded Gemini validation experiment**,
+   after quota reset.
+5. Address **E-003** separately, if still relevant.
+6. Consider **future player enrichment** only if it provides real user value.
+7. Consider **`MatchDetail.playerStats`** only when a reliable statistics
+   source is available.
+
+## Fresh-chat handoff statement
+
+> **The previous pass is closed. The next Space Bunny session must treat this
+> section as the current handoff state and must not assume that unresolved
+> findings are automatically authorized for implementation.**
