@@ -1,0 +1,40 @@
+name: Gemini semantic evaluation
+
+# ONE request. Evaluates whether the semantic layer produces materially more
+# useful supporter-facing news than deterministic filtering alone.
+#
+# This is an EVALUATION, not a gate. It changes nothing, writes no data, and
+# the pipeline does not depend on it. A 503 is a valid result.
+#
+# It deliberately does NOT use synthesizeWithGemini, which retries up to 6
+# times across models. This file calls fetch exactly once.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: gemini-semantic-eval
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: One request, then report
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+        run: npm run --silent gemini:eval

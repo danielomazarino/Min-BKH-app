@@ -17,7 +17,8 @@
     "gemini:status": "bash .github/scripts/gemini-status.sh",
     "gemini:history": "bash .github/scripts/gemini-status.sh --history",
     "gemini:size-probe": "bash .github/scripts/gemini-size-probe.sh",
-    "gemini:recheck": "tsx pipeline/src/geminiRecheck.ts"
+    "gemini:recheck": "tsx pipeline/src/geminiRecheck.ts",
+    "gemini:eval": "tsx pipeline/src/geminiSemanticEval.ts"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
