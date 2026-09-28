@@ -1759,9 +1759,12 @@ A previous pass reported that the deterministic path produces only headlines,
 with the summary repeating the title. **That was caused by the test fixture,
 not the pipeline.**
 
-- The evaluation fixture articles carry **no `summary`**, so `pickSummary()`
-  always falls through to `return sorted[0].title`. Any fixture without
+- The evaluation fixture articles **originally carried no `summary`**, so
+  `pickSummary()` always fell through to `sorted[0].title`. Any fixture without
   descriptions will produce `summaryMethod: "excerpt"` and summary == title.
+  **This was FIXED on 2026-09-28 in `2403290`** — all eight fixture articles now
+  carry text-derived summaries (73–127 characters, inside the real feed's
+  57–152 band). The behaviour described below is now historical.
 - **In production, `rss.ts` sets `summary` from `<description>`**, and the real
   `bkhacken.se` feed populates it with genuine 57–152 character prose
   descriptions, e.g. *"Bortamötet på Stadio Brianteo slutar i en uddamålsförlust."*
@@ -1876,6 +1879,13 @@ write the feature off either.
 
 ## Data-shape traps that have caused false bug reports
 
+- **The RSS `<description>` and the fetched article body can disagree.** For the
+  Champions League match guide, the live feed description reads *"Bortamötet på
+  Stadio Brianteo slutar i en uddamålsförlust"*, but the body text returned by
+  `fetchArticleTexts` contains **no** result — "uddamål" appears nowhere on the
+  page, and the only `6–0` present belongs to an unrelated sidebar link. The
+  fixture summary therefore states **no scoreline**. Do not write one, and note
+  that the two sources are not interchangeable.
 - **`squadStats` is a LIST, and the field is `playerName`, NOT `name`.** Reading
   `p.name` yields an empty set, which makes **every** player look like a
   departed player and silently inverts E-003. This happened during the
@@ -1883,6 +1893,22 @@ write the feature off either.
 - `newsEvents[].sources[]` may be **empty for `title`** even when
   `summaryMethod: "excerpt"` — the deterministic path does not always carry
   per-source titles.
+
+## Verification status of the fixture guard tests
+
+`pipeline/src/geminiSemanticEval.fixture.test.ts` (9 tests, added in
+`2403290`) was independently mutation-checked on 2026-09-28. All five deliberate
+breakages were caught, and the file was restored byte-identical:
+
+| Mutation | Result |
+|---|---|
+| Remove an article's summary entirely | **caught** |
+| Summary set equal to its own title | **caught** |
+| Summary pushed outside the RSS length band | **caught** |
+| `t2` summary gains the word "Häcken" (would change `EXPECTED_DROPPED`) | **caught** |
+| `t7` summary gains an invented scoreline | **caught** |
+
+The tests are therefore verified to be load-bearing, not merely passing.
 
 ## Stale markers in this file
 
