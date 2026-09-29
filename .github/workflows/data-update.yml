@@ -34,9 +34,21 @@ jobs:
       - name: Run data pipeline
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
-          # Gemini news synthesis. When unset the pipeline falls back to the
-          # previous deterministic news events (safe, no silent corruption).
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # GEMINI_API_KEY is deliberately NOT injected here.
+          #
+          # Option A (2026-09-29): Gemini news synthesis is disabled from the
+          # production nightly pipeline. With the key absent, gemini.ts returns
+          # { result: null, calls: 0 } before any network call, and run.ts takes
+          # the deterministic branch unconditionally — so bad Gemini output is
+          # structurally impossible, not merely filtered.
+          #
+          # Reason: B-004, false merges of pre-match service articles into
+          # post-match result events, which reached production.
+          #
+          # The repository secret is retained on purpose: the gemini-*.yml
+          # research workflows still need it for manual, deliberate runs.
+          # Re-enabling requires B-004 to be fixed first — restoring this one
+          # line is not sufficient on its own.
         run: npm run pipeline
 
       - name: Validate generated data
