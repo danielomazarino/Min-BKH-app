@@ -809,6 +809,255 @@ source URL, publisher, title and date preserved.
 
 ---
 
+### B-005 · Nightly data updates are never deployed — the live feed is stale
+`DONE — infrastructure · diagnosed 2026-09-29 · fixed and verified 2026-09-29`
+
+> **Fixed in commits `3ebc63e` (deployment + guard) and `1b97168` (Option A).**
+> Production verified 2026-09-29: served `data/app.json` sha256 prefix
+> `c7ac177e8c0c3e47` — 6 events, all `rss-description`, all single-source, the
+> three false Gemini groups gone.
+
+**Post-deployment finding — not fixed in this pass** applies to **B-004** only.
+B-005 itself is closed. See "B-004 status" below.
+
+#### Observed production symptom
+
+The "Right now" news feed shows **3 event groups**, two of which merge unrelated
+stories. All three are `gemini-synthesis`. The user-visible defect:
+
+| Card | Merged content | Correct? |
+|---|---|---|
+| Gustav Lindgren 5–0 Kalmar | post-match report **+ pre-match "matchtruppen"** | ❌ |
+| Lindberg 1–1 Mjällby | post-match report **+ besöksinformation + matchtruppen** | ❌ |
+| TV4 Play streaming | 1 article | ✅ |
+
+#### Confirmed evidence
+
+1. Live `data/app.json` (fetched from the deployed Pages origin) and local
+   `public/data/app.json` are **byte-identical** — md5
+   `48828dbfacbbeb992d852c79e5c956d9`, local mtime **2026-09-27 14:20**.
+2. That state matches git `7dbbafc` "data: nightly update 2026-09-27".
+3. All 3 live events carry `summaryMethod: "gemini-synthesis"`, ids
+   `event-gemini-{0,1,2}-…`. Run `36292290265` (2026-09-27 03:45) logged
+   `gemini ok=true calls=2 events=3` — **this run produced the live data.**
+4. `origin/main` contains a **newer** data commit, `c653ecb` (2026-09-28 03:51,
+   the nightly whose Gemini failed). Its output is **6 events, all
+   `rss-description`, all single-source — correct.** The three bad groups do
+   not exist in it.
+5. **No deploy has ever run for a bot data commit.** Checked `2bf0661`,
+   `a58ae68`, `7dbbafc`, `c653ecb` — 0 deploy runs each. Last successful
+   deploy is `7457c23` (2026-09-28 00:05), which predates `c653ecb`.
+6. The **deterministic path is provably incapable** of producing these merges.
+   Running the real `dedupeNews` + `buildNewsEvents` over the live articles
+   yields **6 separate single-source events**; `normalizeTitle` of every merged
+   pair returns distinct strings.
+7. A stale service worker is **ruled out**: `globPatterns` excludes `.json`,
+   `app.json` is not precached, and `/data/*.json` is `NetworkFirst`. The
+   origin itself serves the bad data.
+
+#### Root cause (confirmed)
+
+**Category C — production/deployment mismatch. Not a grouping regression, and
+not Gemini capacity.**
+
+`data-update.yml` commits and pushes with the default `GITHUB_TOKEN`. GitHub
+**does not trigger new workflow runs from `GITHUB_TOKEN` pushes** (recursion
+guard). `deploy.yml` is `on: push: branches: [main]`, so it never observes the
+nightly bot's data commit. **Every nightly regenerates `public/data/app.json`,
+commits it, and it is never built or published.** Production has been serving
+whatever data existed at the last *human* deploy.
+
+This is a **latent infrastructure defect**, not a one-off: the news feed, squad,
+discipline ledger and former players on production are all pinned to data from
+2026-09-27, regardless of how many nightlies have run since.
+
+#### Coding fix to be prepared
+
+- Make the nightly publish its data, e.g. have `data-update.yml` build and
+  deploy after a successful commit (or dispatch `deploy.yml` with an explicit
+  override that is not `GITHUB_TOKEN`-recursion-blocked).
+- Add a guard so this cannot silently regress — e.g. a check that the deployed
+  `data/app.json` matches the committed one.
+
+#### Fix as implemented — commit `3ebc63e`
+
+**Mechanism chosen: `workflow_dispatch` of `deploy.yml`, pinned to the data
+commit SHA.** (Option (a). Option (b) — building inside `data-update.yml` — was
+rejected because it would duplicate the whole build/publish pipeline and fork
+the Pages deployment path away from `deploy.yml`.)
+
+- `data-update.yml` gained `actions: write`, and the commit step now records the
+  pushed SHA as a step output.
+- `deploy.yml` gained an optional `workflow_dispatch` input `commit`. The build
+  job resolves it to a ref and checks that ref out explicitly. Empty input →
+  current `GITHUB_SHA`, so manual and push deploys are unchanged.
+
+**Why the stale-checkout risk is real and how it is closed.** `actions/checkout`
+in a *separate* workflow run resolves `main` at dispatch time, not at the moment
+the data was committed. Two nightlies, or a human commit landing in between,
+could make a deploy publish data that is not the data it was dispatched for.
+Pinning to the exact SHA removes the window entirely.
+
+**Why no loop is possible.**
+
+- `deploy.yml` **never pushes anything** — it checks out, builds, and calls
+  `deploy-pages`. It cannot produce a commit, so it cannot trigger any workflow.
+- `data-update.yml` triggers only on `schedule` and `workflow_dispatch`. It is
+  *not* push-triggered, so a deploy can never cause a data update.
+- The dispatch uses `GITHUB_TOKEN`, but `workflow_dispatch` is a distinct event
+  and is not suppressed by the push-recursion guard — that asymmetry is exactly
+  what makes this work where a push would not.
+- Net: deploy → (no commit) → end. There is no edge from deploy back into
+  `data-update.yml`, so the cycle has no return path.
+
+**Ordinary pushes still deploy — verified.** The `3ebc63e` push itself triggered
+`deploy.yml` automatically (run `36501116186`, conclusion `success`). The `push:
+branches: [main]` trigger was not modified.
+
+**Guard against silent recurrence.** When — and only when — the data actually
+changed, `data-update.yml` now: dispatches the pinned deploy, locates the run,
+waits for completion, fails unless the conclusion is `success`, then compares
+`git show HEAD:public/data/app.json` against the **bytes served** at
+`https://danielomazarino.github.io/Min-BKH-app/data/app.json`. Any of the
+following fails the run loudly: no run appears within 10 min; the deploy ends in
+any non-success state; the served file differs from the committed file. The
+final check is the important one — it catches a deploy that reports success
+while serving stale data, which a run-status check alone would miss.
+
+**Production verification (2026-09-29).** After `3ebc63e` deployed,
+`curl` of the served `app.json` gave sha256 prefix `c7ac177e8c0c3e47`, identical
+to the committed `c653ecb` payload: **6 events, every `summaryMethod`
+`rss-description`, every event single-source, zero `gemini-synthesis`.** The
+three false groups are no longer served.
+
+#### Option A — Gemini disabled in the nightly pipeline (commit `1b97168`)
+
+Configuration-only: the `GEMINI_API_KEY` env injection was removed from
+`data-update.yml`, and nothing else. No feature flag was added.
+
+```
+DETERMINISTIC NEWS = production-authoritative path
+GEMINI             = disabled from the production nightly pipeline
+```
+
+With the key absent, `synthesizeWithGemini` returns `{ result: null, calls: 0 }`
+**before any network call**, and `run.ts` takes the deterministic branch
+unconditionally. Bad Gemini synthesis is therefore structurally impossible in the
+nightly run — not filtered, not suppressed after the fact, never invoked.
+
+The repository secret is **deliberately retained**: the `gemini-*.yml` research
+workflows still read it for manual, deliberate runs.
+
+**Re-enabling Gemini requires fixing B-004 first.** Restoring the single env line
+is necessary but not sufficient.
+
+#### Deliberately out of scope
+
+- **No change to `newsEvents.ts`, `dedupe.ts` or any grouping code.** It is
+  correct, and the deterministic output is already right.
+- **No Gemini calls.** Gemini's 503 is a separate, already-documented question.
+- **B-004 is NOT fixed by this.** B-004 (Gemini merging pre-match notices into
+  post-match events) is a genuine latent defect — it produced exactly these three
+  groups on 2026-09-27 — but it is **not** today's incident and is tracked
+  separately.
+
+#### Note on the reported cause
+
+The initial hypothesis going into this investigation was that today's 503s meant
+the feed had fallen back to the deterministic pipeline, so the bad grouping must
+come from deterministic code. **That hypothesis is false.** The deployed data
+predates today's 503s entirely; it is Gemini output from two days earlier. The
+reason the feed was not corrected by the 503s is that a failed Gemini run was
+never going to be published either — the deploy gap blocks *all* data updates,
+not just successful ones.
+
+---
+
+### B-004 · Gemini event grouping merges unrelated stories (regression)
+`OPEN — data pipeline · NEW 2026-09-29 · NOT YET DIAGNOSED`
+
+> **Post-deployment finding — not fixed in this pass.**
+>
+> Still **OPEN** as of 2026-09-29. B-005 and Option A stopped the bleeding
+> (production no longer serves these false merges) but **did not fix the
+> underlying Gemini grouping defect**, and disabling Gemini does not make it
+> irrelevant. The Gemini prompt, schema, clustering and evaluation fixtures were
+> deliberately **not** touched in this pass.
+>
+> **B-004 must be fixed and re-validated before Gemini is re-enabled.** Restoring
+> the `GEMINI_API_KEY` line in `data-update.yml` is necessary but not sufficient.
+
+**One event card is standing in for two different stories.** The summary prose
+is not the defect — it is correct. The **grouping** is wrong, and grouping is
+what the user sees as one card with a misleading summary.
+
+**Evidence — live `public/data/app.json`, 3 events, all `gemini-synthesis`,
+6 articles total, `articleTextUnavailable=0`.** Two of the three events are
+false merges:
+
+| Event | Sources merged | Verdict |
+|---|---|---|
+| 0 | 2026-09-20 `Gustav Lindgren: "Det kändes väldigt bra från den första minuten"` **+ 2026-09-19 `BK Häcken åker till Kalmar – här är matchtruppen`** | ❌ post-match report + **pre-match squad announcement** |
+| 1 | 2026-09-11 `Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby` **+ `Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby` + `Matchtruppen inför Mjällby på Nordic Wellness Arena`** | ❌ post-match report + **two pre-match service notices** |
+| 2 | 2026-09-11 `Stötta BK Häcken när du streamar Allsvenskan på TV4 Play` | ✅ correct, single source |
+
+**This is systematic, not random.** All 3 false merges are the same shape:
+**pre-match service articles (matchtrupp, besöksinformation, matchtröjehelg)
+absorbed into the post-match result event.** No other false merge is present.
+
+**It is a regression, not a pre-existing gap.** The deterministic path groups
+only on identical normalised titles within ±3 days, so it would have emitted
+these as 6 separate events. Turning on Gemini grouping made the feed *worse*.
+
+**Leading hypothesis — the system prompt is under-specified exactly here.**
+`SYSTEM_INSTRUCTION` in `pipeline/src/gemini.ts` says:
+
+> "Artiklar om samma match, samma resultat, samma transfer eller samma skada
+> hör till samma händelse, ÄVEN om rubrikerna skiljer sig helt."
+
+A squad announcement and a match report are literally *samma match*, so the
+prompt **actively instructs** the merge. The counter-rule that exists —
+"matchresultat och kontraktsförlängning är separata händelser" — is an example
+that does not cover pre-match vs post-match. **This is a hypothesis, not a
+verified root cause.** It predicts the observed data but has not been tested by
+a controlled run.
+
+**Secondary observation.** Event 0's `title` is the lead article's verbatim
+headline, not the "logisk svensk rubrik för hela händelsen" the prompt asks for.
+The model is behaving as "lead article + related items", not "an event". Worth
+checking whether the same cause explains both.
+
+**The known fixture already reproduces this.** `geminiRecheck.ts` /
+`geminiSemanticEval.ts` article `t1` is `BK Häcken åker till Kalmar – här är
+matchtruppen` and `t3`–`t6` are post-match reports of that fixture. The fixture
+contains the exact pre-match/post-match pair that production merged wrongly.
+**No test currently asserts these must be separate events**, which is why the
+eval could pass while production shipped the defect.
+
+**Acceptance**
+
+- A matchtrupp/besöksinformation/matchtröjehelg article is **never** in the
+  same event as a match report, regardless of shared teams, venue or date.
+- `summaryMethod: "gemini-synthesis"` is not accepted as evidence of
+  correctness — it only records which code path produced the text.
+- The semantic eval asserts the fixture's `t1` and `t3`–`t6` land in
+  **different** events. This assertion must be added and must be made to
+  **fail against current behaviour** before the prompt is changed.
+- Event `title` is a synthesised event headline, not a verbatim source headline.
+- Merging must not make an event *less* correct than the deterministic path
+  would have been. A merge that is wrong is worse than no merge.
+
+**Verify.** `python3 -c "import json;d=json.load(open('public/data/app.json'));[print(len(e['sources']),e['title'][:60]) for e in d['newsEvents']]"`
+— no event may contain a pre-match notice alongside a match report. Then
+confirm the multi-source events that *should* merge (two outlets, one match)
+still do, so the fix does not simply disable grouping.
+
+**Do not fix this with deterministic clustering.** See *KNOWN LIMITATION* below;
+the pre-match/post-match distinction is exactly the ambiguous case that a
+regex rule set will misfire on. It belongs in the prompt plus a test.
+
+---
+
 ## Notes for whoever picks this up
 
 - `urgentDiscipline()` in `app/shared/format.ts` is the single source of truth
@@ -1820,6 +2069,62 @@ would look correct and then merge a transfer story into a match report.
 The deterministic layer is **scoped, not unfinished**: it handles what regex can
 do safely.
 
+## REACHABILITY — ANSWERED 2026-09-29 · run `36493245277` · 1 request spent
+
+The staged status check was run once through the one-request ceiling.
+
+```
+Step 1: HTTP 200 from GET /v1beta/models   (costs 0 quota)
+        model gemini-3.8-flash IS listed for this key
+Step 2: HTTP 503 from POST generateContent (spends 1 request)
+        "code": 503,
+        "message": "This model is currently experiencing high demand.
+                    Spikes in demand are usually temporary.
+                    Please try again later.",
+        "status": "UNAVAILABLE"
+RESULT: capacity-blocked
+Spend: 1 generation request
+```
+
+**What is now settled, and needs no further requests to establish:**
+
+- The **secret is valid** (stage 1 returned 200).
+- The **model is available to this key** (explicitly listed).
+- The binding constraint is **capacity**, not quota, not auth, not model
+  availability. 429 has never once been observed on this key.
+
+**This closes the "is the API up" question. It is answered: reachable,
+intermittently, and currently saturated.**
+
+### The size hypothesis is WITHDRAWN as a next step
+
+The 2026-09-27 pattern was *tiny probe → 200, full payload → 503 ×3*, which
+suggested payload size was the variable. **The 32-token probe is the smallest
+payload this project has ever sent, and it returned 503 today.** The control
+that the hypothesis depended on no longer holds.
+
+The hypothesis is not disproved in general — it simply cannot explain the
+current blocking. `npm run gemini:size-probe` would stop at rung 1, cost 1
+request, and tell us something already known. **Do not run it.**
+
+### 503 history, consolidated
+
+| Date/time (UTC) | Payload | Result |
+|---|---|---|
+| 2026-09-25 | various | intermittent 503 |
+| 2026-09-27 03:45 | nightly, full | 503, then **200 on attempt 2** — `calls=2 events=3` |
+| 2026-09-27 12:44/21:10/23:00 | full | 503 ×3 manual single-shots |
+| 2026-09-28 03:49 | nightly, full | 503 ×6 across 2 models, hit call cap |
+| 2026-09-28 22:35 | **32-token probe** | **503** |
+
+Availability is **real but intermittent** — the 03:45 nightly proves a full-size
+production payload can succeed. "Up" is not "reliably up".
+
+### Remaining budget: UNKNOWN, and unmeasurable
+
+The API exposes no balance endpoint. The assumed "20 requests/day" remains an
+**assumption**, never a measurement. **Total spent today: 2 requests.**
+
 ## OPEN DECISION — do not describe Gemini as validated
 
 **Gemini adoption is undecided.** No successful controlled semantic evaluation
@@ -1836,11 +2141,42 @@ That nightly produced 3 `gemini-synthesis` events, 2 of them multi-source. So
 Gemini **does** work in production — but the margin is one retry, and three
 consecutive manual single-shot runs failed (12:44, 21:10, 23:00 on 2026-09-27).
 
+> ⚠️ **Corrected 2026-09-29.** The sentence above is true about *reachability*
+> but was misleading about *quality*. Those same 2 multi-source events are the
+> two false merges documented as **B-004**. A `gemini-synthesis` event count is
+> **not** evidence that grouping is correct. Do not cite this run as evidence
+> that the Gemini news path is validated.
+
 **The open question is whether capacity is the binding constraint, not
 architecture.** Quota has never been observed as the problem: no nightly has
 hit a 429 or the call cap.
 
+### SUPERSEDED 2026-09-29 — capacity is NOT the binding constraint
+
+> The paragraph above asks *"is capacity the binding constraint, rather than
+> architecture?"* **That question is now closed, and the answer is no.**
+>
+> Run `36493245277` established the key is valid and the model is listed, so
+> auth and model availability are eliminated as causes. Quota has never been
+> observed. What remains is transient capacity — real, but not a *design*
+> constraint, and not something more requests would solve.
+>
+> **The binding constraint is correctness: B-004.** Gemini is reachable and it
+> is producing wrong output. Two of three live events are false merges. Until
+> B-004 is fixed, the honest position is that enabling Gemini grouping made the
+> news feed **worse** than the deterministic path, which would have emitted six
+> separate correct events instead of three, two of them wrong.
+>
+> Do not spend further requests establishing reachability. It is established.
+
 ## NEXT STEP
+
+> ⚠️ **Reordered 2026-09-29 — see B-004 first.** The next step is no longer
+> "run the evaluation". Production is now shipping **false merges** (B-004), so
+> the evaluation would be grading an output we already know to be wrong. Run
+> the **status check** to establish reachability, then diagnose B-004, then
+> re-run the evaluation against a fixture that asserts the pre-match /
+> post-match separation.
 
 > **Run one deliberate Gemini evaluation using the corrected, realistic fixture
 > and inspect the result before deciding whether Gemini belongs in the
@@ -1858,6 +2194,32 @@ is unchanged and is still the same one: **is capacity the binding constraint,
 rather than architecture?** If the next one-request run also returns 503, that
 is a third data point for capacity — not a reason to retry, and not a reason to
 write the feature off either.
+
+### Rewritten 2026-09-29, after the reachability answer
+
+**Do not run the evaluation yet.** The reachability question is answered
+(`36493245277`: valid key, listed model, 503 capacity). The evaluation would
+now be grading an output we already know to be defective.
+
+**The next request should not be spent on proving the API is up.** The sequence
+is instead:
+
+1. **Fix the test, not the prompt.** Add an assertion that fixture `t1` (the
+   pre-match *matchtrupp* article) must **not** share an event with `t3`–`t6`
+   (the post-match Kalmar reports). The fixture already contains the exact pair
+   production merged wrongly.
+2. **Demonstrate it fails** against current behaviour. A test that passes before
+   the fix proves nothing.
+3. **Then** change `SYSTEM_INSTRUCTION`, and **then** re-run the one-request
+   evaluation to see whether the merge is fixed.
+
+Steps 1 and 2 cost **zero** Gemini requests. That is the point: the remaining
+unknown is a prompt-contract question, and it is answerable without spending
+anything.
+
+**Interim production guidance.** Until B-004 is resolved, the deterministic
+fallback is the more correct feed. Treat `summaryMethod: "gemini-synthesis"` in
+`app.json` as a **defect marker**, not a quality signal.
 
 ## EXPLICITLY OUT OF SCOPE
 
