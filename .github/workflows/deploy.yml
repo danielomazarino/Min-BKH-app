@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      commit:
+        description: >-
+          Commit to build and deploy. Set by data-update.yml so the nightly
+          deploy publishes exactly the data commit that was just pushed,
+          instead of whatever main resolves to at checkout time. Leave empty
+          for a manual dispatch (builds current main).
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -18,7 +27,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve ref to build
+        id: ref
+        env:
+          REQUESTED: ${{ inputs.commit }}
+        run: |
+          if [ -n "$REQUESTED" ]; then
+            echo "Building pinned data commit: $REQUESTED"
+            echo "ref=$REQUESTED" >> "$GITHUB_OUTPUT"
+          else
+            echo "No commit input — building current main HEAD."
+            echo "ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
 
       - uses: actions/setup-node@v4
         with:

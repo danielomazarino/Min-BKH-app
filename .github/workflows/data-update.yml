@@ -8,6 +8,11 @@ on:
 
 permissions:
   contents: write
+  # Required to dispatch deploy.yml. workflow_dispatch is a distinct event and
+  # is NOT blocked by the GITHUB_TOKEN push recursion guard, so this is the
+  # mechanism that lets the nightly data commit reach GitHub Pages (B-005).
+  actions: write
+  pages: read
 
 concurrency:
   group: data-update
@@ -38,13 +43,77 @@ jobs:
         run: npm run pipeline:validate
 
       - name: Commit data if changed
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/data/
           if git diff --cached --quiet; then
             echo "No data changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "data: nightly update $(date -u +%F)"
             git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            # The just-pushed data commit. deploy.yml pins to this SHA so it can
+            # never publish a different (stale or newer) revision by accident.
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi
+
+      # B-005 guard. The original defect was silent: data was committed nightly
+      # and nothing was published, because the GITHUB_TOKEN push did not trigger
+      # deploy.yml and the job still went green. This step fails the run if data
+      # changed but the deploy never reaches a successful conclusion, so the
+      # same class of failure can never be green again.
+      - name: Guard — deployed data must match the committed data
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATA_SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          set -euo pipefail
+          # Marker so we identify the run we just created, not an older one.
+          MARKER=$(date -u -d '-2 minutes' +%Y-%m-%dT%H:%M:%SZ)
+          echo "Dispatching deploy pinned to $DATA_SHA"
+          gh workflow run deploy.yml --ref main -f commit="$DATA_SHA"
+
+          RUN_ID=""
+          for _ in $(seq 1 60); do
+            RUN_ID=$(gh run list --workflow deploy.yml --event workflow_dispatch \
+              --limit 10 --json databaseId,createdAt \
+              --jq "[.[] | select(.createdAt > \"$MARKER\")][0].databaseId // empty")
+            [ -n "$RUN_ID" ] && break
+            sleep 10
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "GUARD FAILED: deploy.yml was dispatched for $DATA_SHA but no run appeared." >&2
+            exit 1
+          fi
+          echo "Deploy run: $RUN_ID"
+
+          STATUS=""
+          for _ in $(seq 1 90); do
+            STATUS=$(gh run view "$RUN_ID" --json status,conclusion \
+              --jq '.status + " " + (.conclusion // "")')
+            case "$STATUS" in
+              completed*) break ;;
+            esac
+            sleep 10
+          done
+          case "$STATUS" in
+            completed*success*) echo "Deploy completed successfully." ;;
+            *) echo "GUARD FAILED: deploy $RUN_ID ended as '$STATUS'." >&2; exit 1 ;;
+          esac
+
+          # Byte-level check: the file GitHub Pages serves must be the file we
+          # just committed. Catches a deploy that "succeeded" but served stale data.
+          EXPECTED=$(git show "HEAD:public/data/app.json" | sha256sum | cut -d' ' -f1)
+          SERVED=$(curl -sS --retry 5 --retry-delay 10 --retry-connrefused \
+            https://danielomazarino.github.io/Min-BKH-app/data/app.json | sha256sum | cut -d' ' -f1)
+          echo "expected=$EXPECTED"
+          echo "served  =$SERVED"
+          if [ "$EXPECTED" != "$SERVED" ]; then
+            echo "GUARD FAILED: served app.json does not match the committed data." >&2
+            exit 1
+          fi
+          echo "GUARD PASSED: production serves the data this job committed."
