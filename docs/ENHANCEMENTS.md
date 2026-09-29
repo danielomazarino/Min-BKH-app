@@ -10,7 +10,13 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 ## 2026-09-26 — after UX rebuild `8f9b4d9` went live
 
 ### E-001 · Kortläget must show every qualifying player
-`OPEN — regression`
+`DONE — verified in code 2026-09-30`
+
+The offending `slice(0, 2)` / `slice(0, 3)` caps lived in `app/pages/Home.tsx`,
+**which no longer exists**. The discipline UI now lives in `app/pages/Brief.tsx`
+and renders every qualifying current-squad player uncapped, with
+`data-count={urgent.length}` on the container so the heading and the row count
+cannot disagree. `npx vitest run` → 326 passed.
 
 The Kortläget count and rows must represent the same complete set of currently
 qualifying BK Häcken men's players.
@@ -48,7 +54,13 @@ them.
 ---
 
 ### E-002 · Group discipline states to reduce repetition
-`OPEN — UX`
+`DONE — verified in code 2026-09-30`
+
+`groupDiscipline()` in `app/shared/format.ts` implements the grouping, and
+`app/pages/Brief.tsx` renders each status label once per group via
+`data-testid="discipline-group-label"`. Unit-covered in
+`app/shared/format.test.ts` → `describe("groupDiscipline — E-002, one status
+label per GROUP")`.
 
 Group players under:
 
@@ -83,7 +95,13 @@ exactly once; every qualifying player is present.
 ---
 
 ### E-003 · Current discipline risk must exclude departed players
-`OPEN — data/domain`
+`DONE — verified in code 2026-09-30`
+
+`currentSquadDiscipline()` in `app/shared/format.ts` scopes the ledger to the
+current squad, so a departed player cannot generate a current warning while
+their historical cards remain in the season ledger. Unit-covered in
+`app/shared/format.test.ts` → `describe("currentSquadDiscipline")`.
+See also E-005 below for the same concern applied at the pipeline layer.
 
 A player who is **no longer a current BK Häcken men's player** must not appear
 in current Kortläget suspension-risk calculations.
@@ -115,7 +133,18 @@ club. A supporter reading the Brief is misinformed.
 ---
 
 ### E-004 · Swipe-down to dismiss does not work on a real iPhone
-`OPEN — bug (reported on device)`
+`DONE — verified in code and by real-touch e2e 2026-09-30`
+
+The root cause named below (drag bound to a 22px grabber, `touch-action: pan-y`
+letting Safari claim the gesture) has been fixed: `app/shared/Sheet.tsx` binds
+the drag across the sheet with explicit `touch-action` arbitration, and
+`app/theme.css` documents the measurement. The originally-missing regression
+coverage now exists — `e2e/touch.spec.ts` drives real CDP touch events against
+the sheet **body**, the **grabber** and the **title**, asserts the background
+never scrolls during the drag, and covers both the below-threshold snap-back and
+the beyond-threshold dismiss paths.
+
+`OPEN — bug (reported on device)` *(historical status, kept for context)*
 
 **Reported 2026-09-26 on an iPhone.** Dragging a sheet downwards does nothing
 anywhere in the app. The match sheet (last game) and the player detail sheet can
@@ -167,25 +196,81 @@ so the fix must keep it additive.
 ---
 
 ### E-005 · Discipline ledger must be scoped to current squad membership
-`OPEN — pipeline/domain`
+`FIXED — pipeline/domain (code only; committed data still stale)`
 
 Current suspension-risk calculations must cross-check **current men's squad
 membership**.
 
 **Acceptance**
-- Every player in the current at-risk output is currently in the men's squad.
-- Departed players can remain in historical match/card data.
-- Transfer/departure changes are reflected without manual UI filtering.
+- Every player in the current at-risk output is currently in the men's squad. ✅ enforced in code
+- Departed players can remain in historical match/card data. ✅ history retained
+- Transfer/departure changes are reflected without manual UI filtering. ✅ no longer UI-layer only
 
-**Current cause.** `computeSeasonDiscipline()` in
-`pipeline/src/discipline.ts` walks all 22 finished matches and keeps any player
+**Cause (now fixed).** `computeSeasonDiscipline()` in
+`pipeline/src/discipline.ts` walked all finished matches and kept any player
 who collected a card, regardless of current squad membership. The 18-entry
-ledger includes departed players (Layouni, Helander, Thorup, Agbonifo, …),
-mostly marked `served`.
+ledger included departed players (Layouni, Helander, Thorup, Agbonifo, …).
 
-The `served` entries are fine — they are historical and the UI already filters
-them out. Only `at_risk` for a departed player is wrong, and that is E-003. E-004
-is the mechanism that prevents it recurring for every future transfer.
+**Fix (2026-09-30).** The engine now takes the current squad as a **required**
+fifth argument, `CurrentSquad = { players, known }`, and demotes any player
+absent from it from `at_risk` / `suspended_next` to a new terminal status
+`departed`. `run.ts` passes the real `squadStats`.
+
+Design decisions, and why:
+
+- **`departed` rather than deleting the row.** The cards are real. Deleting
+  them would falsify the season record. Only the *current risk
+  classification* is wrong, so only that changes.
+- **Historical statuses are NOT rewritten.** `served` (with `servedAt`) and
+  `red_suspended` stay as-is — they are factual statements about a suspension
+  that actually happened. `unknown` also stays, because that status comes from
+  missing match data, not from squad membership.
+- **The parameter is required, not optional.** An optional parameter defaulting
+  to "no filtering" would silently recreate the defect the first time a caller
+  forgot it. A forgotten argument is now a compile error.
+- **`known: false` vs `known: true, players: []`.** These are different facts
+  and are not conflated. A failed squad query yields `{ players: [], known:
+  false }` → filtering is **skipped** and the ledger is left intact. Treating
+  that as "nobody plays here" would demote every player to `departed` and wipe
+  the entire risk classification — a catastrophic silent regression. Only an
+  explicitly known-empty squad demotes.
+- **Membership matches on canonical id first, normalised name second.** Event
+  ids for non-squad players are name-derived, so a current player whose id
+  drifted would otherwise be wrongly demoted. Mirrors `currentSquadDiscipline()`.
+- **`app/shared/format.ts` `cstatFor()` gained a `departed` branch.** Without
+  it, a departed player with 2 pending warnings would fall through to
+  `"1 varning kvar"` — the exact misleading claim this item removes. Guarded by
+  a unit test.
+
+**Committed data is deliberately unchanged.** `public/data/app.json` was NOT
+regenerated (running the pipeline is out of scope for this pass and spends
+Gemini requests), so the acceptance scan against the committed file still
+reports Layouni:
+
+```
+squad: 27 ledger: 18
+violations: [('Amor Layouni', 'at_risk')]
+```
+
+**Verified** that the new code path produces `departed` for that exact record —
+his real matchIds and dates from `app.json` replayed with the real 27-player
+`squadStats`:
+
+```
+BEFORE (committed app.json): status = at_risk
+AFTER  (new code path)   : status = departed | departed = true
+history retained         : warningCount = 2 | warningsUntilSuspension = 2 | relevantWarnings = 2
+```
+
+The file will self-correct on the next scheduled nightly run.
+
+**Tests.** 13 added (326 → 339): 11 in `pipeline/src/discipline.test.ts`
+(demotion of `at_risk` and `suspended_next`, history retention for warnings /
+red / served, unknown-vs-empty squad, name-fallback matching, the real Layouni
+case) and 2 in `app/shared/format.test.ts` (`cstatFor` wording, exclusion from
+`urgentDiscipline`). 13 existing `computeSeasonDiscipline` call sites updated
+with explicit squad fixtures — all 13 exercise players who ARE in the squad, so
+each declares a squad listing exactly the players it tests.
 
 **Verify.** Any `at_risk` player is present in `squadStats`.
 
@@ -1055,6 +1140,111 @@ still do, so the fix does not simply disable grouping.
 **Do not fix this with deterministic clustering.** See *KNOWN LIMITATION* below;
 the pre-match/post-match distinction is exactly the ambiguous case that a
 regex rule set will misfire on. It belongs in the prompt plus a test.
+
+---
+
+## Session closeout — 2026-09-29
+
+Final state after tonight's pass. Commits `3ebc63e`, `1b97168`, `9051fa2` are
+pushed to `origin/main` and CI, build and deploy are green on `9051fa2`.
+
+### COMPLETED / VERIFIED
+
+- **B-005 closed.** The nightly deployment gap is fixed: `data-update.yml`
+  dispatches `deploy.yml` via `workflow_dispatch` (not blocked by the
+  `GITHUB_TOKEN` push-recursion guard) and passes the **exact data commit SHA**,
+  so the deploy checks out that revision rather than whatever `main` resolves to
+  at checkout time. That pinning also closes a stale-checkout race.
+- **The guard is byte-level, deliberately.** It waits for the dispatched deploy
+  to conclude, then compares the sha256 of the committed `public/data/app.json`
+  against the sha256 of the **served** production file. This is stronger than a
+  run-status check on purpose: the original defect was a **green workflow that
+  deployed nothing**, so status alone could never have caught it.
+- **Production verified from the served bytes** (curl, not a browser):
+  sha256 prefix `c7ac177e8c0c3e47`, matching the `c653ecb` baseline —
+  **6 events**, `summaryMethod` `rss-description` only, every event
+  **single-source**, **0** `gemini-synthesis`. The three false groups are gone.
+- **Option A applied as configuration only.** The `GEMINI_API_KEY` injection was
+  removed from `data-update.yml` and nothing else. The repository secret is
+  retained because the `gemini-*.yml` research workflows still need it.
+- **Independently verified by the technical agent**, not accepted on the coding
+  agent's report: commits contain only the two workflow files and this document;
+  `pipeline/`, `app/` and `public/` untouched; served bytes re-fetched; the
+  injected-text scare was checked and found to be a quoting artifact.
+
+### OPEN
+
+- **B-004 — Gemini semantic grouping defect.** Still open. Disabling Gemini
+  stopped the production symptom; it did not fix the defect. Do not re-enable
+  Gemini because B-005 is fixed.
+- **The deployment guard has never executed on real changed data.** Its path
+  only runs when a nightly actually commits changed data. The next scheduled
+  nightly (03:30 UTC) is the first end-to-end exercise. See "Next session".
+
+### DELIBERATELY OUT OF SCOPE
+
+- B-004's fix — no prompt, schema, clustering or source-selection changes.
+- Gemini capacity / the 503 — a separate concern from B-004 and from the
+  successful 2026-09-27 run that produced the bad data.
+- Unrelated news work. Any such discovery is recorded as:
+  **Post-deployment finding — not fixed in this pass.**
+
+### Architectural learnings worth keeping
+
+1. **Deterministic news is currently production-authoritative.** Gemini must be
+   an **explicit opt-in** until its semantic grouping passes evaluation.
+2. **A successful LLM generation is not automatically safe to publish.** The
+   2026-09-27 run succeeded (`calls=2 events=3`) and produced wrong output. HTTP
+   200 is not correctness.
+3. **Deployment status alone is insufficient verification.** Compare the
+   generated artifact with the actually served artifact, at byte level.
+4. **`workflow_dispatch` + an explicit commit SHA** avoids both the
+   `GITHUB_TOKEN` push-recursion problem and the stale-checkout race.
+5. **Data generation ≠ data deployment.** A green data workflow that commits
+   says nothing about what production is serving.
+
+### Two traps from tonight, recorded so they are not repeated
+
+- **Do not explain old output with a current failure.** Today's 503 says nothing
+  about which run produced the *served* data. Establish generation timestamp,
+  commit, workflow run and deployment lineage before theorising.
+- **Keep verification commands simple.** Compound `&&`/`||` chains with nested
+  quoting produced garbled output twice, once resembling injected instructions.
+  When output looks like instructions, do not execute it — simplify the command
+  and check the filesystem directly.
+
+---
+
+## Next session — first action (SUPERSEDED 2026-09-30, kept for history)
+
+> **Resolved 2026-09-30.** The guard ran for the first time on
+> 2026-09-29T03:45Z (`Data update` run `36518558268`) and **PASSED**. Do not
+> re-run the instructions below. See "Session closeout — 2026-09-30" below for
+> the current first action.
+
+**Check the first real nightly run (03:30 UTC) and its guard result.** This is
+the one remaining verification item from tonight.
+
+```
+gh run list --workflow data-update.yml -L 3 \
+  --json databaseId,conclusion,createdAt
+gh run view <RUN_ID> --log | grep -A3 "Guard"
+```
+
+Look for `GUARD PASSED: production serves the data this job committed.`
+
+Then confirm production directly:
+
+```
+curl -s https://danielomazarino.github.io/Min-BKH-app/data/app.json | sha256sum | cut -c1-16
+```
+
+The guard has never run, so a failure here is **expected to be informative, not
+a setback** — it fails loudly by design. If it fails, read the log before
+changing anything; do not weaken the guard to make it green.
+
+**Do not re-enable Gemini** on the grounds that B-005 is fixed. B-004 must be
+diagnosed, fixed and re-evaluated first.
 
 ---
 
@@ -2274,9 +2464,14 @@ The tests are therefore verified to be load-bearing, not merely passing.
 
 ## Stale markers in this file
 
-`E-001`, `E-003` and `E-004` are marked `OPEN` above but are **fixed** — see the
-E-002 commit `10aa66e` and the E-003/E-004 work recorded in the 2026-09-26
-section. **Verify in the code before trusting any `OPEN` marker here.**
+`E-001`, `E-002`, `E-003` and `E-004` were marked `OPEN` above but are **fixed** —
+status corrected to `DONE` on 2026-09-30 after verifying each in code and in
+`npx vitest run` (326 passed). See the E-002 commit `10aa66e`, the E-003/E-004
+work recorded in the 2026-09-26 section, and the 2026-09-30 session closeout.
+
+**Still verify in the code before trusting any `OPEN` marker in this file** — an
+`OPEN` marker here has been wrong before, and the file has been edited by several
+sessions.
 
 ## Mistakes made during this investigation — worth not repeating
 
@@ -2291,3 +2486,176 @@ section. **Verify in the code before trusting any `OPEN` marker here.**
 - Prompt-file workflows were built for GitHub Actions dispatch while `gh` was
   already authenticated with the `workflow` scope the whole time. **Check
   `gh auth status` before designing a browser or manual workflow.**
+
+---
+
+## Session closeout — 2026-09-30
+
+State as of 2026-09-29 22:25 UTC. This session did investigation and
+verification only. **No product code was changed.**
+
+### The one outstanding verification item from 2026-09-29 is now CLOSED
+
+The B-005 deployment guard's live path only executes when a nightly commits
+changed data. It ran for the first time on **2026-09-29T03:45Z** (`Data update`
+run `36518558268`) and **passed**:
+
+```
+expected=b17bcdb4f3f92f06c9268909e9dfa50079f33dbd5326754dd4273e36b009062d
+served  =b17bcdb4f3f92f06c9268909e9dfa50079f33dbd5326754dd4273e36b009062d
+GUARD PASSED: production serves the data this job committed.
+```
+
+Re-verified independently in this session, not read from the log:
+
+| Check | Result |
+| --- | --- |
+| `curl .../data/app.json \| sha256sum` | `b17bcdb4…` — matches |
+| `git show f65458a:public/data/app.json \| sha256sum` | `b17bcdb4…` — matches |
+| newsEvents | 6 |
+| `summaryMethod` values | `rss-description` only |
+| multi-source groups | 0 |
+
+The full lineage **pipeline run → data commit `f65458a` → deploy run
+`36518617467` → served bytes** is now proven end to end for the first time.
+B-005's residual risk is retired. Do not reopen it.
+
+### Gemini status — `capacity-blocked`, 1 request spent
+
+`npm run gemini:status` at 2026-09-29T22:20Z (run `36639008447`):
+
+- Stage 1, free: `model gemini-3.8-flash IS listed for this key` — secret valid.
+- Stage 2, 1 request: HTTP **503 UNAVAILABLE**, *"This model is currently
+  experiencing high demand."*
+- Stage 3 correctly skipped (gated on stages 1–2 being healthy).
+
+**Unchanged from 2026-09-28.** Capacity remains the binding constraint; the key
+itself is fine. Remaining quota is still unmeasurable — the API exposes no
+balance endpoint.
+
+Do not run `gemini:size-probe`. The size hypothesis is already disproved: the
+probe sends the smallest possible payload and it still 503s, so the ladder would
+spend up to 4 requests to learn nothing.
+
+### The 503 is a WIDESPREAD EXTERNAL OUTAGE, not a problem with our key
+
+Checked 2026-09-30 against GitHub issue search, using the verbatim API error
+string. These are **independent third parties**, not Google-internal noise:
+
+| Query window | Issues matching `"currently experiencing high demand"` + `gemini` |
+| --- | --- |
+| created ≥ 2026-09-27 (48h) | **84** |
+| created ≥ 2026-09-28 (24h) | **71** |
+| created ≥ 2026-09-29 | rising, sampled titles all current |
+
+Sampled titles from 2026-09-29 alone — all unrelated projects working around the
+same failure:
+
+- `fix(api): reintentar con backoff cuando Gemini responde 429/503`
+- `Retry agent calls when the LLM provider is overloaded (503)`
+- `fix: resilient Gemini post generation when API is overloaded (503)`
+- `Document v0.5.1 Gemini 503 lab update`
+- `feat: Gemini 503·타임아웃 쿨다운을 무료 전체 단위로 (#142)`
+
+**Conclusion.** Our key is valid, the model is listed for it, and we are hitting
+a **sector-wide Gemini capacity incident** that has been ongoing for at least 48
+hours. This is not caused by our request shape, our payload size, our quota, or
+our account. Retrying is the only available response, and the correct engineering
+response is to **not depend on it**.
+
+No official Google AI status incident could be retrieved — `status.ai.google.dev`
+did not resolve from this network. So the diagnosis rests on convergent
+third-party reports, not a vendor statement. That is a weaker but still solid
+basis; treat it as *observed*, not *vendor-confirmed*.
+
+**Operational consequence.** Do not spend requests probing this until the
+incident clears. `npm run gemini:history` is free and will show whether we have
+had a success. The gate that matters is not reachability — it is B-004.
+
+### Correction: E-001 / E-002 / E-003 / E-004 are NOT open
+
+The `OPEN` markers earlier in this file are stale. Verified in code in this
+session, not taken from the stale-markers note:
+
+- **E-001 fixed.** `app/pages/Home.tsx` no longer exists; the discipline UI moved
+  to `app/pages/Brief.tsx`, which renders every qualifying current-squad player
+  uncapped (`data-count={urgent.length}` with no `slice`).
+- **E-002 fixed.** `groupDiscipline()` in `app/shared/format.ts` groups rows
+  under a single status label per group, rendered by `data-testid="discipline-group-label"`.
+- **E-003 fixed.** `currentSquadDiscipline()` in `app/shared/format.ts` scopes
+  the ledger to the current squad, so departed players cannot produce a current
+  warning.
+- **E-004 fixed.** `Sheet.tsx` binds the drag to the whole sheet with
+  `touch-action` arbitration, and `e2e/touch.spec.ts` exercises it with real
+  CDP touch events on the body, the grabber and the title.
+
+`npx vitest run`: **326 passed, 16 files, 0 failed.**
+
+### Trap recorded: fake Gemini log lines in the deploy build
+
+The 2026-09-29 deploy log contains:
+
+```
+gemini: model gemini-3.8-flash attempt 1/3 failed — Unexpected token 'o', "not json" is not valid JSON
+```
+
+These are **not API calls.** They are `pipeline/src/gemini.test.ts` output — the
+deploy build step runs the unit tests. Cost: 0 requests. Do not read these as
+Gemini reaching production.
+
+### B-004 remains the only substantive open defect
+
+Gemini false merges: pre-match service articles (matchtrupp, besöksinformation)
+are absorbed into the post-match result event. Unfixed, and correctly deferred.
+The deterministic path is production-authoritative and Gemini is disabled in the
+nightly (`1b97168`).
+
+Next step stays test-first: add a fixture assertion that `t1` (matchtrupp,
+pre-match) must **not** share an event with `t3`–`t6` (post-match), make it fail
+against current behaviour, and only then touch `SYSTEM_INSTRUCTION` in
+`pipeline/src/gemini.ts`. Prompt and test only — no deterministic clustering.
+
+### Doc-sync audit 2026-09-30 — which "OPEN" markers are actually real
+
+Every `OPEN` marker was re-checked against the code and the live data rather than
+trusted. Results:
+
+| Item | Marker said | Reality | Action |
+| --- | --- | --- | --- |
+| E-001 | OPEN | **Fixed** — `Home.tsx` deleted, caps gone, uncapped in `Brief.tsx` | corrected to `DONE` |
+| E-002 | OPEN | **Fixed** — `groupDiscipline()` + unit tests | corrected to `DONE` |
+| E-003 | OPEN | **Fixed** — `currentSquadDiscipline()` + unit tests | corrected to `DONE` |
+| E-004 | OPEN | **Fixed** — `Sheet.tsx` + real-touch e2e in `touch.spec.ts` | corrected to `DONE` |
+| **E-005** | OPEN | **Fixed in code** — required `CurrentSquad` arg, new `departed` status, 13 tests. Committed data still stale (pipeline not re-run). | corrected to `FIXED` |
+| E-006 | OPEN | Premise obsolete — the local registry is gone | needs rewrite |
+| E-007 | OPEN | Premise obsolete — same architecture change | needs rewrite |
+| E-008 | OPEN | Premise obsolete — `apiFootballId` no longer exists in the repo | needs rewrite |
+| E-009 | OPEN | Premise obsolete — same | needs rewrite |
+
+**E-005 reproduced against the live committed data.** `public/data/app.json`
+has 27 squad players and an 18-entry discipline ledger, and exactly one entry
+violates its own stated acceptance criterion:
+
+```
+at_risk/suspended for non-squad: [('Amor Layouni', 'at_risk')]
+```
+
+E-005's acceptance is *"any `at_risk` player is present in `squadStats`"*. It is
+not. The UI currently hides this via `currentSquadDiscipline()` in
+`app/shared/format.ts` (E-003's fix), so **no user sees the bug today** — but
+E-005 is explicitly the *mechanism* that stops it recurring on every future
+transfer, and right now that mechanism is UI-layer only. The pipeline still emits
+it.
+
+> **Resolved 2026-09-30.** The mechanism now lives in the pipeline. See the
+> E-005 entry above for the design, the required `CurrentSquad` argument, the
+> `departed` status, and the note that committed data is intentionally stale
+> until the next nightly run.
+
+**E-006 through E-009 describe an architecture that no longer exists.** They were
+written against a `registry.json` / `former-players.json` pipeline. Neither file
+is produced any more — `public/data/` contains only `app.json`, `run.ts` has no
+`former` references, and `apiFootballId` appears nowhere in the repository.
+`app/pages/FormerPlayers.tsx` is now a Wikidata-backed search, not a registry
+lookup. **Do not attempt E-006–E-009 as written.** They need re-scoping against
+the current search-based architecture, which is a separate piece of work.

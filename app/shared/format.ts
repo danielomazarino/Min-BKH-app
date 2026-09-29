@@ -190,6 +190,23 @@ export type Cstat = { d: PlayerDiscipline; state: string; severity: "suspended" 
 export function cstatFor(d: PlayerDiscipline, threshold = 3): Cstat {  const pending = d.warningsUntilSuspension ?? d.warningCount;
   const away = Math.max(0, threshold - pending);
 
+  if (d.departed || d.status === "departed") {
+    // E-005. A departed player keeps their card history but carries no live
+    // risk. Must be checked BEFORE `pending > 0` below, which would otherwise
+    // describe a sold player's 2 season cards as "1 warning left" — exactly the
+    // misleading claim E-005 exists to remove.
+    //
+    // The `departed` FLAG is the authoritative signal, not the status string.
+    // The engine only OVERWRITES status to "departed" when it computed a
+    // forward-looking status (at_risk / suspended_next). For a departed player
+    // whose status is a preserved historical fact — `served`, `red_suspended` —
+    // the status is deliberately left intact so the record is not corrupted,
+    // yet such a row can still carry pending warnings. Keying on status alone
+    // let those rows fall through to `pending > 0` and render "1 varning
+    // kvar" for a player the club can no longer suspend. Both signals are
+    // accepted so the row is safe whichever way it arrives.
+    return { d, severity: "other", state: "Spelade under säsongen" };
+  }
   if (d.status === "suspended_next") {
     return { d, severity: "suspended", state: "Avstängd nästa match" };
   }

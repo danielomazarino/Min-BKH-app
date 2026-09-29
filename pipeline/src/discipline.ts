@@ -11,6 +11,7 @@
  * suspension — chronology matters.
  */
 import type { Competition } from "./types";
+import { nameKeyOf } from "./playerIdentity";
 
 export interface CardEvent {
   /** Canonical player id (from the identity layer). */
@@ -35,7 +36,33 @@ export type DisciplineStatus =
   | "suspended_next" // threshold reached, suspension not yet served
   | "served" // suspension already served
   | "red_suspended" // red card → suspension (serving window unknown)
-  | "unknown";
+  | "unknown"
+  /**
+   * E-005 — the player is not in the current squad. Their cards stay in the
+   * ledger (they are real), but they carry no CURRENT risk: they cannot be
+   * suspended by a club they no longer play for. Terminal — never upgraded
+   * back into a forward-looking risk by this engine.
+   */
+  | "departed";
+
+/**
+ * Current-squad membership, as a tri-state rather than a bare list.
+ *
+ * `known: false` means membership could NOT be established (e.g. the squad
+ * query failed and `squadStats` is `[]`). That is a materially different fact
+ * from "this club has zero registered players", and conflating them would let
+ * a transient upstream failure demote the entire ledger to `departed` — a
+ * silent, total wipe of the risk classification. The distinction is the whole
+ * reason this is an object and not `SeasonPlayerStat[]`.
+ */
+export interface CurrentSquad {
+  players: Array<{ playerId: string; playerName: string }>;
+  /** False when the squad could not be retrieved. Filtering is then skipped. */
+  known: boolean;
+}
+
+/** Statuses that assert a live, forward-looking suspension risk. */
+const FORWARD_LOOKING: ReadonlySet<DisciplineStatus> = new Set<DisciplineStatus>(["at_risk", "suspended_next"]);
 
 export interface PlayerDiscipline {
   playerId: string;
@@ -60,6 +87,11 @@ export interface PlayerDiscipline {
   servedAt?: string;
   /** True when the ledger is incomplete (missing matches) — status may be UNKNOWN. */
   incomplete: boolean;
+  /**
+   * E-005 — true when the player is not in the current squad. Set for
+   * `status: "departed"`; the row is retained because the cards are real.
+   */
+  departed?: boolean;
 }
 
 export interface DisciplineRule {
@@ -73,13 +105,30 @@ export interface DisciplineRule {
  * @param events all card events for the club in the season (chronology derived internally)
  * @param finishedMatchDates match dates (sorted) of FINISHED matches in the same competition+season — used to detect served suspensions
  * @param nextMatch the upcoming match in the competition (or null)
+ * @param currentSquad REQUIRED. The current men's squad membership, used to
+ *   stop a departed player carrying a forward-looking risk (E-005). Deliberately
+ *   not optional and not defaulted: an optional parameter that means "no
+ *   filtering" would silently recreate the defect the moment a caller omits it.
+ *   Pass `{ players: [], known: false }` when membership is genuinely unknown —
+ *   that skips filtering rather than declaring everyone departed.
  */
 export function computeSeasonDiscipline(
   events: CardEvent[],
   rule: DisciplineRule,
   finishedMatchDates: string[],
   nextMatch: { matchId: number; date: string } | null,
+  currentSquad: CurrentSquad,
 ): PlayerDiscipline[] {
+  // Membership is matched on the canonical id first, with a normalised-name
+  // fallback. The fallback matters: event ids for non-squad players are
+  // name-derived, so a current player whose id drifted would otherwise be
+  // wrongly demoted. Normalising here mirrors `currentSquadDiscipline()` in
+  // app/shared/format.ts, which stays as defence in depth.
+  const squadIds = new Set(currentSquad.players.map((p) => p.playerId));
+  const squadNames = new Set(currentSquad.players.map((p) => nameKeyOf(p.playerName)));
+  const inSquad = (playerId: string, playerName: string): boolean =>
+    !currentSquad.known || squadIds.has(playerId) || squadNames.has(nameKeyOf(playerName));
+
   const byPlayer = new Map<string, { name: string; events: CardEvent[] }>();
   for (const ev of events) {
     const entry = byPlayer.get(ev.playerId) ?? { name: ev.playerName, events: [] as CardEvent[] };
@@ -103,6 +152,8 @@ export function computeSeasonDiscipline(
     let pending = warningCount;
     let status: DisciplineStatus = "none";
     let servedAt: string | undefined;
+
+    const departed = !inSquad(playerId, name);
 
     if (reds.length > 0) {
       // Red card → suspension; whether it has been served cannot be proven
@@ -139,6 +190,21 @@ export function computeSeasonDiscipline(
       status = "none";
     }
 
+    // E-005 — a player who has left the club cannot be suspended by it. The
+    // two forward-looking statuses are therefore demoted to `departed`.
+    //
+    // Deliberately narrow:
+    //   • `served` and `red_suspended` are HISTORICAL facts about a real
+    //     suspension; rewriting them would corrupt the record. They stay.
+    //   • `unknown` stays, because we did not learn the status from squad
+    //     membership — we lack the finished-match data to determine it.
+    //   • The card history, `warningCount`, `warningsUntilSuspension`,
+    //     `servedAt` and `relevantWarnings` are all left untouched. Only the
+    //     current-risk classification changes.
+    if (departed && FORWARD_LOOKING.has(status)) {
+      status = "departed";
+    }
+
     // The ledger is incomplete when we could not verify which matches have
     // finished — served detection is then unreliable.
     const incomplete = finishedMatchDates.length === 0 && warningCount > 0;
@@ -153,6 +219,7 @@ export function computeSeasonDiscipline(
       relevantWarnings: relevant.map((w) => ({ matchId: w.matchId, date: w.matchDate })),
       ...(servedAt ? { servedAt } : {}),
       incomplete,
+      ...(departed ? { departed: true } : {}),
     });
   }
 

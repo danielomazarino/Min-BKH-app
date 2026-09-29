@@ -96,6 +96,168 @@ describe("cstatFor — the discipline label defect", () => {
     const d: PlayerDiscipline = { ...base, warningCount: 0, warningsUntilSuspension: 0, status: "red_suspended", redCards: 1 };
     expect(cstatFor(d, 3).severity).toBe("suspended");
   });
+
+  // E-005. A departed player with 2 season cards is one warning short of a
+  // suspension he can never be given. The generic `pending > 0` branch would
+  // render that as "1 varning kvar" — the exact misleading claim the item
+  // exists to prevent. `departed` must short-circuit it.
+  it("does not describe a departed player as a warning away", () => {
+    const d: PlayerDiscipline = {
+      ...base,
+      playerName: "Amor Layouni",
+      warningCount: 2,
+      warningsUntilSuspension: 2,
+      status: "departed",
+      departed: true,
+    };
+    const s = cstatFor(d, 3);
+    expect(s.state).toBe("Spelade under säsongen");
+    expect(s.severity).toBe("other");
+    expect(s.state).not.toMatch(/varning kvar/);
+  });
+
+  it("keeps a departed player out of the urgent list", () => {
+    const d: PlayerDiscipline = { ...base, warningCount: 2, warningsUntilSuspension: 2, status: "departed", departed: true };
+    expect(urgentDiscipline([d])).toEqual([]);
+  });
+
+  // E-005, second half. The engine sets `departed: true` on EVERY non-squad
+  // row, but it only OVERWRITES `status` to "departed" when the computed
+  // status was `at_risk` / `suspended_next`. A departed player whose status is
+  // a preserved historical fact (`served`, `red_suspended`) keeps that status —
+  // correctly, the engine must not corrupt the record — yet still carries
+  // `departed: true`.
+  //
+  // So a `status`-only check leaks: the row falls through to the generic
+  // `pending > 0` branch and renders "1 varning kvar" for a player who can
+  // never be suspended by this club. That is the same misleading claim E-005
+  // exists to remove, reintroduced through a different door.
+  //
+  // The `departed` FLAG is the reliable signal, not the status string.
+  it("does not describe a departed player as a warning away when status is a preserved historical fact", () => {
+    const servedThenLeft: PlayerDiscipline = {
+      ...base,
+      playerId: "name:served-then-left",
+      playerName: "Departed Served",
+      // 5 season warnings, 2 still pending after a served suspension, and the
+      // player is no longer at the club.
+      warningCount: 5,
+      warningsUntilSuspension: 2,
+      status: "served",
+      servedAt: "2026-05-17T14:30:00Z",
+      departed: true,
+    };
+    const s = cstatFor(servedThenLeft, 3);
+    expect(s.state).not.toMatch(/varning kvar/);
+    expect(s.state).toBe("Spelade under säsongen");
+  });
+
+  it("does not describe a departed red-card player as a warning away", () => {
+    // `red_suspended` is also preserved for a departed player: the red card
+    // really happened and the serving window is genuinely unknown. It is not a
+    // forward-looking claim, so it must not be rewritten — but it must also not
+    // leak a "varning kvar" countdown.
+    //
+    // NOTE: this case already passed before the fix, because the
+    // `red_suspended` branch is evaluated before the generic `pending > 0`
+    // one. It is kept as a regression guard, not as evidence of the bug: the
+    // defect lived in the statuses that fall THROUGH to `pending > 0`, namely
+    // `served` and `none`.
+    const redThenLeft: PlayerDiscipline = {
+      ...base,
+      playerId: "name:red-then-left",
+      playerName: "Departed Red",
+      warningCount: 3,
+      warningsUntilSuspension: 3,
+      status: "red_suspended",
+      redCards: 1,
+      departed: true,
+    };
+    const s = cstatFor(redThenLeft, 3);
+    expect(s.state).not.toMatch(/varning kvar/);
+  });
+
+  it("does not describe a departed player with no cards as being a warning away", () => {
+    // `none` is the other status that falls through to `pending > 0`. A player
+    // with 2 cards and no served suspension is `none` only when the threshold
+    // is above their count, but the branch is reachable and must be guarded.
+    const noneThenLeft: PlayerDiscipline = {
+      ...base,
+      playerId: "name:none-then-left",
+      playerName: "Departed None",
+      warningCount: 2,
+      warningsUntilSuspension: 2,
+      status: "none",
+      departed: true,
+    };
+    expect(cstatFor(noneThenLeft, 3).state).not.toMatch(/varning kvar/);
+  });
+
+  it("keeps a departed player out of the urgent list even with a preserved status", () => {
+    const servedThenLeft: PlayerDiscipline = {
+      ...base,
+      warningCount: 5,
+      warningsUntilSuspension: 2,
+      status: "served",
+      servedAt: "2026-05-17T14:30:00Z",
+      departed: true,
+    };
+    // `served` is not a forward-looking status, so this already passed via the
+    // status allowlist. Asserted here so the two guards cannot drift apart.
+    expect(urgentDiscipline([servedThenLeft])).toEqual([]);
+  });
+
+  it("does not let a departed row create a misleading at-risk group", () => {
+    // `groupDiscipline` buckets by `severity`. A leaked `at-risk` severity would
+    // put the player under the "Varningar kvar" heading, which is a claim
+    // about a live suspension risk.
+    const servedThenLeft: PlayerDiscipline = {
+      ...base,
+      warningCount: 5,
+      warningsUntilSuspension: 2,
+      status: "served",
+      servedAt: "2026-05-17T14:30:00Z",
+      departed: true,
+    };
+    const groups = groupDiscipline([servedThenLeft], 3);
+    const atRisk = groups.find((g) => g.severity === "at-risk");
+    expect(atRisk?.players ?? []).toEqual([]);
+  });
+
+  it("still describes a CURRENT player with a preserved status normally", () => {
+    // Guards against over-correction: the fix must key on `departed`, not on
+    // the status string. A CURRENT squad member with a preserved `served`
+    // status and 2 pending warnings must still get a warning-away claim — the
+    // fix must not leak onto players who are still at the club.
+    //
+    // Severity for a `served` row is `other` and the wording is "1 varning
+    // kvar" — that is PRE-EXISTING behaviour of the generic `pending > 0`
+    // branch, verified independently of this change, and it is deliberately
+    // not altered here. E-005 is about departed players only.
+    const current = {
+      ...base,
+      warningCount: 5,
+      warningsUntilSuspension: 2,
+      status: "served" as const,
+      servedAt: "2026-05-17T14:30:00Z",
+    };
+    const s = cstatFor(current, 3);
+    expect(s.state).toMatch(/varning kvar/);
+    expect(s.state).not.toBe("Spelade under säsongen");
+  });
+
+  it("does not apply the departed branch to a CURRENT at_risk player", () => {
+    // The direct over-correction guard: same pending count, `departed` absent.
+    // `at_risk` must keep its own distinct wording, not the generic branch's.
+    const current = {
+      ...base,
+      warningCount: 5,
+      warningsUntilSuspension: 2,
+      status: "at_risk" as const,
+    };
+    expect(cstatFor(current, 3).state).toBe("En varning kvar");
+    expect(cstatFor(current, 3).severity).toBe("at-risk");
+  });
 });
 
 describe("urgentDiscipline", () => {

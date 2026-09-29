@@ -300,6 +300,10 @@ async function collectCurrentFootballData(): Promise<FootballData> {
     { threshold: rule?.threshold ?? 3, suspensionMatches: rule?.suspensionMatches ?? 1 },
     finished.map((m) => m.date),
     upcoming.length ? { matchId: upcoming[0].id, date: upcoming[0].date } : null,
+    // E-005: scope the ledger to the current squad. `known` is false when the
+    // squad query failed, so the engine skips demotion rather than treating
+    // an empty result as "nobody plays here" and wiping every status.
+    { players: squadStats, known: sq.status.ok && Boolean(sq.squad) },
   );
 
   // Legacy warningEvents shape for computeWarnings compatibility (not used for UI anymore).

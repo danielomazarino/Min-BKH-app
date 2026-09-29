@@ -182,10 +182,11 @@ const AppData = z.object({
         playerName: z.string(),
         warningCount: z.number(),
         redCards: z.number(),
-        status: z.enum(["none", "at_risk", "suspended_next", "served", "red_suspended", "unknown"]),
+        status: z.enum(["none", "at_risk", "suspended_next", "served", "red_suspended", "unknown", "departed"]),
         relevantWarnings: z.array(z.object({ matchId: z.number(), date: z.string() })),
         servedAt: z.string().optional(),
         incomplete: z.boolean(),
+        departed: z.boolean().optional(),
       }),
     )
     .optional(),

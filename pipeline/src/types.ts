@@ -51,7 +51,13 @@ export type DisciplineStatus =
   | "suspended_next"
   | "served"
   | "red_suspended"
-  | "unknown";
+  | "unknown"
+  /**
+   * E-005 — not in the current squad. Card history is retained; only the
+   * forward-looking risk is withheld, because a departed player cannot be
+   * suspended by a club he no longer plays for.
+   */
+  | "departed";
 
 export interface PlayerDiscipline {
   playerId: string;
@@ -70,6 +76,8 @@ export interface PlayerDiscipline {
   relevantWarnings: Array<{ matchId: number; date: string }>;
   servedAt?: string;
   incomplete: boolean;
+  /** E-005 — true when the player is not in the current squad. */
+  departed?: boolean;
 }
 
 export interface TeamRef {
