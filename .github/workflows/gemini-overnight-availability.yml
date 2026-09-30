@@ -24,7 +24,8 @@ name: Gemini overnight availability (5 samples, medium)
 #   the outcome. A retry would spend a second request to learn something a
 #   second sample could have told us.
 #
-# COST: exactly 5 generation requests across the night. Writes nothing.
+# COST: exactly 2 generation requests per scheduled run, 10 across the night.
+# Each is never retried. Writes nothing.
 #
 # RECORDING A RESULT
 #   This workflow deliberately writes NO summary and commits NOTHING. A nightly
@@ -55,11 +56,22 @@ jobs:
         with:
           node-version: 20
 
-      # No `npm ci`: the probe is a single curl against the REST endpoint and
-      # needs no repository dependencies. Installing them would only add
+      # No `npm ci`: both probes are single curl calls against the REST endpoint
+      # and need no repository dependencies. Installing them would only add
       # minutes of failure surface to a measurement run.
-      - name: One request at the production setting (medium thinking, default)
+      - name: Sample 1 — availability at the production setting
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-3.8-flash
         run: bash .github/scripts/gemini-availability-sample.sh
+
+      # Sample 2 — the chat question. Same model, same default (medium)
+      # thinking, no retry. It asks for a real structured answer, so it also
+      # tells us whether a genuine reply is obtainable at all, not merely
+      # whether the endpoint responds. Recorded separately because a 200 here
+      # is the first thing that would let B-004 be evaluated at all.
+      - name: Sample 2 — chat question, structured answer
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+        run: bash .github/scripts/gemini-chat-probe.sh
