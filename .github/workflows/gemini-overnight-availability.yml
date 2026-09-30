@@ -1,0 +1,65 @@
+name: Gemini overnight availability (5 samples, medium)
+
+# Measures WHEN the Gemini API is reachable, using the production request shape.
+#
+# WHY THIS EXISTS
+#   On 2026-09-30, fifteen requests were spent in one afternoon: 2 succeeded,
+#   13 returned HTTP 503 "This model is currently experiencing high demand".
+#   Google's error reference defines 503 service_unavailable as "the service is
+#   temporarily overloaded or down" and prescribes exponential backoff. Nothing
+#   in that definition is size-dependent.
+#
+#   So the open question is purely TEMPORAL: does a window open at night?
+#   Thirteen failures inside a single afternoon cannot answer that. This run
+#   samples across the night instead.
+#
+# WHAT IT DELIBERATELY DOES NOT DO
+#   It does NOT vary thinking_level. Lowering it from the 3.x default of medium
+#   would reduce latency and token consumption, but a request's shape does not
+#   change whether an overloaded server accepts it. Changing it here would
+#   confound the measurement. Baseline first, remedy later, one variable at a
+#   time.
+#
+#   It does NOT retry on 503. Each attempt is one request, recorded whatever
+#   the outcome. A retry would spend a second request to learn something a
+#   second sample could have told us.
+#
+# COST: exactly 5 generation requests across the night. Writes nothing.
+#
+# RECORDING A RESULT
+#   This workflow deliberately writes NO summary and commits NOTHING. A nightly
+#   commit would trigger deploy.yml on data that did not change. The evidence
+#   is the run log; `docs/ENHANCEMENTS.md` is updated by a human afterwards.
+
+on:
+  schedule:
+    # 02:00, 04:00, 06:00, 08:00, 10:00 UTC — five samples across the night.
+    - cron: "0 2,4,6,8,10 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: gemini-overnight-availability
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # No `npm ci`: the probe is a single curl against the REST endpoint and
+      # needs no repository dependencies. Installing them would only add
+      # minutes of failure surface to a measurement run.
+      - name: One request at the production setting (medium thinking, default)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+        run: bash .github/scripts/gemini-availability-sample.sh
