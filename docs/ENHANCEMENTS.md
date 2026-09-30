@@ -178,6 +178,41 @@ cycle.
 **Do not widen the 45-day date window.** It is not the constraint; the constraint
 is *when* we look, not *how far back*.
 
+### DONE 2026-09-30 — added the Fotbolltransfers club feed
+
+A seventh source now covers the transfer and contract news the general sports
+feeds miss entirely:
+
+```ts
+{ url: "https://fotbolltransfers.com/rss/klubbar/27", publisher: "Fotbolltransfers" }
+```
+
+Found via the `href="/rss/klubbar/27"` link the club page declares — **not** by
+guessing paths. Guessing fails here: `/rss` and `/nyheter/feed` both return
+**HTTP 200 with a full HTML page and zero RSS markers**, and `/feed` and
+`/rss/klubbar/27/nyheter` return 404. A status-code-only check would have
+accepted two HTML pages as working feeds. `fetchRss` checks `res.ok` *and*
+parses for `rss`/`feed`, so it rejects them correctly.
+
+Verified end to end — 20 items fetched, 6 survive the prefilter:
+
+```
+2026-09-28  "Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga"
+2026-09-17  LISTA: Kontraktsläget i BK Häcken
+2026-09-11  "Jag hoppas verkligen att jag kan överbevisa dem"
+2026-09-04  Officiellt: Lämnar Häcken för division 2-klubb
+2026-09-02  Officiellt: BK Häcken lånar ut Sanders Ngabo
+2026-09-02  Uppgifter: Sanders Ngabo lämnar Häcken
+```
+
+Real gaps filled: **Sanders Ngabo** and a **division-2 departure** appear in no
+current feed. 14 of 20 are correctly dropped as general Allsvenskan or
+unrelated — the prefilter is doing its job here too.
+
+**Still 2 days stale** (newest item 28 Sep), so this does **not** fix the
+staleness. It adds a source that needs the same fetch-more-often treatment as
+the rest.
+
 ---
 
 ### B-003 · News stories never combine sources

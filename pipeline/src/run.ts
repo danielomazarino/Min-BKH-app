@@ -93,6 +93,15 @@ const RSS_SOURCES = [
   { url: "https://www.svt.se/sport/rss.xml", publisher: "SVT Sport" },
   { url: "https://www.bollsvenskan.se/feed/", publisher: "Bollsvenskan" },
   { url: "https://allsvenskan.se/feed/", publisher: "Allsvenskan" },
+  // Club-specific feed found via the href="/rss/klubbar/27" link the club page
+  // declares. It carries transfer and contract news that none of the general
+  // sports feeds cover — e.g. "LISTA: Kontraktsläget i BK Häcken".
+  //
+  // NOTE the soft-404 hazard on this site: /rss and /nyheter/feed both return
+  // HTTP 200 with a full HTML page and zero RSS markers. Only /rss/klubbar/27
+  // is a real feed. fetchRss checks res.ok AND parses for rss/feed, so a 200
+  // alone would not be trusted here.
+  { url: "https://fotbolltransfers.com/rss/klubbar/27", publisher: "Fotbolltransfers" },
 ];
 
 const STATUS: Record<string, SourceStatus> = {};
