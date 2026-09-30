@@ -18,6 +18,7 @@ import { buildNewsEvents, publisherRole } from "./newsEvents";
 import type { WarningEvent } from "./warnings";
 import { readLastKnownGood } from "./stale";
 import { prefilterNews, DEFAULT_WINDOW_DAYS } from "./newsPrefilter";
+import { buildSourceBreakdown, formatSourceBreakdown } from "./ingestDiagnostics";
 import { fetchArticleTexts } from "./articleText";
 import {
   buildEventsFromGemini,
@@ -397,6 +398,24 @@ async function main() {
     `news: ${candidates.length} candidates, ${dropped.length} dropped before Gemini` +
       (menExcluded ? `, ${menExcluded} excluded as not men's-team news` : ""),
   );
+
+  // Per-source ingest attribution. Observability ONLY — `news`, `dropped`,
+  // `prefiltered` and `candidates` are all used exactly as above, so no article
+  // is kept or dropped differently because of this block.
+  //
+  // Why it exists: `freshness.sourceStatus` says a source is "ok" whether it
+  // contributed 20 articles or none, and the total drop count above cannot be
+  // attributed. A source that fetched successfully and contributed nothing was
+  // therefore indistinguishable from one that failed. Diagnosing B-006 took
+  // hours for exactly that reason.
+  const menExcludedUrls = prefiltered
+    .filter((n) => !candidates.some((c) => c.url === n.url))
+    .map((n) => n.url);
+  for (const line of formatSourceBreakdown(
+    buildSourceBreakdown(news, new Set(candidates.map((c) => c.url)), dropped, menExcludedUrls),
+  )) {
+    console.log(line);
+  }
 
   // Server-side article text (the browser never fetches article bodies).
   const texts = await fetchArticleTexts(candidates.map((c) => c.url));
