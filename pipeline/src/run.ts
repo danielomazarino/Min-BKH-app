@@ -102,6 +102,22 @@ const RSS_SOURCES = [
   // is a real feed. fetchRss checks res.ok AND parses for rss/feed, so a 200
   // alone would not be trusted here.
   { url: "https://fotbolltransfers.com/rss/klubbar/27", publisher: "Fotbolltransfers" },
+
+  // Göteborgs-Posten — regional newspaper, home city of BK Häcken.
+  //
+  // Verified 2026-09-30: HTTP 200, content-type text/xml, 45 items, freshest
+  // pubDate 2026-09-30 19:22 GMT. NOTE the site serves this GZIP-COMPRESSED
+  // even though content-type is text/xml — a plain fetch without --compressed
+  // yields binary and a naive marker check reports zero RSS markers. That is a
+  // soft-404 false negative; this feed is real.
+  //
+  // YIELD IS LOW BY DESIGN: this is the general front-page feed, not a sport
+  // section. Measured 2026-09-30: 3 of 45 items mention Häcken. No sport feed
+  // exists (`/sport.rss` 404, `/sport/feed` 410, `/arkiv/sport.rss` 404), so
+  // the front page is the only option. It contributes local/coach-press angle
+  // (e.g. "Häckens plan – så ska storkubbarna vältas") that the national
+  // sports feeds do not carry, but do not expect a high article rate.
+  { url: "https://www.gp.se/rss", publisher: "Göteborgs-Posten" },
 ];
 
 const STATUS: Record<string, SourceStatus> = {};
