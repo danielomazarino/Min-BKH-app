@@ -43,25 +43,43 @@ routine step.
 
 ```
 git status
-git --no-pager log --oneline -4
 git --no-pager log --oneline origin/main..HEAD
+git rev-list --count origin/main..HEAD
 ```
 
-Expected: a clean tree, with four commits unpushed on top of `origin/main`:
+Expected: a clean tracked tree, with these commits unpushed on top of
+`origin/main` (`5e72fa0`), oldest first:
 
-| commit | what |
-| --- | --- |
-| `ed8d597` | the E-005 discipline fix |
-| `eb6f406` | merge of `origin/main` into local `main` |
-| `be57a04` | data-driven e2e tests + corrected docs |
-| `a3ddf18` | the handoff prompt (docs only) |
+| commit | what | touches production? |
+| --- | --- | --- |
+| `ed8d597` | the E-005 discipline fix | source only — **this is the fix** |
+| `eb6f406` | merge of `origin/main` into local `main` | brings in the nightly data |
+| `be57a04` | data-driven e2e tests | tests + docs only |
+| `a3ddf18` | the handoff prompt | docs only |
+| `c0e7cc3` | correction to two stale doc claims | docs only |
 
-Note the first two touch **no** production data: `public/data/` and
-`app/`/`pipeline/` are unchanged by `be57a04` and `a3ddf18`. Only `ed8d597`
-changes source, and only `eb6f406` brings in the nightly data.
+**Do not hardcode the count, and do not trust the table above blindly.** Read
+`git log origin/main..HEAD` and match it against the table by commit SHA. The
+list may have grown since this prompt was written — docs-only commits get added
+to this branch as the state is corrected, which is exactly what happened here.
+What matters is:
 
-**If the tree is not clean, or the unpushed set is not those four commits,
-stop and report.** Do not improvise a different push.
+- `ed8d597` **must be present**. Without it the E-005 fix is not being pushed.
+- `eb6f406` **must be present**. It is what brought the newer nightly data in.
+- Nothing after `eb6f406` may alter `public/data/app.json` or anything under
+  `app/` or `pipeline/`. Verify rather than assume:
+
+```
+git --no-pager diff eb6f406 HEAD --stat -- public/data app pipeline
+```
+
+That must print **nothing**. If it prints anything, stop and report — an
+unexpected change to shipped data or source is a stop condition, not something
+to push and mention afterwards.
+
+**If the tree has uncommitted changes to tracked files, or the unpushed set is
+missing either required commit, stop and report.** Do not improvise a different
+push.
 
 ## Why the push is safe — and why `reset` is not
 
