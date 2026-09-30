@@ -16,10 +16,10 @@ some of their status claims are stale.**
 
 | | |
 | --- | --- |
-| `HEAD` | `eb6f406` — *Merge remote-tracking branch 'origin/main'* |
+| `HEAD` | `a3ddf18` — *docs: add handoff prompt to push E-005 and verify after regeneration* |
 | `origin/main` | `5e72fa0` — *data: nightly update 2026-09-30* |
-| Relationship | **AHEAD BY 2, NOT DIVERGED.** The merge is done locally; only the push remains. |
-| Uncommitted | `docs/ENHANCEMENTS.md`, `e2e/brief.spec.ts`, and untracked `.github/prompts/` |
+| Relationship | **AHEAD BY 4, NOT DIVERGED.** The merge is done locally; only the push remains. |
+| Uncommitted | nothing tracked; `.github/prompts/` holds 7 untracked legacy prompts |
 
 ### ✅ The divergence described here earlier is RESOLVED
 
@@ -2204,8 +2204,11 @@ was `at_risk` / `suspended_next` to the new terminal `departed` status. His card
 history is retained; only the forward-looking risk is withheld.
 
 Verified 2026-09-30: the committed `app.json` still shows him as `at_risk`
-**by design**, because the pipeline was deliberately not re-run. The file
-self-corrects on the next nightly. See E-005.
+**by design**, because the pipeline was deliberately not re-run. Corrected
+2026-09-30: it did **not** self-correct on the next nightly. The 2026-09-30 run
+(`5e72fa0`) checked out `origin/main`, which did not contain `ed8d597`, so it
+executed pre-fix code (`git merge-base --is-ancestor ed8d597 5e72fa0` → NO).
+The fix reaches the data on the **2026-10-01** nightly. See E-005.
 
 ### 220ms sheet fade-in contrast dip · **OPEN DESIGN / ACCESSIBILITY DECISION**
 

@@ -47,15 +47,20 @@ git --no-pager log --oneline -4
 git --no-pager log --oneline origin/main..HEAD
 ```
 
-Expected: a clean tree, with three commits unpushed on top of `origin/main`:
+Expected: a clean tree, with four commits unpushed on top of `origin/main`:
 
 | commit | what |
 | --- | --- |
 | `ed8d597` | the E-005 discipline fix |
 | `eb6f406` | merge of `origin/main` into local `main` |
 | `be57a04` | data-driven e2e tests + corrected docs |
+| `a3ddf18` | the handoff prompt (docs only) |
 
-**If the tree is not clean, or the unpushed set is not those three commits,
+Note the first two touch **no** production data: `public/data/` and
+`app/`/`pipeline/` are unchanged by `be57a04` and `a3ddf18`. Only `ed8d597`
+changes source, and only `eb6f406` brings in the nightly data.
+
+**If the tree is not clean, or the unpushed set is not those four commits,
 stop and report.** Do not improvise a different push.
 
 ## Why the push is safe — and why `reset` is not
