@@ -129,6 +129,8 @@ REGLER
 - Ett omnämnande av "Häcken", ett bkhacken.se-länk eller ett kvinnligt spelarnamn är INTE i sig herrlag.
 - Oklart underlag => scope "unknown". Gissa inte.
 - Artiklar om samma match, samma resultat, samma transfer eller samma skada hör till samma händelse, ÄVEN om rubrikerna skiljer sig helt.
+- Matchens två sidor är däremot separata händelser: material från FÖRE matchen (matchtrupp, förhandsprogram, besöksinformation, matchtröpehelg, truppen inför) hör inte ihop med material från EFTER matchen (matchrapport, referat, resultat), även om de gäller samma motståndare, samma match och samma vecka.
+- Artiklar om samma AVSLUTADE utfall hör däremot ihop, även om några beskriver det olika: flera rapporter om samma resultat är en händelse.
 - Artiklar om olika saker (t.ex. matchresultat och kontraktsförlängning) är separata händelser, även samma dag.
 - Rubrik: en logisk svensk rubrik för hela händelsen.
 - Sammanfattning: Svensk, faktisk, högst 200 tecken, inga åsikter, ingen clickbait, ingen uppfinngad information. Endast utifrån det material du fått.

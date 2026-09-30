@@ -7,6 +7,120 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
+## 🛑 SESSION HANDOFF 2026-09-30 (evening) — READ FIRST
+
+**Purpose: pick this up in a fresh session without reconstructing the history.**
+
+### Where the code is
+
+| | |
+| --- | --- |
+| `HEAD` / `origin/main` | `05a9d21` — *ahead of origin by 0* |
+| Working tree | **4 changes, all uncommitted, nothing pushed** |
+| Suite | **349 passed (349)**, zero failures · `tsc` clean · `lint` clean · `OK: app.json` |
+| `public/data/app.json` | `c8e247cb067cb332…` — unchanged, not regenerated |
+| Served bundle | `assets/index-B9Si6Jzq.js` |
+
+```
+R  .github/prompts/push-e005-… → 008-push-e005-and-verify-once-fixed.prompt.md
+ M docs/ENHANCEMENTS.md                        (+92 −20)
+ M pipeline/src/gemini.ts                      (+2  −0)   <- the B-004 prompt fix
+ M pipeline/src/geminiSemanticEval.fixture.test.ts (+172 −0)
+```
+
+The prompt rename is a **deliberate numbering convention** applied outside the
+engineering tasks. Leave it. If you commit it, commit it *as a rename* — do not
+"restore" the old filenames.
+
+### What was accomplished today
+
+1. **E-005 pushed and deployed** (commit `05a9d21`, run `36689400880`, green).
+   Layouni is still `at_risk` **by design** — the 2026-09-30 nightly ran
+   pre-fix code. `git merge-base --is-ancestor ed8d597 5e72fa0` → exit 1 proves it.
+2. **B-004 made reproducible, then provisionally addressed.** The false merge
+   (pre-match `t1` absorbed into post-match `t3`–`t6`) was reproduced offline
+   with **zero Gemini requests**, then the prompt was corrected.
+3. **B-004's blocker label was wrong and is now corrected.** It was never
+   capacity-blocked; auth, model availability and quota are all eliminated. See
+   the B-004 entry.
+
+### ⚠️ B-004 is PROVISIONALLY ADDRESSED, NOT VALIDATED — still OPEN
+
+The prompt now contains an explicit pre/post separation rule and the offline
+assertion is green. **That proves the prompt states the rule. It does not prove
+Gemini obeys it.** No live call has been made. A model can read a correct
+instruction and still group wrongly — that is the entire subject of B-004.
+
+**Do not describe B-004 as fixed, resolved or validated.**
+
+### The one thing that closes B-004
+
+**Exactly one live evaluation**, via `gemini-semantic-eval.yml`
+(`workflow_dispatch`, one `fetch`, no retry, no model fallback, verified to write
+no files). It **requires explicit human authorisation**, which has *not* been
+given. Prompt `012-` for it does **not** exist yet — it is unwritten.
+
+Budget: the request budget was never the constraint. `gemini-budget-check.sh`
+guarantees ≤1 `generateContent` call, only after a free metadata check, with no
+retry/fallback/loop.
+
+### Next session — pick ONE
+
+| Option | Prompt | What it does |
+| --- | --- | --- |
+| **A** | `011-commit-and-deploy-b004-prompt-fix.prompt.md` (written, not run) | Commits + pushes the four changes. **No user-visible effect** — see below |
+| **B** | *unwritten* | The single authorised live eval that can actually close B-004 |
+
+Start with **A** if you only want the work landed and durable. Start with **B** if
+you want B-004 closed. **B needs your explicit authorisation first.**
+
+### 🪞 Trap for whoever deploys — read before running `011-`
+
+**This deploy is user-invisible by construction, and that was proven by building,
+not by reasoning:** after `npx vite build` with the `gemini.ts` change in place,
+the bundle was still `index-B9Si6Jzq.js` — byte-identical. `gemini.ts` is
+pipeline-only Node code; it runs during data generation and never enters the
+client bundle. Nothing under `app/` or `public/` changed.
+
+So this deploy **inverts** the usual success signal:
+
+| Deploy | Success looks like |
+| --- | --- |
+| E-005 (code fix) | bundle hash **CHANGES** |
+| **B-004 prompt fix** | bundle hash is **UNCHANGED** |
+
+**An unchanged bundle is the success condition, not a failed deploy.** An agent
+reusing the E-005 lesson ("the bundle hash is the discriminating evidence") could
+wrongly report this as a broken deploy and start investigating a non-problem.
+
+`app.json` **cannot** distinguish success from staleness here either — it is
+byte-identical before and after (`c8e247cb…`), exactly the failure shape caught
+on the E-005 push. Say this plainly in any report rather than presenting a hash
+match as proof of a fresh deploy.
+
+**Reality check on what pushing buys you:** very little, functionally. B-004's
+fix sits in the pipeline, and the pipeline runs nightly with **no Gemini key
+injected**. So committing this is mostly about making the change **durable and
+documented**. "Deployed" here means *landed safely*, **not** *users see an
+improvement*.
+
+### Also still open (unchanged today)
+
+- **E-005 data effect** — owed after the **2026-10-01** nightly (~03:45 UTC):
+  Layouni → `departed`, `warningCount: 2` intact, ledger still **18** entries.
+- **B-003** OPEN — live data is 6/6 single-source.
+- **B-004** OPEN — unvalidated, as above.
+- Gemini remains **disabled** in `data-update.yml`. Do not re-enable until B-004
+  is validated by a live call.
+
+### Prompts on disk (`.github/prompts/`)
+
+`008-` E-005 push/verify · `009-` B-004 reproduce + relabel · `010-` B-004
+red→green · `011-` commit + deploy *(written, not yet run)*.
+The seven unnumbered `*.prompt.md` files are legacy — leave them.
+
+---
+
 ## START HERE — state as of 2026-09-30
 
 **Read this block first. It is the current truth. Older sections are history and
@@ -16,10 +130,10 @@ some of their status claims are stale.**
 
 | | |
 | --- | --- |
-| `HEAD` | `a3ddf18` — *docs: add handoff prompt to push E-005 and verify after regeneration* |
-| `origin/main` | `5e72fa0` — *data: nightly update 2026-09-30* |
-| Relationship | **AHEAD BY 4, NOT DIVERGED.** The merge is done locally; only the push remains. |
-| Uncommitted | nothing tracked; `.github/prompts/` holds 7 untracked legacy prompts |
+| `HEAD` | `05a9d21` — *docs: make the handoff prompt verify its own preconditions* |
+| `origin/main` | `05a9d21` — **in sync, ahead by 0** |
+| Relationship | **NOTHING UNPUSHED.** E-005 is pushed and deployed. |
+| Uncommitted | **4 changes** — the B-004 prompt fix, its test, the doc edits, and a prompt rename. See the SESSION HANDOFF above. |
 
 ### ✅ The divergence described here earlier is RESOLVED
 
@@ -66,21 +180,26 @@ the last-result row has no button to open a sheet.
 | Item | Status |
 | --- | --- |
 | E-001 … E-004 | **DONE** — fixed earlier; the `OPEN` markers were stale and are corrected |
-| **E-005** | **Fixed in code** (`ed8d597`), **merged but not pushed** |
+| **E-005** | **Code pushed and deployed** (`05a9d21`, run `36689400880`). Data effect still owed after the 2026-10-01 nightly |
 | E-006 … E-009 | **DONE** — superseded by the Wikidata search redesign |
 | E-003 (old entry) | **DONE** via E-005 |
 | B-002 | **DONE** — feed now supplies `<enclosure>`; `og:image` work not needed |
 | B-003 | OPEN — live data is 6/6 single-source |
-| **B-004** | **OPEN, root cause known, fix BLOCKED on Gemini capacity** |
+| **B-004** | **OPEN** — prompt fixed + offline test green 2026-09-30, but **UNVALIDATED**: needs one authorised live eval before Gemini may be re-enabled |
 | B-005 | **DONE and proven** — the deploy guard's first real run passed |
 
 ### The three things to do next
 
-1. **Commit the data-driven e2e work** sitting uncommitted in
-   `e2e/brief.spec.ts` (+292 lines, 6 new tests, hermetic via `page.route`).
-   Verified passing: 24 passed, 2 skipped.
-2. **Push the merge** (`eb6f406`). Gating is already done and green; only
-   `git push` remains. This carries `ed8d597` — the E-005 fix.
+> ⚠️ **Superseded 2026-09-30 (evening).** The list below was written when the
+> E-005 push was still pending. It is **done**: `eb6f406` was pushed as part of
+> `05a9d21` and deployed green. Kept only as a record. **Use the SESSION HANDOFF
+> at the top of this file instead.**
+
+1. ~~**Commit the data-driven e2e work** sitting uncommitted in
+   `e2e/brief.spec.ts`~~ — **DONE**, shipped in `be57a04`.
+2. ~~**Push the merge** (`eb6f406`).~~ **DONE** — pushed 2026-09-30T08:23:22Z
+   inside `05a9d21`. `ed8d597` reached `origin/main`; deploy run `36689400880`
+   succeeded.
 3. **Verify E-005 in production on 2026-10-01, not before.** Pushing the code
    does **not** change any served data: `app.json` is only regenerated by the
    nightly pipeline. The 09-30 nightly already ran against pre-fix code (it
@@ -89,14 +208,17 @@ the last-result row has no button to open a sheet.
    the **2026-10-01** nightly. Then curl and confirm: the `at_risk` row for
    Layouni is now `departed`, the ledger still holds 18 entries, and
    `warningCount: 2` is intact — history preserved, only classification moved.
+   **This is now the nearest pending action in the whole repo.**
 
 ### Do not
 
-- **Do not re-enable Gemini.** B-004 is unfixed. A capacity blip is exactly how
-  the bad 2026-09-27 data reached production.
-- **Do not edit `SYSTEM_INSTRUCTION` in `gemini.ts`** until a Gemini request can
-  actually succeed. The current wording *causes* the false merge; changing it
-  blind makes it worse. See B-004.
+- **Do not re-enable Gemini.** B-004 is **not validated** — the prompt fix is
+  written and its offline test is green, but no live call has confirmed Gemini
+  complies, so the defect is only *suspected* fixed. Production must not serve
+  unvalidated LLM output.
+- **Do not edit `SYSTEM_INSTRUCTION` in `gemini.ts`** again without a live eval
+  to measure against. The pre/post rule was added 2026-09-30, but **unvalidated**:
+  no call has confirmed Gemini complies. Further blind tuning is unmeasurable.
 - **Do not run `npm run pipeline`** without intending to spend 12 Gemini
   requests and regenerate production data.
 - **Do not attempt E-006–E-009 as originally written** — their premises described
@@ -1182,7 +1304,7 @@ not just successful ones.
 ---
 
 ### B-004 · Gemini event grouping merges unrelated stories (regression)
-`OPEN — data pipeline · ROOT CAUSE IDENTIFIED 2026-09-29 · FIX BLOCKED on capacity`
+`OPEN — data pipeline · ROOT CAUSE IDENTIFIED 2026-09-29 · FIX BLOCKED ON A VALIDATION PATH (relabelled 2026-09-30 — see "Why it is still blocked")`
 
 > **Post-deployment finding — not fixed in this pass.**
 >
@@ -1211,23 +1333,86 @@ Every false merge observed in production has the same shape: a pre-match service
 article (matchtrupp / besöksinformation / matchtröpehelg) absorbed into the
 post-match result event. No other kind of false merge was seen.
 
-**Why it is still blocked.** Verifying a prompt fix requires a live Gemini call,
-and the API is `capacity-blocked` by a sector-wide incident (84 third-party
-GitHub issues in 48h matching the exact error string). Editing the prompt blind
-is how the current one got broken. **Do not edit it until a request can
-succeed.**
+**Why it is still blocked — RELABELLED 2026-09-30.** This entry previously read
+*"BLOCKED on capacity"*. **That was the wrong blocker and it has been
+corrected.** Run `36493245277` established the secret is valid and the model is
+listed, eliminating auth and model availability; no 429 has ever been observed on
+this key, eliminating quota. The remaining 503s are transient sector-wide
+capacity — real, but not a design constraint, and not something a budget
+allocation would change.
+
+**The accurate blocker is a VALIDATION PATH.** The prompt rewrite itself is
+straightforward; what is missing is a way to *confirm* a rewritten prompt no
+longer merges `t1` into `t3`–`t6`. That path already exists and is affordable:
+`.github/scripts/gemini-budget-check.sh` makes **at most ONE**
+`generateContent` call, only after the free metadata check succeeds, with **no
+retry, no model fallback and no loop**. A single validating call is therefore
+affordable today — the constraint was never the request budget.
+
+Editing the prompt blind is how the current one got broken, so **do not edit it
+until a validating request can succeed.** The offline half of that loop now
+exists too: the failing fixture assertion below (added 2026-09-30).
 
 **The fix, when unblocked — test first:**
 
-1. Add a fixture assertion that `t1` (*"BK Häcken åker till Kalmar – här är
-   matchtruppen"*, pre-match) must **not** share an event with `t3`–`t6` (the
-   post-match Kalmar reports). The fixture already contains the offending pair;
-   no test asserted they must be separate, which is why the eval could pass while
-   production shipped the defect.
-2. Make it **fail** against current behaviour.
-3. Only then change the prompt. **Prompt and test only — no deterministic
-   clustering.** Pre-match versus post-match is exactly the ambiguous case a regex
-   rule set misfires on.
+1. ~~Add a fixture assertion that `t1` must **not** share an event with
+   `t3`–`t6`.~~ **DONE 2026-09-30** — added to
+   `pipeline/src/geminiSemanticEval.fixture.test.ts` as the
+   *"SYSTEM_INSTRUCTION must not command the false merge"* test, plus two
+   supporting structural tests that pin the pre/post pair in the fixture so the
+   regression cannot be edited away.
+2. Make it **fail** against current behaviour. **DONE 2026-09-30** — it fails
+   verbatim: `B-004: SYSTEM_INSTRUCTION saknar en regel som skiljer förhands-
+   från efterhandsmaterial.` This is the intended state, **not** a broken build.
+   The false merge is now reproducible from the fixture alone, with zero Gemini
+   requests.
+3. ~~Only then change the prompt.~~ **DONE OFFLINE 2026-09-30** — two rules added
+   to `SYSTEM_INSTRUCTION` in `pipeline/src/gemini.ts`, in Swedish, without
+   restructuring anything else: material from **före** matchen (matchtrupp,
+   förhandsprogram, besöksinformation, matchtröpehelg) is separated from
+   material from **efter** matchen (matchrapport, referat, resultat) — while
+   reports of the same **avslutade utfall** still merge, so t3–t6 remain one
+   event. That second clause is deliberate: over-correcting into "never merge
+   same-match reports" would trade one false merge for four near-duplicate cards
+   and regress **B-003**. The offline assertion is now **green**
+   (`Tests 349 passed (349)`, zero failures).
+
+### ⚠️ B-004 is PROVISIONALLY ADDRESSED, NOT VALIDATED — still OPEN
+
+**A green offline test is not a fix.** It proves the prompt now *states* the
+rule. It does **not** prove Gemini *complies* with it. A model can read a
+correct instruction and still group wrongly — which is the entire subject of
+B-004. Per `AGENTS.md`, a successful generation is not proof of correctness;
+the same is true of a passing assertion about the prompt's text.
+
+**What is verified:** the prompt contains an explicit pre/post separation rule,
+and the offline regression test enforces that the rule stays present.
+
+**What is NOT verified:** that Gemini actually separates t1 from t3–t6. No
+Gemini call has been made in this work, and none is authorised by it.
+
+**Owed — exactly one live evaluation**, via `gemini-semantic-eval.yml`
+(`workflow_dispatch`, one `fetch`, no retry, no model fallback, verified to
+write no files). It **requires explicit human authorisation** and was
+deliberately not dispatched here.
+
+**Do not re-enable Gemini in the nightly until that run passes.** The defect is
+now *suspected* fixed, not proven, and production must not serve unvalidated
+LLM output. Keep the "do not re-enable Gemini" rule intact — it is still
+correct, for the real reason: **the fix is unvalidated**, not because the API
+is down.
+
+**A note on the test itself, hardened 2026-09-30.** The extraction of
+`SYSTEM_INSTRUCTION` originally used a bare `indexOf` pair with no failure
+check. Probed: renaming the constant made it silently return ~1100 characters
+of file header instead of the prompt, and if that header happened to contain
+both vocabularies the assertion would pass **vacuously**. Extraction now throws
+loudly on a missing head, a missing `;` terminator, an implausibly short
+result, or a result that crosses a template-literal boundary. The vocabulary
+patterns were also widened to accept natural Swedish phrasings
+("före avspark", "efter att matchen spelats") rather than one expected wording,
+while still failing the pre-fix prompt — verified by running the file before
+the prompt was edited.
 
 **One event card is standing in for two different stories.** The summary prose
 is not the defect — it is correct. The **grouping** is wrong, and grouping is
@@ -2444,8 +2629,15 @@ Spend: 1 generation request
 
 - The **secret is valid** (stage 1 returned 200).
 - The **model is available to this key** (explicitly listed).
-- The binding constraint is **capacity**, not quota, not auth, not model
-  availability. 429 has never once been observed on this key.
+- 429 has **never once** been observed on this key, so quota is eliminated as a
+  cause. Auth and model availability are likewise eliminated.
+
+> ⚠️ **Corrected 2026-09-30.** The original bullet here read *"The binding
+> constraint is **capacity**, not quota, not auth, not model availability."*
+> That sentence is **superseded** by the *SUPERSEDED 2026-09-29* block further
+> down, which is the later and better-evidenced position: capacity is transient
+> and incidental, and the **binding constraint is correctness (B-004)**. The run
+> evidence above stands; only the conclusion about the blocker has changed.
 
 **This closes the "is the API up" question. It is answered: reachable,
 intermittently, and currently saturated.**
