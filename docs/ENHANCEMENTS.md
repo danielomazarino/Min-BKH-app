@@ -27,13 +27,25 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ## Current state — 2026-09-30
 
+> This snapshot can lag reality by hours. Before relying on it, check the live
+> state yourself: `git log -1` for the current commit, `curl -s
+> https://danielomazarino.github.io/Min-BKH-app/data/app.json | sha256sum` for
+> the served data. Nothing below goes stale *on its own* — only this header's
+> "as of" date does.
+
 | | |
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
-| Latest commit | `d275c3f` |
+| Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
 | Tests | **349 passing**, 0 failing |
 | Data last generated | 2026-09-30 03:46 UTC |
 | Tonight's data job | Runs ~03:45 UTC — regenerates tomorrow's content |
+
+Commit hashes **are** used further down this file, but only for past events —
+*"fixed in `c73b820`"*, *"run `36747767583` returned 503"*. Those are permanent
+anchors to a specific change or a specific run, not live values, so they do not
+rot. If a hash here ever appears as a *current* value rather than a past one,
+treat it as suspect and re-check with `git log`.
 
 ---
 

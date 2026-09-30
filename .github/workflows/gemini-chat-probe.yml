@@ -1,0 +1,54 @@
+name: Gemini chat probe (ONE request)
+
+# ONE request. Tests whether a SMALL input with a LARGE expected output succeeds,
+# where the 23KB semantic-eval payload returned HTTP 503 twelve times today.
+#
+# THE CONFOUND THIS BREAKS
+#   Today, same key, same model, inside one hour:
+#     - ~0.3 KB input  -> HTTP 200  (twice)
+#     - ~23  KB input  -> HTTP 503  (twelve times)
+#   "Big payloads fail" is a correlation, not a cause. The 23 KB request also
+#   fetched six live article bodies and asked a different question, so three
+#   variables moved at once.
+#
+#   This probe holds input tiny and varies OUTPUT instead. The question is a
+#   general chat question answerable from model knowledge; the answer is a
+#   structured JSON array of five items. So:
+#     - 200 -> output size is not the constraint. The eval failure was about
+#              input size, and a smaller eval payload would likely work.
+#     - 503 -> large expected OUTPUT is itself refused. Input size is not the
+#              driver, and shrinking the eval would not help.
+#
+#   Both outcomes are decisive. This is not a pass/fail gate.
+#
+# COST: exactly ONE generation request. No retry, no model fallback, no loop.
+# It writes nothing: no app.json, no repo files, no commits, no deploy.
+
+on:
+  workflow_dispatch:
+
+# Serialise: cancelling a run that already issued its request saves no quota
+# and destroys the evidence.
+concurrency:
+  group: gemini-chat-probe
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: One chat request, small input, large expected output
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+        run: bash .github/scripts/gemini-chat-probe.sh
