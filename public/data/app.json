@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-28T03:51:10.337Z",
+    "generatedAt": "2026-09-30T03:46:56.126Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -17,7 +17,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-28T03:49:41.122Z",
+    "retrievedAt": "2026-09-30T03:46:42.894Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -887,7 +887,7 @@
   "cardMatchesInspected": 22,
   "news": [
     {
-      "id": "BK Häcken-6-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "BK Häcken-7-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -903,7 +903,7 @@
       ]
     },
     {
-      "id": "BK Häcken-8-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "BK Häcken-9-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
@@ -919,7 +919,7 @@
       ]
     },
     {
-      "id": "BK Häcken-15-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "BK Häcken-16-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "url": "https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
@@ -935,7 +935,7 @@
       ]
     },
     {
-      "id": "BK Häcken-16-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "id": "BK Häcken-17-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
       "url": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
@@ -951,7 +951,7 @@
       ]
     },
     {
-      "id": "BK Häcken-17-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
+      "id": "BK Häcken-18-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
       "title": "Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby",
       "url": "https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
       "summary": "I kväll, fredagen den 11 september klockan 19.00, spelar BK Häcken mot Mjällby AIF på Nordic Wellness Arena.",
@@ -967,7 +967,7 @@
       ]
     },
     {
-      "id": "BK Häcken-18-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
+      "id": "BK Häcken-19-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
       "title": "Matchtruppen inför Mjällby på Nordic Wellness Arena",
       "url": "https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
       "summary": "Senaste nytt om laget inför fredagens hemmamatch.",
@@ -985,7 +985,7 @@
   ],
   "newsEvents": [
     {
-      "id": "event-BK Häcken-6-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "event-BK Häcken-7-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-20T16:00:00.000Z",
@@ -1004,7 +1004,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-8-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "event-BK Häcken-9-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-19T13:50:05.000Z",
@@ -1023,7 +1023,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
       "publishedAt": "2026-09-11T19:40:00.000Z",
@@ -1042,7 +1042,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
       "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
       "publishedAt": "2026-09-11T10:00:00.000Z",
@@ -1061,7 +1061,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
+      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
       "title": "Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby",
       "summary": "I kväll, fredagen den 11 september klockan 19.00, spelar BK Häcken mot Mjällby AIF på Nordic Wellness Arena.",
       "publishedAt": "2026-09-11T09:45:00.000Z",
@@ -1080,7 +1080,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
+      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
       "title": "Matchtruppen inför Mjällby på Nordic Wellness Arena",
       "summary": "Senaste nytt om laget inför fredagens hemmamatch.",
       "publishedAt": "2026-09-10T15:23:00.000Z",
