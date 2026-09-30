@@ -15,41 +15,62 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 | | |
 | --- | --- |
-| `HEAD` / `origin/main` | `05a9d21` — *ahead of origin by 0* |
-| Working tree | **4 changes, all uncommitted, nothing pushed** |
+| `HEAD` / `origin/main` | `c73b820` — *fix(gemini): separate pre-match from post-match material (B-004, unvalidated)* |
+| Working tree | clean, except this doc (uncommitted follow-up to the 503 result) |
 | Suite | **349 passed (349)**, zero failures · `tsc` clean · `lint` clean · `OK: app.json` |
 | `public/data/app.json` | `c8e247cb067cb332…` — unchanged, not regenerated |
-| Served bundle | `assets/index-B9Si6Jzq.js` |
+| Served bundle | `assets/index-B9Si6Jzq.js` — **unchanged by design** (pipeline-only change) |
 
-```
-R  .github/prompts/push-e005-… → 008-push-e005-and-verify-once-fixed.prompt.md
- M docs/ENHANCEMENTS.md                        (+92 −20)
- M pipeline/src/gemini.ts                      (+2  −0)   <- the B-004 prompt fix
- M pipeline/src/geminiSemanticEval.fixture.test.ts (+172 −0)
-```
-
-The prompt rename is a **deliberate numbering convention** applied outside the
-engineering tasks. Leave it. If you commit it, commit it *as a rename* — do not
-"restore" the old filenames.
+The B-004 prompt fix, its test, the doc edits and the prompt-file renames all
+shipped in `c73b820`. The prompt rename is a **deliberate numbering
+convention**; it was committed as a rename, not reverted.
 
 ### What was accomplished today
 
 1. **E-005 pushed and deployed** (commit `05a9d21`, run `36689400880`, green).
    Layouni is still `at_risk` **by design** — the 2026-09-30 nightly ran
    pre-fix code. `git merge-base --is-ancestor ed8d597 5e72fa0` → exit 1 proves it.
-2. **B-004 made reproducible, then provisionally addressed.** The false merge
-   (pre-match `t1` absorbed into post-match `t3`–`t6`) was reproduced offline
-   with **zero Gemini requests**, then the prompt was corrected.
+2. **B-004 made reproducible, then provisionally addressed, then ONE live
+   evaluation was attempted and 503'd** (run `36747767583`). The prompt fix
+   shipped in `c73b820`.
 3. **B-004's blocker label was wrong and is now corrected.** It was never
    capacity-blocked; auth, model availability and quota are all eliminated. See
    the B-004 entry.
 
 ### ⚠️ B-004 is PROVISIONALLY ADDRESSED, NOT VALIDATED — still OPEN
 
+**Live evaluation attempted 2026-09-30T16:56Z — run `36747767583`, 1 request
+spent. It returned HTTP 503 and answered nothing.**
+
+The fix below landed first (`c73b820`) precisely because the workflow checks out
+the repo — dispatching before the commit would have spent the single request on
+the *old* prompt and proved nothing.
+
+```
+prefilter        : 2 dropped by hard rules (t2, t4 — no Häcken relation)
+HTTP 503         : "This model is currently experiencing high demand."
+                   status UNAVAILABLE
+Spend            : 1 request
+RESULT           : capacity-blocked-503
+"No semantic conclusion is possible. Do not re-run repeatedly.
+ The deterministic baseline in section 2 stands as the fallback."
+```
+
+**What this does and does not tell us.** It is a **transport failure, not a
+semantic verdict.** No grouping output was produced, so `t1` was never grouped
+or separated — the question "does Gemini now keep t1 out of t3–t6?" is
+**still unanswered**, exactly as before the request. A 503 is not evidence the
+prompt fix works, and it is not evidence it fails.
+
+It does re-confirm one thing already established: capacity remains the
+incidental obstacle. The **binding** blocker is still the missing validation.
+Do not re-run repeatedly — the script itself says so, and repeated 503s are
+what produced this repo's 84-request history.
+
 The prompt now contains an explicit pre/post separation rule and the offline
 assertion is green. **That proves the prompt states the rule. It does not prove
-Gemini obeys it.** No live call has been made. A model can read a correct
-instruction and still group wrongly — that is the entire subject of B-004.
+Gemini obeys it.** A model can read a correct instruction and still group
+wrongly — that is the entire subject of B-004.
 
 **Do not describe B-004 as fixed, resolved or validated.**
 
@@ -57,19 +78,20 @@ instruction and still group wrongly — that is the entire subject of B-004.
 
 **Exactly one live evaluation**, via `gemini-semantic-eval.yml`
 (`workflow_dispatch`, one `fetch`, no retry, no model fallback, verified to write
-no files). It **requires explicit human authorisation**, which has *not* been
-given. Prompt `012-` for it does **not** exist yet — it is unwritten.
+no files). **Attempted 2026-09-30 — run `36747767583` returned HTTP 503, 1
+request spent, no semantic conclusion.** So this remains **owed**, not done.
 
-Budget: the request budget was never the constraint. `gemini-budget-check.sh`
-guarantees ≤1 `generateContent` call, only after a free metadata check, with no
-retry/fallback/loop.
+Budget note: the request budget was never the constraint.
+`gemini-budget-check.sh` guarantees ≤1 `generateContent` call, only after a free
+metadata check, with no retry/fallback/loop. Re-running is a judgement call —
+do not spam it.
 
 ### Next session — pick ONE
 
 | Option | Prompt | What it does |
 | --- | --- | --- |
-| **A** | `011-commit-and-deploy-b004-prompt-fix.prompt.md` (written, not run) | Commits + pushes the four changes. **No user-visible effect** — see below |
-| **B** | *unwritten* | The single authorised live eval that can actually close B-004 |
+| ~~**A**~~ | `011-commit-and-deploy-b004-prompt-fix.prompt.md` | **DONE 2026-09-30** — committed `c73b820` and pushed. Deploy was a verified no-op for users. |
+| **B** | *unwritten* | Re-attempt the single evaluation when capacity allows. The 2026-09-30 attempt 503'd, so compliance is still unproven |
 
 Start with **A** if you only want the work landed and durable. Start with **B** if
 you want B-004 closed. **B needs your explicit authorisation first.**
@@ -185,7 +207,7 @@ the last-result row has no button to open a sheet.
 | E-003 (old entry) | **DONE** via E-005 |
 | B-002 | **DONE** — feed now supplies `<enclosure>`; `og:image` work not needed |
 | B-003 | OPEN — live data is 6/6 single-source |
-| **B-004** | **OPEN** — prompt fixed + offline test green 2026-09-30, but **UNVALIDATED**: needs one authorised live eval before Gemini may be re-enabled |
+| **B-004** | **OPEN** — prompt fixed + offline test green (`c73b820`), but the one authorised live eval returned **503** (run `36747767583`): a transport failure, **no semantic verdict**. Still unvalidated |
 | B-005 | **DONE and proven** — the deploy guard's first real run passed |
 
 ### The three things to do next
