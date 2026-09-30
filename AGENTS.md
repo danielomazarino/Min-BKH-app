@@ -170,3 +170,12 @@ Never present an assumption as a fact.
 Findings, evidence and current status live in `docs/ENHANCEMENTS.md`. That file
 is the source of truth for open items (`B-004` is open) and for the operational
 checks owed after a change.
+
+It has two halves: a **business view** (plain language, what a supporter sees)
+and an **Engineering status** section (technical detail). The full historical
+record — superseded conclusions, run-by-run evidence, per-run outcomes — is
+preserved verbatim in `docs/archive/ENHANCEMENTS-history-2026-09-30.md`.
+
+**When recording an incident, add it to `docs/ENHANCEMENTS.md`.** Never edit the
+archive: it is a frozen record, and rewriting history is how a stale conclusion
+becomes an accepted fact.
