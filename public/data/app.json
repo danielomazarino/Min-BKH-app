@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-09-30T03:46:56.126Z",
+    "generatedAt": "2026-10-01T03:49:38.938Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -8,6 +8,8 @@
       "rss:SVT Sport": "ok",
       "rss:Bollsvenskan": "ok",
       "rss:Allsvenskan": "ok",
+      "rss:Fotbolltransfers": "ok",
+      "rss:Göteborgs-Posten": "ok",
       "sportomedia": "ok",
       "gemini": "failed"
     }
@@ -17,7 +19,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-09-30T03:46:42.894Z",
+    "retrievedAt": "2026-10-01T03:49:20.851Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -623,7 +625,8 @@
         }
       ],
       "servedAt": "2026-04-27T17:00:00.000Z",
-      "incomplete": false
+      "incomplete": false,
+      "departed": true
     },
     {
       "playerId": "fogis:478646",
@@ -695,7 +698,8 @@
         }
       ],
       "servedAt": "2026-07-06T17:00:00.000Z",
-      "incomplete": false
+      "incomplete": false,
+      "departed": true
     },
     {
       "playerId": "fogis:705320",
@@ -746,7 +750,7 @@
       "warningCount": 2,
       "warningsUntilSuspension": 2,
       "redCards": 0,
-      "status": "at_risk",
+      "status": "departed",
       "relevantWarnings": [
         {
           "matchId": 6529848,
@@ -757,7 +761,8 @@
           "date": "2026-05-25T17:00:00.000Z"
         }
       ],
-      "incomplete": false
+      "incomplete": false,
+      "departed": true
     },
     {
       "playerId": "fogis:1499101",
@@ -806,7 +811,8 @@
           "date": "2026-08-09T12:00:00.000Z"
         }
       ],
-      "incomplete": false
+      "incomplete": false,
+      "departed": true
     },
     {
       "playerId": "fogis:750969",
@@ -887,7 +893,7 @@
   "cardMatchesInspected": 22,
   "news": [
     {
-      "id": "BK Häcken-7-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "BK Häcken-9-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -903,7 +909,7 @@
       ]
     },
     {
-      "id": "BK Häcken-9-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "BK Häcken-11-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
@@ -919,7 +925,7 @@
       ]
     },
     {
-      "id": "BK Häcken-16-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "BK Häcken-18-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "url": "https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
@@ -935,7 +941,7 @@
       ]
     },
     {
-      "id": "BK Häcken-17-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "id": "BK Häcken-19-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
       "url": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
@@ -951,41 +957,21 @@
       ]
     },
     {
-      "id": "BK Häcken-18-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
-      "title": "Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby",
-      "url": "https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
-      "summary": "I kväll, fredagen den 11 september klockan 19.00, spelar BK Häcken mot Mjällby AIF på Nordic Wellness Arena.",
-      "publishedAt": "2026-09-11T09:45:00.000Z",
-      "publisher": "BK Häcken",
-      "category": "men",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/c38ac1aa-abde-4ed2-82ab-3725a9e73ad1.jpg",
+      "id": "Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
+      "url": "https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
+      "publishedAt": "2026-09-02T20:56:42.000Z",
+      "publisher": "Fotbolltransfers",
+      "category": "club",
       "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
-      "sourceRole": "primary",
-      "sourceTags": [
-        "Herr"
-      ]
-    },
-    {
-      "id": "BK Häcken-19-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
-      "title": "Matchtruppen inför Mjällby på Nordic Wellness Arena",
-      "url": "https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
-      "summary": "Senaste nytt om laget inför fredagens hemmamatch.",
-      "publishedAt": "2026-09-10T15:23:00.000Z",
-      "publisher": "BK Häcken",
-      "category": "men",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/19163131-107c-4b05-8785-e52a3ef6bde0.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
-      "sourceRole": "primary",
-      "sourceTags": [
-        "Herr"
-      ]
+      "dedupeKey": "https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "sourceRole": "secondary"
     }
   ],
   "newsEvents": [
     {
-      "id": "event-BK Häcken-7-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "event-BK Häcken-9-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-20T16:00:00.000Z",
@@ -1004,7 +990,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-9-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "event-BK Häcken-11-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-19T13:50:05.000Z",
@@ -1023,7 +1009,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
       "publishedAt": "2026-09-11T19:40:00.000Z",
@@ -1042,7 +1028,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
+      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
       "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
       "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
       "publishedAt": "2026-09-11T10:00:00.000Z",
@@ -1061,38 +1047,18 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
-      "title": "Fredagsmatch inleder matchtröjehelgen – besöksinformation inför Mjällby",
-      "summary": "I kväll, fredagen den 11 september klockan 19.00, spelar BK Häcken mot Mjällby AIF på Nordic Wellness Arena.",
-      "publishedAt": "2026-09-11T09:45:00.000Z",
-      "latestPublishedAt": "2026-09-11T09:45:00.000Z",
-      "category": "men",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/c38ac1aa-abde-4ed2-82ab-3725a9e73ad1.jpg",
+      "id": "event-Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
+      "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
+      "publishedAt": "2026-09-02T20:56:42.000Z",
+      "latestPublishedAt": "2026-09-02T20:56:42.000Z",
+      "category": "club",
       "sources": [
         {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/fredagsmatch-inleder-matchtrojehelgen-besoksinformation-infor-mjallby",
-          "publishedAt": "2026-09-11T09:45:00.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
-      "title": "Matchtruppen inför Mjällby på Nordic Wellness Arena",
-      "summary": "Senaste nytt om laget inför fredagens hemmamatch.",
-      "publishedAt": "2026-09-10T15:23:00.000Z",
-      "latestPublishedAt": "2026-09-10T15:23:00.000Z",
-      "category": "men",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/19163131-107c-4b05-8785-e52a3ef6bde0.jpg",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/matchtrupp-infor-fredagens-hemmamatch-mot-mjallby-aif",
-          "publishedAt": "2026-09-10T15:23:00.000Z",
-          "role": "primary",
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+          "publishedAt": "2026-09-02T20:56:42.000Z",
+          "role": "secondary",
           "discoveredVia": "rss"
         }
       ],
