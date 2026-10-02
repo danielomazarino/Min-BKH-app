@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-09-30
+## Current state — 2026-10-01 (00:45 CEST / 2026-09-30 22:45 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -37,9 +37,57 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **349 passing**, 0 failing |
-| Data last generated | 2026-09-30 03:46 UTC |
-| Tonight's data job | Runs ~03:45 UTC — regenerates tomorrow's content |
+| Tests | **356 passing**, 0 failing (17 files) |
+| Data last generated | 2026-09-30 03:46 UTC — **unchanged since**; two code deploys since then were data-neutral |
+| Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). In practice: **503 UNAVAILABLE** "high demand", and **429** once the daily allowance is gone. Still disabled in the nightly. B-004 unvalidated. |
+| Next event | Hourly availability probe, alternating 1 request per firing · **03:30 UTC** nightly |
+
+### ⚠️ The overnight probe changed on 2026-10-02 — old checkpoint text follows
+
+The section immediately below described the **previous** design (five samples ×
+two requests at 02/04/06/08/10 UTC). That is no longer how it runs. The current
+design, in one line: **eleven samples, 03:00 → 23:00 UTC every 2 hours, one
+request each, alternating between the availability ping and the chat question.**
+See `gemini-overnight-availability.yml` and the "Gemini capacity" section below
+for why the two probes were unbundled — a 200 and a 429 **0.2 seconds apart** in
+the same job made the results unattributable.
+
+> **BOUNDED EXPERIMENT — a human must disable the schedule on Sunday
+> 2026-10-05.** The workflow commits nothing, so it cannot remove itself. At 11
+> requests/day it sits well under the 20/day free-tier ceiling, but left running
+> it spends requests indefinitely.
+
+### Historical: the previous overnight checkpoint
+
+Five probes fire at **02:00, 04:00, 06:00, 08:00, 10:00 UTC**. Each run makes
+**2 requests** (availability at production settings + one small chat question),
+so **10 requests across the night**. No retries, nothing written.
+
+| Pattern across the 10 samples | Conclusion |
+| --- | --- |
+| All 503 | Sustained outage, not a blip. Stop treating Gemini as available. |
+| All 200 | The afternoon was transient. B-004 can finally be validated. |
+| Mixed | A capacity window opens at night — the original hypothesis. |
+
+**Limits to hold onto:** GitHub Actions cron can be delayed up to ~15 minutes,
+and scheduled workflows are *skipped entirely* under high platform load. **An
+absent run is not evidence.** Always check `gh run list --workflow=
+gemini-overnight-availability.yml` for the runs that actually happened.
+
+**The 03:30 nightly is the first live run of the Göteborgs-Posten feed**, and
+the first run using the new per-source diagnostics. Its log should now contain a
+block like:
+
+```
+    BK Häcken         fetched  23  kept   6  dropped  17  (no Häcken relation 17)
+    Göteborgs-Posten  fetched  45  kept   0  dropped  45  (...)  <-- ZERO CONTRIBUTED
+    news ingest by source: 8 sources, N fetched, M kept — 1 source(s) returned items but contributed NOTHING: ...
+```
+
+If Gemini is still 503 at 03:30, the nightly uses the **deterministic
+fallback**. That is the expected state, not a new fault — and it means GP's
+first exercise happens *without* the Gemini path, so we still will not learn
+how it behaves when Gemini works. That question stays open either way.
 
 Commit hashes **are** used further down this file, but only for past events —
 *"fixed in `c73b820`"*, *"run `36747767583` returned 503"*. Those are permanent
@@ -50,6 +98,12 @@ treat it as suspect and re-check with `git log`.
 ---
 
 ## The three things that matter right now
+
+> **New since this list was written:** two more news sources were added
+> (Fotbolltransfers, Göteborgs-Posten) and the nightly log gained per-source
+> diagnostics, so a source silently contributing nothing is now visible instead
+> of invisible. None of the three items below is affected by that — all three
+> are unchanged. See **B-006** for the details.
 
 **1. A player who has left the club still appears in the "watch out for cards" list.**
 The fix is written, tested and deployed, but the app's data is only rewritten by
@@ -169,16 +223,60 @@ cycle.
 
 1. **Fetch more often than once a night.** Everything else is secondary while the
    feed is only sampled at one hour. Two or three runs a day would capture items
-   that exist for a few hours each.
-2. **Report the drop breakdown in the nightly log** — 3 lines, and it would have
-   made this diagnosable in minutes instead of a day. Currently only the total
-   is printed.
+   that exist for a few hours each. **Still not implemented** — the root cause is
+   measured and documented, but no code changes yet.
+2. ~~**Report the drop breakdown in the nightly log**~~ — **DONE 2026-09-30,
+   `a1d4878`.** See "per-source ingest diagnostics" below.
 3. **Only then** narrow the club-administration items.
 
 **Do not widen the 45-day date window.** It is not the constraint; the constraint
 is *when* we look, not *how far back*.
 
-### DONE 2026-09-30 — added the Fotbolltransfers club feed
+### DONE 2026-09-30 — per-source ingest diagnostics (`a1d4878`)
+
+Action 2 above is now implemented. The nightly log gained a per-source
+breakdown showing **fetched / kept / dropped, with drops broken down by
+reason**, and explicitly flags any source that fetched items but contributed
+nothing:
+
+```
+    BK Häcken         fetched  23  kept   6  dropped  17  (no Häcken relation 17)
+    Göteborgs-Posten  fetched  45  kept   0  dropped  45  (...)  <-- ZERO CONTRIBUTED
+    news ingest by source: 8 sources, N fetched, M kept — 1 source(s) returned items but contributed NOTHING: Göteborgs-Posten
+```
+
+**Why this was needed.** `freshness.sourceStatus` reports a source `"ok"`
+whether it contributed 20 articles or none, and the pre-existing log printed
+only a *total* drop count. Together those two signals were ambiguous: a source
+that fetched successfully and contributed nothing was indistinguishable from
+one feeding the pipeline normally. That ambiguity is why B-006 took hours to
+diagnose instead of minutes.
+
+**Where it lives.** `pipeline/src/ingestDiagnostics.ts` — **not** in `run.ts`.
+`run.ts` calls `main()` at module scope, so importing it from a test would
+execute the live pipeline with real network fetches. Same trap as
+`geminiSemanticEval.ts`. The logic is pure functions over handed-in data;
+`run.ts` calls it. **7 new tests, 349 → 356.**
+
+**Proof it changed no filtering.** `git show a1d4878 -- pipeline/src/run.ts` is
+**+19 lines, zero deletions** — no existing line altered. Not one candidate is
+kept or dropped differently. `app.json` was not regenerated; served and
+committed hashes both `c8e247cb…`.
+
+**Two things found while building it.** There is a **second filter stage**,
+`menRelevantNews()`, which runs *after* the prefilter and removes women's-team
+items. Without accounting for it the per-source arithmetic would not reconcile,
+so those exclusions are reported under the reason `not men's-team news` and a
+test asserts `kept + dropped == fetched` per source. The builder also routes
+unattributable drops into an explicit `(unattributed)` bucket and any
+arithmetic remainder into `unaccounted`, so totals stay honest rather than
+silently vanishing.
+
+**Not yet verified in production.** The rendering above was checked against
+synthetic data only. It has not yet appeared in a real nightly log — the first
+opportunity is the 03:30 UTC run.
+
+### DONE 2026-09-30 — added the Fotbolltransfers club feed (`2ba0f78`)
 
 A seventh source now covers the transfer and contract news the general sports
 feeds miss entirely:
@@ -212,6 +310,59 @@ unrelated — the prefilter is doing its job here too.
 **Still 2 days stale** (newest item 28 Sep), so this does **not** fix the
 staleness. It adds a source that needs the same fetch-more-often treatment as
 the rest.
+
+---
+
+### ADDED 2026-09-30 — Göteborgs-Posten, and one source that could not be added (`c15d9c9`)
+
+An eighth source, for **regional/local Häcken coverage** the national sports
+feeds structurally cannot carry:
+
+```ts
+{ url: "https://www.gp.se/rss", publisher: "Göteborgs-Posten" }
+```
+
+`"Göteborgs-Posten"` was **already registered** in `PUBLISHER_ROLES` as
+`"secondary"` — the repo had anticipated this source. No role wiring was needed.
+
+**Verified:** HTTP 200, `text/xml`, 45 items, freshest `pubDate` 2026-09-30
+19:22 GMT, and confirmed through the real `fetchRss()` (`ok:true, items:45`).
+
+**Two traps, both worth remembering:**
+
+1. **The server sends GZIP while declaring `content-type: text/xml`.** A plain
+   fetch without decompression yields binary, and a naive `<rss` marker check
+   reports "0 RSS markers" — a **false soft-404 negative**. This is the same
+   class of trap as fotbolltransfers, but inverted: there, HTML returned 200;
+   here, a real feed looked empty.
+2. **Yield is low by design: 3 of 45 items mention Häcken.** This is the
+   **front-page** feed. No sport feed exists — `/sport.rss`→404,
+   `/sport/feed`→410, `/arkiv/sport.rss`→404 — so the front page is the only
+   option. The 3 that survive are local coach/supporter press ("Häckens plan –
+   så ska storkubbarna vältas") that no other feed carries. **Do not "fix" this
+   later by expecting article density** — the trade-off is intentional and
+   documented in the code comment.
+
+**Not live yet.** The feed has **no effect until the next `data-update.yml`
+nightly run**, and `app.json` contains zero GP articles as of this writing. The
+deploy of `c15d9c9` was verified **data-neutral**: served and committed
+`app.json` hashes identical at `c8e247cb…`, and the client bundle
+(`index-B9Si6Jzq.js`) was unchanged — correct, because `RSS_SOURCES` is
+pipeline-side and never enters the bundle.
+
+#### fotbollskanalen.se — identified, NOT added
+
+The AI Studio app listed this as a source. **There is no feed.** Every candidate
+returns HTTP 200 with **Next.js HTML and zero items**: `/rss`, `/feed`,
+`?feed=rss2`, `?feed=rss`, `?feed=atom`, `?rss`, `/arkiv`, `/rssfeed`.
+
+The trap: `/min-feed` is declared as an `href="..."` in the page HTML, which
+makes it look authoritative. **It is a web page, not a feed.** The site is
+Next.js + Sanity (`cdn.sanity.io` in its image URLs).
+
+**Getting this source requires scraping, not configuration.** That is a
+different piece of work with different failure modes, and it is **not** part of
+B-006. It was left undone deliberately rather than half-done.
 
 ---
 
@@ -376,14 +527,38 @@ the source recorded so any claim can be checked.
 | Item | Status | Notes |
 | --- | --- | --- |
 | **B-003** | OPEN | Live data is **6/6 single-source**. UI supports multi-source; the pipeline does not produce it. Depends on B-004 |
-| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. Every live eval returned **503**, which Google documents as *"temporarily overloaded"* — **not** size-related, so payload shrinking would not help. Nightly sampling in progress |
+| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. Every live eval returned **503**, which Google documents as *"temporarily overloaded"* — **not** size-related, so payload shrinking would not help. Overnight sampling fires 02:00–10:00 UTC 2026-10-01 |
 | **E-005** | Code deployed, **data pending** | Pushed `05a9d21`, deploy run `36689400880` green. Data effect owed after the 2026-10-01 nightly |
 | **N-001a** | OPEN | `MatchDetail.playerStats` declared, never populated. No inferred stats, ever |
 | **N-001b** | OPEN | Needs physical iPhone 13 verification. **Automation cannot close this** |
 | **B-006** | OPEN — cause **measured** | News is 9 days stale, but **the prefilter is innocent**: of 66 drops, 65 are general football it correctly rejects. Feeds carry ~23 Häcken items at most, and the nightly samples them **once at 03:30 UTC**. Fix = fetch more often, not filter differently |
+| **B-006 diagnostics** | **DONE** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason now in the nightly log, with a `ZERO CONTRIBUTED` flag. +7 tests, 349→356. **Not yet seen in a real run** |
+| **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |
 | E-006 – E-009 | DONE | Superseded by the Wikidata search redesign |
 | B-002, B-005 | DONE | B-005's deploy guard ran and **passed** — do not reopen |
+
+### Deploy discipline this session — two data-neutral deploys
+
+`c15d9c9` (GP feed) and `a1d4878` (diagnostics) both reached production. **Neither
+changed `app.json`.** Verified each time by hash, never by run status:
+
+| Commit | Change | Committed = served | Bundle |
+| --- | --- | --- | --- |
+| `c15d9c9` | GP feed added to `RSS_SOURCES` | `c8e247cb…` = `c8e247cb…` | `index-B9Si6Jzq.js` unchanged |
+| `a1d4878` | Per-source diagnostics, `+19/-0` in `run.ts` | `c8e247cb…` = `c8e247cb…` | `index-B9Si6Jzq.js` unchanged |
+
+**Why the bundle never changes:** `RSS_SOURCES` and the diagnostics are
+pipeline-side. They run in `data-update.yml`, never in `deploy.yml`. This is the
+correct outcome, not a defect — and it is exactly the state a reader might
+mistake for "the deploy did nothing". Per `AGENTS.md` §1–§3, a green run proves
+nothing about data; the hash comparison is what proves it.
+
+**Pipeline is never triggered by a push.** `deploy.yml` = checkout → npm ci →
+typecheck/test → build → upload → deploy. No pipeline step, no
+`GEMINI_API_KEY`. `ci.yml` runs `pipeline:validate` (validates *existing*
+data), not `npm run pipeline`. **Every push to `main` therefore costs zero
+Gemini requests.**
 
 ## B-004 · the AI news grouping defect — why it is still off
 
@@ -420,16 +595,48 @@ RESULT    capacity-blocked-503
 so "does Gemini keep t1 out of t3–t6?" is **still unanswered**. It is not evidence
 the fix works and not evidence it fails. **B-004 must not be described as fixed.**
 
-**The blocker is NOT capacity.** Auth and model availability are eliminated (run
-`36493245277`: HTTP 200, model listed) and no 429 has ever been observed, so
-quota is eliminated too. The remaining 503s are transient sector-wide capacity.
-The **binding** blocker is the missing **validation**, not the request budget —
-`gemini-budget-check.sh` guarantees ≤1 `generateContent` call, only after a free
-metadata check, with no retry, no fallback and no loop.
+### ⚠️ CORRECTION 2026-10-01 — the quota is NOT eliminated. It is the ceiling.
+
+An earlier version of this file stated that *"no 429 has ever been observed, so
+quota is eliminated too"* and that *"the remaining 503s are transient
+sector-wide capacity."* **Both statements were wrong.** A 429 was subsequently
+captured with its full body, which names the limit:
+
+```
+HTTP 429  RESOURCE_EXHAUSTED
+"Quota exceeded for metric:
+ generativelanguage.googleapis.com/generate_content_free_tier_requests,
+ limit: 20, model: gemini-3.8-flash"
+```
+
+**The key is FREE TIER, hard-capped at 20 generation requests per UTC day.**
+That "20 RPD" figure had been recorded for days as an assumption; it is now
+**measured**, read directly out of the error body.
+
+This overturns the sector-wide-capacity narrative. Once the free tier's daily
+allowance is spent, further attempts surface as **503 UNAVAILABLE "high
+demand"** rather than 429. The 503s and the 429 are most likely the **same
+exhausted quota under two different codes** — which also explains, better than
+capacity ever did, why a 586-byte request and a 23 KB request failed
+identically. *Observed, not vendor-confirmed: `status.ai.google.dev` does not
+resolve from this network, and no Google statement has been read.*
+
+**A lone HTTP 200 is not a health signal.** Run `36813438657` returned 200 at
+04:05:04Z and 429 **0.2 seconds later**, because that job was already at the
+daily ceiling. A single success from a quota-bound key proves only that the
+request was number 20, not that the service is available.
+
+**The binding blocker is the missing validation** — `gemini-budget-check.sh`
+guarantees ≤1 `generateContent` call, only after a free metadata check, with no
+retry, no fallback and no loop. On a 20/day budget shared with the production
+nightly (which needs 12 when Gemini is enabled: 4 models × 3 attempts), that
+budget cannot be met from the free tier at all.
 
 **To close B-004:** one successful `gemini-semantic-eval.yml` run showing `t1`
 grouped separately from `t3`–`t6`. Requires explicit human authorisation. Do not
-spam re-runs; repeated 503s are what produced this repo's 84-request history.
+spam re-runs; repeated 503s are what produced this repo's 84-request history —
+and the 11-run burst on 2026-09-30 is itself what exhausted the 20/day
+allowance and produced the 429s it then investigated.
 
 ---
 
@@ -476,9 +683,9 @@ file had no documented basis and is withdrawn.**
 | Question | Answer | Source |
 | --- | --- | --- |
 | Is 503 size-dependent? | **No** | `api-errors`: "temporarily overloaded or down" |
-| Is it quota? | **No** | 429 is a distinct code (`quota_exceeded`), never observed |
+| Is it quota? | **Yes — it is also quota.** A 429 was captured on 2026-10-01 naming `generate_content_free_tier_requests, limit: 20`. Exhausted quota appears as 429 *and* as 503; the two are not cleanly separable | run `36813438657`, `36805060086` |
 | Is it auth or model availability? | **No** | Distinct codes; eliminated by run `36493245277` (200, model listed) |
-| Is it retryable? | **Yes** | `troubleshooting`: retry 503 with exponential backoff **plus jitter** |
+| Is it retryable? | **Yes** | `troubleshooting`: retry 503 with exponential backoff **plus jitter** — but a 429 free-tier 429 is NOT usefully retryable within the same UTC day |
 
 ### Why this session's data looked like a size effect, and why it was not
 
@@ -491,8 +698,12 @@ file had no documented basis and is withdrawn.**
 
 The 586-byte request failing while a 0.3 KB request succeeded looked like proof
 that input size was irrelevant. It was not proof of anything except that **503 is
-random** — which is exactly what "temporarily overloaded" means. Thirteen
-failures inside one afternoon is a property of the hour, not of the payload.
+not a reliable function of payload size**. Thirteen failures inside one
+afternoon is a property of the hour, not of the payload.
+
+With the 20/day free-tier ceiling now known, the likelier explanation for that
+afternoon is simpler than "the hour was bad": **the budget was already spent.**
+On 2026-09-30, 19 of 22 Gemini requests fell inside the 17:00Z hour alone.
 
 ### One real finding that does matter
 
@@ -524,6 +735,48 @@ It writes nothing and commits nothing — a nightly commit would trigger
 Five samples is a small sample of a random variable. All-fail does not prove the
 API is always down; all-succeed does not prove it is reliably up. It estimates a
 duty cycle over one night, nothing more. **Read it as indicative, not proof.**
+
+**A scheduled run may simply not happen.** GitHub Actions cron can be delayed up
+to ~15 minutes, and scheduled workflows are **skipped entirely** during periods
+of high platform load. **An absent run is not a data point.** Always reconcile
+against `gh run list --workflow=gemini-overnight-availability.yml` before
+concluding anything from the number of samples.
+
+### The AI Studio chat failure — NOT the same proven cause
+
+On 2026-09-30 the AI Studio app in this browser also failed, showing
+`Gemini 3.8 Flash · Canceled` and `An internal error occurred`. It is tempting to
+call that "the same 503". **It is not established, and this file does not claim
+it.**
+
+| | Status |
+| --- | --- |
+| The REST API returns `503 UNAVAILABLE`, "high demand" | ✅ **Verified** — run `36763020541`, 19:04 UTC, explicit code and message |
+| The AI Studio chat is failing | ✅ **Verified** — it demonstrably errors |
+| That AI Studio fails **because of** 503 / the same cause | ❌ **NOT established — inference, explicitly withdrawn** |
+
+Three reasons the inference is weak:
+
+1. **The error text differs.** The API returned a machine-readable
+   `503 UNAVAILABLE`. AI Studio shows `An internal error occurred` with **no
+   status code anywhere in the rendered DOM**. A shared 503 would be expected to
+   surface somewhere.
+2. **"Canceled" is the wrong word for 503.** A capacity rejection is a refusal —
+   the server says no. "Canceled" indicates an aborted turn, which is what a
+   dropped stream looks like. Different failure shape.
+3. **Different serving path.** AI Studio's assistant runs on Google's internal
+   MakerSuite stack; CI calls `generativelanguage.googleapis.com` directly. Shared
+   model name does not imply shared serving tier, quota, or queue.
+
+**Also tried and failed:** switching the chat model to **Gemini 3.7 Flash** —
+**no model worked**, so this is not 3.8-specific. And `status.ai.google.dev`
+could not be reached from this environment (`ERR_NAME_NOT_RESOLVED`), so there
+is **no authoritative incident declaration** either way. Any future session must
+not cite "Google reported an incident" — that was never established.
+
+**What would settle it:** capture the browser's actual HTTP status on the
+assistant request. A `503` confirms the shared-cause theory; a `429`, a stream
+abort, or a `500` kills it. This is cheap and was never done.
 
 ### Request discipline, honestly
 
@@ -560,3 +813,104 @@ Recorded because each one caused a real near-miss:
   clear caches before concluding a deploy failed.
 - **Do not trust a prior report's numbers.** Re-run the gates and read your own
   output.
+- **A test that raises the count proves it ran.** A green suite can pass
+  vacuously. Pin the baseline (349 → 356 across 16 → 17 files) so a silently
+  unexecuted test is detectable.
+- **`+N insertions, 0 deletions` is the strongest available proof of a log-only
+  change.** No existing line altered means no behaviour altered — check the diff
+  shape rather than trusting the commit message.
+- **Two true facts are not a causal link.** "The API returns 503" and "AI Studio
+  errors" were combined into a shared-cause theory on correlation alone. Verify
+  the mechanism, or label it a hypothesis.
+- **Check `date -u`, not the session-context date.** Local CEST (UTC+2) midnight
+  is 22:00 UTC the *previous* day. Context saying `2026-10-01` while `date -u`
+  says `2026-09-30` is **not a discrepancy** — two timezones. One agent reported
+  it as a conflict. Use `date -u` for scheduling decisions.
+- **`grep -c` returns exit 1 on zero matches**, which silently truncates a `&&`
+  chain. A verification step that "found nothing" may have simply stopped.
+
+---
+
+# Coming back to this project cold
+
+*Start here after a break. Verify anything time-sensitive before trusting it.*
+
+## Where things actually stand (2026-09-30 22:45 UTC)
+
+Four changes shipped this session. **None of them changed `app.json`.**
+
+| Commit | What | Data effect |
+| --- | --- | --- |
+| `2ba0f78` | Fotbolltransfers club feed (7th source) | none yet — awaits nightly |
+| `c15d9c9` | Göteborgs-Posten feed (8th source) + SOURCES.md corrections | none yet — awaits nightly |
+| `a1d4878` | Per-source ingest diagnostics, `+19/-0` in `run.ts` | none — log only, by design |
+| `c73b820` | B-004 prompt fix | none — Gemini still disabled |
+
+Test suite: **356 passing**, 17 files. Served `app.json`: `c8e247cb…`, generated
+2026-09-30 03:46 UTC.
+
+## The one thing to check first
+
+**Was the 03:30 UTC nightly healthy, and did GP contribute?**
+
+```bash
+gh run list --workflow=data-update.yml --limit 3
+gh run view <id> --log | grep -A 20 "news ingest by source"
+curl -s https://danielomazarino.github.io/Min-BKH-app/data/app.json | sha256sum
+```
+
+The nightly log should now contain a `news ingest by source` block. **That is
+the first time these diagnostics will have run against real data** — every
+earlier rendering was synthetic. If a source shows `ZERO CONTRIBUTED`, that is
+the flag working as designed, not a failure.
+
+**Expect GP to contribute 0–3 articles.** Its feed is the front page, and 3 of 45
+items mentioned Häcken when measured. If it shows `kept 0`, that is the
+documented trade-off, **not** a bug — and the reason it is flagged rather than
+hidden.
+
+## Then, the Gemini question
+
+```bash
+gh run list --workflow=gemini-overnight-availability.yml --limit 6
+gh run view <id> --log | grep -E "SAMPLE|http=|RESULT"
+```
+
+Ten samples across 02:00–10:00 UTC, two per run. **Reconcile the actual run count
+first** — cron can be delayed ~15 min or skipped entirely under load, so fewer
+than five runs is possible and is *not* itself a finding.
+
+- **Any 200 → the model is back.** B-004 may then be validated with a single
+  authorised live eval. That is the gate for B-003 too.
+- **All 503 → treat Gemini as unavailable.** Do not spend more requests proving
+  it again.
+
+Either way: **do not re-enable Gemini in `data-update.yml`** without a live
+semantic verdict. Per `AGENTS.md` §6, a successful generation is not proof of
+correctness — and run `36292290265` returned HTTP 200 while producing two
+semantically wrong merges.
+
+## Still open, in priority order
+
+1. **B-006 fetch cadence** — cause measured, fix not implemented. This is the
+   actual reason news is 9 days stale. Everything else is secondary.
+2. **B-004 live validation** — blocked on Gemini. Zero semantic verdicts ever
+   obtained.
+3. **E-005 data effect** — code deployed; needs one nightly to land.
+4. **fotbollskanalen.se** — needs scraping, not a feed. Deliberately not started.
+5. **N-001a** match stats, **N-001b** iPhone search — open, N-001b needs hardware.
+
+## Do not redo these
+
+- **Re-derive the 503 cause.** Documented fact: *"temporarily overloaded or
+  down"*, no size-dependent component. The payload theory is **withdrawn**.
+- **Re-investigate the soft-404 feeds.** Both are documented in `SOURCES.md` with
+  the exact URL and the trap.
+- **Try to make AI Studio's error explain our 503.** Explicitly withdrawn above.
+- **Hand-edit `app.json`.** Generated file. Editing it destroys the evidence.
+
+## Prompt files
+
+`.github/prompts/` — numbered, reusable, each self-contained with its own
+constraints and verification steps. `012` (GP feed) and `013` (diagnostics) were
+written this session and are **untracked**; commit them if you want them kept.

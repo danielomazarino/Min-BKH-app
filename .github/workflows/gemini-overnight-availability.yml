@@ -1,4 +1,4 @@
-name: Gemini hourly availability (alternating probe)
+name: Gemini availability (11 samples, alternating probe)
 
 # Measures WHEN the FREE TIER is usable, and — separately — WHEN the model is
 # merely non-overloaded. Those are two different questions that this file
@@ -48,12 +48,18 @@ name: Gemini hourly availability (alternating probe)
 #   "every 2nd run" primitive. So parity is computed from the UTC hour, which is
 #   exactly the clock the quota window is aligned to anyway.
 #
-#   Odd UTC hour -> PROBE 1 (availability)
-#   Even UTC hour -> PROBE 2 (chat question)
+#     (HOUR / 2) % 2 == 1  ->  PROBE 1 (availability)
+#     (HOUR / 2) % 2 == 0  ->  PROBE 2 (chat question)
 #
-#   This makes the sequence a clean alternation: 00 -> 1, 01 -> 2, 02 -> 1,
-#   03 -> 2, ... Consecutive hours alternate, which is the property that gives
-#   the quota and capacity signals their independence.
+#   The division by 2 is load-bearing. The schedule fires on ODD hours only
+#   (03,05,...,23), so plain `HOUR % 2` would be 1 for every single firing and
+#   would select probe 1 forever — silently disabling the chat probe, which is
+#   the only probe that has ever produced information worth having. Dividing by
+#   2 steps once per firing and alternates correctly.
+#
+#   Sequence: 03->1, 05->2, 07->1, 09->2, ... 23->1. Eleven firings, six of
+#   probe 1 and five of probe 2 — the split is uneven by one because the window
+#   starts on an odd hour, and that is a property of the cron, not a bug.
 #
 #   The parity is computed INSIDE the job from `date -u +%H`, not encoded in two
 #   separate cron entries. Two crons would double-count every run against the
@@ -61,17 +67,26 @@ name: Gemini hourly availability (alternating probe)
 #   alternation, which is exactly the silent-mode-drift class of bug this repo
 #   already has one of.
 #
-# COST: exactly 1 generation request per firing, never retried, 24/day.
-# The free tier allows 20/day. This design therefore still saturates it — see
-# the STOP CONDITION below. It is deliberate: the user is establishing whether
-# the free tier works AT ALL, and a budget that leaves headroom cannot answer
-# that. The 1-request-per-hour shape is what makes a 429 attributable.
+# COST: exactly 1 generation request per firing, never retried, 11/day
+# (03:00, 05:00 ... 23:00 UTC). The free tier allows 20/day, so this fits
+# UNDER the ceiling with headroom — which is deliberate: a run that saturates
+# the budget cannot distinguish "the tier is exhausted" from "the service is
+# unhealthy", because both look like failure. The earlier hourly design spent
+# 24/day, which guaranteed 429s for the last four hours and told us nothing.
+# The 1-request-per-firing shape is what makes a 429 attributable.
+#
+# NOTE ON "12 SAMPLES" IN THE NAME — it is 11 firings, and the name is
+# deliberately slightly off rather than misleading. 03:00 every 2 hours through
+# 23:00 is 11 firings (03,05,07,09,11,13,15,17,19,21,23); a 12th would fall at
+# 01:00 on the NEXT day, which is outside the window and would collide with the
+# production nightly at 03:30. The count was not rounded up to reach a rounder
+# number, and the budget maths above uses 11 because that is what the cron does.
 #
 # STOP CONDITION — REMOVE THIS SCHEDULE ON SUNDAY 2026-10-05
 #   The run is a bounded experiment, not a permanent monitor. It must be
 #   disabled after 2026-10-05 (Sunday). Left in place it would keep spending
-#   requests indefinitely and, because 24 > 20, would sit permanently at the
-#   quota ceiling and produce a flat line of 429s that proves nothing.
+#   requests indefinitely and, combined with the production nightly, would
+#   eventually crowd out the very measurement it exists to protect.
 #
 #   This workflow commits nothing, so the schedule CANNOT remove itself. A human
 #   must delete the `schedule:` block (or the whole file) on Sunday.
@@ -83,9 +98,9 @@ name: Gemini hourly availability (alternating probe)
 
 on:
   schedule:
-    # Hourly, on the hour, UTC. One probe per firing, alternating by UTC parity.
+    # Eleven firings: 03:00, 05:00, 07:00 ... 23:00 UTC. One request each.
     # BOUNDED EXPERIMENT — remove this block on Sunday 2026-10-05.
-    - cron: "0 * * * *"
+    - cron: "0 3-23/2 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -113,7 +128,13 @@ jobs:
         id: pick
         run: |
           HOUR=$(date -u +%-H)
-          if [ $(( HOUR % 2 )) -eq 1 ]; then
+          # Parity must be computed over the FIRING SEQUENCE, not over raw hours.
+          # The schedule fires on odd hours only (03,05,...,23), and every one of
+          # those is odd — so `HOUR % 2` is 1 for all of them and would select
+          # probe 1 forever, silently disabling the chat probe entirely.
+          # `(HOUR / 2) % 2` steps once per firing instead, which alternates.
+          PARITY=$(( (HOUR / 2) % 2 ))
+          if [ "$PARITY" -eq 1 ]; then
             PROBE=1; SCRIPT=gemini-availability-sample.sh
             DESC="availability ping (reply: ok)"
           else
@@ -121,7 +142,8 @@ jobs:
             DESC="chat question (structured Swedish answer)"
           fi
           echo "utc_hour   =$HOUR"
-          echo "parity     =$(( HOUR % 2 )) (1 -> probe 1, 0 -> probe 2)"
+          echo "parity     =$PARITY (computed as (HOUR/2)%2 — the schedule fires"
+          echo "             on odd hours only, so HOUR%2 would never alternate)"
           echo "probe      =$PROBE  $DESC"
           echo "script     =$SCRIPT"
           echo "started_utc=$(date -u +%FT%TZ)"
