@@ -66,12 +66,55 @@
 
   /* Chrome heights */
   --header-h: 44px;
-  /* The floating bar is ~58px tall and floats 12px above the safe area, so
-     content needs ~70px + the inset of clearance to scroll fully clear. */
+  /* The floating bar is 58px tall and floats 16px above the safe area, so
+     content needs ~58 + 2x16 + the inset of clearance to scroll fully clear. */
   --fabnav-h: 58px;
   /* Distance from the viewport edge to the bar. Kept separate from the height
-     so the two can be tuned independently. */
+     so the two can be tuned independently. It is ALSO the minimum horizontal
+     margin the bar is dragged within, which is why JS reads it back. */
   --fabnav-gap: 16px;
+  /* Top of the band the bar may be dragged up to. Sits below the fixed header
+     so a dragged bar can never cover the settings button or the title. Read
+     back by JS as the vertical origin. */
+  --fabnav-top: 56px;
+  /* WIDTH CEILING — the single most load-bearing value for the drag.
+   *
+   * Horizontal travel = viewport - this - 2 x --fabnav-gap. At 260px on a
+   * 390px phone that leaves 98px of travel; the bar used to be 358px wide,
+   * which left ZERO and made the drag impossible. Raising this toward 100%
+   * silently removes the ability to drag, so change it deliberately or not at
+   * all. The five destinations are laid out with `flex: 1 1 0` and their
+   * labels ellipsise, so a narrower bar degrades legibly rather than clipping. */
+  --fabnav-w: 260px;
+  /* The smallest horizontal travel worth dragging with a thumb. A 260px bar
+     on a 320px screen would otherwise leave 28px, which clears the 8px tap
+     threshold but is not a comfortable throw. Subtracting this from the width
+     guarantees the gesture survives on the narrowest supported phone. */
+  --fabnav-min-travel: 40px;
+
+  /* GLASS — every part of the floating-nav surface in one place, so the look
+   * can be retuned without hunting through declarations.
+   *
+   * `--fabnav-blur` is deliberately plain `blur() saturate()`. A true Liquid
+   * Glass refraction needs an SVG displacement filter fed by
+   * `backdrop-filter: url(...)`, which Safari does not support — adding it for
+   * Chromium only would make the two platforms look different and cost a
+   * full-screen filter repaint on every frame of a drag. The gradient and
+   * inner highlights below give the depth cue without that cost, and stay
+   * pure CSS so they work identically on iOS and Android. */
+  --fabnav-blur: blur(20px) saturate(1.5);
+  /* Translucent surface. 0.62 is measured, not guessed — see the A/B table on
+     `.fabnav`. */
+  --fabnav-surface: rgba(42, 44, 48, 0.62);
+  /* Fallback for engines with no backdrop-filter. Much more opaque on
+     purpose: over a #000 page a 0.62 surface is unreadable without the blur. */
+  --fabnav-surface-opaque: rgba(38, 40, 44, 0.95);
+  /* Hairline border. Catches the light at the top edge of the pill. */
+  --fabnav-edge: rgba(255, 255, 255, 0.1);
+  /* Inner top highlight — the strongest single cue that a surface is a
+     translucent pane rather than a solid fill. */
+  --fabnav-sheen: rgba(255, 255, 255, 0.11);
+
   --chrome-bottom: calc(var(--fabnav-h) + var(--fabnav-gap) * 2 + env(safe-area-inset-bottom, 0px));
 
   --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
@@ -265,6 +308,17 @@ main {
    behind it, so the bar reads as floating over the app rather than consuming a
    permanent band of screen.
 
+   THE BAR IS DRAGGABLE, AND THAT FORCED A WIDTH CHANGE
+   The old width was `min(100% - 32px, 440px)` — the FULL band between the two
+   16px margins. Measured at 320/390/430px viewports that left a horizontal
+   travel of exactly 0px, so the bar could not move sideways no matter how the
+   pointer handling was written. Every "the icon won't drag" report was this.
+
+   `--fabnav-w` is therefore a HARD CEILING on the bar's width, not a
+   preference: travel is `viewport - width - 2 x --fabnav-gap`, so a bar at the
+   ceiling still has (390 - 260 - 32) = 98px of travel on the narrowest common
+   phone, and considerably more on a large one. Do not raise it to 100% again.
+
    Progressive enhancement: the opaque fallback colour is declared first, so
    the bar is perfectly readable when backdrop-filter is unsupported. The blur
    is additive, never load-bearing.
@@ -272,18 +326,40 @@ main {
 
 .fabnav {
   position: fixed;
-  left: 50%;
-  /* Sit a little higher than before, and derive the height from the token so
-     --fabnav-h (and therefore --chrome-bottom) describes the real control
-     rather than a stale 58px assumption. The bar previously had no height at
-     all and was sized by its content, which is how it drifted to 48px. */
+  /* Defaults are the RESTING position, and they use the SAME coordinate
+     system JavaScript uses once it takes over: an absolute `left`/`top`.
+     An earlier version centred the bar with `left: 50%` plus
+     `transform: translateX(-50%)`. That was a real bug: JS overwrites `left`
+     with an absolute position but cannot overwrite the transform shim, so the
+     bar ended up shifted left by half its own width — measured at x = -16px
+     at rest and x = -114px after a drag, i.e. hanging off-screen. The centring
+     is now expressed in `left` alone so there is only one thing to own it. */
+  left: calc(50% - min(var(--fabnav-w), 100%) / 2);
+  top: auto;
+  /* Sit a little above the bottom edge, and derive the height from the token
+     so --fabnav-h (and therefore --chrome-bottom) describes the real control
+     rather than a stale 58px assumption. */
   bottom: calc(var(--fabnav-gap) + env(safe-area-inset-bottom, 0px));
   z-index: 40;
-  width: min(calc(100% - var(--s4) * 2), 440px);
+  /* THE CEILING, and a guaranteed minimum amount of travel.
+   *
+   * Travel = viewport - width - 2 x --fabnav-gap, so a fixed ceiling still
+   * collapses on a narrow phone. At 320px a 260px bar left only 28px of
+   * travel — technically draggable, practically not. Subtracting a minimum
+   * travel keeps the gesture usable on the smallest screen worth supporting:
+   *
+   *   320px -> min(260, 248) = 248px wide -> 40px travel
+   *   390px -> min(260, 318) = 260px wide -> 98px travel
+   *   430px -> min(260, 358) = 260px wide -> 138px travel
+   *
+   * Do not raise --fabnav-w without re-checking these three numbers; at
+   * 440px the bar would exactly refill the band on a 390px phone and the drag
+   * would silently die again. That regression is what this whole feature is. */
+  width: min(var(--fabnav-w), calc(100% - var(--fabnav-gap) * 2 - var(--fabnav-min-travel)));
   height: var(--fabnav-h);
-  transform: translateX(-50%);
-  /* TRANSLUCENCY — retuned 2026-09-26 after human review on a real iPhone
-   * AND after a measured A/B against the alternatives (see the table below).
+  /* No `transform` here on purpose — see the `left` note above. The drag
+     transform is written by JS and must not be fighting a CSS shim. */
+  /* TRANSLUCENCY — the surface tone matters more than the alpha.
    *
    * THE ACTUAL PROBLEM WAS NEVER ALPHA. It was the SURFACE TONE. The page
    * background is --bg: #000000, so a dark translucent layer over it resolves
@@ -304,20 +380,22 @@ main {
    * the page while still letting team names show through. Alpha was pushed
    * back DOWN from 0.72 to 0.62 precisely to buy that separation back.
    *
-   * Restrained by design: no gradient, no glow, no glossy sheen, no Liquid
-   * Glass. Just a charcoal pane, a light top edge, and a soft shadow. */
-  background: rgba(42, 44, 48, 0.62);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  backdrop-filter: blur(20px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+   * Every value below is a token, so the glass can be retuned in one place
+   * instead of by editing declarations spread across this file. */
+  background: var(--fabnav-surface);
+  -webkit-backdrop-filter: var(--fabnav-blur);
+  backdrop-filter: var(--fabnav-blur);
+  border: 1px solid var(--fabnav-edge);
   border-radius: 24px;
   box-shadow:
     0 6px 22px rgba(0, 0, 0, 0.5),
     /* Top inner highlight: the single strongest cue that a surface is a
        translucent pane rather than a solid fill. */
-    inset 0 1px 0 rgba(255, 255, 255, 0.11);
-  transition: transform var(--dur-dismiss) var(--ease-ios);
-  touch-action: none; /* we own horizontal AND vertical; see the sheet note */
+    inset 0 1px 0 var(--fabnav-sheen);
+  transition:
+    transform var(--dur-dismiss) var(--ease-ios),
+    box-shadow var(--dur-tap) ease;
+  touch-action: none; /* we own every axis; see the sheet note */
   /* A horizontal swipe that STARTS on a link would otherwise sweep up an
      implicit text selection, which swallows the remaining pointer events and
      stops the gesture dead. The bar is chrome, not prose, so nothing here
@@ -325,10 +403,35 @@ main {
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
-  /* The pill must never appear to slide with the finger. Belt and braces:
-     the JS never writes a transform, and this forbids the CSS from having a
-     transition that could animate one. */
-  will-change: auto;
+  /* Promote to its own layer. The bar is dragged with a transform, and
+     `will-change: transform` keeps that transform off the main thread's
+     layout path for the duration of the gesture. */
+  will-change: transform;
+}
+
+/* LIFTED — the bar has been picked up and is being dragged.
+ *
+ * This is the only state that changes the bar's transform, and it does so via
+ * a CSS custom property rather than by rewriting `left`/`top`, so a drag can
+ * never trigger a layout pass. The scale is deliberately tiny: enough to read
+ * as "in hand", not enough to reflow the icons or shift a tap target.
+ *
+ * `cursor: grabbing` matters on desktop, where there is no long-press to
+ * explain the state and no haptic tick to signal it. */
+.fabnav[data-lifted] {
+  --fabnav-lift: 1.035;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 var(--fabnav-sheen);
+  cursor: grabbing;
+}
+
+/* The resting transform is the centring shim only; a drag replaces it with a
+   translate3d written by JS. `transition` is deliberately NOT disabled — the
+   release animation is what makes the bar feel like it settles rather than
+   stops dead, and under reduced motion it collapses to ~0ms anyway. */
+.fabnav {
+  scale: var(--fabnav-lift, 1);
 }
 
 /* Only bump the tint when the engine can actually blur behind it. Without a
@@ -336,22 +439,37 @@ main {
    as a control, so the fallback has to be more opaque to stay usable. */
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .fabnav {
-    background: rgba(42, 44, 48, 0.62);
+    background: var(--fabnav-surface);
   }
 }
 
+/* NO BLUR AVAILABLE — a notched opaque pane.
+ *
+ * This is a readability guarantee, not a cosmetic downgrade. `backdrop-filter`
+ * is unsupported on older Android WebView and in some in-app browsers, and a
+ * 0.62-alpha charcoal over a #000 page becomes unreadable there. `--fabnav-
+ * surface-opaque` is deliberately high-alpha for exactly that case. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .fabnav {
-    background: rgba(38, 40, 44, 0.95);
+    background: var(--fabnav-surface-opaque);
   }
 }
 
-/* The bar is PINNED: it never tracks the finger. A horizontal swipe over it
-   only decides which destination becomes active, exactly like the iOS
-   WhatsApp tab bar. The only mid-gesture cue is the press highlight, so the
-   transition is kept (no `transition: none`) and nothing is transformed. */
+/* The bar is PINNED during a swipe: a horizontal flick over it only decides
+   which destination becomes active, exactly like the iOS WhatsApp tab bar. The
+   only mid-gesture cue is the press highlight, so the transition is kept and
+   nothing is transformed. */
 .fabnav[data-dragging] .fabnav-link {
   opacity: 0.75;
+}
+
+/* Keyboard users get a visible ring on whichever destination has focus. The
+   default focus ring is suppressed in theme.css reset, so this restores one.
+   `:focus-visible` (not `:focus`) so it does not appear on pointer taps. */
+.fabnav-link:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: -3px;
+  border-radius: 18px;
 }
 
 .fabnav-list {

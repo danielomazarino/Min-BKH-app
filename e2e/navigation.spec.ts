@@ -415,23 +415,24 @@ test.describe("Swipe on the navigation bar", () => {
   });
 
   test("the bar stays pinned while swiping — it does not drag with the finger", async ({ page }) => {
-    // The interaction is the iOS WhatsApp one: the bar is FIXED on screen and
-    // the swipe only changes which destination is active. A bar that follows
-    // the pointer reads as a draggable element and is the wrong model here.
+    // A SHORT FLICK changes destination and leaves the bar where it is. The
+    // bar is repositioned only by a deliberate press-and-hold, which is
+    // covered in fabnav-drag.spec.ts.
+    //
+    // This assertion was rewritten when the centring mechanism changed. It
+    // used to require `transform: matrix(1,0,0,1,-halfWidth,0)`, i.e. the
+    // `translateX(-50%)` shim. That shim was a real bug: JS overwrites `left`
+    // with an absolute position but cannot overwrite a CSS transform, so the
+    // bar rendered at x=-16px at rest and x=-114px after a drag. Centring is
+    // now expressed in `left` alone, and the meaningful invariant is simply
+    // that the transform does not change across the gesture.
     await page.goto("/#/nyheter");
     await ready(page);
     const before = await barBox(page);
 
     const y = before.y + before.height / 2;
     const sx = before.x + before.width * 0.85;
-    // The bar is centred with `transform: translateX(-50%)`, so it is never at
-    // the identity. Derive the expected value from the MEASURED width instead
-    // of hard-coding it — the bar got wider, and a literal here would fail for
-    // the wrong reason. What matters is INVARIANCE across the gesture: a drag
-    // would make the transform track the pointer.
-    const expected = `matrix(1, 0, 0, 1, ${-before.width / 2}, 0)`;
     const resting = await page.locator(".fabnav").evaluate((el) => getComputedStyle(el).transform);
-    expect(resting, "the bar is transformed by something other than its centring").toBe(expected);
 
     await page.mouse.move(sx, y);
     await page.mouse.down();

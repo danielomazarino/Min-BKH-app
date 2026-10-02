@@ -129,6 +129,85 @@ been checked. Only the person holding the phone can confirm. See **N-001b**.
 
 ## Open items, in plain language
 
+### E-010 · The menu bar could not be dragged — it had nowhere to go
+
+**Status:** FIXED · **Affects:** the one piece of navigation every supporter
+uses · **Found 2026-10-03 · Root cause measured, not guessed**
+
+**What supporters reported.** The bottom menu could be tapped but not dragged.
+
+**The cause was a single CSS line, not the gesture code.** `.fabnav` was
+declared `width: min(100% - 32px, 440px)` — that is the **full** width between
+the two 16px margins. Measured in Chromium at three phone widths:
+
+| viewport | bar width | horizontal travel |
+|---------:|----------:|------------------:|
+| 320px | 288px | **0px** |
+| 390px | 358px | **0px** |
+| 430px | 398px | **0px** |
+
+A control with zero available travel cannot be moved, however correct the
+pointer handling is. The gesture code was never given a chance to fail; there
+was simply nowhere for the bar to go.
+
+**Why it looked intentional.** The file header stated the bar was modelled on
+the iOS WhatsApp tab bar and "does NOT move with the finger", and the CSS said
+"no Liquid Glass". That was a deliberate prior decision — but it meant the
+dragging reported as broken had never actually been built.
+
+**The fix.** A **press-and-hold (~320ms) then drag** now repositions the bar,
+keeping the existing flick-to-navigate gesture intact. The pill is narrower
+(`--fabnav-w: 260px`), which is what creates 98px of travel on a 390px phone.
+Position is stored as *ratios*, so it survives rotation; hostile or corrupt
+stored values fall back to centre-bottom rather than stranding the bar.
+
+**A second, worse bug found while verifying.** The bar was centred with
+`transform: translateX(-50%)`. JavaScript writes an absolute `left`, but cannot
+overwrite a CSS transform — so once dragging began, the shim still applied and
+pushed the bar **off-screen**. Measured: `x = -16px` at rest, `x = -114px` after
+a drag. Centring now lives in `left` alone. This would have shipped as "the
+drag is broken" for a completely different reason.
+
+**Verified in Chromium at 320/390/430/844px:** the bar drags, clamps to the
+margins, stays below the header, persists across reload, and stays legal after
+rotation. **Not yet verified on real iOS or Android hardware** — the long-press
+timing in particular needs a human check with a thumb.
+
+### E-011 · A green workflow run does not mean the Gemini probe succeeded
+
+**Status:** RESOLVED (recorded 2026-10-03) · **Affects:** operational reading
+
+The availability probes always exit 0 by design, so **every** scheduled run
+reports `success` regardless of what Gemini replied. Reading run status as a
+health signal is wrong. The real answers are in the logs:
+
+| UTC hour | probe | HTTP |
+|---------:|-------|-----:|
+| 03 | availability ping | **200** |
+| 05 | chat question | 503 |
+| 07 | availability ping | **200** |
+| 09 | chat question | 503 |
+| 11 | availability ping | 503 |
+| 13 | chat question | 503 |
+| 15 | availability ping | **200** |
+| 17 | chat question | 503 |
+| 19 | availability ping | 503 |
+| 21 | chat question | 503 |
+
+The ping succeeded 3 times in 5; the chat probe has **never** returned 200.
+Production is unaffected and still correct: `app.json` reports
+`gemini: "failed"` and every event is `rss-description`. **B-004 stays
+unvalidated.**
+
+**What the alternating design proved.** At 15:00Z the ping got a 200; at
+17:00Z the chat probe got a 503 with only one request spent in between — far
+from the 20/day ceiling. So **quota is ruled out** as the cause of the chat
+failures, by evidence rather than argument. The 503 body reads `UNAVAILABLE`
+/ "high demand" with no `RESOURCE_EXHAUSTED`, which is categorically different
+from the quota 429 (`limit: 20`). Always read the body, not the status code.
+
+---
+
 ### B-006 · The news list is nine days out of date
 
 **Status:** OPEN · **Affects:** what supporters read every day · **Found 2026-09-30 · Cause measured 2026-09-30**
