@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-01T03:49:38.938Z",
+    "generatedAt": "2026-10-02T03:46:10.780Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -19,7 +19,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-01T03:49:20.851Z",
+    "retrievedAt": "2026-10-02T03:45:54.610Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -893,7 +893,23 @@
   "cardMatchesInspected": 22,
   "news": [
     {
-      "id": "BK Häcken-9-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "BK Häcken-0-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
+      "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
+      "publishedAt": "2026-10-01T13:35:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/ff180d06-bd15-4de3-81dc-1331756379df.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "sourceRole": "primary",
+      "sourceTags": [
+        "Herr"
+      ]
+    },
+    {
+      "id": "BK Häcken-10-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -909,7 +925,7 @@
       ]
     },
     {
-      "id": "BK Häcken-11-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "BK Häcken-12-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
@@ -925,7 +941,7 @@
       ]
     },
     {
-      "id": "BK Häcken-18-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "BK Häcken-19-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "url": "https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
@@ -941,23 +957,7 @@
       ]
     },
     {
-      "id": "BK Häcken-19-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
-      "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
-      "url": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
-      "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
-      "publishedAt": "2026-09-11T10:00:00.000Z",
-      "publisher": "BK Häcken",
-      "category": "men",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1770199263BB250713MI100.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
-      "sourceRole": "primary",
-      "sourceTags": [
-        "Herr"
-      ]
-    },
-    {
-      "id": "Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "id": "Fotbolltransfers-14-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
       "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
       "url": "https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
       "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
@@ -971,7 +971,26 @@
   ],
   "newsEvents": [
     {
-      "id": "event-BK Häcken-9-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "event-BK Häcken-0-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
+      "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
+      "publishedAt": "2026-10-01T13:35:00.000Z",
+      "latestPublishedAt": "2026-10-01T13:35:00.000Z",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/ff180d06-bd15-4de3-81dc-1331756379df.jpg",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+          "publishedAt": "2026-10-01T13:35:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-10-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-20T16:00:00.000Z",
@@ -990,7 +1009,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-11-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "event-BK Häcken-12-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-19T13:50:05.000Z",
@@ -1009,7 +1028,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-18-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
+      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/julius-lindbergs-kvitteringsmal-gav-delad-pott-mot-mjallby",
       "title": "Julius Lindbergs kvitteringsmål gav delad pott mot Mjällby",
       "summary": "BK Häcken fick en poäng efter 0–1-underläge i paus.",
       "publishedAt": "2026-09-11T19:40:00.000Z",
@@ -1028,26 +1047,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-19-https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
-      "title": "Stötta BK Häcken när du streamar Allsvenskan på TV4 Play",
-      "summary": "Följ Allsvenskan via TV4 Play och stötta samtidigt BK Häcken. Teckna abonnemang via vår kampanj och bidra till föreningens fortsatta utveckling.",
-      "publishedAt": "2026-09-11T10:00:00.000Z",
-      "latestPublishedAt": "2026-09-11T10:00:00.000Z",
-      "category": "men",
-      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/1770199263BB250713MI100.jpg",
-      "sources": [
-        {
-          "publisher": "BK Häcken",
-          "url": "https://bkhacken.se/nyhet/stotta-bk-hacken-nar-du-streamar-allsvenskan-pa-tv4-play",
-          "publishedAt": "2026-09-11T10:00:00.000Z",
-          "role": "primary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "id": "event-Fotbolltransfers-14-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
       "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
       "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
       "publishedAt": "2026-09-02T20:56:42.000Z",
