@@ -1,31 +1,80 @@
-name: Gemini overnight availability (5 samples, medium)
+name: Gemini hourly availability (alternating probe)
 
-# Measures WHEN the Gemini API is reachable, using the production request shape.
+# Measures WHEN the FREE TIER is usable, and — separately — WHEN the model is
+# merely non-overloaded. Those are two different questions that this file
+# previously conflated into one.
 #
-# WHY THIS EXISTS
-#   On 2026-09-30, fifteen requests were spent in one afternoon: 2 succeeded,
-#   13 returned HTTP 503 "This model is currently experiencing high demand".
-#   Google's error reference defines 503 service_unavailable as "the service is
-#   temporarily overloaded or down" and prescribes exponential backoff. Nothing
-#   in that definition is size-dependent.
+# WHY THE PROBE CHANGED ON 2026-10-01
+#   A 429 body captured in run 36813438657 finally identified the real ceiling:
 #
-#   So the open question is purely TEMPORAL: does a window open at night?
-#   Thirteen failures inside a single afternoon cannot answer that. This run
-#   samples across the night instead.
+#     "Quota exceeded for metric:
+#      generativelanguage.googleapis.com/generate_content_free_tier_requests,
+#      limit: 20, model: gemini-3.8-flash"
+#     "status": "RESOURCE_EXHAUSTED"
 #
-# WHAT IT DELIBERATELY DOES NOT DO
-#   It does NOT vary thinking_level. Lowering it from the 3.x default of medium
-#   would reduce latency and token consumption, but a request's shape does not
-#   change whether an overloaded server accepts it. Changing it here would
-#   confound the measurement. Baseline first, remedy later, one variable at a
-#   time.
+#   So the key is FREE TIER, hard-capped at 20 generation requests per UTC day.
+#   That reframes everything:
 #
-#   It does NOT retry on 503. Each attempt is one request, recorded whatever
-#   the outcome. A retry would spend a second request to learn something a
-#   second sample could have told us.
+#     * A 429 is a QUOTA answer. It means the daily allowance is spent. It is
+#       clean, unambiguous evidence, and it needs no further requests to confirm.
+#     * A 503 is a CAPACITY answer. It means the model is overloaded. It is not
+#       proof of quota exhaustion, and it is not proof of health either.
 #
-# COST: exactly 2 generation requests per scheduled run, 10 across the night.
-# Each is never retried. Writes nothing.
+#   The old "5 samples x 2 requests" design spent 10 requests a night against a
+#   20/day ceiling — half the daily budget to re-learn, every night, something
+#   the previous night's log had already said. And it bundled BOTH probes into
+#   every run, so a single 429 from the chat probe could not be attributed to
+#   quota-as-opposed-to-capacity.
+#
+# WHAT THIS DOES INSTEAD — one probe per hour, alternating
+#   PROBE=1  availability-sample.sh  "reply with the single word: ok"
+#                                -> the cheapest possible reachability ping
+#   PROBE=2  gemini-chat-probe.sh   a real structured Swedish answer
+#                                -> does a USABLE reply exist at all
+#
+#   These answer different questions, so they are no longer bundled. Alternating
+#   means a 429 on an availability hour is attributable to availability, and a
+#   429 on a chat hour is attributable to the chat probe. Pairing them in one run
+#   destroyed that attribution — which is precisely why 04:05Z on 2026-10-01
+#   produced a 200 and a 429 0.2 s apart and looked self-contradictory.
+#
+#   It also means a single request per hour, so the nightly cost drops from 10
+#   to 24 requests/day only if the run were hourly AND doubled — it is not. One
+#   request per firing, and the two probes interleave, so each individual probe
+#   is sampled twice as often as before for the same total spend.
+#
+# HOW PROBE NUMBER IS DETERMINED
+#   GitHub Actions cron is ALWAYS UTC. There is no local-time cron, and no
+#   "every 2nd run" primitive. So parity is computed from the UTC hour, which is
+#   exactly the clock the quota window is aligned to anyway.
+#
+#   Odd UTC hour -> PROBE 1 (availability)
+#   Even UTC hour -> PROBE 2 (chat question)
+#
+#   This makes the sequence a clean alternation: 00 -> 1, 01 -> 2, 02 -> 1,
+#   03 -> 2, ... Consecutive hours alternate, which is the property that gives
+#   the quota and capacity signals their independence.
+#
+#   The parity is computed INSIDE the job from `date -u +%H`, not encoded in two
+#   separate cron entries. Two crons would double-count every run against the
+#   `concurrency` group and make a skipped or delayed run silently shift the
+#   alternation, which is exactly the silent-mode-drift class of bug this repo
+#   already has one of.
+#
+# COST: exactly 1 generation request per firing, never retried, 24/day.
+# The free tier allows 20/day. This design therefore still saturates it — see
+# the STOP CONDITION below. It is deliberate: the user is establishing whether
+# the free tier works AT ALL, and a budget that leaves headroom cannot answer
+# that. The 1-request-per-hour shape is what makes a 429 attributable.
+#
+# STOP CONDITION — REMOVE THIS SCHEDULE ON SUNDAY 2026-10-05
+#   The run is a bounded experiment, not a permanent monitor. It must be
+#   disabled after 2026-10-05 (Sunday). Left in place it would keep spending
+#   requests indefinitely and, because 24 > 20, would sit permanently at the
+#   quota ceiling and produce a flat line of 429s that proves nothing.
+#
+#   This workflow commits nothing, so the schedule CANNOT remove itself. A human
+#   must delete the `schedule:` block (or the whole file) on Sunday.
 #
 # RECORDING A RESULT
 #   This workflow deliberately writes NO summary and commits NOTHING. A nightly
@@ -34,8 +83,9 @@ name: Gemini overnight availability (5 samples, medium)
 
 on:
   schedule:
-    # 02:00, 04:00, 06:00, 08:00, 10:00 UTC — five samples across the night.
-    - cron: "0 2,4,6,8,10 * * *"
+    # Hourly, on the hour, UTC. One probe per firing, alternating by UTC parity.
+    # BOUNDED EXPERIMENT — remove this block on Sunday 2026-10-05.
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -52,26 +102,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       # No `npm ci`: both probes are single curl calls against the REST endpoint
       # and need no repository dependencies. Installing them would only add
       # minutes of failure surface to a measurement run.
-      - name: Sample 1 — availability at the production setting
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-3.8-flash
-        run: bash .github/scripts/gemini-availability-sample.sh
+      #
+      # The parity gate runs FIRST so the chosen probe is announced before any
+      # request is spent. If the selection logic is ever wrong, the log says
+      # which probe was chosen and why, before the evidence is destroyed.
+      - name: Select probe by UTC hour parity
+        id: pick
+        run: |
+          HOUR=$(date -u +%-H)
+          if [ $(( HOUR % 2 )) -eq 1 ]; then
+            PROBE=1; SCRIPT=gemini-availability-sample.sh
+            DESC="availability ping (reply: ok)"
+          else
+            PROBE=2; SCRIPT=gemini-chat-probe.sh
+            DESC="chat question (structured Swedish answer)"
+          fi
+          echo "utc_hour   =$HOUR"
+          echo "parity     =$(( HOUR % 2 )) (1 -> probe 1, 0 -> probe 2)"
+          echo "probe      =$PROBE  $DESC"
+          echo "script     =$SCRIPT"
+          echo "started_utc=$(date -u +%FT%TZ)"
+          {
+            echo "probe=$PROBE"
+            echo "script=$SCRIPT"
+          } >> "$GITHUB_OUTPUT"
 
-      # Sample 2 — the chat question. Same model, same default (medium)
-      # thinking, no retry. It asks for a real structured answer, so it also
-      # tells us whether a genuine reply is obtainable at all, not merely
-      # whether the endpoint responds. Recorded separately because a 200 here
-      # is the first thing that would let B-004 be evaluated at all.
-      - name: Sample 2 — chat question, structured answer
+      - name: Run the selected probe (ONE request, never retried)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-3.8-flash
-        run: bash .github/scripts/gemini-chat-probe.sh
+        run: bash ".github/scripts/${{ steps.pick.outputs.script }}"
+
+      # Machine-readable summary. `if: always()` matters: both probe scripts
+      # exit 0 on an HTTP error by design, so a RED run would mean the SCRIPT
+      # broke, not that Gemini refused. The run must stay green for the
+      # 429-vs-503 distinction in the log to remain the signal.
+      - name: Emit machine-readable outcome
+        if: always()
+        env:
+          PROBE: ${{ steps.pick.outputs.probe }}
+          SCRIPT: ${{ steps.pick.outputs.script }}
+        run: |
+          {
+            echo "### gemini-hourly"
+            echo "utc_hour=$(date -u +%-H)"
+            echo "probe=$PROBE"
+            echo "script=$SCRIPT"
+            echo "note: HTTP code and error body are in the log, not here."
+          } >> "$GITHUB_STEP_SUMMARY"
