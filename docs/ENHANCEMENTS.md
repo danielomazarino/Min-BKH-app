@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-10-01 (00:45 CEST / 2026-09-30 22:45 UTC)
+## Current state — 2026-10-02 (01:00 CEST / 2026-10-01 23:00 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -37,10 +37,10 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **356 passing**, 0 failing (17 files) |
-| Data last generated | 2026-09-30 03:46 UTC — **unchanged since**; two code deploys since then were data-neutral |
+| Tests | **356 passing**, 0 failing (17 files) — last full run 2026-09-30; not re-run since the 2026-10-02 workflow/docs edits, which touch no source under test |
+| Data last generated | **2026-10-01 03:49 UTC** — B-005 guard passed, served bytes match the data commit (`447846b6…`) |
 | Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). In practice: **503 UNAVAILABLE** "high demand", and **429** once the daily allowance is gone. Still disabled in the nightly. B-004 unvalidated. |
-| Next event | Hourly availability probe, alternating 1 request per firing · **03:30 UTC** nightly |
+| Next event | **03:00–23:00 UTC every 2h**, one availability sample per firing · **03:30 UTC** nightly |
 
 ### ⚠️ The overnight probe changed on 2026-10-02 — old checkpoint text follows
 
@@ -527,8 +527,8 @@ the source recorded so any claim can be checked.
 | Item | Status | Notes |
 | --- | --- | --- |
 | **B-003** | OPEN | Live data is **6/6 single-source**. UI supports multi-source; the pipeline does not produce it. Depends on B-004 |
-| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. Every live eval returned **503**, which Google documents as *"temporarily overloaded"* — **not** size-related, so payload shrinking would not help. Overnight sampling fires 02:00–10:00 UTC 2026-10-01 |
-| **E-005** | Code deployed, **data pending** | Pushed `05a9d21`, deploy run `36689400880` green. Data effect owed after the 2026-10-01 nightly |
+| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. Every live eval has returned **503 or 429** — 20+ attempts, zero usable answers. Size is **not** the discriminator (a 586-byte request also failed) and quota is **not** eliminated (free tier = 20 req/UTC day, measured from a 429 body). Availability experiment runs 03:00–23:00 UTC every 2h from 2026-10-02; **it measures, it does not validate** |
+| **E-005** | **DONE — verified in production 2026-10-01** | Served `app.json` shows Layouni `status: "departed"`, `departed: true`, with history preserved (`warningCount: 2`, both `relevantWarnings` intact). 18 ledger entries, `cardMatchesInspected: 22` |
 | **N-001a** | OPEN | `MatchDetail.playerStats` declared, never populated. No inferred stats, ever |
 | **N-001b** | OPEN | Needs physical iPhone 13 verification. **Automation cannot close this** |
 | **B-006** | OPEN — cause **measured** | News is 9 days stale, but **the prefilter is innocent**: of 66 drops, 65 are general football it correctly rejects. Feeds carry ~23 Häcken items at most, and the nightly samples them **once at 03:30 UTC**. Fix = fetch more often, not filter differently |
@@ -667,6 +667,97 @@ was inference from a correlation and it is **wrong**. Do not act on it.
 
 ---
 
+## The availability experiment now running (set up 2026-10-02, `bc9e631`)
+
+**This is a measurement, not a fix.** It cannot make Gemini work. Its only
+purpose is to answer one question — *is the free tier usable at all, and if so
+when?* — cheaply enough to run unattended for a few days.
+
+### What was built
+
+`gemini-overnight-availability.yml`, cron `0 3-23/2 * * *` — **11 firings**
+(03:00, 05:00 … 23:00 UTC), **one generation request each**, 11/day against a
+20/day ceiling. Probes alternate so that a failure can be attributed:
+
+| Probe | Script | Question it answers |
+| --- | --- | --- |
+| 1 | `gemini-availability-sample.sh` | Is the endpoint reachable at production settings? |
+| 2 | `gemini-chat-probe.sh` | Is a **usable structured answer** obtainable at all? |
+
+**Why alternate instead of running both in one job.** On 2026-10-01 at 04:05Z a
+single job returned **200 at 04:05:04Z and 429 at 04:05:2xZ — 0.2 seconds
+apart**. Run together, those two results are unattributable: quota? capacity?
+the chat probe's own shape? One request per firing makes a 429 on a probe-1 hour
+attributable to the availability ping and a 429 on a probe-2 hour to the chat
+probe. **The alternation exists to create that separation** — it is the whole
+methodological point, not a scheduling nicety.
+
+Parity is computed inside the job from `date -u +%H` as `(HOUR / 2) % 2`, not
+encoded as two cron entries, because a single skipped run would permanently
+desynchronise the two signals. *The division by 2 is load-bearing: the schedule
+fires on odd hours, where plain `HOUR % 2` is 1 for every firing and would
+silently disable the chat probe forever while every run still went green.* That
+bug was caught before it shipped and is documented here so nobody reintroduces
+it.
+
+### Why this shape, given 20 requests/day
+
+| Design | Requests/day | What it could tell us |
+| --- | --- | --- |
+| Previous: 5 nights × 2 probes | 10 | Nothing — it re-learned each night what the last night said |
+| Attempted: hourly × 1 probe | 24 | Nothing — 20/day ceiling meant hours 20–23Z were **guaranteed 429s** |
+| **Now: 11 × 1 probe** | **11** | A real signal, with headroom to spare |
+
+A run that saturates the budget cannot distinguish *"the tier is exhausted"*
+from *"the service is unhealthy"* — both look like failure. Staying under the
+ceiling is what makes a 429 informative when it appears.
+
+### Expected outcome — stated before the data arrives, so it cannot be rationalised
+
+This is the part to hold me to. In roughly this order of likelihood:
+
+1. **A mix of 200 / 503 / 429 across the 11 hours.** The most likely result, and
+   the one that makes the experiment worth running — it would map *when* the
+   tier works, which is exactly the question no amount of retrying has answered.
+2. **All 503.** Then the "high demand" response is genuine sector capacity, the
+   429 was a separate quota wall, and the free tier is unusable at any hour.
+3. **A clean run of 200s in a contiguous block.** A genuine daily capacity window
+   would finally be visible, and the time to spend the semantic-eval request
+   would be obvious rather than guessed.
+4. **All 429.** Unlikely at 11/day, but it would mean something is consuming the
+   allowance from outside this workflow and must be found before anything else
+   is attempted.
+
+**What would count as a genuine result:** a 200 carrying a **non-empty structured
+answer** from probe 2. That has never once happened in 20+ attempts. Anything
+short of that — including a 200 from probe 1, which is one word, `ok` — is
+**not** progress toward B-004.
+
+**What would prove the experiment worthless:** all-503 across all 11 hours *and*
+no 429. That pattern would mean the free tier is simply not available to this
+key, and the correct response is to stop measuring and get a billing-enabled key
+or drop the Gemini path permanently.
+
+### The stop condition — a human must do this
+
+> **On Sunday 2026-10-05, delete the `schedule:` block (or the whole file) from
+> `gemini-overnight-availability.yml`.**
+> The workflow commits nothing, so **it cannot remove itself.** Left running it
+> spends requests indefinitely. This is the one part of the 2026-10-02 work that
+> is not automated, and it is the single most important follow-up on the list.
+
+### The limit this experiment cannot lift
+
+Recorded here so the experiment is not mistaken for a path to production. The
+production nightly needs **12 requests** when Gemini is enabled (4 models × 3
+attempts). These probes need **11**. Together that is **23 against a ceiling of
+20** — so **the free tier cannot run the real pipeline even on a perfect day with
+zero failures.** No scheduling change fixes that arithmetic. A billing-enabled key
+is the only thing that does; until then the deterministic fallback carries the
+news feed and that is the correct, safe state.
+
+---
+
 ## Gemini 503 — the documented cause (2026-09-30)
 
 **There is no size-dependent component.** Google's own error reference says:
@@ -718,23 +809,26 @@ measurement.
 
 ### Measuring the only open question: time of day
 
+> **SUPERSEDED 2026-10-02.** This section described the previous design — five
+> samples at 02/04/06/08/10 UTC, two requests per run. That was replaced because
+> it spent 10 requests a night re-learning what the previous night's log had
+> already said, and because bundling both probes into one job destroyed the
+> ability to tell a quota failure from a capacity failure. See **"The
+> availability experiment now running"** above for the current design, its cost,
+> and its expected outcomes. Kept here for the audit trail.
+
 Everything above is settled. The one thing still unknown is whether availability
 varies by hour, and thirteen same-afternoon failures cannot answer it.
 
-`gemini-overnight-availability.yml` samples **02:00, 04:00, 06:00, 08:00, 10:00
-UTC** — two requests per run (availability + the chat question), 10 per night,
-no retries. Held constant: same model, thinking left at the medium default,
-`maxOutputTokens: 1024` to match the real eval request. Verified working by
-manual dispatch (run `36763020541`, both steps executed, both 503).
+`gemini-overnight-availability.yml` samples **03:00, 05:00 … 23:00 UTC — one
+request per firing, alternating probes** (see "The availability experiment now
+running" above). The description below applies to the *superseded* 02:00–10:00
+design and is kept for the audit trail.
 
 It writes nothing and commits nothing — a nightly commit would trigger
 `deploy.yml` on unchanged data.
 
 ### Honest limits of that measurement
-
-Five samples is a small sample of a random variable. All-fail does not prove the
-API is always down; all-succeed does not prove it is reliably up. It estimates a
-duty cycle over one night, nothing more. **Read it as indicative, not proof.**
 
 **A scheduled run may simply not happen.** GitHub Actions cron can be delayed up
 to ~15 minutes, and scheduled workflows are **skipped entirely** during periods
@@ -851,7 +945,30 @@ Test suite: **356 passing**, 17 files. Served `app.json`: `c8e247cb…`, generat
 
 ## The one thing to check first
 
-**Was the 03:30 UTC nightly healthy, and did GP contribute?**
+**When you return: reconcile the availability experiment.** The first scheduled
+firing under the new design is **03:00 UTC on 2026-10-02**.
+
+```bash
+gh run list --workflow=gemini-overnight-availability.yml --limit 15
+gh run view <id> --log | grep -aE "utc_hour|parity|probe  |SAMPLE|HTTP |RESULT"
+```
+
+Read each run as `probe N -> HTTP code`. What matters is the **pattern across
+probe-1 hours and probe-2 hours separately** — that separation is the entire
+reason the probes were alternated. Remember: a probe-1 200 is the single word
+`ok` and proves nothing about usability; only a probe-2 200 carrying a real
+structured answer would be genuine progress.
+
+**Baseline before that first 03:00Z firing, for comparison** — both manual
+dispatches, both `probe 2`, both 503:
+
+| run | UTC | probe | result |
+| --- | --- | --- | --- |
+| `36946497716` | 2026-10-02 00:32 | 2 (chat) | 503, 1 request |
+| `36948360050` | 2026-10-02 00:54 | 2 (chat) | 503, 1 request |
+
+**Second thing to check: was the 03:30 UTC nightly healthy, and did GP
+contribute?**
 
 ```bash
 gh run list --workflow=data-update.yml --limit 3
@@ -863,6 +980,10 @@ The nightly log should now contain a `news ingest by source` block. **That is
 the first time these diagnostics will have run against real data** — every
 earlier rendering was synthetic. If a source shows `ZERO CONTRIBUTED`, that is
 the flag working as designed, not a failure.
+
+**And the standing item that does not expire:** on Sunday 2026-10-05, delete the
+`schedule:` block from `gemini-overnight-availability.yml`. It cannot remove
+itself.
 
 **Expect GP to contribute 0–3 articles.** Its feed is the front page, and 3 of 45
 items mentioned Häcken when measured. If it shows `kept 0`, that is the
