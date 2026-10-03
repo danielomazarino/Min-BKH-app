@@ -13,6 +13,7 @@ import {
   urgentDiscipline,
   groupLabel,
   fmtWhen,
+  fmtDay,
   type TimelineRowItem,
 } from "./format";
 import type { MatchEvents, PlayerDiscipline, SeasonPlayerStat } from "../../pipeline/src/types";
@@ -482,6 +483,43 @@ describe("time helpers", () => {
     expect(groupLabel("2026-09-25T08:00:00Z", now)).toBe("I dag");
     expect(groupLabel("2026-09-24T08:00:00Z", now)).toBe("I går");
     expect(groupLabel("2026-09-22T08:00:00Z", now)).toBe("För 3 dagar sedan");
+    // "Förra veckan" starts at 7 days back, so 2026-09-18, not 09-19.
+    expect(groupLabel("2026-09-18T08:00:00Z", now)).toBe("Förra veckan");
+    expect(groupLabel("2026-09-12T08:00:00Z", now)).toBe("Förra veckan");
+  });
+
+  it("groupLabel never repeats the date the row already shows", () => {
+    // THE DUPLICATE-DATE DEFECT (seen on a real iPhone, build 4fd7a2c).
+    // The archive read:
+    //
+    //     2 SEP.
+    //     2 sep.   Officiellt: BK Häcken lånar ut Sanders Ngabo
+    //
+    // For anything older than two weeks groupLabel returned the same `dOnly`
+    // string the row prints, so the date appeared twice in two casings.
+    // Measured across 60 days: the two collided on 47 of them.
+    //
+    // The heading is now dropped in exactly that case, so the date is shown
+    // ONCE. Asserted as an invariant over a whole year rather than a sample,
+    // because the exact crossover date moves with `now`.
+    const now = Date.parse("2026-09-25T12:00:00Z");
+    for (let daysAgo = 0; daysAgo <= 365; daysAgo++) {
+      const iso = new Date(now - daysAgo * 86400000).toISOString();
+      const label = groupLabel(iso, now);
+      expect(label, `${daysAgo} days ago: heading "${label}" repeats the row date`).not.toBe(
+        fmtDay(iso),
+      );
+    }
+  });
+
+  it("groupLabel returns empty only for old days, never for today", () => {
+    const now = Date.parse("2026-09-25T12:00:00Z");
+    expect(groupLabel("2026-09-25T08:00:00Z", now)).not.toBe("");
+    expect(groupLabel("2026-09-24T08:00:00Z", now)).not.toBe("");
+    expect(groupLabel("2026-09-19T08:00:00Z", now)).not.toBe("");
+    // Older than the relative window: no heading, because the row's own date
+    // carries it. Silence here is the fix, not a regression.
+    expect(groupLabel("2026-06-01T08:00:00Z", now)).toBe("");
   });
 });
 

@@ -49,7 +49,7 @@ describe("tabStops — where the pill rests on each tab", () => {
   const PILL = 52;
   const N = 5;
 
-  it("starts at 0 and ends flush with the track", () => {
+  it("starts at 0 and ends flush with the track when there is no inset", () => {
     const stops = tabStops(N, W, PILL);
     expect(stops[0]).toBe(0);
     expect(stops.at(-1)).toBe(W - PILL);
@@ -88,6 +88,67 @@ describe("tabStops — where the pill rests on each tab", () => {
       expect(stops[i]).toBeGreaterThan(stops[i - 1]);
     }
   });
+
+  // ---------------------------------------------------------------- //
+  // THE PROTRUSION FIX (real iPhone, build 4fd7a2c.c224dc6)
+  //
+  // The bar has a 24px corner radius and a 1px border. With stops running
+  // edge-to-edge, the pill's square corners reached past the rounded corner
+  // and visibly stuck out of the frame at the LAST tab (Spelare). Clipping
+  // would hide the symptom and leave the geometry wrong, so the stops are
+  // inset instead.
+  // ---------------------------------------------------------------- //
+  describe("with an inset, the pill stays inside the rounded frame", () => {
+    const INSET = 5;
+
+    it("starts and ends exactly `inset` from the track edges", () => {
+      const stops = tabStops(N, W, PILL, INSET);
+      expect(stops[0]).toBe(INSET);
+      expect(stops.at(-1)).toBe(INSET + (W - PILL - INSET * 2));
+      // The far edge of the pill lands on the track's inner edge, no further.
+      expect(stops.at(-1)! + PILL).toBeCloseTo(W - INSET, 6);
+    });
+
+    it("still spaces every tab evenly", () => {
+      const stops = tabStops(N, W, PILL, INSET);
+      const step = (W - PILL - INSET * 2) / (N - 1);
+      stops.forEach((s, i) => expect(s).toBeCloseTo(INSET + i * step, 6));
+    });
+
+    it("never lets the pill exceed the track at either end", () => {
+      // The actual invariant the visual bug violated.
+      for (const stops of [tabStops(N, W, PILL, INSET), tabStops(N, W, PILL, 0)]) {
+        expect(stops[0]).toBeGreaterThanOrEqual(INSET - (stops[0] === 0 ? INSET : 0));
+        expect(stops[0] + PILL).toBeLessThanOrEqual(W);
+        expect(stops.at(-1)!).toBeLessThanOrEqual(W - INSET);
+        expect(stops.at(-1)! + PILL).toBeLessThanOrEqual(W);
+      }
+    });
+
+    it("falls back to the inset when there is no room, not to NaN", () => {
+      for (const stops of [tabStops(N, PILL, PILL, INSET), tabStops(N, 0, PILL, INSET)]) {
+        expect(stops.every((s) => s === INSET)).toBe(true);
+        expect(stops.some(Number.isNaN)).toBe(false);
+      }
+    });
+
+    it("handles one and zero tabs with an inset", () => {
+      expect(tabStops(1, W, PILL, INSET)).toEqual([INSET]);
+      expect(tabStops(0, W, PILL, INSET)).toEqual([INSET]);
+    });
+
+    it("keeps the inset small enough that every tab is still covered", () => {
+      // The pill must still span its tab's icon and label, so the inset has
+      // to leave most of the tab width covered.
+      const realPill = 66 - INSET * 2;
+      const stops = tabStops(N, 330, realPill, INSET);
+      for (let i = 0; i < N; i++) {
+        const centre = stops[i] + realPill / 2;
+        const tabCentre = ((i + 0.5) * 330) / N;
+        expect(Math.abs(centre - tabCentre), `tab ${i} centre`).toBeLessThan(1);
+      }
+    });
+  });
 });
 
 describe("clampToTrack — the pill cannot leave the bar", () => {
@@ -109,6 +170,23 @@ describe("clampToTrack — the pill cannot leave the bar", () => {
 
   it("never exceeds the track even when the pill is wider than it", () => {
     expect(clampToTrack(50, 40, 60)).toBe(0);
+  });
+
+  it("clamps to the inset region, matching the stops", () => {
+    // A drag must not be able to push the pill past the rounded corners either,
+    // so the clamp bounds are the same inset region the stops live in.
+    const INSET = 5;
+    expect(clampToTrack(-9999, W, PILL, INSET)).toBe(INSET);
+    expect(clampToTrack(9999, W, PILL, INSET)).toBe(INSET + (W - PILL - INSET * 2));
+    expect(clampToTrack(-9999, W, PILL, INSET) + PILL).toBeLessThanOrEqual(W);
+    expect(clampToTrack(9999, W, PILL, INSET) + PILL).toBeLessThanOrEqual(W);
+  });
+
+  it("cannot be dragged below the inset even from the first tab", () => {
+    const INSET = 5;
+    const min = clampToTrack(0, W, PILL, INSET);
+    expect(min).toBe(INSET);
+    expect(min).toBeGreaterThan(0);
   });
 });
 

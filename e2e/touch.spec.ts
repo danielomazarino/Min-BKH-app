@@ -9,6 +9,7 @@ import {
   renderedStops,
   tabSpacing,
   touchDriver,
+  maxPillX,
 } from "./navIndicatorDrag";
 
 /**
@@ -236,7 +237,8 @@ test.describe("Touch: floating nav swipe", () => {
     await page.goto("/#/spelare");
     await expect(page.getByTestId("tabbar")).toBeVisible();
     const last = await dragIndicatorBeyondLastStop(page, touch);
-    expect(last.atRelease, "the indicator left the track at the last stop").toBeLessThanOrEqual(206);
+    const ceiling = await maxPillX(page);
+    expect(last.atRelease, "the indicator left the track at the last stop").toBeLessThanOrEqual(ceiling + 1);
     await touch("touchEnd", 0, 0);
     await page.waitForTimeout(700);
     await expect(page, "dragging right at the last tab must not wrap").toHaveURL(/#\/spelare$/);

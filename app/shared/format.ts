@@ -76,7 +76,27 @@ export function daysUntil(iso: string, now = Date.now()): number | null {
   return Math.ceil(diff / 86400000);
 }
 
-/** "I DAG" / "3 DAGAR SEDAN" / "VECKAN" for date grouping. */
+/**
+ * Group heading for a day of news, or "" when the day is self-describing.
+ *
+ * Returns a RELATIVE label only — "I dag", "I går", "För N dagar sedan",
+ * "Förra veckan". Past two weeks it returns "" and the caller shows the
+ * absolute date on the rows instead.
+ *
+ * WHY: for anything older than two weeks this used to return the same
+ * `dOnly` string the row already printed, so the list read
+ *
+ *     2 SEP.
+ *     2 sep.   Officiellt: BK Häcken lånar ut Sanders Ngabo
+ *
+ * — the date twice, in two different casings, which reads as a rendering bug.
+ * Verified across 60 days: the two collided on 47 of them.
+ *
+ * The relative labels carry real information the absolute date does not (how
+ * recent this is), so grouping is kept for the recent window and dropped only
+ * where it would be pure repetition. The caller still renders ONE date per
+ * day, never zero.
+ */
 export function groupLabel(iso: string, now = Date.now()): string {
   const d = parse(iso);
   if (!d) return "";
@@ -86,7 +106,8 @@ export function groupLabel(iso: string, now = Date.now()): string {
   if (days === 1) return "I går";
   if (days < 7) return `För ${days} dagar sedan`;
   if (days < 14) return "Förra veckan";
-  return dOnly.format(d);
+  // Older than two weeks: no heading. The row's own date is the heading.
+  return "";
 }
 
 // ---------------------------------------------------------------------------

@@ -8,6 +8,7 @@ import {
   renderedStops,
   tabSpacing,
   touchDriver,
+  maxPillX,
 } from "./navIndicatorDrag";
 
 /**
@@ -343,7 +344,23 @@ test.describe("Swipe on the navigation bar", () => {
     await ready(page);
 
     const { atRelease } = await dragIndicatorBeyondLastStop(page, touch);
-    expect(atRelease, "the indicator left the track at the last stop").toBeLessThanOrEqual(206);
+    // Measured bound, not a literal: widening the bar or insetting the pill
+    // changes where the last stop legitimately is.
+    const ceiling = await maxPillX(page);
+    expect(atRelease, "the indicator left the track at the last stop").toBeLessThanOrEqual(ceiling + 1);
+    // And it is fully INSIDE the bar's rounded frame, not protruding past it.
+    // This is the real-iPhone Spelare defect; clipping would also pass it.
+    const spills = await page.evaluate(() => {
+      const nav = document.querySelector(".fabnav") as HTMLElement;
+      const pill = document.querySelector('[data-testid="fabnav-pill"]') as HTMLElement;
+      const nb = nav.getBoundingClientRect();
+      const pb = pill.getBoundingClientRect();
+      return { right: pb.right - nb.right, left: nb.left - pb.left, top: nb.top - pb.top, bottom: pb.bottom - nb.bottom };
+    });
+    expect(Math.max(0, spills.right), "the indicator protrudes past the bar's right edge").toBeLessThanOrEqual(1);
+    expect(Math.max(0, spills.left), "the indicator protrudes past the bar's left edge").toBeLessThanOrEqual(1);
+    expect(Math.max(0, spills.top), "the indicator protrudes past the bar's top edge").toBeLessThanOrEqual(1);
+    expect(Math.max(0, spills.bottom), "the indicator protrudes past the bar's bottom edge").toBeLessThanOrEqual(1);
 
     await touch("touchEnd", 0, 0);
     await page.waitForTimeout(700);

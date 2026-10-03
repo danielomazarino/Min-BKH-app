@@ -199,6 +199,8 @@ export function FloatingTabBar({
     tabX: [] as number[],
     trackW: 0,
     pillW: 0,
+    /** The pill's inset from the bar's edges, read from CSS. */
+    inset: 0,
     /** Set while a spring is running, so a resize can restart it sanely. */
     animating: false,
   });
@@ -241,30 +243,48 @@ export function FloatingTabBar({
       const pill = pillRef.current;
       if (!pill) return;
       const a = anim.current;
-      // offsetWidth, not the rect: the pill is transformed while it moves, and
-      // a transformed rect is the VISUAL box, which would make the stops drift
-      // as the pill slides.
-      a.trackW = pill.parentElement?.offsetWidth ?? 0;
-      /*
-       * The pill is ONE TAB WIDE, and the width is set here rather than in
-       * CSS so that it can never disagree with `tabStops`. If CSS said 52px
-       * and the tab measured 50px, the last stop would be 2px short and the
-       * pill would look like it stops short of the final icon.
-       *
-       * Set from the LAYOUT box, not the rect: the pill is transformed while
-       * it moves, and a transformed rect is the visual box, which would make
-       * the stops drift as the pill slides.
-       */
-      const item = pill.parentElement?.querySelector<HTMLElement>(".fabnav-item");
+      const nav = pill.parentElement;
+      if (!nav) return;
+
+      // THE INSET, read from CSS so there is ONE source of truth.
+      //
+      // The bar is `position: fixed` with `border: 1px` and a 24px radius. The
+      // pill is absolutely positioned against its PADDING box, so its `left: 0`
+      // origin is already 1px inside the border — which is exactly what we
+      // want, and why the border must NOT be subtracted again below.
+      //
+      // The original code used `offsetWidth`, which measures the BORDER box,
+      // so the last stop overshot by 2px and pushed the pill's corners out
+      // through the bar's rounded corner — visible on a real iPhone at
+      // Spelare, the right-most tab.
+      const pillInset = parseFloat(getComputedStyle(pill).top) || 0;
+      a.inset = pillInset;
+
+      // `clientWidth` EXCLUDES the border and includes padding, i.e. it is the
+      // padding box — the same box the pill's absolute coordinates resolve
+      // against. An earlier version subtracted the border again, which shifted
+      // the track 1px and left the pill 5.2px off-centre on tab 0.
+      a.trackW = nav.clientWidth;
+
+      // One tab wide, INSET by one step each side so the pill stays inside the
+      // rounded corners. Narrowing the pill (rather than shifting it) is what
+      // keeps it centred: a stop at `inset + i*tabWidth` with width
+      // `tabWidth - 2*inset` has its centre exactly on the tab's centre, and
+      // its edges exactly `inset` inside the bar.
+      const item = nav.querySelector<HTMLElement>(".fabnav-item");
       const itemW = item?.offsetWidth ?? 0;
       if (itemW > 0) {
-        pill.style.width = `${itemW}px`;
-        a.pillW = itemW;
+        a.pillW = Math.max(1, itemW - pillInset * 2);
+        pill.style.width = `${a.pillW}px`;
       } else {
         a.pillW = pill.offsetWidth || pill.getBoundingClientRect().width;
       }
-      a.tabX = tabStops(DESTINATIONS.length, a.trackW, a.pillW);
-      a.target = a.tabX[Math.min(Math.max(snapToIndex, 0), a.tabX.length - 1)] ?? 0;
+      // `left` stays at the CSS default of 0. The inset is applied by the
+      // STOPS, not by moving the pill's origin — setting both double-counted it
+      // and pushed the indicator off-centre by the inset amount.
+
+      a.tabX = tabStops(DESTINATIONS.length, a.trackW, a.pillW, pillInset);
+      a.target = a.tabX[Math.min(Math.max(snapToIndex, 0), a.tabX.length - 1)] ?? pillInset;
       stopSpring();
       a.x = a.target;
       a.v = 0;
@@ -440,8 +460,10 @@ export function FloatingTabBar({
       }
 
       // Delta tracking from the anchor, so reversing direction just changes the
-      // delta and the pill cannot accumulate error across frames.
-      const next = clampToTrack(d.anchorX + dx, a.trackW, a.pillW);
+      // delta and the pill cannot accumulate error across frames. Clamped with
+      // the same inset the stops use, so a drag cannot push the pill past the
+      // bar's rounded corners either.
+      const next = clampToTrack(d.anchorX + dx, a.trackW, a.pillW, a.inset);
       a.x = next;
       a.v = 0; // the finger owns the position directly while it is down
       paint(next);

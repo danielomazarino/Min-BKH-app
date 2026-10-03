@@ -66,26 +66,42 @@
 
   /* Chrome heights */
   --header-h: 44px;
-  /* The floating bar is 58px tall and floats 16px above the safe area, so
-     content needs ~58 + 2x16 + the inset of clearance to scroll fully clear. */
-  --fabnav-h: 58px;
+  /* The floating bar is 64px tall and floats 16px above the safe area, so
+     content needs ~64 + 2x16 + the inset of clearance to scroll fully clear.
+     Raised from 58px on 2026-10-03 so the five destinations get a bigger hit
+     target without the bar reading as a full-width system tab bar. */
+  --fabnav-h: 64px;
   /* Distance from the viewport edge to the bar. Kept separate from the height
-     so the two can be tuned independently. It is ALSO the minimum horizontal
-     margin the bar is dragged within, which is why JS reads it back. */
+     so the two can be tuned independently. */
   --fabnav-gap: 16px;
-  /* Top of the band the bar may be dragged up to. Sits below the fixed header
-     so a dragged bar can never cover the settings button or the title. Read
-     back by JS as the vertical origin. */
-  --fabnav-top: 56px;
-  /* WIDTH CEILING — the single most load-bearing value for the drag.
+  /* WIDTH — raised from 260px to 330px on 2026-10-03.
    *
-   * Horizontal travel = viewport - this - 2 x --fabnav-gap. At 260px on a
-   * 390px phone that leaves 98px of travel; the bar used to be 358px wide,
-   * which left ZERO and made the drag impossible. Raising this toward 100%
-   * silently removes the ability to drag, so change it deliberately or not at
-   * all. The five destinations are laid out with `flex: 1 1 0` and their
-   * labels ellipsise, so a narrower bar degrades legibly rather than clipping. */
-  --fabnav-w: 260px;
+   * At 260px on a 390px phone each of the five tabs got only 52px, which is
+   * below the 44px-plus comfortable target once the label is included, and
+   * the end tabs (Hem, Spelare) were the hardest to hit. At 330px the bar is
+   * still clearly a floating pill with 30px of margin each side, and each tab
+   * gets 66px.
+   *
+   * The destinations are laid out with `flex: 1 1 0`, so they share whatever
+   * width the bar has. Do not raise this toward 100%: the bar is meant to read
+   * as floating over the app, not as a system tab bar. */
+  --fabnav-w: 330px;
+
+  /* Horizontal INSET of the glass pill inside the bar, and the matching
+   * vertical inset.
+   *
+   * THE PROTRUSION BUG (2026-10-03, found on a real iPhone): the pill was
+   * flush to the bar's left and right edges. The bar has `border: 1px` and a
+   * 24px corner radius, so at the last stop the pill's square corners reached
+   * past the bar's rounded corner and visibly stuck out of the frame — worst
+   * at Spelare, the right-most tab. Clipping the overflow would have hidden
+   * the symptom while leaving the geometry wrong, so the pill is instead
+   * INSET by the same amount as the bar's radius on each side, which keeps it
+   * fully inside the rounded frame AND centres it on each icon.
+   *
+   * This value is read by JS in measure() and must match the pill's `top`/
+   * `bottom` below. */
+  --fabnav-pill-inset: 5px;
 
   /* GLASS — every part of the floating-nav surface in one place, so the look
    * can be retuned without hunting through declarations.
@@ -558,13 +574,18 @@ main {
  * ------------------------------------------------------------------ */
 .fabnav-pill {
   position: absolute;
-  top: 3px;
-  bottom: 3px;
+  /* Inset from every edge by --fabnav-pill-inset (see the token), so the pill
+     stays inside the bar's 24px rounded corners instead of protruding past
+     them at the first and last stops. JS reads the same token when it lays out
+     the tab stops, so the two cannot drift. */
+  top: var(--fabnav-pill-inset);
+  bottom: var(--fabnav-pill-inset);
   /* One tab wide. The exact pixel width is set from JS in the same measure
      pass that computes the tab stops, so the two can never disagree. */
   width: 52px;
   left: 0;
-  border-radius: 21px;
+  /* Fully rounded, so its own corners match the bar's curve. */
+  border-radius: 999px;
   background: var(--fabnav-pill);
   border: 1px solid var(--fabnav-pill-edge);
   box-shadow:
@@ -644,8 +665,11 @@ main {
 }
 
 .fabnav-link {
-  /* 44px is the accessible minimum hit area; the visual chrome around it is
-     deliberately restrained so the bar does not look oversized. */
+  /* Comfortably past the 44px accessible minimum, and tall enough to fill the
+     64px bar so the taller control does not leave dead space above the icons.
+     Raised from 52px on 2026-10-03 alongside --fabnav-h; each tab is now ~66px
+     wide x 58px tall, so Hem and Spelare are as easy to hit as the middle
+     tabs. */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -663,9 +687,7 @@ main {
    * `pan-y` hands the vertical axis back to the browser while keeping the
    * horizontal axis for our swipe, which is what a bottom bar should do. */
   touch-action: pan-y;
-  /* Comfortably past the 44px accessible minimum, and tall enough to fill the
-     58px bar so the taller control does not leave dead space above the icons. */
-  min-height: 52px;
+  min-height: 58px;
   padding: 5px 2px;
   color: var(--text-3);
   text-decoration: none;
@@ -1847,7 +1869,21 @@ main {
 .sheet {
   position: relative;
   width: 100%;
-  max-height: min(88dvh, calc(100dvh - var(--s5)));
+  /* Bounded by the space the floating nav leaves, not by a fixed fraction.
+   *
+   * It used to be `min(88dvh, 100dvh - var(--s5))`, which ignores the nav
+   * entirely. When the bar grew from 58px to 64px that ceiling stayed the
+   * same, so a tall sheet no longer fitted between the top of the screen and
+   * the nav: measured on a 390x844 device, the sheet's top edge sat at
+   * y = -16px, putting its drag grabber at y = -5px — OFF SCREEN. A touch
+   * aimed at the grabber therefore landed on nothing and the sheet did not
+   * move at all.
+   *
+   * The sheet must occupy at most the band above the nav. `--chrome-bottom`
+   * is the nav's real occupied height, so subtracting it here keeps the sheet
+   * inside the visible area by construction, and it tracks the bar
+   * automatically if the bar's height changes again. */
+  max-height: min(88dvh, calc(100dvh - var(--chrome-bottom)));
   display: flex;
   flex-direction: column;
   /* The sheet must not sit UNDER the floating nav. The nav occupies

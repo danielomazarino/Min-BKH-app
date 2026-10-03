@@ -179,6 +179,30 @@ export async function dragIndicatorBeyondFirstStop(
   return { before, atRelease: await renderedPillX(page), y, startX };
 }
 
+/**
+ * The furthest RIGHT the pill may legitimately sit, in track-local px.
+ *
+ * Read from the rendered bar rather than hardcoded. These assertions used to
+ * carry a literal `206`, which was only correct for the previous 260px bar
+ * with no inset — widening the bar or insetting the pill silently turned a
+ * real clamp check into a false failure (or worse, a false pass).
+ *
+ * The bound is derived from what the pill is actually allowed to occupy: the
+ * bar's content box, inset by the same amount the stops use.
+ */
+export async function maxPillX(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const nav = document.querySelector(".fabnav") as HTMLElement;
+    const pill = document.querySelector('[data-testid="fabnav-pill"]') as HTMLElement;
+    const cs = getComputedStyle(nav);
+    const border = parseFloat(cs.borderLeftWidth) || 0;
+    const inset = parseFloat(getComputedStyle(pill).top) || 0;
+    const track = nav.clientWidth - border;
+    const pillW = pill.offsetWidth;
+    return inset + Math.max(0, track - pillW - inset * 2);
+  });
+}
+
 /** Push the indicator against the LAST tab's clamp. */
 export async function dragIndicatorBeyondLastStop(
   page: Page,

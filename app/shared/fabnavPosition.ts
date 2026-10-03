@@ -62,23 +62,46 @@ export const DRAG_THRESHOLD_PX = 8;
  * the rendered layout, so it MUST be re-measured after a resize rather than
  * cached — a stale array is how an indicator ends up one tab out.
  *
- * The indicator is one tab wide, so the first entry is always 0 and the last is
- * `trackWidth - indicatorWidth`. Those two facts are what make clamping
- * possible at all.
+ * `inset` keeps the indicator clear of the bar's rounded corners. The bar is
+ * `position: fixed` with a 1px border and a 24px radius; without an inset the
+ * first and last stops place the indicator's square corners out past the
+ * curve, which is visible as the pill protruding beyond the frame. Found on a
+ * real iPhone at Spelare, the right-most tab.
+ *
+ * The indicator is one tab wide minus one inset each side, so centring it on a
+ * tab still centres it on that tab's icon and label. With the defaults
+ * (`inset = 0`, indicator exactly one tab) this is the plain even-spacing rule.
  */
-export function tabStops(count: number, trackWidth: number, indicatorWidth: number): number[] {
-  if (count <= 0) return [0];
-  const usable = Math.max(0, trackWidth - indicatorWidth);
-  // With a zero-width track every stop collapses to 0; dividing by a zero span
-  // would produce NaN and strand the indicator off-screen.
-  if (count === 1 || usable === 0) return new Array(count).fill(0);
+export function tabStops(
+  count: number,
+  trackWidth: number,
+  indicatorWidth: number,
+  inset = 0,
+): number[] {
+  if (count <= 0) return [inset];
+  const usable = Math.max(0, trackWidth - indicatorWidth - inset * 2);
+  // With a zero-width track every stop collapses to the inset; dividing by a
+  // zero span would produce NaN and strand the indicator off-screen.
+  if (count === 1 || usable === 0) return new Array(count).fill(inset);
   const step = usable / (count - 1);
-  return new Array(count).fill(0).map((_, i) => i * step);
+  return new Array(count).fill(0).map((_, i) => inset + i * step);
 }
 
-/** Clamp a position to the track, so the indicator cannot leave the bar. */
-export function clampToTrack(x: number, trackWidth: number, indicatorWidth: number): number {
-  return clamp(x, 0, Math.max(0, trackWidth - indicatorWidth));
+/**
+ * Clamp a position to the track, so the indicator cannot leave the bar.
+ *
+ * The bounds are inset by the same amount as the stops, so the indicator is
+ * clamped to the same region it is allowed to rest in.
+ */
+export function clampToTrack(
+  x: number,
+  trackWidth: number,
+  indicatorWidth: number,
+  inset = 0,
+): number {
+  const min = inset;
+  const max = inset + Math.max(0, trackWidth - indicatorWidth - inset * 2);
+  return clamp(x, min, max);
 }
 
 /**
