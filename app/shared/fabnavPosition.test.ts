@@ -8,7 +8,10 @@ import {
   serialiseDock,
   DEFAULT_DOCK,
   DRAG_THRESHOLD_PX,
+  DRAG_GRACE_MS,
   HOLD_MS,
+  HOLD_MS_IOS,
+  holdMsFor,
   type Dock,
   type Track,
 } from "./fabnavPosition";
@@ -254,5 +257,54 @@ describe("gesture constants", () => {
     // starts to feel like a wait.
     expect(HOLD_MS).toBeGreaterThanOrEqual(200);
     expect(HOLD_MS).toBeLessThanOrEqual(400);
+  });
+});
+
+describe("holdMsFor — iOS must not be made to wait", () => {
+  const IPHONE = { platform: "iPhone", maxTouchPoints: 5 };
+  const IPAD = { platform: "MacIntel", maxTouchPoints: 5 };
+  const ANDROID = { platform: "Linux armv8l", maxTouchPoints: 5 };
+  const DESKTOP_MAC = { platform: "MacIntel", maxTouchPoints: 0 };
+
+  it("uses the short hold on iPhone and iPad", () => {
+    expect(holdMsFor(IPHONE)).toBe(HOLD_MS_IOS);
+    expect(holdMsFor(IPAD)).toBe(HOLD_MS_IOS);
+  });
+
+  it("uses the longer hold on Android and desktop", () => {
+    expect(holdMsFor(ANDROID)).toBe(HOLD_MS);
+    expect(holdMsFor(DESKTOP_MAC)).toBe(HOLD_MS);
+  });
+
+  /**
+   * The regression this exists for. WebKit raises its link callout after a
+   * stationary press of roughly 500ms, and a callout fires `pointercancel`,
+   * which kills the gesture. A 320ms hold plus a slow first move on a real
+   * thumb landed inside that window, so the bar never moved and the user saw
+   * a context menu instead. `-webkit-touch-callout: none` removes the callout
+   * outright; this short hold is the second layer of defence.
+   */
+  it("keeps the iOS hold well clear of the ~500ms callout threshold", () => {
+    expect(HOLD_MS_IOS).toBeLessThan(200);
+    expect(HOLD_MS_IOS).toBeLessThan(HOLD_MS);
+  });
+
+  it("does not mistake a desktop Mac for an iPad", () => {
+    // iPadOS 13+ reports platform "MacIntel". The only way to tell them apart
+    // is maxTouchPoints — a UA-string check would get this exactly wrong.
+    expect(holdMsFor(DESKTOP_MAC)).toBe(HOLD_MS);
+  });
+
+  it("tolerates a missing or partial navigator", () => {
+    expect(holdMsFor(undefined)).toBe(HOLD_MS);
+    expect(holdMsFor({})).toBe(HOLD_MS);
+    expect(holdMsFor({ platform: undefined, maxTouchPoints: undefined })).toBe(HOLD_MS);
+  });
+
+  it("keeps the grace window short but non-zero", () => {
+    // Zero would mean the first move after promotion reclassifies the gesture;
+    // long enough to feel like lag would defeat the point of starting at all.
+    expect(DRAG_GRACE_MS).toBeGreaterThan(0);
+    expect(DRAG_GRACE_MS).toBeLessThanOrEqual(150);
   });
 });

@@ -403,6 +403,24 @@ main {
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
+  /* iOS SAFARI ONLY — and the reason the drag appeared dead on a real iPhone
+   *
+   * `-webkit-touch-callout` is NOT `user-select`. They suppress different
+   * things, and `user-select: none` alone does NOT stop the callout:
+   *
+   *   user-select: none       -> stops the blue text highlight
+   *   -webkit-touch-callout   -> stops the "Open in New Tab / Add to Home
+   *                             Screen" callout menu
+   *
+   * The bar is five real `<a href>` links, so a press-and-hold on one shows
+   * that callout. When it appears WebKit fires `pointercancel`, which ends the
+   * gesture before the drag can begin — the bar never moves and the user sees
+   * a menu instead. This is invisible in Chromium, which has no such callout,
+   * so emulated tests cannot catch it.
+   *
+   * Verified reasoning, not verified on hardware: this property is
+   * Safari-only and returns nothing at all in Chromium. */
+  -webkit-touch-callout: none;
   /* Promote to its own layer. The bar is dragged with a transform, and
      `will-change: transform` keeps that transform off the main thread's
      layout path for the duration of the gesture. */
@@ -520,6 +538,14 @@ main {
   text-decoration: none;
   border-radius: 18px;
   transition: color var(--dur-tap) ease;
+  /* The callout must be suppressed on the ANCHOR too, not just the <nav>.
+   *
+   * This is the element the thumb actually lands on, and the long-press that
+   * starts a drag begins here. `-webkit-touch-callout` is not inherited, so
+   * declaring it only on `.fabnav` would leave every link showing the iOS
+   * callout menu — exactly the same trap as `touch-action` below, and for the
+   * same reason. */
+  -webkit-touch-callout: none;
 }
 
 .fabnav-icon {

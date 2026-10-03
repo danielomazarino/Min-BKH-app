@@ -173,6 +173,54 @@ margins, stays below the header, persists across reload, and stays legal after
 rotation. **Not yet verified on real iOS or Android hardware** — the long-press
 timing in particular needs a human check with a thumb.
 
+### E-012 · The drag still did not work on iOS — the callout ate the gesture
+
+**Status:** FIXED · **Found 2026-10-03 · Cause reasoned, not yet confirmed on
+hardware**
+
+Human testing after the E-010 deploy: tapping worked, dragging still did not on
+iOS. Chromium was green throughout, which is the trap this repo has already
+fallen into once (E-004).
+
+**Three iOS-specific defects, none of which Chromium can reproduce:**
+
+1. **The link callout (the primary cause).** WebKit raises an "Open in New Tab
+   / Add to Home Screen" menu after a stationary press on a **link** — roughly
+   500ms. The bar is five real `<a href>` elements, so a press-and-hold landed
+   on one by construction. The callout fires `pointercancel`, which ends the
+   gesture before a drag can begin: the bar never moves and the user gets a
+   menu instead. `-webkit-touch-callout: none` now suppresses it, declared on
+   **both** `.fabnav` and `.fabnav-link` because the property is not inherited
+   and the link is what the thumb touches — the same trap as `touch-action`.
+
+2. **A hold long enough to invite it.** The 320ms hold was chosen for
+   disambiguation, not with the callout in mind. On iOS the hold is now
+   `HOLD_MS_IOS = 90ms`, chosen by capability (`maxTouchPoints > 1` plus a Mac
+   platform) rather than user-agent, because **iPadOS 13+ reports as
+   "MacIntel"** and a UA check would miss exactly the devices most likely to be
+   used two-handed.
+
+3. **A cancelled drag stranded the bar.** `pointercancel` returned early,
+   leaving a stale `translate3d` with no `left`/`top` to fall back on — the
+   "it half-moved then stopped" symptom. A cancel now settles to a legal
+   position and never carries momentum into an edge snap.
+
+Also corrected: `measureTrack` used `window.innerHeight`, which on iOS Safari
+reports the viewport with toolbars **hidden**, so the travel band was larger
+than the visible area. It now prefers `visualViewport.height`.
+
+**Why Chromium could not catch any of this:** it has no link callout, so
+emulated touch never produces one; and `innerHeight` equals the visible height
+there. The regression tests therefore assert the *contract* — the property
+ships in the CSS, the hold is far below 500ms — rather than claiming the
+hardware behaviour is fixed. Note the CSS assertion had to read the
+stylesheet **text**: Chromium parses `-webkit-touch-callout` as unknown and
+drops it, so it never appears in `rule.cssText`.
+
+**STILL NOT VERIFIED ON REAL iPhone/iPad.** The reasoning is specific and
+testable by hand, but "reasoned from documented WebKit behaviour" is not
+"observed". Needs a thumb on a real device before this can be called done.
+
 ### E-011 · A green workflow run does not mean the Gemini probe succeeded
 
 **Status:** RESOLVED (recorded 2026-10-03) · **Affects:** operational reading

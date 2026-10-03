@@ -68,9 +68,9 @@ import {
 import { DESTINATIONS, clampIndex, hrefFor, type Destination } from "./nav";
 import {
   DRAG_THRESHOLD_PX,
-  HOLD_MS,
   DEFAULT_DOCK,
   dockFromPointer,
+  holdMsFor,
   leftFor,
   parseDock,
   serialiseDock,
@@ -137,6 +137,26 @@ function stopNextClick(nav: HTMLElement | null) {
 }
 
 /**
+ * The height the bar should be measured against.
+ *
+ * `window.innerHeight` is WRONG on iOS Safari and is the classic reason a
+ * fixed bottom bar drifts or clamps wrongly there. When Safari's toolbars
+ * expand and collapse, `innerHeight` reports the LARGEST viewport (toolbars
+ * hidden), while the visible area is smaller. Using it makes the bar believe
+ * there is more room than the user can see, so the drag's travel band is
+ * wrong and the resting position can sit under the browser chrome.
+ *
+ * `visualViewport.height` is the actually-visible height and tracks the
+ * toolbars as they collapse. `window.innerHeight` is kept only as a fallback
+ * for engines without visualViewport.
+ */
+function visibleHeight(): number {
+  const vv = window.visualViewport;
+  if (vv && Number.isFinite(vv.height) && vv.height > 0) return vv.height;
+  return window.innerHeight;
+}
+
+/**
  * Measure the space the bar may move through, and the insets it must respect.
  *
  * Read from the DOM rather than hard-coded, because the bar's own width and
@@ -156,7 +176,7 @@ function measureTrack(nav: HTMLElement): {
   const travelX = Math.max(0, window.innerWidth - r.width - minMargin * 2);
   // The vertical band runs from the top inset down to the resting bottom
   // position, so the bar's own height cancels out of the arithmetic.
-  const restTop = window.innerHeight - parseFloat(cs.bottom || "0") - r.height;
+  const restTop = visibleHeight() - parseFloat(cs.bottom || "0") - r.height;
   const travelY = Math.max(0, restTop - topInset);
   return { track: { travelX, travelY }, minMargin, topInset };
 }
@@ -195,10 +215,11 @@ export function FloatingTabBar({
    *   "pending" — finger down, not yet decided
    *   "swipe"   — decided: change destination, bar stays put
    *   "move"    — decided: reposition the bar
+   *   "none"    — released back to the page (a vertical scroll); we are done
    */
   const drag = useRef({
     live: false,
-    mode: "pending" as "pending" | "swipe" | "move",
+    mode: "pending" as "pending" | "swipe" | "move" | "none",
     startX: 0,
     startY: 0,
     /** Where in the bar the finger landed, so a pickup does not jump it. */
@@ -209,6 +230,11 @@ export function FloatingTabBar({
     lastX: 0,
     lastY: 0,
     lastT: 0,
+    /**
+     * When the drag was promoted, used for the grace window. A move inside it
+     * is still treated as part of the drag rather than as a navigation swipe.
+     */
+    movedAt: 0,
     /**
      * The bar's resting left/top at the moment it was picked up. The live
      * drag is expressed as a transform RELATIVE to these, so `left`/`top`
@@ -270,6 +296,7 @@ export function FloatingTabBar({
     const nav = navRef.current;
     if (!nav) return;
     drag.current.mode = "move";
+    drag.current.movedAt = performance.now();
     // Haptic confirmation, where the platform offers it. Absent on iOS
     // Safari and in most desktop browsers, which is fine — it is an
     // enhancement, never the only signal that the drag started.
@@ -322,11 +349,15 @@ export function FloatingTabBar({
     // Arm the long press. This is the whole disambiguation: if the timer fires
     // while the finger is still down and has barely moved, the gesture is a
     // reposition rather than a flick or a tap.
+    //
+    // The duration is platform-aware — see `holdMsFor`. On iOS a long press
+    // would raise the link callout, so it is kept very short there and the
+    // callout is suppressed in CSS instead.
     clearHold();
     holdTimer.current = window.setTimeout(() => {
       holdTimer.current = null;
       if (drag.current.live && drag.current.mode === "pending") beginMove();
-    }, HOLD_MS);
+    }, holdMsFor(typeof navigator === "undefined" ? undefined : navigator));
   };
 
   const onPointerMove = useCallback(
@@ -384,18 +415,41 @@ export function FloatingTabBar({
         return;
       }
 
-      // Still "pending": decide only once the finger has clearly moved.
+      // Still "pending": decide what this movement means.
+      //
+      // A horizontal drag is only committed to the bar if it started
+      // decisively HORIZONTALLY. Vertical is left to the page (so the bar
+      // never steals a scroll), and a gesture that began as a swipe keeps
+      // being a swipe — which is what preserves the existing
+      // flick-to-navigate behaviour that ~10 existing e2e tests depend on.
       const dx = e.clientX - d.startX;
       const dy = e.clientY - d.startY;
       if (Math.abs(dx) < DRAG_THRESHOLD_PX && Math.abs(dy) < DRAG_THRESHOLD_PX) return;
 
-      // Movement before the hold fired means the user is flicking to navigate,
-      // not picking the bar up. Any real travel disqualifies the pending state,
-      // so a late timer cannot hijack a swipe.
-      clearHold();
-      d.mode = "swipe";
-      d.dx = dx;
-      setArmed(true);
+      // Predominantly horizontal travel. Depending on whether the hold already
+      // fired, this either starts a drag or becomes a navigation swipe.
+      if (Math.abs(dx) > Math.abs(dy) * 1.2) {
+        // The hold already promoted us to `move`; nothing to do here.
+        if (d.mode === "pending") {
+          // Not yet promoted and the finger is already travelling: commit to a
+          // swipe, exactly as before. A fast flick should never be mistaken
+          // for an attempt to pick the bar up.
+          d.mode = "swipe";
+          d.dx = dx;
+          setArmed(true);
+          return;
+        }
+        return;
+      }
+
+      // Predominantly VERTICAL travel: this is a page scroll, not ours. Give
+      // the gesture back to the browser and stop tracking entirely, otherwise
+      // we would keep calling preventDefault and block the scroll.
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        d.live = false;
+        clearHold();
+        d.mode = "none";
+      }
     },
     [clearHold],
   );
@@ -409,12 +463,24 @@ export function FloatingTabBar({
 
       if (wasMode === "move" && nav) {
         const { track, minMargin, topInset } = measureTrack(nav);
-        // The absolute position was written to data attributes during the drag;
-        // convert it back into a dock so it can be persisted as ratios.
+        /**
+         * A CANCELLED drag must still settle somewhere legal.
+         *
+         * `pointercancel` is how iOS ends a gesture it has decided to take
+         * over — including the case where the link callout appeared before
+         * `-webkit-touch-callout: none` was applied. If a cancelled drag just
+         * returned early, the bar would be left stranded mid-gesture with a
+         * stale `translate3d` and no `left`/`top` to fall back on, which is
+         * exactly the "it half-moved then stopped" symptom.
+         *
+         * When the drag never produced a position there is nothing to settle,
+         * so it simply returns to its resting place.
+         */
         const absLeft = Number(nav.dataset.dragLeft);
         const absTop = Number(nav.dataset.dragTop);
-        const rawX = (Number.isFinite(absLeft) ? absLeft : minMargin) - minMargin;
-        const rawY = (Number.isFinite(absTop) ? absTop : topInset) - topInset;
+        const hasPosition = Number.isFinite(absLeft) && Number.isFinite(absTop);
+        const rawX = (hasPosition ? absLeft : minMargin) - minMargin;
+        const rawY = (hasPosition ? absTop : topInset) - topInset;
         const edge: Dock["edge"] = track.travelX > 0 && rawX > track.travelX / 2 ? "right" : "left";
         const ratioX = track.travelX > 0 ? Math.min(1, Math.max(0, rawX / track.travelX)) : 0;
         const live: Dock = {
@@ -422,7 +488,9 @@ export function FloatingTabBar({
           x: edge === "left" ? ratioX : 1 - ratioX,
           y: track.travelY > 0 ? Math.min(1, Math.max(0, rawY / track.travelY)) : 1,
         };
-        const rest = settle(live, commitIt ? d.v : 0, track);
+        // Only a genuine release carries momentum. A cancel must NOT snap to
+        // an edge from a stale velocity reading — it should rest where it was.
+        const rest = commitIt ? settle(live, d.v, track) : live;
         dockRef.current = rest;
         delete nav.dataset.dragLeft;
         delete nav.dataset.dragTop;

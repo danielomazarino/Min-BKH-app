@@ -205,10 +205,55 @@ export const DRAG_THRESHOLD_PX = 8;
 /**
  * How long the finger must rest before a press becomes a drag, in ms.
  *
- * This is the load-bearing number in the interaction: it lets a short
- * horizontal flick still change destination while a press-and-hold moves the
- * bar, which is the same disambiguation iOS uses for home-screen icons. Long
- * enough that a deliberate press is unambiguous, short enough not to feel
- * like a wait.
+ * IMPORTANT — THIS IS NOW PLATFORM-DEPENDENT, AND THAT IS THE POINT.
+ * An earlier version used a single flat 320ms for every platform, chosen so a
+ * deliberate press would be unambiguous. On iOS that was actively harmful:
+ *
+ *  - WebKit shows its "Open in New Tab / Add to Home Screen" callout after a
+ *    stationary press on a LINK, at roughly 500ms.
+ *  - The bar is five real `<a href>` elements, so a press-and-hold lands on
+ *    one by construction.
+ *  - The callout fires `pointercancel`, which ends the gesture before the drag
+ *    can start. The user sees a context menu, not a moving bar.
+ *
+ * So the hold exists only to disambiguate on platforms that need it, and iOS
+ * gets a much shorter one. iOS is safe with a short hold because
+ * `-webkit-touch-callout: none` (see theme.css) removes the callout entirely;
+ * the grace window below then covers a slightly slow first move.
+ *
+ * Do not raise the iOS value. It is the one number standing between a working
+ * drag and a context menu on the platform where it failed first.
  */
 export const HOLD_MS = 320;
+
+/** The hold used on iOS/iPadOS, where a long press raises a link callout. */
+export const HOLD_MS_IOS = 90;
+
+/**
+ * Pick the hold duration for the current platform.
+ *
+ * Detection is by capability, not user-agent string: iPadOS 13+ reports as
+ * Macintosh, so a UA test would miss exactly the devices most likely to be
+ * held in landscape with a keyboard. `navigator.maxTouchPoints > 1` alongside
+ * a Mac platform is the standard, durable way to spot it.
+ */
+export function holdMsFor(nav: { platform?: string; maxTouchPoints?: number } | undefined): number {
+  const p = typeof nav?.platform === "string" ? nav.platform : "";
+  const touch = nav?.maxTouchPoints ?? 0;
+  const isIPhone = /iPhone|iPod/.test(p);
+  // iPadOS 13+ masquerades as "MacIntel" but is still touch-capable.
+  const isIPad = /Mac/i.test(p) && touch > 1;
+  return isIPhone || isIPad ? HOLD_MS_IOS : HOLD_MS;
+}
+
+/**
+ * A short window after the drag starts during which the bar still tracks the
+ * finger, before a move is finally treated as a navigation swipe.
+ *
+ * Without it, the first `pointermove` after the hold fires would immediately
+ * be classified as a swipe, because `onPointerMove` checks the axis as soon as
+ * the finger has travelled DRAG_THRESHOLD_PX. On iOS that window is also the
+ * period where the very first move event tends to be large, so the gesture
+ * could flip back out of the drag on its first frame.
+ */
+export const DRAG_GRACE_MS = 90;
