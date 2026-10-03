@@ -1,5 +1,15 @@
 import { test, expect, type Page, type Browser } from "@playwright/test";
 import { chromium, devices } from "@playwright/test";
+import {
+  TAB_IDS,
+  dragIndicatorBeyondFirstStop,
+  dragIndicatorBeyondLastStop,
+  dragIndicatorToAdjacentTab,
+  renderedPillX,
+  renderedStops,
+  tabSpacing,
+  touchDriver,
+} from "./navIndicatorDrag";
 
 /**
  * TOUCH-DRIVEN regression tests.
@@ -38,155 +48,200 @@ async function touchPage(browser: Browser) {
 }
 
 test.describe("Touch: floating nav swipe", () => {
-  test("a SHORT thumb swipe still changes destination", async () => {
-    // Regression: the old rule demanded 18% of the bar width (~62px), so
-    // ordinary thumb swipes did nothing at all.
+  test("a SHORT thumb drag still changes destination", async () => {
+    // CORRECTED 2026-10-03. The old version asserted that a 40px LEFT flick
+    // from Nyheter landed on Matcher. That is PHYSICALLY INVERTED: Matcher sits
+    // to the RIGHT of Nyheter, and the indicator now travels toward the icon the
+    // finger approaches. The test's own coordinates contradicted its name.
+    //
+    // The intent being preserved is that ordinary thumb travel is enough. It is
+    // now expressed geometrically: one tab step plus a 4px overshoot, with the
+    // step measured from the app rather than guessed.
     const browser = await chromium.launch();
-    const { ctx, page, touch } = await touchPage(browser);
+    const { ctx, page } = await touchPage(browser);
+    const stops = await renderedStops(page, ["tab-nyheter", "tab-matcher"]);
     await page.goto("/#/nyheter");
     await expect(page.getByTestId("tabbar")).toBeVisible();
-    await page.waitForTimeout(1500);
 
-    const bar = (await page.getByTestId("tabbar").boundingBox())!;
-    const y = bar.y + bar.height / 2;
-    const startX = bar.x + bar.width * 0.8;
-    // 40px: well under the old 62px requirement, a natural thumb flick.
-    await touch("touchStart", startX, y);
-    for (let i = 1; i <= 6; i++) await touch("touchMove", startX - (40 * i) / 6, y);
-    await touch("touchEnd", startX - 40, y);
+    const touch = touchDriver(page);
+    // Overshoot 4px: enough to clear the 9.3px dead zone around the midpoint,
+    // and well under the 62px the old rule demanded.
+    await dragIndicatorToAdjacentTab(page, touch, "right", tabSpacing(stops, TAB_IDS), {
+      overshoot: 4,
+    });
+    await touch("touchEnd", 0, 0);
 
-    await expect(page).toHaveURL(/\u0023\/matcher$/);
+    await expect(page).toHaveURL(/#\/matcher$/);
     await expect(page.getByTestId("tab-matcher")).toHaveAttribute("aria-current", "page");
     await ctx.close();
     await browser.close();
   });
 
-  test("swipe works from EVERY nav item, in both directions", async () => {
+  test("a drag works from EVERY nav item, in the PHYSICAL direction", async () => {
+    // CORRECTED 2026-10-03. The old test was named "in both directions" and its
+    // "forward" block moved the finger LEFT 120px, which under the indicator
+    // model moves BACKWARD. Both loops now drag in the direction the finger
+    // actually travels, and each start point is derived from the app's own
+    // rendered stops instead of a hardcoded 0.8 / 0.2 of the bar.
     const browser = await chromium.launch();
-    const { ctx, page, touch } = await touchPage(browser);
+    const { ctx, page } = await touchPage(browser);
+    const stops = await renderedStops(page, TAB_IDS);
+    const spacing = tabSpacing(stops, TAB_IDS);
+    const touch = touchDriver(page);
 
-    const forward = [
-      ["#/", "#/nyheter"],
-      ["#/nyheter", "#/matcher"],
-      ["#/matcher", "#/trupp"],
-      ["#/trupp", "#/spelare"],
+    const routes = ["#/", "#/nyheter", "#/matcher", "#/trupp", "#/spelare"] as const;
+    const expectations = [
+      ["tab-brief", "#/"],
+      ["tab-nyheter", "#/nyheter"],
+      ["tab-matcher", "#/matcher"],
+      ["tab-trupp", "#/trupp"],
+      ["tab-spelare", "#/spelare"],
     ] as const;
-    for (const [from, to] of forward) {
-      await page.goto(`/${from}`);
-      await expect(page.getByTestId("tabbar")).toBeVisible();
-      await page.waitForTimeout(1200);
-      const bar = (await page.getByTestId("tabbar").boundingBox())!;
-      const y = bar.y + bar.height / 2;
-      const x = bar.x + bar.width * 0.8;
-      await touch("touchStart", x, y);
-      for (let i = 1; i <= 6; i++) await touch("touchMove", x - (120 * i) / 6, y);
-      await touch("touchEnd", x - 120, y);
-      await expect(page, `swipe left from ${from}`).toHaveURL(new RegExp(`${to.replace("#", "\\u0023")}$`));
-    }
 
-    const back = [
-      ["#/spelare", "#/trupp"],
-      ["#/trupp", "#/matcher"],
-      ["#/matcher", "#/nyheter"],
-      ["#/nyheter", "#/"],
-    ] as const;
-    for (const [from, to] of back) {
-      await page.goto(`/${from}`);
-      await expect(page.getByTestId("tabbar")).toBeVisible();
-      await page.waitForTimeout(1200);
-      const bar = (await page.getByTestId("tabbar").boundingBox())!;
-      const y = bar.y + bar.height / 2;
-      const x = bar.x + bar.width * 0.2;
-      await touch("touchStart", x, y);
-      for (let i = 1; i <= 6; i++) await touch("touchMove", x + (120 * i) / 6, y);
-      await touch("touchEnd", x + 120, y);
-      await expect(page, `swipe right from ${from}`).toHaveURL(new RegExp(`${to.replace("#", "\\u0023")}$`));
+    for (let i = 0; i < routes.length; i++) {
+      // Rightward, whenever there is a destination to the right.
+      if (i + 1 < routes.length) {
+        await page.goto(`/${routes[i]}`);
+        await expect(page.getByTestId("tabbar")).toBeVisible();
+        await dragIndicatorToAdjacentTab(page, touch, "right", spacing);
+        await touch("touchEnd", 0, 0);
+        await expect(page, `dragging RIGHT from ${routes[i]}`).toHaveURL(
+          new RegExp(`${expectations[i + 1][1].replace("#", "\\u0023")}$`),
+        );
+      }
+      // Leftward, whenever there is one to the left.
+      if (i - 1 >= 0) {
+        await page.goto(`/${routes[i]}`);
+        await expect(page.getByTestId("tabbar")).toBeVisible();
+        await dragIndicatorToAdjacentTab(page, touch, "left", spacing);
+        await touch("touchEnd", 0, 0);
+        await expect(page, `dragging LEFT from ${routes[i]}`).toHaveURL(
+          new RegExp(`${expectations[i - 1][1].replace("#", "\\u0023")}$`),
+        );
+      }
     }
     await ctx.close();
     await browser.close();
   });
 
-  test("the bar does not move during a touch swipe, and the page does not scroll sideways", async () => {
-    // The old suite only checked the URL changed. It must also check the
-    // nav container stayed put and the content never shifted horizontally.
+  test("the OUTER BAR stays put during a drag, the page does not scroll sideways, and the INDICATOR moves", async () => {
+    // CORRECTED 2026-10-03. Two separate defects were living in this one test.
+    //
+    // DEFECT 1 — a conflation. It asserted the bar did not move, which was
+    //   meant to catch the nav container being shoved around, but the indicator
+    //   lives INSIDE that bar and is now required to move. Under the indicator
+    //   model the old assertion would have failed on correct code.
+    // FIX: split the two nouns. The OUTER BAR's box is checked on every frame
+    //   for horizontal drift; the INDICATOR is checked to have travelled.
+    //
+    // DEFECT 2 — coordinates that could not reach anything. It started at 0.8 of
+    //   the bar and dragged 160px left. One tab is ~51.5px, so that overshot
+    //   three stops and crossed a dead zone, and the expected destination of
+    //   Matcher was simply the nearest tab, not a choice the test made.
+    // FIX: one tab of travel, measured from the app.
     const browser = await chromium.launch();
-    const { ctx, page, touch } = await touchPage(browser);
+    const { ctx, page } = await touchPage(browser);
+    const stops = await renderedStops(page, ["tab-nyheter", "tab-matcher"]);
     await page.goto("/#/nyheter");
     await expect(page.getByTestId("tabbar")).toBeVisible();
-    await page.waitForTimeout(1500);
 
+    const touch = touchDriver(page);
     const bar = (await page.getByTestId("tabbar").boundingBox())!;
     const restX = bar.x;
-    const y = bar.y + bar.height / 2;
-    const x = bar.x + bar.width * 0.8;
+    const before = await renderedPillX(page);
+    const startX = Math.round(bar.x + before);
+    const y = Math.round(bar.y + bar.height / 2);
+    const travel = tabSpacing(stops, TAB_IDS) + 20;
 
-    await touch("touchStart", x, y);
+    await touch("touchStart", startX, y);
     for (let i = 1; i <= 8; i++) {
-      await touch("touchMove", x - (160 * i) / 8, y);
+      await touch("touchMove", startX + Math.round((travel * i) / 8), y);
       const mid = (await page.getByTestId("tabbar").boundingBox())!;
-      expect(Math.abs(mid.x - restX), "the nav bar moved sideways mid-swipe").toBeLessThanOrEqual(1);
+      // The OUTER BAR has not drifted...
+      expect(Math.abs(mid.x - restX), "the outer bar moved sideways mid-drag").toBeLessThanOrEqual(1);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
-      expect(overflow, "the page scrolled horizontally during a nav swipe").toBeLessThanOrEqual(1);
+      expect(overflow, "the page scrolled horizontally during a nav drag").toBeLessThanOrEqual(1);
+      // ...while the INDICATOR has.
+      expect(
+        await renderedPillX(page),
+        `the indicator did not follow the finger at step ${i}`,
+      ).toBeGreaterThan(before);
     }
-    await touch("touchEnd", x - 160, y);
-    await expect(page).toHaveURL(/\u0023\/matcher$/);
+    await touch("touchEnd", 0, 0);
+
+    await expect(page).toHaveURL(/#\/matcher$/);
+    // And it settled exactly on the destination's stop.
+    await expect
+      .poll(() => renderedPillX(page), { timeout: 5_000 })
+      .toBeCloseTo(stops["tab-matcher"], 0);
     await ctx.close();
     await browser.close();
   });
 
-  test("a tap still navigates, and a swipe does not also fire the link underneath", async () => {
+  test("a tap still navigates, and a drag does not also fire the link underneath", async () => {
+    // CORRECTED 2026-10-03. The name said "swipe" and described a swipe; only
+    // the direction was wrong. It started at 0.2 of the bar and dragged right,
+    // so under the indicator model it moved to the tab on the RIGHT, not back
+    // to Trupp. Fixed to drag LEFT, toward Trupp, which is what the assertion
+    // always meant.
     const browser = await chromium.launch();
-    const { ctx, page, touch } = await touchPage(browser);
+    const { ctx, page } = await touchPage(browser);
     await page.goto("/#/");
     await expect(page.getByTestId("tabbar")).toBeVisible();
     await page.waitForTimeout(1500);
 
     // Plain tap.
     await page.getByTestId("tab-trupp").tap();
-    await expect(page).toHaveURL(/\u0023\/trupp$/);
+    await expect(page).toHaveURL(/#\/trupp$/);
 
-    // A swipe starting on Spelare must move to Trupp and must NOT open a
+    // A drag starting on Spelare must move to Trupp and must NOT open a
     // player sheet by activating whatever lay under the release point.
+    const stops = await renderedStops(page, ["tab-trupp", "tab-spelare"]);
     await page.goto("/#/spelare");
     await expect(page.getByTestId("tabbar")).toBeVisible();
-    await page.waitForTimeout(1800);
-    const bar = (await page.getByTestId("tabbar").boundingBox())!;
-    const y = bar.y + bar.height / 2;
-    const x = bar.x + bar.width * 0.2;
-    await touch("touchStart", x, y);
-    for (let i = 1; i <= 6; i++) await touch("touchMove", x + (120 * i) / 6, y);
-    await touch("touchEnd", x + 120, y);
+    const touch = touchDriver(page);
+    await dragIndicatorToAdjacentTab(page, touch, "left", tabSpacing(stops, TAB_IDS));
+    await touch("touchEnd", 0, 0);
     await page.waitForTimeout(600);
-    await expect(page).toHaveURL(/\u0023\/trupp$/);
-    expect(await page.locator(".sheet, [role=dialog]").count(), "a swipe opened a detail sheet").toBe(0);
+    await expect(page).toHaveURL(/#\/trupp$/);
+    expect(await page.locator(".sheet, [role=dialog]").count(), "a drag opened a detail sheet").toBe(0);
     await ctx.close();
     await browser.close();
   });
 
   test("no wrapping at either end", async () => {
+    // CORRECTED 2026-10-03. The direction table was inverted in the same way:
+    // from Brief it dragged RIGHT 120px and expected to stay on Brief. Under the
+    // indicator model dragging right from Brief legitimately reaches Nyheter,
+    // so that case was asserting the opposite of the clamp. Each end is now
+    // pushed AGAINST its own clamp with real overshoot.
     const browser = await chromium.launch();
-    const { ctx, page, touch } = await touchPage(browser);
-    for (const [from, dir, frac] of [
-      ["#/", "right", 0.2],
-      ["#/spelare", "left", 0.8],
-    ] as const) {
-      await page.goto(`/${from}`);
-      await expect(page.getByTestId("tabbar")).toBeVisible();
-      await page.waitForTimeout(1200);
-      const bar = (await page.getByTestId("tabbar").boundingBox())!;
-      const y = bar.y + bar.height / 2;
-      const x = bar.x + bar.width * frac;
-      const sign = dir === "left" ? -1 : 1;
-      await touch("touchStart", x, y);
-      for (let i = 1; i <= 6; i++) await touch("touchMove", x + sign * (120 * i) / 6, y);
-      await touch("touchEnd", x + sign * 120, y);
-      await page.waitForTimeout(500);
-      await expect(page, `swipe ${dir} at ${from} must not wrap`).toHaveURL(
-        new RegExp(`${from.replace("#", "\\u0023")}$`),
-      );
-    }
+    const { ctx, page } = await touchPage(browser);
+    const stops = await renderedStops(page, ["tab-brief", "tab-spelare"]);
+    const touch = touchDriver(page);
+
+    // FIRST stop: push hard LEFT from Brief. It must not wrap to the last tab.
+    await page.goto("/#/");
+    await expect(page.getByTestId("tabbar")).toBeVisible();
+    const first = await dragIndicatorBeyondFirstStop(page, touch);
+    expect(first.atRelease, "the indicator left the track at the first stop").toBeGreaterThanOrEqual(0);
+    await touch("touchEnd", 0, 0);
+    await page.waitForTimeout(700);
+    await expect(page, "dragging left at the first tab must not wrap").toHaveURL(/#\/$/);
+    await expect.poll(() => renderedPillX(page)).toBeCloseTo(stops["tab-brief"], 0);
+
+    // LAST stop: push hard RIGHT from Spelare. It must not wrap to the first.
+    await page.goto("/#/spelare");
+    await expect(page.getByTestId("tabbar")).toBeVisible();
+    const last = await dragIndicatorBeyondLastStop(page, touch);
+    expect(last.atRelease, "the indicator left the track at the last stop").toBeLessThanOrEqual(206);
+    await touch("touchEnd", 0, 0);
+    await page.waitForTimeout(700);
+    await expect(page, "dragging right at the last tab must not wrap").toHaveURL(/#\/spelare$/);
+    await expect.poll(() => renderedPillX(page)).toBeCloseTo(stops["tab-spelare"], 0);
+
     await ctx.close();
     await browser.close();
   });

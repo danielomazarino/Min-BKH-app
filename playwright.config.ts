@@ -24,5 +24,35 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 60000,
   },
-  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
+  projects: [
+    { name: "chromium", use: { browserName: "chromium" } },
+    // WHY WEBKIT IS A SEPARATE PROJECT NOW
+    //
+    // The nav swipe is the feature most likely to differ between engines, and
+    // Chromium alone cannot see WebKit's behaviour. WebKit here is Playwright's
+    // WebKit build, which is much closer to real iOS Safari than Chromium is —
+    // though still not the same thing.
+    //
+    // WHAT THIS IS NOT: native gesture verification. Playwright's CDP touch
+    // injection is Chromium-only (`newCDPSession` throws in WebKit), so in the
+    // WebKit project the touch helper dispatches synthetic PointerEvents.
+    // Synthetic events exercise the app's own logic and WebKit's CSS and event
+    // handling, but they bypass WebKit's NATIVE gesture recognition — the
+    // layer that decides scroll-versus-drag and raises the link callout.
+    //
+    // So a green WebKit run is evidence about OUR LOGIC, not about iOS. Only a
+    // real iPhone can verify the gesture itself. See docs/ENHANCEMENTS.md.
+    {
+      name: "webkit",
+      use: {
+        browserName: "webkit",
+        // A phone-sized viewport, and touch, so the media queries and the
+        // touch-action arbitration are exercised at the size that matters.
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+        isMobile: true,
+        deviceScaleFactor: 3,
+      },
+    },
+  ],
 });

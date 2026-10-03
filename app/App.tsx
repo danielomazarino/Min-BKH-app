@@ -14,6 +14,27 @@ import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
 
+/**
+ * The build id, injected at build time onto the `<html>` element.
+ *
+ * WHY IT IS READ FROM THE DOM AND NOT FROM import.meta.env
+ * The id is a HASH OF THE BUILT BUNDLE, so it cannot be known until the bundle
+ * has been written — which is after the module graph is transformed. Baking it
+ * into the JS would require knowing the output's own hash while producing it.
+ * So it is stamped into index.html and read back from there. It is a plain
+ * string with no logic attached, so a missing attribute degrades to "unknown"
+ * rather than breaking the header.
+ *
+ * This is the copy that appears UNDER the "Uppdaterad" freshness label, which
+ * is where it is readable on a real iPhone. It deliberately renders NOTHING on
+ * top of the app: an earlier version stamped a fixed-position overlay across
+ * the top of the screen, which was not asked for and obscured the UI.
+ */
+const BUILD_ID = (() => {
+  if (typeof document === "undefined") return "unknown";
+  return document.documentElement.getAttribute("data-build") ?? "unknown";
+})();
+
 export default function App() {
   const [state, setState] = useState<AppDataState>({ status: "loading" });
 
@@ -107,17 +128,28 @@ function AppShell({ state }: { state: AppDataState }) {
         <span className="brand">
           Min <b>BKH</b>-app
         </span>
-        {generatedAt && (
-          <span
-            className="freshness"
-            data-stale={stale}
-            data-testid="freshness"
-            title={`Senast uppdaterad ${new Date(generatedAt).toLocaleString("sv-SE")}`}
-          >
-            <span className="dot" aria-hidden="true" />
-            {stale ? "Kan vara gammal" : "Uppdaterad"}
+        {/* Freshness and the build id stack in one right-aligned group so the
+            build id sits directly UNDER "Uppdaterad" without widening the
+            header or pushing the settings button around. */}
+        <span className="header-status">
+          {generatedAt && (
+            <span
+              className="freshness"
+              data-stale={stale}
+              data-testid="freshness"
+              title={`Senast uppdaterad ${new Date(generatedAt).toLocaleString("sv-SE")}`}
+            >
+              <span className="dot" aria-hidden="true" />
+              {stale ? "Kan vara gammal" : "Uppdaterad"}
+            </span>
+          )}
+          {/* WHICH BUILD IS THIS? Readable on a real iPhone, where the bundle
+              hash is invisible and a stale service worker is otherwise
+              indistinguishable from "my change did not work". */}
+          <span className="build-id" data-testid="build-id" title={`Build ${BUILD_ID}`}>
+            {BUILD_ID}
           </span>
-        )}
+        </span>
         <button
           type="button"
           className="icon-btn"

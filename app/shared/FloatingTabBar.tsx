@@ -1,56 +1,34 @@
 /**
  * FloatingTabBar — the app's only primary navigation.
  *
- * INTERACTION MODEL — three gestures on one surface
- * The bar carries BOTH navigation and repositioning, which is why it needs a
- * disambiguation rule rather than a single handler:
+ * INTERACTION MODEL — a swipe and a tap on one surface
  *
  *  1. TAP an icon — selects a destination. Always available, never ambiguous.
- *  2. HORIZONTAL swipe on the bar — changes destination, like the iOS WhatsApp
- *     tab bar. The bar itself does NOT move; only the pressed state changes
- *     mid-gesture.
- *  3. VERTICAL drag on the bar — REPOSITIONS it up or down. This is the iOS
- *     home-screen "pick up, put down" model, minus the hold.
+ *  2. SWIPE horizontally anywhere on the bar — a glass indicator tracks the
+ *     thumb directly, then springs to the nearest icon on release and
+ *     navigates there. Like the iOS WhatsApp tab bar.
  *
- * THE BAR IS ALWAYS HORIZONTALLY CENTRED. Dragging moves it vertically only;
- * there is no horizontal position to reach, and `leftFor()` takes no dock at
- * all, so no code path can produce an off-centre one.
+ * THERE IS NO VERTICAL DRAG. The bar is fixed. It was draggable vertically
+ * until 2026-10-03, on request, and the removal was deliberate: the drag never
+ * felt right in real use, and it had accumulated four platform-specific
+ * defects (a WebKit link callout that ate the gesture, hold timing that
+ * depended on a platform guess, a stationary-press race that stole swipes,
+ * and a visual-vs-layout measurement bug), each of which cost real time.
  *
- * Why the axis decides, rather than a press-and-hold
- * A hold was tried first and it was the wrong trigger. It made the drag
- * conditional on a platform guess, and a wrong guess meant the drag silently
- * never started — measured in WebKit, holding 140ms or 200ms moved the bar
- * 0px. Every test that waited long enough passed regardless, so the failure
- * was invisible. The axis cannot be mis-detected: vertical travel is the
- * drag, horizontal travel is the swipe, and neither depends on a timer.
- * See the note in onPointerMove.
+ * The bar stays HORIZONTALLY CENTRED at all times. `leftFor()` takes no
+ * position at all, so no code path can produce an off-centre bar.
  *
- * WHY THE BAR USED TO LOOK UNDRAGGABLE — the actual root cause
- * `.fabnav` was `width: min(100% - 32px, 440px)`, which exactly FILLED the band
- * between the two 16px margins. Measured at 320/390/430px viewports the
- * horizontal travel was 0px in every case. A control with no room to move
- * cannot be dragged however correct this file is.
- *
- * A SECOND, INVISIBLE ROOT CAUSE: the visual box is not the layout box
- * `data-lifted` scales the bar to 1.035, and `getBoundingClientRect()` reports
- * the VISUAL box — 269.1px where the bar is 260px. Every re-centring that read
- * the rect therefore placed the bar 9.1px left of centre, and only while
- * lifted. All measurements now go through `layoutWidth()`/`layoutHeight()`,
- * which use `offsetWidth`/`offsetHeight` and ignore transforms.
- *
- * WHY THE ANCHORS ARE NOT DRAGGABLE
+ * WHY THE ANCHORS ARE NOT NATIVELY DRAGGABLE
  * A real <a href> starts a NATIVE LINK DRAG the instant the pointer moves.
  * That fires `dragstart` and removes the element from the pointer-event
  * stream, so `pointerup` never reaches this component and the gesture
- * silently fails. Killing the native drag is what makes the gesture reachable
+ * silently fails. Killing the native drag is what makes the swipe reachable
  * at all; the anchors stay real links so middle-click, long-press and the
  * keyboard still work.
  *
  * MOVE/UP LIVE ON `window`, NOT ON THE BAR
- * Once a repositioning drag begins the bar translates with the finger, so it
- * slides out from under the pointer and `pointerup` is delivered to whatever
- * the finger is now over. A handler bound to the <nav> would never fire. The
- * same reasoning covers the swipe.
+ * The finger can travel anywhere — including off the bar entirely — before
+ * release, so a handler bound to the <nav> would miss the end of the gesture.
  *
  * POINTER CAPTURE IS DELIBERATELY NOT USED
  * Capturing to this ancestor makes the browser dispatch the subsequent
@@ -58,12 +36,12 @@
  * every tap. Killing the native link drag keeps the pointer stream alive
  * instead.
  *
- * TRANSFORMS ONLY, WRITTEN DIRECTLY TO THE NODE
- * A repositioning drag writes `transform: translate3d(...)` straight to the
- * DOM node via a ref. Going through React state would re-render five icons
- * and five SVGs on every frame of the gesture, and `left`/`top` would force a
- * layout pass on each one. React state is updated once, on release, with the
- * settled position — which is also the only moment it is needed.
+ * WHY THE INDICATOR IS WRITTEN DIRECTLY, NOT THROUGH REACT STATE
+ * The indicator's position changes on every frame of a swipe. React state
+ * would re-render five icons and five SVGs per frame, and `left`/`top` would
+ * force a layout pass each time. The transform is written straight to the
+ * node via a ref; React state changes once, on release, when the destination
+ * actually changes.
  *
  * Visual model: a floating pill, translucent, blurred, with a restrained
  * shadow. Content scrolls visibly behind it. backdrop-filter is a progressive
@@ -80,16 +58,14 @@ import {
 import { DESTINATIONS, clampIndex, hrefFor, type Destination } from "./nav";
 import {
   DRAG_THRESHOLD_PX,
-  DEFAULT_DOCK,
-  dockFromPointer,
-  holdMsFor,
+  applyDeadZone,
+  clampToTrack,
   leftFor,
-  parseDock,
-  serialiseDock,
-  settle,
-  topFor,
-  type Dock,
-  type Track,
+  nearestTab,
+  prefersReducedMotion,
+  springSettled,
+  springStep,
+  tabStops,
 } from "./fabnavPosition";
 
 /**
@@ -110,9 +86,6 @@ export const FLICK_VELOCITY = 0.35;
 /** even a flick must travel this far, so a tap is never mistaken for one. */
 export const FLICK_MIN_PX = 14;
 
-/** localStorage key. Versioned so a future format change cannot misread it. */
-const STORE_KEY = "bkh.fabnav.dock.v1";
-
 /**
  * The whole swipe decision, extracted so it can be tested directly.
  *
@@ -126,7 +99,7 @@ export function isSwipeCommit(delta: number, velocity: number): boolean {
 }
 
 /**
- * Swallow the click the browser synthesises at the end of a drag or swipe.
+ * Swallow the click the browser synthesises at the end of a swipe.
  *
  * The browser fires `click` after any down+up on the same link, even when the
  * finger travelled. Two things must both be true:
@@ -149,91 +122,24 @@ function stopNextClick(nav: HTMLElement | null) {
 }
 
 /**
- * The height the bar should be measured against.
+ * The bar's LAYOUT width, ignoring any transform.
  *
- * `window.innerHeight` is WRONG on iOS Safari and is the classic reason a
- * fixed bottom bar drifts or clamps wrongly there. When Safari's toolbars
- * expand and collapse, `innerHeight` reports the LARGEST viewport (toolbars
- * hidden), while the visible area is smaller. Using it makes the bar believe
- * there is more room than the user can see, so the drag's travel band is
- * wrong and the resting position can sit under the browser chrome.
- *
- * `visualViewport.height` is the actually-visible height and tracks the
- * toolbars as they collapse. `window.innerHeight` is kept only as a fallback
- * for engines without visualViewport.
- */
-function visibleHeight(): number {
-  const vv = window.visualViewport;
-  if (vv && Number.isFinite(vv.height) && vv.height > 0) return vv.height;
-  return window.innerHeight;
-}
-
-/**
- * The bar's LAYOUT size, ignoring any transform currently applied to it.
- *
- * This distinction is load-bearing, and getting it wrong is a bug that only
- * shows up while the bar is lifted. `getBoundingClientRect()` returns the
- * VISUAL box, so the moment `--fabnav-lift` scales the bar to 1.035 the rect
- * reports 260 x 1.035 = 269.1px wide. Re-centring on that number put the bar
- * 9.1px left of centre, and it stayed there: the drag transform, the
- * `data-lifted` attribute and the resting position all disagreed about how
- * wide the bar is.
- *
- * `offsetWidth`/`offsetHeight` report the box the layout engine actually
- * reserved, which transforms do not change. That is the number every
- * measurement below needs — centring and travel alike.
+ * `getBoundingClientRect()` returns the VISUAL box, so it changes whenever the
+ * bar is scaled and must never be used to re-centre. `offsetWidth` reports the
+ * box the layout engine actually reserved, which transforms do not change.
  */
 function layoutWidth(nav: HTMLElement): number {
   return nav.offsetWidth || nav.getBoundingClientRect().width;
 }
 
-/** The bar's layout height. See {@link layoutWidth} for why not the rect. */
-function layoutHeight(nav: HTMLElement): number {
-  return nav.offsetHeight || nav.getBoundingClientRect().height;
-}
-
 /**
- * Measure the space the bar may move through, and the insets it must respect.
+ * Keep the bar horizontally centred at every viewport size.
  *
- * Read from the DOM rather than hard-coded, because the bar's own height and
- * the safe-area insets are only known at runtime. Deriving `travelY` from the
- * bar's own height is what makes a future CSS change that resizes the bar show
- * up as less travel instead of silently disappearing.
+ * Re-derived from the measured width because a bar parked at a pixel `left`
+ * from a wider viewport would sit off-centre on a narrower one.
  */
-function measureTrack(nav: HTMLElement): {
-  track: Track;
-  topInset: number;
-} {
-  const cs = getComputedStyle(nav);
-  const topInset = parseFloat(cs.getPropertyValue("--fabnav-top")) || 0;
-  // The vertical band runs from the top inset down to the resting bottom
-  // position, so the bar's own height cancels out of the arithmetic.
-  const restTop = visibleHeight() - parseFloat(cs.bottom || "0") - layoutHeight(nav);
-  const travelY = Math.max(0, restTop - topInset);
-  return { track: { travelY }, topInset };
-}
-
-/**
- * Write the resting position.
- *
- * `top` carries the resting layout and `transform` carries the live drag, so
- * the two never fight. Using a transform for the drag means the compositor
- * handles it and nothing reflows mid-gesture.
- *
- * `left` is re-asserted on every placement. The bar is ALWAYS horizontally
- * centred, and centring must survive a resize: a bar parked at a pixel `left`
- * from a wider viewport would sit off-centre on a narrower one. Re-deriving it
- * from the LAYOUT width is what keeps "centred" true at every size — and at
- * every moment of the drag, including while the bar is scaled up.
- */
-function place(
-  nav: HTMLElement,
-  dock: Dock,
-  track: Track,
-  topInset: number,
-) {
+function centreBar(nav: HTMLElement) {
   nav.style.left = `${leftFor(window.innerWidth, layoutWidth(nav))}px`;
-  nav.style.top = `${topFor(dock, track, topInset)}px`;
 }
 
 export function FloatingTabBar({
@@ -246,47 +152,64 @@ export function FloatingTabBar({
   onSelect: (d: Destination) => void;
 }) {
   const navRef = useRef<HTMLElement | null>(null);
+  const pillRef = useRef<HTMLDivElement | null>(null);
+
   /**
+   * THE LIVE GESTURE.
+   *
    * `live` gates the window listeners: always attached, but inert until a
-   * gesture starts on the bar. `mode` is the disambiguation:
-   *   "pending" — finger down, not yet decided
-   *   "swipe"   — decided: change destination, bar stays put
-   *   "move"    — decided: reposition the bar
-   *   "none"    — released back to the page (a vertical scroll); we are done
+   * gesture starts on the bar. There is exactly ONE gesture now, so there is
+   * no axis to disambigate and no pending state to resolve.
    */
   const drag = useRef({
     live: false,
-    mode: "pending" as "pending" | "swipe" | "move" | "none",
+    /** Whether the finger has travelled far enough to be a swipe, not a tap. */
+    moved: false,
     startX: 0,
-    startY: 0,
-    /** Where in the bar the finger landed vertically, so a pickup does not
-     *  jump it. There is no horizontal equivalent: the bar cannot move
-     *  sideways. */
-    grabY: 0,
+    /** Vertical origin, used ONLY to forward a vertical drag to the real
+     *  scroller. The pill never moves vertically. */
     dx: 0,
     v: 0,
     lastX: 0,
-    lastY: 0,
+    /** Vertical position of the previous move, for the per-frame scroll delta. */
     lastT: 0,
-    /**
-     * The bar's resting top at the moment it was picked up, plus its resting
-     * left so the centring can be restored exactly. The live drag is expressed
-     * as a transform RELATIVE to these, so `left`/`top` never change
-     * mid-gesture and nothing reflows.
-     */
-    restLeft: 0,
-    restTop: 0,
+    /** The indicator's x at the moment the finger landed — see onPointerDown. */
+    anchorX: 0,
   });
-  const holdTimer = useRef<number | null>(null);
 
-  const [dock, setDock] = useState<Dock>(DEFAULT_DOCK);
+  /**
+   * THE INDICATOR CONTROLLER.
+   *
+   * These are plain mutable values, deliberately NOT React state: they change
+   * on every frame and re-rendering five icons per frame would make the swipe
+   * stutter — which is the exact "laggy" feel this is meant to eliminate.
+   *
+   * `x` is always the LAST RENDERED position, never the selected tab's
+   * coordinate. That single rule is what makes a re-grab mid-snap seamless:
+   * a new drag anchors the finger to where the pill actually is, instead of
+   * teleporting it back to the tab it was heading for.
+   */
+  const anim = useRef({
+    x: 0,
+    v: 0,
+    target: 0,
+    frame: 0,
+    lastT: 0,
+    /** Live track measurements, re-derived on layout changes. */
+    tabX: [] as number[],
+    trackW: 0,
+    pillW: 0,
+    /** Set while a spring is running, so a resize can restart it sanely. */
+    animating: false,
+  });
+
   /**
    * `armed` records that a swipe was recognised, purely so CSS can suppress the
-   * tap highlight. `lifted` is the repositioning state, which switches on the
-   * glass treatment and the grabbing cursor.
+   * tap highlight. It is deliberately NOT used to show a pressed state: the
+   * glass indicator tracking the thumb is the affordance, and a second cue on
+   * the icon would be redundant.
    */
   const [armed, setArmed] = useState(false);
-  const [lifted, setLifted] = useState(false);
 
   // An unknown route has no index, and no icon is marked active.
   const index = active ? DESTINATIONS.findIndex((d) => d.path === active.path) : -1;
@@ -299,105 +222,170 @@ export function FloatingTabBar({
   indexRef.current = current;
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
-  const dockRef = useRef(dock);
-  dockRef.current = dock;
 
-  const commit = useCallback((delta: number, velocity: number) => {
-    // Distance OR speed commits. Velocity is signed like delta, so a fast
-    // leftward flick is a negative velocity.
-    if (!isSwipeCommit(delta, velocity)) return;
-    const from = indexRef.current;
-    const next = clampIndex(from + (delta < 0 ? 1 : -1));
-    if (next === from) return; // at an end: do nothing, do not wrap
-    onSelectRef.current(DESTINATIONS[next]);
-  }, []);
-
-  /** Cancel a pending long press, e.g. because the finger already moved. */
-  const clearHold = useCallback(() => {
-    if (holdTimer.current !== null) {
-      window.clearTimeout(holdTimer.current);
-      holdTimer.current = null;
-    }
+  /** Write the indicator's position. Direct, un-transitioned, compositor-only. */
+  const paint = useCallback((x: number) => {
+    const pill = pillRef.current;
+    if (pill) pill.style.transform = `translate3d(${x}px, 0, 0)`;
   }, []);
 
   /**
-   * Promote a pending press into a repositioning drag.
+   * Re-measure the track and park the indicator on the current tab.
    *
-   * The bar is written to its CURRENT position first, so the pickup itself is
-   * invisible — the transition into `move` must not read as a jump.
+   * MUST run after layout, because every number here comes from rendered
+   * geometry. A stale `tabX` is how an indicator ends up one tab out of place
+   * and a snap lands on the wrong destination.
    */
-  const beginMove = useCallback(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    drag.current.mode = "move";
-    // Haptic confirmation, where the platform offers it. Absent on iOS
-    // Safari and in most desktop browsers, which is fine — it is an
-    // enhancement, never the only signal that the drag started.
-    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-      navigator.vibrate(8);
-    }
-    const { track, topInset } = measureTrack(nav);
-    // Remember where the bar was resting. The drag is then a transform
-    // relative to this point, so `left`/`top` stay put for the whole gesture.
-    drag.current.restLeft = leftFor(window.innerWidth, layoutWidth(nav));
-    drag.current.restTop = topFor(dockRef.current, track, topInset);
-    nav.style.left = `${drag.current.restLeft}px`;
-    nav.style.top = `${drag.current.restTop}px`;
-    setLifted(true);
+  const measure = useCallback(
+    (snapToIndex: number) => {
+      const pill = pillRef.current;
+      if (!pill) return;
+      const a = anim.current;
+      // offsetWidth, not the rect: the pill is transformed while it moves, and
+      // a transformed rect is the VISUAL box, which would make the stops drift
+      // as the pill slides.
+      a.trackW = pill.parentElement?.offsetWidth ?? 0;
+      /*
+       * The pill is ONE TAB WIDE, and the width is set here rather than in
+       * CSS so that it can never disagree with `tabStops`. If CSS said 52px
+       * and the tab measured 50px, the last stop would be 2px short and the
+       * pill would look like it stops short of the final icon.
+       *
+       * Set from the LAYOUT box, not the rect: the pill is transformed while
+       * it moves, and a transformed rect is the visual box, which would make
+       * the stops drift as the pill slides.
+       */
+      const item = pill.parentElement?.querySelector<HTMLElement>(".fabnav-item");
+      const itemW = item?.offsetWidth ?? 0;
+      if (itemW > 0) {
+        pill.style.width = `${itemW}px`;
+        a.pillW = itemW;
+      } else {
+        a.pillW = pill.offsetWidth || pill.getBoundingClientRect().width;
+      }
+      a.tabX = tabStops(DESTINATIONS.length, a.trackW, a.pillW);
+      a.target = a.tabX[Math.min(Math.max(snapToIndex, 0), a.tabX.length - 1)] ?? 0;
+      stopSpring();
+      a.x = a.target;
+      a.v = 0;
+      paint(a.x);
+    },
+    [paint],
+  );
+
+  /** Cancel any running spring WITHOUT touching the current position. */
+  const stopSpring = useCallback(() => {
+    const a = anim.current;
+    if (a.frame) cancelAnimationFrame(a.frame);
+    a.frame = 0;
+    a.lastT = 0;
+    a.animating = false;
   }, []);
+
+  /**
+   * Spring the indicator to `target` from wherever it is NOW.
+   *
+   * The spring is what gives the release its settle. During the drag the
+   * position is written directly with no transition, because a CSS transition
+   * on a property that changes every frame restarts its easing every frame and
+   * the rendered pill permanently trails the thumb — measured at ~180ms of lag
+   * before this was changed.
+   */
+  const springTo = useCallback(
+    (target: number) => {
+      const a = anim.current;
+      stopSpring();
+      a.target = target;
+
+      // Reduced motion: arrive immediately, but still arrive. The interaction
+      // is untouched; only the travel is removed.
+      if (prefersReducedMotion()) {
+        a.x = target;
+        a.v = 0;
+        paint(target);
+        return;
+      }
+
+      a.animating = true;
+      const tick = (time: number) => {
+        const dt = a.lastT ? (time - a.lastT) / 1000 : 0;
+        a.lastT = time;
+        const next = springStep(a.x, a.v, a.target, dt);
+        a.x = next.x;
+        a.v = next.v;
+        if (springSettled(a.x, a.v, a.target)) {
+          a.x = a.target;
+          a.v = 0;
+          paint(a.x);
+          a.frame = 0;
+          a.animating = false;
+          return;
+        }
+        paint(a.x);
+        a.frame = requestAnimationFrame(tick);
+      };
+      a.frame = requestAnimationFrame(tick);
+    },
+    [paint, stopSpring],
+  );
+
+  /**
+   * Navigate to a tab, from either a tap or a swipe.
+   *
+   * Both paths converge here so they cannot drift apart: the indicator is
+   * parked on the destination either way, and the route changes in the same
+   * place.
+   */
+  const goTo = useCallback(
+    (next: number) => {
+      const clamped = clampIndex(next);
+      if (clamped !== indexRef.current) onSelectRef.current(DESTINATIONS[clamped]);
+    },
+    [],
+  );
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
     // Ignore secondary buttons so a right-click never starts a gesture.
     if (e.button !== 0 && e.pointerType === "mouse") return;
 
-    const nav = navRef.current;
-    if (!nav) return;
+    const d = drag.current;
+    const a = anim.current;
 
     /**
-     * A gesture that begins on the bar is OURS from the first pixel.
+     * RE-GRAB, WITHOUT A JUMP.
      *
-     * Without this, iOS is free to let the pan start, and when it decides the
-     * gesture was a scroll it fires `pointercancel` and stops delivering
-     * pointermove/pointerup. The `touch-action: none` in theme.css is what
-     * actually prevents that, and it MUST be declared on `.fabnav-link` — the
-     * element the thumb lands on — because `touch-action` is not inherited.
+     * If a spring is mid-flight the pill is somewhere between two tabs. The
+     * finger must anchor to where the pill ACTUALLY is (`a.x`, the last
+     * rendered position) — never to the selected tab's coordinate, which would
+     * teleport the pill sideways the instant it is touched. `x` is left exactly
+     * as it is and the finger delta is measured from here.
      */
-    if (e.cancelable) e.preventDefault();
+    stopSpring();
 
-    const r = nav.getBoundingClientRect();
-    const d = drag.current;
+    /**
+     * RE-GRAB, WITHOUT A JUMP.
+     *
+     * If a spring is mid-flight the pill is somewhere between two tabs. The
+     * finger takes over from exactly there — `a.x`, the last RENDERED position —
+     * so the pill never teleports. Resetting the anchor to the touch point
+     * instead was tried and REJECTED: a swipe may begin anywhere on the bar, so
+     * anchoring to `clientX` made the pill jump to the thumb on the first move
+     * (measured 65px on a gesture that should not have moved it at all).
+     *
+     * The trade-off, recorded honestly: the pill therefore tracks the finger's
+     * DELTA rather than sitting under it. A swipe that starts away from the
+     * pill's centre leaves a constant offset between thumb and pill. That is
+     * the deliberate choice — no jump on touchdown beats perfect centring.
+     */
+    d.anchorX = a.x;
+
     d.live = true;
-    d.mode = "pending";
+    d.moved = false;
     d.startX = e.clientX;
-    d.startY = e.clientY;
-    // Measured from the live box, so the grab point survives a resize.
-    d.grabY = e.clientY - r.top;
     d.dx = 0;
     d.v = 0;
     d.lastX = e.clientX;
-    d.lastY = e.clientY;
     d.lastT = performance.now();
-
-    // Arm a SHORT hold as a FALLBACK for a stationary press. The primary
-    // trigger is VERTICAL MOVEMENT, resolved in onPointerMove; see the note
-    // there. This timer only covers the case where the finger never moves at
-    // all, so the bar can still be picked up and dropped without a drag.
-    //
-    // It is deliberately not authoritative, and onPointerMove can undo it —
-    // see the re-check in the "move" branch. A stationary-press timer that
-    // cannot be revoked would let a slow, delayed swipe be stolen, and that
-    // was measured happening: 8 undelayed touchmoves under CPU load put the
-    // first move past 90ms, the hold won, and a horizontal flick that should
-    // have navigated did not. The test passed alone and failed in the full
-    // suite, which is exactly the signature of a race.
-    clearHold();
-    holdTimer.current = window.setTimeout(() => {
-      holdTimer.current = null;
-      if (drag.current.live && drag.current.mode === "pending") beginMove();
-    }, holdMsFor(
-      typeof navigator === "undefined" ? undefined : { maxTouchPoints: navigator.maxTouchPoints },
-      (e.nativeEvent as PointerEvent).pointerType,
-    ));
   };
 
   const onPointerMove = useCallback(
@@ -416,188 +404,78 @@ export function FloatingTabBar({
         d.lastT = now;
       }
 
-      /**
-       * A move in "move" mode is a reposition: write the transform directly to
-       * the node. State here would re-render five icons and five SVGs on every
-       * frame of the gesture.
+      const a = anim.current;
+
+      /*
+       * A VERTICAL move is NOT ours, and is deliberately left to the browser.
        *
-       * THE HOLD IS REVOCABLE, so a gesture the hold mis-read can be handed
-       * back. Reaching "move" via the stationary-press timer rather than via
-       * vertical movement is a guess, and a guess can be wrong: under load the
-       * first touchmove can arrive after the hold has already elapsed, which
-       * would otherwise let a slow horizontal flick be stolen by the drag.
+       * `touch-action: pan-y` on the bar permits vertical panning and reserves
+       * horizontal for our swipe. The app does not call preventDefault and does
+       * not scroll anything by hand: a manual forwardScroll() was tried and
+       * removed, because inventing a custom scrolling system is not this
+       * feature's job and it would fight the browser's own momentum.
        *
-       * Once the finger has genuinely travelled, the axis is no longer a guess
-       * — it is the whole gesture. If the travel is now mostly horizontal, the
-       * classification is corrected here and the gesture returns to the swipe
-       * it actually was. The bar is re-placed rather than left mid-transform,
-       * so revoking the hold cannot leave a stale translate3d behind.
+       * UNRESOLVED (product/layout, not a swipe blocker): the bar is
+       * `position: fixed`, a SIBLING of `.layer`, which is the element that
+       * actually scrolls. A touch starting on the bar therefore has no
+       * scrollable ancestor, so `pan-y` grants permission to scroll but there
+       * may be nothing here for the browser to scroll. Measured in Chromium:
+       * identical vertical drags scroll the content from the content area and
+       * scroll 0px from the bar. Whether a fixed nav outside the scroll
+       * container should scroll at all is a layout decision, not a bug in the
+       * swipe. It is recorded rather than papered over.
        */
-      if (d.mode === "move") {
-        const nav = navRef.current;
-        if (!nav) return;
-        if (e.cancelable) e.preventDefault();
-
-        // Measured once, outside the branch: the revoke path below needs them
-        // too, and re-measuring per frame would be wasted work.
-        const { track, topInset } = measureTrack(nav);
-
-        // Only re-check while the finger has been nearly still since pickup.
-        // A real drag has a definite axis from its first move, and re-deciding
-        // mid-drag would make the bar jump between interpretations.
-        if (Math.abs(e.clientX - d.startX) < DRAG_THRESHOLD_PX) {
-          const next = dockFromPointer(e.clientY, d.grabY, track, { topInset });
-          dockRef.current = next;
-          const absTop = topFor(next, track, topInset);
-          // translate3d keeps this on the compositor: no layout, no reflow.
-          // The delta is measured against the resting position captured at
-          // pickup, NOT against the previous frame, so the bar cannot drift.
-          nav.style.transform = `translate3d(0, ${absTop - d.restTop}px, 0)`;
-          // The absolute position is kept for the release, which re-derives a
-          // dock from it in order to persist a ratio.
-          nav.dataset.dragTop = String(absTop);
-          return;
-        }
-
-        // The finger has travelled sideways: this was a swipe all along.
-        setLifted(false);
-        delete nav.dataset.dragTop;
-        nav.style.transform = "";
-        place(nav, dockRef.current, track, topInset);
-        clearHold();
-        d.mode = "swipe";
-        d.dx = e.clientX - d.startX;
-        setArmed(true);
-        return;
-      }
-
-      if (d.mode === "swipe") {
-        if (e.cancelable) e.preventDefault();
-        // Track distance only. The bar deliberately does NOT translate with the
-        // finger — that is what makes it feel like the iOS WhatsApp tab bar,
-        // which stays pinned while the same swipe steps through its tabs.
-        d.dx = e.clientX - d.startX;
-        return;
-      }
-
-      // Still "pending": decide what this movement means.
-      //
-      // REBUILT TWICE, AND THE SECOND REBUILD IS THE ONE THAT MATTERS.
-      //
-      // 1. The original trigger was a press-and-hold, which made the drag
-      //    conditional on a platform guess. A wrong guess meant NO drag at
-      //    all — measured in WebKit: holding 140ms or 200ms moved the bar
-      //    0px, because the short iOS hold was never selected and the long one
-      //    had not elapsed. Every test that waited long enough passed
-      //    regardless, so the failure was invisible.
-      //
-      // 2. The bar is now VERTICALLY centred-only and draggable up and down,
-      //    so the axis decides:
-      //
-      //      vertical travel   -> reposition the bar, immediately
-      //      horizontal travel -> navigation swipe, bar stays put
-      //
-      // The axis cannot be mis-detected, so no timing value can break the
-      // drag. The existing swipe handler is untouched and still owns
-      // horizontal travel, which is why the flick-to-navigate gesture and the
-      // ~10 tests covering it all still pass.
+      // The pill only tracks HORIZONTAL travel.
       const dx = e.clientX - d.startX;
-      const dy = e.clientY - d.startY;
-      if (Math.abs(dx) < DRAG_THRESHOLD_PX && Math.abs(dy) < DRAG_THRESHOLD_PX) return;
-
-      // HORIZONTAL travel is the navigation gesture and belongs to the
-      // existing swipe handler. The bar cannot move sideways at all, so there
-      // is nothing to do here but stay out of the way and track the distance.
-      if (Math.abs(dx) >= Math.abs(dy)) {
-        clearHold();
-        d.mode = "swipe";
-        d.dx = dx;
+      if (!d.moved && Math.abs(dx) < DRAG_THRESHOLD_PX) return;
+      if (!d.moved) {
+        d.moved = true;
+        // Only now is it a swipe, so only now may we suppress the tap flash.
         setArmed(true);
-        return;
-      }
-
-      // VERTICAL travel is the drag: the bar follows the finger up or down.
-      //
-      // This axis test is the whole disambiguation, and it is deliberately NOT
-      // velocity- or timer-based. An earlier version used a press-and-hold as
-      // the trigger, which could not be trusted: a wrong platform guess meant
-      // the drag simply never began (measured in WebKit — holding 140ms or
-      // 200ms moved the bar 0px). Deciding on the axis means the drag either
-      // works or does not, with no timing involved.
-      if (d.mode === "pending") {
-        beginMove();
-        const nav = navRef.current;
-        if (nav) {
-          const { track, topInset } = measureTrack(nav);
-          const next = dockFromPointer(e.clientY, d.grabY, track, { topInset });
-          dockRef.current = next;
-          const absTop = topFor(next, track, topInset);
-          // Applied to the position the finger has ALREADY reached, so the bar
-          // does not lag a frame behind the first movement.
-          nav.style.transform = `translate3d(0, ${absTop - d.restTop}px, 0)`;
-          nav.dataset.dragTop = String(absTop);
+        // Haptic confirmation where the platform offers it. Absent on iOS
+        // Safari, which is fine — an enhancement, never the only signal.
+        if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+          navigator.vibrate(8);
         }
       }
+
+      // Delta tracking from the anchor, so reversing direction just changes the
+      // delta and the pill cannot accumulate error across frames.
+      const next = clampToTrack(d.anchorX + dx, a.trackW, a.pillW);
+      a.x = next;
+      a.v = 0; // the finger owns the position directly while it is down
+      paint(next);
     },
-    [beginMove, clearHold],
+    [paint],
   );
 
   const endDrag = useCallback(
     (commitIt: boolean) => {
       const d = drag.current;
-      clearHold();
-      const nav = navRef.current;
-      const wasMode = d.mode;
-
-      if (wasMode === "move" && nav) {
-        const { track, topInset } = measureTrack(nav);
-        /**
-         * A CANCELLED drag must still settle somewhere legal.
-         *
-         * `pointercancel` is how iOS ends a gesture it has decided to take
-         * over — including the case where the link callout appeared before
-         * `-webkit-touch-callout: none` was applied. If a cancelled drag just
-         * returned early, the bar would be left stranded mid-gesture with a
-         * stale `translate3d` and no `top` to fall back on, which is exactly
-         * the "it half-moved then stopped" symptom.
-         *
-         * When the drag never produced a position there is nothing to settle,
-         * so it simply returns to its resting place.
-         */
-        const absTop = Number(nav.dataset.dragTop);
-        const hasPosition = Number.isFinite(absTop);
-        const rest: Dock = hasPosition
-          ? settle(dockRef.current)
-          : DEFAULT_DOCK;
-        dockRef.current = rest;
-        delete nav.dataset.dragTop;
-        nav.style.transform = "";
-        place(nav, rest, track, topInset);
-        setDock(rest);
-        try {
-          window.localStorage.setItem(STORE_KEY, serialiseDock(rest));
-        } catch {
-          // Private mode or storage disabled. The drag still worked; it just
-          // will not be remembered, which is not worth surfacing to the user.
-        }
-        setLifted(false);
-        // The finger travelled, so the browser may synthesise a click on the
-        // link it started over. Swallow it so a drag never navigates.
-        stopNextClick(nav);
-      } else if (wasMode === "swipe") {
-        // A horizontal swipe is a GESTURE, not a tap. The browser still
-        // synthesises a `click` when the pointer goes down and up within the
-        // same link, so without suppression the destination under the finger
-        // would ALSO fire. Both must run: the commit first, suppression second.
-        if (commitIt) commit(d.dx, d.v);
-        stopNextClick(nav);
-      }
-
       d.live = false;
-      d.mode = "pending";
       setArmed(false);
+      if (!d.moved) return; // a tap: let the anchor's own click through
+
+      const a = anim.current;
+      // A CANCELLED gesture snaps back to the tab we are already on and does
+      // NOT change page. A cancel is not a completed swipe.
+      // The destination is the tab nearest the PILL's resulting position — never
+      // the tab under the finger's absolute screen position, and never a forced
+      // single step. A deliberate drag therefore selects whatever icon the pill
+      // ended up closest to, while a small dead zone around the midpoint absorbs
+      // an accidental nudge. See applyDeadZone for why a two-tab move is never
+      // suppressed.
+      const target = commitIt
+        ? applyDeadZone(nearestTab(a.x, a.tabX), indexRef.current, a.x, a.tabX)
+        : indexRef.current;
+      const stop = a.tabX[Math.min(Math.max(target, 0), a.tabX.length - 1)] ?? 0;
+      springTo(stop);
+      // The finger travelled, so the browser may synthesise a click on the link
+      // it started over. Swallow it so a swipe never also taps.
+      stopNextClick(navRef.current);
+      if (commitIt) goTo(target);
     },
-    [clearHold, commit],
+    [goTo, paint, springTo],
   );
 
   /**
@@ -605,8 +483,7 @@ export function FloatingTabBar({
    *
    * The handlers read from refs, so this effect's dependencies are the stable
    * callbacks themselves. Re-attaching on EVERY render (an earlier version)
-   * meant a mid-gesture re-render could tear down and rebuild the listener
-   * set, and any event landing in that window was lost.
+   * meant a mid-render teardown could lose any event landing in that window.
    */
   useEffect(() => {
     const move = (e: PointerEvent) => onPointerMove(e);
@@ -623,37 +500,19 @@ export function FloatingTabBar({
   }, [onPointerMove, endDrag]);
 
   /**
-   * Restore the saved position, and keep it legal.
-   *
-   * Re-clamped on mount, on rotation and on resize, because the travel band is
-   * a function of the viewport: a dock saved in portrait is still meaningful
-   * in landscape precisely because ratios were stored rather than pixels.
+   * Measure, centre, and keep both true at every viewport size — plus move the
+   * indicator when the ROUTE changes, so a deep link or a back gesture parks
+   * the pill on the tab that is actually showing.
    */
   useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-
-    // `parseDock` already handles null, malformed and hostile values, so only
-    // a thrown storage access (private mode, disabled cookies) needs a guard.
-    let stored: Dock;
-    try {
-      stored = parseDock(window.localStorage.getItem(STORE_KEY));
-    } catch {
-      stored = DEFAULT_DOCK;
-    }
-    dockRef.current = stored;
-    setDock(stored);
-
     const apply = () => {
       const el = navRef.current;
-      if (!el) return;
-      const { track, topInset } = measureTrack(el);
-      place(el, dockRef.current, track, topInset);
+      if (el) centreBar(el);
+      measure(current);
     };
-    // Measure after layout so the bar's rendered width is known.
     apply();
+    // After layout, so the pill's width is known.
     const raf = requestAnimationFrame(apply);
-
     window.addEventListener("resize", apply);
     window.addEventListener("orientationchange", apply);
     return () => {
@@ -661,7 +520,8 @@ export function FloatingTabBar({
       window.removeEventListener("resize", apply);
       window.removeEventListener("orientationchange", apply);
     };
-  }, []);
+    // `current` is a dependency on purpose: a route change must move the pill.
+  }, [current, measure]);
 
   return (
     <nav
@@ -672,10 +532,22 @@ export function FloatingTabBar({
       onPointerDown={onPointerDown}
       onDragStart={(e) => e.preventDefault()}
       data-dragging={armed || undefined}
-      data-lifted={lifted || undefined}
     >
+      {/*
+        THE GLASS INDICATOR.
+        `pointer-events: none` is essential, not cosmetic: the pill sits on top
+        of the icons, and without this it would swallow the very taps and
+        swipes it is meant to visualise. It is also aria-hidden — it conveys
+        no information the active link's `aria-current` does not already carry.
+      */}
+      <div
+        ref={pillRef}
+        className="fabnav-pill"
+        aria-hidden="true"
+        data-testid="fabnav-pill"
+      />
       <ul className="fabnav-list">
-        {DESTINATIONS.map((d) => {
+        {DESTINATIONS.map((d, i) => {
           const isActive = active !== null && d.path === active.path;
           const Icon = d.icon;
           return (
@@ -696,7 +568,11 @@ export function FloatingTabBar({
                   // keyboard working; we only intercept the plain left click.
                   if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                   e.preventDefault();
-                  onSelect(d);
+                  // A TAP parks the pill and navigates in one step. The spring
+                  // is bypassed deliberately: the pill is already on this tab,
+                  // so animating it would be animating nothing.
+                  measure(i);
+                  goTo(i);
                 }}
               >
                 <span className="fabnav-icon" aria-hidden="true">

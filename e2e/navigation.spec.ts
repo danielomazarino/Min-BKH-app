@@ -1,4 +1,14 @@
 import { test, expect, type Page } from "@playwright/test";
+import {
+  TAB_IDS,
+  dragIndicatorBeyondFirstStop,
+  dragIndicatorBeyondLastStop,
+  dragIndicatorToAdjacentTab,
+  renderedPillX,
+  renderedStops,
+  tabSpacing,
+  touchDriver,
+} from "./navIndicatorDrag";
 
 /**
  * The five-destination navigation model.
@@ -82,78 +92,71 @@ test.describe("Five primary destinations", () => {
   });
 });
 
+/**
+ * SWIPE ON THE NAVIGATION BAR — the indicator gesture.
+ *
+ * REWRITTEN 2026-10-03. Every test below previously encoded a model that no
+ * longer exists, and several were internally contradictory. What changed, and
+ * why each old test had to move:
+ *
+ * THE OBSOLETE CONTRACT
+ *   "A swipe is a DIRECTION SIGNAL that advances or retreats exactly one
+ *    destination, independent of where the finger is."
+ *   Two things about that are now invalid:
+ *     - DIRECTION WAS PHYSICALLY INVERTED. `swipe(page, 1)` started at 85% of
+ *       the bar and moved the finger LEFT, and the test was named "swiping left
+ *       ADVANCES". Leftward is now backward, because that is which way the
+ *       finger went. See the contract: drag right moves toward tabs visually to
+ *       the right, and vice versa.
+ *     - DISTANCE WAS NEVER GEOMETRIC. 40px and 72px were thresholds for an
+ *       arithmetic step. The indicator now travels to where the finger goes, so
+ *       a destination is only reachable if the indicator physically ends nearer
+ *       that icon. One tab of travel is measured per test from the app.
+ *
+ * THE CONTRACT NOW PINNED
+ *   1. drag RIGHT moves the indicator toward the tabs visually to the right
+ *   2. drag LEFT moves it toward the tabs visually to the left
+ *   3. pointer-down never moves the indicator
+ *   4. a small movement stays a tap
+ *   5. during a drag the indicator follows continuously while the ROUTE and
+ *      aria-current stay on the committed tab; navigation happens on release
+ *   6. travel is clamped to the first and last stops
+ *   7. touch-action stays pan-y so vertical page scrolling remains native
+ *
+ * TERMINOLOGY, used consistently below: the OUTER BAR is the whole nav element
+ * and never moves; the INDICATOR is the glass pill that slides between icons.
+ * Conflating the two is what made "the bar does not move" look like a
+ * contradiction when the indicator moving is the entire feature.
+ */
 test.describe("Swipe on the navigation bar", () => {
   const barBox = async (page: Page) => {
     const b = await page.getByTestId("tabbar").boundingBox();
-    if (!b) throw new Error("tab bar has no box");
+    if (!b) throw new Error("nav bar has no box");
     return b;
   };
 
-  const swipe = async (page: Page, dir: 1 | -1) => {
-    const b = await barBox(page);
-    const y = b.y + b.height / 2;
-    const startX = dir === 1 ? b.x + b.width * 0.85 : b.x + b.width * 0.15;
-    await page.mouse.move(startX, y);
-    await page.mouse.down();
-    for (let i = 1; i <= 8; i++) {
-      await page.mouse.move(startX - dir * (b.width * 0.09 * i), y);
-    }
-    await page.mouse.up();
-  };
-
   /**
-   * REAL TOUCH SWIPE.
+   * The CSS contract for the nav's touch behaviour.
    *
-   * The `swipe()` helper above drives `page.mouse`, which is why this whole
-   * suite was green while the gesture did nothing on a real iPhone. A mouse
-   * drag has no `touch-action` arbitration and never fires `pointercancel`,
-   * so it cannot reproduce the failure that human testing found.
+   * CORRECTED 2026-10-03. The comment this replaces claimed, as measured fact,
+   * that `touch-action` on a container does not cover its descendants and that
+   * descendant declarations were "what actually fixes it". That inference was
+   * invalid: `touch-action` is not an INHERITED property, but for panning the
+   * browser intersects the hit-tested element with each ANCESTOR up to the
+   * nearest scroll container. Verified in Chromium with real touch and in WebKit
+   * with synthetic events: with descendants forced to `auto`, the swipe still
+   * completed and the route changed.
    *
-   * This dispatches genuine touch input through CDP, which is what the browser
-   * does with a finger — and therefore what exercises `touch-action`, native
-   * pan-vs-custom gesture arbitration, and `pointercancel`.
+   * What that verification does NOT establish: native iPhone gesture
+   * arbitration. The WebKit run dispatched synthetic PointerEvents because
+   * Playwright's CDP touch injection is Chromium-only, so it bypasses the layer
+   * that decides scroll-versus-drag on a real thumb. Hardware only.
+   *
+   * The value is `pan-y`, not `none`, and that is deliberate: `none` claims the
+   * vertical axis too, so a vertical drag starting on the bar would be swallowed
+   * instead of scrolling the page.
    */
-  const touchSwipe = async (page: Page, dir: 1 | -1, opts: { steps?: number; stepPx?: number } = {}) => {
-    const steps = opts.steps ?? 8;
-    const stepPx = opts.stepPx ?? 9;
-    const b = await barBox(page);
-    const y = b.y + b.height / 2;
-    const startX = b.x + b.width / 2;
-    const client = await page.context().newCDPSession(page);
-    const pts = (x: number) => [{ x, y, id: 1 }];
-    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(startX) });
-    for (let i = 1; i <= steps; i++) {
-      await client.send("Input.dispatchTouchEvent", {
-        type: "touchMove",
-        touchPoints: pts(startX - dir * stepPx * i),
-      });
-    }
-    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await client.detach();
-  };
-
-  /** Record the pointer events a gesture produced, so we can assert on them. */
-  const recordPointerEvents = async (page: Page) => {
-    await page.evaluate(() => {
-      const w = window as unknown as { __pe: string[] };
-      w.__pe = [];
-      for (const t of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) {
-        window.addEventListener(t, () => w.__pe.push(t), true);
-      }
-    });
-  };
-  const pointerEvents = (page: Page) =>
-    page.evaluate(() => (window as unknown as { __pe: string[] }).__pe);
-
-  /**
-   * The regression that mattered. `touch-action` is NOT an inherited CSS
-   * property: with it declared only on the <nav>, the computed value on the
-   * <a> — the element the thumb actually lands on — was `auto`, so the
-   * browser claimed the horizontal pan as a scroll and fired
-   * `pointercancel`, killing the swipe. This asserts the value on the real
-   * touch target, not on an ancestor.
-   */
-  test("the touch target itself disallows native panning", async ({ page }) => {
+  test("the touch target yields the vertical axis and keeps the horizontal one", async ({ page }) => {
     await page.goto("/#/");
     await ready(page);
     const values = await page.evaluate(() => {
@@ -163,154 +166,253 @@ test.describe("Swipe on the navigation bar", () => {
       };
       return {
         nav: read("[data-testid=tabbar]"),
+        list: read(".fabnav-list"),
         link: read(".fabnav-link"),
-        item: read(".fabnav-item"),
+        // The SVG is what a thumb visually lands on; measured earlier as
+        // computing to `auto`, which is why it is pinned here explicitly.
+        icon: read(".fabnav-icon"),
+        label: read(".fabnav-label"),
       };
     });
-    expect(values.nav).toBe("none");
-    // The link fills the bar and is what the finger hits.
-    expect(values.link).toBe("none");
-  });
-
-  test("a REAL touch swipe advances, and the browser never cancels it", async ({ page }) => {
-    await page.goto("/#/");
-    await ready(page);
-    await recordPointerEvents(page);
-    await touchSwipe(page, 1);
-    await expect(page).toHaveURL(/\u0023\/nyheter$/);
-
-    const events = await pointerEvents(page);
-    expect(events).toContain("pointerup");
-    // The failure mode on iOS: the pan was claimed as a scroll, so the
-    // stream was torn down before pointerup could commit.
-    expect(events).not.toContain("pointercancel");
-  });
-
-  test("a REAL touch swipe goes back", async ({ page }) => {
-    await page.goto("/#/matcher");
-    await ready(page);
-    await touchSwipe(page, -1);
-    await expect(page).toHaveURL(/\u0023\/nyheter$/);
-  });
-
-  test("a REAL touch swipe works from EVERY destination", async ({ page }) => {
-    const starts = [
-      { hash: "#/", left: "#/nyheter" },
-      { hash: "#/nyheter", left: "#/matcher", right: "#/" },
-      { hash: "#/matcher", left: "#/trupp", right: "#/nyheter" },
-      { hash: "#/trupp", left: "#/spelare", right: "#/matcher" },
-      { hash: "#/spelare", right: "#/trupp" },
-    ];
-    for (const s of starts) {
-      await page.goto(`/${s.hash}`);
-      await ready(page);
-      await touchSwipe(page, 1);
-      if (s.left) {
-        await expect(page, `swipe left from ${s.hash}`).toHaveURL(new RegExp(`${s.left}$`));
-      } else {
-        // No wraparound at the last destination.
-        await expect(page, `no wraparound from ${s.hash}`).toHaveURL(new RegExp(`${s.hash.replace("/", "\\/")}$`));
-      }
-    }
-    for (const s of starts) {
-      if (!s.right) continue;
-      await page.goto(`/${s.hash}`);
-      await ready(page);
-      await touchSwipe(page, -1);
-      await expect(page, `swipe right from ${s.hash}`).toHaveURL(new RegExp(`${s.right}$`));
+    // Every element the finger can land on must permit vertical panning, so
+    // page scrolling started on the bar stays native.
+    for (const [el, got] of Object.entries(values)) {
+      expect(got, `${el} must be pan-y so vertical scrolling stays native`).toBe("pan-y");
     }
   });
 
-  test("a real touch swipe from ONTO an individual nav item also works", async ({ page }) => {
-    // The gesture must not depend on starting at the bar's centre: a thumb
-    // lands on whichever icon it aimed at.
-    await page.goto("/#/");
-    await ready(page);
-    const b = await barBox(page);
-    const client = await page.context().newCDPSession(page);
-    const y = b.y + b.height / 2;
-    const startX = b.x + b.width * 0.12;
-    const pts = (x: number) => [{ x, y, id: 1 }];
-    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(startX) });
-    for (let i = 1; i <= 8; i++) {
-      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(startX - 9 * i) });
-    }
-    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await client.detach();
-    await expect(page).toHaveURL(/\u0023\/nyheter$/);
-  });
-
-  test("a real tap still activates, and a short touch drag stays a tap", async ({ page }) => {
-    await page.goto("/#/");
-    await ready(page);
-
-    // A genuine TOUCH tap, dispatched through CDP. `locator.tap()` is not
-    // available because the context is not created with hasTouch, and a
-    // mouse click would not prove the touch path works.
-    const touchTap = async (testId: string) => {
-      const b = (await page.getByTestId(testId).boundingBox())!;
-      const client = await page.context().newCDPSession(page);
-      const x = b.x + b.width / 2;
-      const y = b.y + b.height / 2;
-      const pt = [{ x, y, id: 1 }];
-      await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pt });
-      await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-      await client.detach();
-    };
-
-    await touchTap("tab-trupp");
-    await expect(page).toHaveURL(/\u0023\/trupp$/);
-
-    // A short, slow drag — under BOTH the distance and flick thresholds —
-    // must be read as a TAP, not a swipe.
-    //
-    // Started on the ALREADY-ACTIVE tab and dragged 10px the other way, so
-    // the three possible outcomes are distinguishable:
-    //   tap        -> stays on the current tab (asserted)
-    //   swipe      -> would move one destination backwards
-    //   nothing    -> indistinguishable from a tap here, but the tap itself
-    //                 is already proven above, so the only risk left to
-    //                 exclude is a drag over-committing into a swipe.
+  test("a REAL touch drag to the RIGHT advances to the tab on the right", async ({ page }) => {
     await page.goto("/#/nyheter");
     await ready(page);
-    const b = await barBox(page);
-    const client = await page.context().newCDPSession(page);
-    const y = b.y + b.height / 2;
-    // 0.3 of the bar is the CENTRE of the second link, so a 10px drag in
-    // either direction still ends on that same link.
-    const x0 = b.x + b.width * 0.3;
-    const pts = (x: number) => [{ x, y, id: 1 }];
-    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(x0) });
-    await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(x0 + 5) });
-    await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(x0 + 10) });
-    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await client.detach();
-    await expect(page).toHaveURL(/\u0023\/nyheter$/);
+    const touch = touchDriver(page);
+    const stops = await renderedStops(page, ["tab-nyheter", "tab-matcher"]);
+    await page.goto("/#/nyheter");
+    await ready(page);
+
+    const { before } = await dragIndicatorToAdjacentTab(
+      page,
+      touch,
+      "right",
+      tabSpacing(stops, TAB_IDS),
+    );
+    expect(before, "the indicator should start on Nyheter").toBeCloseTo(stops["tab-nyheter"], 0);
+
+    await touch("touchEnd", 0, 0);
+    await expect(page).toHaveURL(/#\/matcher$/);
+    await expect(page.getByTestId("tab-matcher")).toHaveAttribute("aria-current", "page");
   });
 
-  test("the bar does not move during a REAL touch swipe", async ({ page }) => {
+  test("a REAL touch drag to the LEFT goes back to the tab on the left", async ({ page }) => {
+    await page.goto("/#/matcher");
+    await ready(page);
+    const touch = touchDriver(page);
+    const stops = await renderedStops(page, ["tab-nyheter", "tab-matcher"]);
+    await page.goto("/#/matcher");
+    await ready(page);
+
+    await dragIndicatorToAdjacentTab(page, touch, "left", tabSpacing(stops, TAB_IDS));
+    await touch("touchEnd", 0, 0);
+    await expect(page).toHaveURL(/#\/nyheter$/);
+    await expect(page.getByTestId("tab-nyheter")).toHaveAttribute("aria-current", "page");
+  });
+
+  test("a drag works from EVERY destination, in the physical direction", async ({ page }) => {
+    const touch = touchDriver(page);
+    const stops = await renderedStops(page, TAB_IDS);
+    const spacing = tabSpacing(stops, TAB_IDS);
+    const ids = [...TAB_IDS];
+
+    for (let i = 0; i < ids.length; i++) {
+      const from = ids[i];
+      const left = ids[i - 1];
+      const right = ids[i + 1];
+
+      // Hem is `tab-brief` but its route is `#/` — NOT `#/brief`. Building the
+      // href by stripping "tab-" produced `#/brief`, which no destination owns,
+      // so the app rendered the not-found page and no icon was active. The
+      // assertion below already special-cased tab-brief; the navigation did not.
+      const hrefForTab = (id: string) => (id === "tab-brief" ? "#/" : `#/${id.replace("tab-", "")}`);
+      const urlForTab = (id: string) =>
+        new RegExp(`${id === "tab-brief" ? "#/" : `#/${id.replace("tab-", "")}`}$`);
+
+      // Rightward, when there is a tab to the right.
+      if (right) {
+        await page.goto(`/${hrefForTab(from)}`);
+        await ready(page);
+        await dragIndicatorToAdjacentTab(page, touch, "right", spacing);
+        await touch("touchEnd", 0, 0);
+        await expect(page, `dragging right from ${from} must select ${right}`).toHaveURL(urlForTab(right));
+      }
+      // Leftward, when there is a tab to the left.
+      if (left) {
+        await page.goto(`/${hrefForTab(from)}`);
+        await ready(page);
+        await dragIndicatorToAdjacentTab(page, touch, "left", spacing);
+        await touch("touchEnd", 0, 0);
+        await expect(page, `dragging left from ${from} must select ${left}`).toHaveURL(urlForTab(left));
+      }
+    }
+  });
+
+  test("the OUTER BAR is stationary while the INDICATOR moves, and the page waits for release", async ({ page }) => {
+    /**
+     * THE REPLACEMENT FOR "the bar does not move during a touch swipe".
+     *
+     * That test asserted the indicator was static, which is now the opposite of
+     * the requirement — the indicator sliding is the whole feature. But its
+     * intent was sound and worth keeping: the OUTER BAR must not drift while the
+     * indicator travels inside it.
+     *
+     * So this proves all five parts at once, which is what the old test could
+     * not do:
+     *   - the outer bar's bounding box is unchanged throughout
+     *   - the indicator follows the finger continuously
+     *   - the route and aria-current STAY on the committed tab during the drag
+     *   - they change only after release
+     *   - the indicator settles exactly on the destination's stop
+     */
+    await page.goto("/#/nyheter");
+    await ready(page);
+    const touch = touchDriver(page);
+    const stops = await renderedStops(page, ["tab-nyheter", "tab-matcher"]);
+    await page.goto("/#/nyheter");
+    await ready(page);
+
+    const barBefore = await barBox(page);
+    const urlBefore = page.url();
+
+    const { samples } = await dragIndicatorToAdjacentTab(
+      page,
+      touch,
+      "right",
+      tabSpacing(stops, TAB_IDS),
+      { sample: true },
+    );
+
+    // 1. the OUTER BAR has not moved
+    const barDuring = await barBox(page);
+    expect(Math.abs(barDuring.x - barBefore.x), "the outer bar shifted horizontally mid-drag").toBeLessThan(1);
+    expect(Math.abs(barDuring.y - barBefore.y), "the outer bar shifted vertically mid-drag").toBeLessThan(1);
+
+    // 2. the INDICATOR followed the finger, continuously and monotonically
+    expect(samples.length, "the indicator was never sampled during the drag").toBeGreaterThan(3);
+    for (let i = 1; i < samples.length; i++) {
+      expect(samples[i], `the indicator stalled or reversed at step ${i}`).toBeGreaterThan(samples[i - 1]);
+    }
+
+    // 3. the ROUTE and aria-current are STILL on the committed tab mid-drag
+    expect(page.url(), "the route changed DURING the drag, before release").toBe(urlBefore);
+    await expect(page.getByTestId("tab-nyheter")).toHaveAttribute("aria-current", "page");
+
+    // 4. and only after release...
+    await touch("touchEnd", 0, 0);
+    await expect(page).toHaveURL(/#\/matcher$/);
+    await expect(page.getByTestId("tab-matcher")).toHaveAttribute("aria-current", "page");
+
+    // 5. ...does the indicator rest exactly on the destination's stop
+    await expect
+      .poll(() => renderedPillX(page), { timeout: 5_000 })
+      .toBeCloseTo(stops["tab-matcher"], 0);
+  });
+
+  test("the indicator is clamped at the FIRST tab and does not wrap", async ({ page }) => {
     await page.goto("/#/");
     await ready(page);
-    const before = await barBox(page);
-    const client = await page.context().newCDPSession(page);
-    const y = before.y + before.height / 2;
-    const x0 = before.x + before.width / 2;
-    const pts = (x: number) => [{ x, y, id: 1 }];
-    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: pts(x0) });
-    for (let i = 1; i <= 8; i++) {
-      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: pts(x0 - 9 * i) });
-    }
-    // Mid-gesture: the bar must be exactly where it started.
-    const during = await barBox(page);
-    expect(Math.abs(during.x - before.x)).toBeLessThan(1);
-    expect(Math.abs(during.y - before.y)).toBeLessThan(1);
-    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await client.detach();
-    const after = await barBox(page);
-    expect(Math.abs(after.x - before.x)).toBeLessThan(1);
+    const touch = touchDriver(page);
+    const stops = await renderedStops(page, ["tab-brief", "tab-nyheter"]);
+    await page.goto("/#/");
+    await ready(page);
+
+    // Start on the FIRST tab and drag hard to the LEFT, past the clamp.
+    const { atRelease } = await dragIndicatorBeyondFirstStop(page, touch);
+    expect(atRelease, "the indicator left the track at the first stop").toBeGreaterThanOrEqual(0);
+
+    await touch("touchEnd", 0, 0);
+    await page.waitForTimeout(700);
+    // No wrapping: still on the first destination.
+    await expect(page).toHaveURL(/#\/$/);
+    await expect.poll(() => renderedPillX(page)).toBeCloseTo(stops["tab-brief"], 0);
   });
 
-  test("a REAL touch swipe on the CONTENT does not navigate", async ({ page }) => {
+  test("the indicator is clamped at the LAST tab and does not wrap", async ({ page }) => {
+    await page.goto("/#/spelare");
+    await ready(page);
+    const touch = touchDriver(page);
+    const stops = await renderedStops(page, ["tab-trupp", "tab-spelare"]);
+    await page.goto("/#/spelare");
+    await ready(page);
+
+    const { atRelease } = await dragIndicatorBeyondLastStop(page, touch);
+    expect(atRelease, "the indicator left the track at the last stop").toBeLessThanOrEqual(206);
+
+    await touch("touchEnd", 0, 0);
+    await page.waitForTimeout(700);
+    await expect(page).toHaveURL(/#\/spelare$/);
+    await expect.poll(() => renderedPillX(page)).toBeCloseTo(stops["tab-spelare"], 0);
+  });
+
+  test("a diagonal gesture that is MOSTLY VERTICAL does not move the indicator", async ({ page }) => {
+    /**
+     * OBSERVED BEHAVIOUR, recorded rather than asserted as a design promise.
+     *
+     * The component reads no vertical coordinate at all — `clientY` does not
+     * appear in it — so the indicator cannot track a vertical drag. But that is
+     * not the same as the browser letting the gesture through: `touch-action:
+     * pan-y` permits vertical panning, so on a steep diagonal the BROWSER may
+     * claim the gesture and fire `pointercancel`, ending it before the app can
+     * act.
+     *
+     * MEASURED in Chromium with real touch, from Hem with the indicator at 0:
+     *
+     *   dx=+6,  dy=-200 (below the 8px activation threshold)
+     *       -> rawPillX unchanged, pointercancel FIRED, route unchanged
+     *   dx=+12, dy=-200 (above the threshold, vertical 16x larger)
+     *       -> rawPillX unchanged, pointercancel FIRED, route unchanged
+     *   dx=+40, dy=0   (pure horizontal control)
+     *       -> rawPillX 0 -> 40, NO pointercancel, route -> #/nyheter
+     *
+     * So the indicator is protected on BOTH paths, but by two different
+     * mechanisms, and only the third case shows the swipe working. This test
+     * pins what was actually observed. It is NOT a claim that the app
+     * implements axis locking — it does not — and native iOS arbitration
+     * remains unverified.
+     */
+    await page.goto("/#/");
+    await ready(page);
+    const touch = touchDriver(page);
+    await page.evaluate(() => {
+      const w = window as unknown as { __pe: string[] };
+      w.__pe = [];
+      for (const t of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) {
+        window.addEventListener(t, () => w.__pe.push(t), true);
+      }
+    });
+
+    const before = await renderedPillX(page);
+    const bar = await barBox(page);
+    const y = Math.round(bar.y + bar.height / 2);
+    const startX = Math.round(bar.x + before + 26);
+
+    await touch("touchStart", startX, y);
+    for (let i = 1; i <= 10; i++) {
+      await touch("touchMove", startX + Math.round((12 * i) / 10), y - i * 20);
+    }
+    const atRelease = await renderedPillX(page);
+    const events = await page.evaluate(() => (window as unknown as { __pe: string[] }).__pe);
+    await touch("touchEnd", 0, 0);
+    await page.waitForTimeout(500);
+
+    // The indicator did not move, even though the horizontal component alone
+    // (12px) exceeds the 8px activation threshold.
+    expect(Math.abs(atRelease - before), "a mostly-vertical diagonal moved the indicator").toBeLessThanOrEqual(1);
+    // Recorded, not required: the browser claimed the steep diagonal.
+    expect(events, "the browser did not cancel the steep diagonal (record this if it changes)").toContain(
+      "pointercancel",
+    );
+    await expect(page).toHaveURL(/#\/$/);
+  });
+
+  test("a REAL touch drag on the CONTENT does not navigate", async ({ page }) => {
     await page.goto("/#/");
     await ready(page);
     const b = await barBox(page);
@@ -325,154 +427,34 @@ test.describe("Swipe on the navigation bar", () => {
     }
     await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     await client.detach();
-    await expect(page).toHaveURL(/\u0023\/$/);
+    await expect(page).toHaveURL(/#\/$/);
   });
 
-  test("swiping the bar left advances to the next destination", async ({ page }) => {
+  test("a movement below the threshold is a TAP, not a drag", async ({ page }) => {
+    // Regression guard. A shaky finger must open the destination it landed on
+    // rather than shoving the indicator around. The promise is "no DRAG
+    // happened", not "nothing changed".
     await page.goto("/#/");
     await ready(page);
-    await swipe(page, 1);
-    await expect(page).toHaveURL(/\u0023\/nyheter$/);
-    await expect(page.getByTestId("tab-nyheter")).toHaveAttribute("aria-current", "page");
-  });
+    const touch = touchDriver(page);
+    const before = await renderedPillX(page);
+    const bar = await barBox(page);
+    const y = Math.round(bar.y + bar.height / 2);
+    const startX = Math.round(bar.x + before + 26);
 
-  test("swiping the bar right goes back a destination", async ({ page }) => {
-    await page.goto("/#/matcher");
-    await ready(page);
-    await swipe(page, -1);
-    await expect(page).toHaveURL(/\u0023\/nyheter$/);
-  });
-
-  test("swiping past the first or last destination does nothing", async ({ page }) => {
-    await page.goto("/#/");
-    await ready(page);
-    await swipe(page, -1);
-    await expect(page).toHaveURL(/\u0023\/$/);
-    await page.goto("/#/spelare");
-    await ready(page);
-    await swipe(page, 1);
-    await expect(page).toHaveURL(/\u0023\/spelare$/);
-  });
-
-  test("swiping the CONTENT does not change the primary destination", async ({ page }) => {
-    await page.goto("/#/");
-    await ready(page);
-    // Deliberately probe a NON-interactive strip of the content. Dragging
-    // across an interactive element (the Brief hero is a <button>) fires a
-    // native click on release — standard browser behaviour that this bar is
-    // not involved in, and not what this test is about.
-    const b = await page.getByTestId("brief-page").boundingBox();
-    if (!b) throw new Error("brief has no box");
-    const y = b.y + 8;
-    await page.mouse.move(b.x + b.width * 0.85, y);
-    await page.mouse.down();
-    for (let i = 1; i <= 10; i++) {
-      await page.mouse.move(b.x + b.width * (0.85 - 0.08 * i), y);
-    }
-    await page.mouse.up();
-    await page.waitForTimeout(400);
-    await expect(page).toHaveURL(/\u0023\/$/);
-    await expect(page.getByTestId("brief-page")).toBeAttached();
-    await expect(page.getByTestId("tab-brief")).toHaveAttribute("aria-current", "page");
-  });
-
-  test("vertical scrolling does not change the primary destination", async ({ page }) => {
-    await page.goto("/#/matcher");
-    await ready(page);
-    const b = await page.getByTestId("matches-page").boundingBox();
-    if (!b) throw new Error("matches has no box");
-    const x = b.x + b.width / 2;
-    await page.mouse.move(x, b.y + 200);
-    await page.mouse.down();
-    for (let i = 1; i <= 8; i++) await page.mouse.move(x, b.y + 200 - i * 22);
-    await page.mouse.up();
-    await page.waitForTimeout(400);
-    await expect(page).toHaveURL(/\u0023\/matcher$/);
-    await expect(page.getByTestId("tab-matcher")).toHaveAttribute("aria-current", "page");
-  });
-
-  test("no native link drag hijacks the gesture", async ({ page }) => {
-    // Regression: the anchors were draggable, so a pointer move fired
-    // `dragstart`, which removed the bar from the pointer stream and meant
-    // `pointerup` — the only thing that commits a swipe — never arrived.
-    await page.goto("/#/");
-    await ready(page);
-    await page.evaluate(() => {
-      (window as unknown as { __drags: number }).__drags = 0;
-      document.addEventListener("dragstart", () => {
-        (window as unknown as { __drags: number }).__drags++;
-      }, true);
-    });
-    const b = await barBox(page);
-    const y = b.y + b.height / 2;
-    await page.mouse.move(b.x + b.width * 0.85, y);
-    await page.mouse.down();
-    for (let i = 1; i <= 8; i++) await page.mouse.move(b.x + b.width * (0.85 - 0.09 * i), y);
-    await page.mouse.up();
-    await page.waitForTimeout(400);
-    const drags = await page.evaluate(() => (window as unknown as { __drags: number }).__drags);
-    expect(drags, "a native drag started on the navigation bar").toBe(0);
-  });
-
-  test("the bar stays pinned while swiping — it does not drag with the finger", async ({ page }) => {
-    // A HORIZONTAL swipe changes destination and leaves the bar where it is.
-    // The bar is repositioned by a VERTICAL drag instead, which is covered in
-    // fabnav-drag.spec.ts. The axis, not a timer, is what separates them.
-    //
-    // This assertion was rewritten when the centring mechanism changed. It
-    // used to require `transform: matrix(1,0,0,1,-halfWidth,0)`, i.e. the
-    // `translateX(-50%)` shim. That shim was a real bug: JS overwrites `left`
-    // with an absolute position but cannot overwrite a CSS transform, so the
-    // bar rendered at x=-16px at rest and x=-114px after a drag. Centring is
-    // now expressed in `left` alone, and the meaningful invariant is simply
-    // that the transform does not change across the gesture.
-    await page.goto("/#/nyheter");
-    await ready(page);
-    const before = await barBox(page);
-
-    const y = before.y + before.height / 2;
-    const sx = before.x + before.width * 0.85;
-    const resting = await page.locator(".fabnav").evaluate((el) => getComputedStyle(el).transform);
-
-    await page.mouse.move(sx, y);
-    await page.mouse.down();
-    for (let i = 1; i <= 8; i++) {
-      await page.mouse.move(sx - before.width * 0.09 * i, y);
-      // Assert DURING the gesture, while the pointer is still down.
-      const mid = await barBox(page);
-      expect(Math.abs(mid.x - before.x), "the bar moved horizontally mid-swipe").toBeLessThanOrEqual(1);
-      const midTf = await page.locator(".fabnav").evaluate((el) => getComputedStyle(el).transform);
-      expect(midTf, "the bar's transform changed during a swipe — it is being dragged").toBe(resting);
-    }
-    await page.mouse.up();
+    await touch("touchStart", startX, y);
+    // 6px: under DRAG_THRESHOLD_PX (8).
+    for (let i = 1; i <= 4; i++) await touch("touchMove", startX + i * 2, y);
+    const atRelease = await renderedPillX(page);
+    await touch("touchEnd", 0, 0);
     await page.waitForTimeout(400);
 
-    const after = await barBox(page);
-    expect(Math.abs(after.x - before.x), "the bar did not return to its resting position").toBeLessThanOrEqual(1);
-    const afterTf = await page.locator(".fabnav").evaluate((el) => getComputedStyle(el).transform);
-    expect(afterTf, "the bar's transform did not settle back after the swipe").toBe(resting);
-    // ...and the swipe still navigated.
-    await expect(page).toHaveURL(/\u0023\/matcher$/);
+    expect(Math.abs(atRelease - before), "a sub-threshold movement moved the indicator").toBeLessThanOrEqual(1);
+    // Treated as a tap: the link under the finger is what navigated.
+    await expect(page).toHaveURL(/#\/$/);
   });
 
-  test("a small drag on the bar is treated as a tap, not a swipe", async ({ page }) => {
-    // A 6px drag is below AXIS_GUARD, so no axis is ever decided and no swipe
-    // commits. It must therefore behave exactly like a plain tap: start on
-    // Brief, drag 6px right, land on the link that is under the finger and
-    // navigate there. The promise is "no SWIPE happened", not "no change".
-    await page.goto("/#/");
-    await ready(page);
-    const b = await barBox(page);
-    const y = b.y + b.height / 2;
-    await page.mouse.move(b.x + b.width * 0.28, y);
-    await page.mouse.down();
-    await page.mouse.move(b.x + b.width * 0.28 + 6, y);
-    await page.mouse.up();
-    await page.waitForTimeout(300);
-    await expect(page).toHaveURL(/\u0023\/nyheter$/);
-  });
 });
-
 test.describe("Route handling", () => {
   test("an unknown route renders an explicit not-found, not a silent Brief", async ({ page }) => {
     await page.goto("/#/hittades-inte");

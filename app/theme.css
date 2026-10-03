@@ -110,6 +110,21 @@
      translucent pane rather than a solid fill. */
   --fabnav-sheen: rgba(255, 255, 255, 0.11);
 
+  /* The GLASS INDICATOR that slides between icons. Deliberately lighter and
+     more saturated than --fabnav-surface: the bar recedes, the pill advances,
+     and that contrast is the whole reason the movement reads as a selection
+     rather than as the bar wobbling. */
+  --fabnav-pill: rgba(255, 255, 255, 0.16);
+  --fabnav-pill-edge: rgba(255, 255, 255, 0.34);
+  /* A weaker blur than the bar's own: the pill sits on top of the bar, so it
+     samples a surface that is already blurred. A second heavy blur would be a
+     full-screen filter repaint on every frame of the drag, which is exactly
+     the cost the bar avoided by not using url() filters. */
+  --fabnav-pill-blur: blur(8px) saturate(1.8);
+  /* Fallback when the engine has no backdrop-filter: the pill must still be
+     clearly visible, so it gets a solid-ish wash rather than nothing. */
+  --fabnav-pill-opaque: rgba(255, 255, 255, 0.22);
+
   --chrome-bottom: calc(var(--fabnav-h) + var(--fabnav-gap) * 2 + env(safe-area-inset-bottom, 0px));
 
   --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
@@ -242,6 +257,44 @@ a {
 }
 .freshness[data-stale="true"] .dot {
   background: var(--caution);
+}
+
+/* Freshness + build id, stacked. The header height is a fixed 44px, so the
+   group must not grow: `flex: none` plus a fixed line-height keeps the settings
+   button from being pushed or clipped, whatever the id happens to be. */
+.header-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1px;
+  flex: none;
+  /* Never let a long id push the brand out of the header. */
+  min-width: 0;
+  max-width: 40%;
+  line-height: 1;
+}
+
+/* WHICH BUILD IS ON SCREEN.
+ *
+ * Readable on a real iPhone, where the bundle filename is invisible and a stale
+ * service worker is otherwise indistinguishable from "my change did not work".
+ * MEASURED contrast 6.92:1 against the header's effective background
+ * (rgba(0,0,0,.72) over --bg #000 resolves to rgb(0,0,0); --text-3 is
+ * rgba(255,255,255,.58) = rgb(148,148,148)), clearing WCAG AA for small text.
+ *
+ * Deliberately quiet: --text-3, not --text, and no background chip. It is
+ * diagnostic, not chrome. */
+.build-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: none;
 }
 
 .icon-btn {
@@ -387,9 +440,12 @@ main {
        translucent pane rather than a solid fill. */
     inset 0 1px 0 var(--fabnav-sheen);
   transition:
-    transform var(--dur-dismiss) var(--ease-ios),
     box-shadow var(--dur-tap) ease;
-  touch-action: none; /* we own every axis; see the sheet note */
+  /* `pan-y`, NOT `none`. The bar owns horizontal movement for its swipe and
+   * leaves vertical panning to the browser, so dragging a thumb down the bar
+   * still scrolls the page. `none` would claim both axes and swallow it.
+   * See the note on .fabnav-list for what was measured, and for what was not. */
+  touch-action: pan-y;
   /* A horizontal swipe that STARTS on a link would otherwise sweep up an
      implicit text selection, which swallows the remaining pointer events and
      stops the gesture dead. The bar is chrome, not prose, so nothing here
@@ -484,28 +540,102 @@ main {
   border-radius: 18px;
 }
 
+/* ------------------------------------------------------------------ *
+ * THE GLASS INDICATOR
+ *
+ * The pill slides under the icons as the thumb moves and springs to the
+ * nearest one on release. It is one tab wide.
+ *
+ * `pointer-events: none` is LOAD-BEARING, not cosmetic. The pill is painted
+ * above the icons, so without this it would intercept the very taps and
+ * swipes it exists to visualise — the bar would go dead under the thumb.
+ *
+ * `transition: none` is equally load-bearing. The pill's transform is rewritten
+ * on every frame of a drag, and a CSS transition on a property that changes
+ * every frame restarts its easing each time, so the rendered pill permanently
+ * trails the thumb. That was measured: ~180ms of lag with a 220ms transition,
+ * versus a single frame without one. The spring in JS owns the settle instead.
+ * ------------------------------------------------------------------ */
+.fabnav-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  /* One tab wide. The exact pixel width is set from JS in the same measure
+     pass that computes the tab stops, so the two can never disagree. */
+  width: 52px;
+  left: 0;
+  border-radius: 21px;
+  background: var(--fabnav-pill);
+  border: 1px solid var(--fabnav-pill-edge);
+  box-shadow:
+    inset 0 1px 0 var(--fabnav-sheen),
+    0 4px 14px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  /* translate3d keeps this on the compositor: no layout, no reflow. */
+  transform: translate3d(0, 0, 0);
+  transition: none;
+  will-change: transform;
+}
+
+/* The pill needs a blur of its own to read as glass rather than a flat wash.
+   It sits ON TOP of the bar's own backdrop-filter, so it samples what is
+   behind it including the icons — which is exactly the liquid effect. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fabnav-pill {
+    -webkit-backdrop-filter: var(--fabnav-pill-blur);
+    backdrop-filter: var(--fabnav-pill-blur);
+  }
+}
+
+/* Readability guarantee, not a cosmetic downgrade: a 0.16-alpha pill over a
+   dark bar without a blur is nearly invisible, so the fallback is opaque
+   enough to clearly mark the selected tab. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fabnav-pill {
+    background: var(--fabnav-pill-opaque);
+  }
+}
+
 .fabnav-list {
   display: flex;
   align-items: stretch;
   margin: 0;
   padding: 0;
   list-style: none;
-  /* CRITICAL: `touch-action` is NOT an inherited property.
+  /* CORRECTED 2026-10-03 — the previous comment here was WRONG.
    *
-   * Measured in this repo (2026-09-26): with `touch-action` set only on the
-   * <nav>, the computed values down the bar were
-   *     nav  -> none      (correct)
-   *     list -> auto
-   *     item -> auto
-   *     link -> auto     <-- the element the thumb actually lands on
-   * The <a> fills the bar, so the browser decided the gesture on the link,
-   * where `auto` leaves native panning enabled. It then consumed the
-   * horizontal pan as a scroll and fired `pointercancel`, so `pointerup`
-   * never reached the commit handler. That is why swiping did nothing on a
-   * real iPhone while a desktop mouse test passed.
+   * It claimed to be measured fact that declaring `touch-action` on a
+   * container does not cover its descendants, listed the computed values as
+   * nav -> none, list -> auto, link -> auto, and concluded the descendant
+   * declarations were "what actually fixes it".
    *
-   * Declaring it on the interactive descendants is what actually fixes it. */
-  touch-action: none;
+   * The inference was invalid. `touch-action` is indeed not an INHERITED
+   * property, but for PANNING the browser intersects the hit-tested element's
+   * value with each ANCESTOR up to the nearest scroll container. So a value on
+   * the nav constrains touches that begin on its descendants, and the `auto`
+   * computed values below do NOT mean the nav's rule is ineffective.
+   *
+   * WHAT THE AUTOMATED TESTS ACTUALLY ESTABLISHED (2026-10-03):
+   * Chromium, real CDP touch, descendants forced to `auto`: the swipe
+   * completed and the route changed to #/nyheter. WebKit, iPhone 13 emulation:
+   * the same result, with `pointerdown`/`pointermove`/`pointerup` all
+   * delivered and no `pointercancel`.
+   *
+   * WHAT THAT DOES NOT ESTABLISH:
+   * NATIVE iPHONE GESTURE ARBITRATION REMAINS UNVERIFIED. The WebKit run
+   * dispatched synthetic PointerEvents, because Playwright's CDP touch
+   * injection is Chromium-only (`newCDPSession` throws in WebKit). Synthetic
+   * events exercise WebKit's CSS and event handling but NOT its native gesture
+   * recognition, so this says nothing about whether a real thumb on a real
+   * iPhone gets its gesture. Only hardware can answer that.
+   *
+   * WHY `pan-y` RATHER THAN `none`:
+   * `none` claims EVERY axis, so a vertical drag that starts on the bar is
+   * swallowed and the page will not scroll. `pan-y` lets the browser keep
+   * native vertical panning while reserving horizontal movement for our
+   * swipe — which is the behaviour a bottom bar should have. Measured working
+   * in both engines, with the same synthetic-event caveat above. */
+  touch-action: pan-y;
 }
 
 .fabnav-item {
@@ -521,9 +651,18 @@ main {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  /* See the note on `.fabnav-list`: the link IS the touch target, so this is
-     the declaration that actually governs whether the swipe survives. */
-  touch-action: none;
+  /* `pan-y`, NOT `none`.
+   *
+   * This was `none` until 2026-10-03, left over from when the bar was
+   * vertically draggable and genuinely needed to own both axes. With the drag
+   * gone, `none` is actively harmful: it claims the vertical axis, so a
+   * vertical drag starting anywhere on the bar is swallowed and the page does
+   * not scroll. Measured before this fix — identical drags, content area 225px
+   * of scroll, the bar 0px.
+   *
+   * `pan-y` hands the vertical axis back to the browser while keeping the
+   * horizontal axis for our swipe, which is what a bottom bar should do. */
+  touch-action: pan-y;
   /* Comfortably past the 44px accessible minimum, and tall enough to fill the
      58px bar so the taller control does not leave dead space above the icons. */
   min-height: 52px;
@@ -548,11 +687,41 @@ main {
   justify-content: center;
   height: 23px;
   transition: transform var(--dur-tap) var(--ease-ios);
+  /* CRITICAL, AND FOUND BY MEASURING RATHER THAN REASONING.
+   *
+   * The icon's <svg> is the element a thumb ACTUALLY lands on — logged from a
+   * real CDP touch drag:
+   *
+   *     pointerdown  target = [object SVGAnimatedString]  touch-action = auto
+   *
+   * `touch-action` is not an inherited property, so the `pan-y` on `.fabnav`
+   * and `.fabnav-link` never reached the SVG, and the SVG computed to `auto`.
+   * Measured consequence: a vertical drag starting on the bar scrolled the
+   * content by 0px, while the identical drag starting in the content area
+   * scrolled it 225px. The swipe worked; page scrolling from the bar did not.
+   *
+   * This is the SAME class of bug as the note on `.fabnav-list`: the rule has
+   * to be on the element the finger touches, not on an ancestor. Declaring
+   * `pan-y` here hands the vertical axis back to the browser while keeping the
+   * horizontal axis for our swipe.
+   *
+   * `pointer-events: none` is the cleaner fix and is applied as well: the SVG
+   * is decorative (`aria-hidden` is already set on `.fabnav-icon`), so it has
+   * no reason to be a hit target at all. With it, events land on the label or
+   * the anchor instead, where the `pan-y` above already applies.
+   *
+   * Both are declared deliberately. `pointer-events: none` alone would fix the
+   * hit target but leaves the rule wrong if the SVG ever becomes interactive;
+   * `touch-action` alone would work but leaves a useless hit target in place. */
+  touch-action: pan-y;
+  pointer-events: none;
 }
 .fabnav-icon svg {
   width: 20px;
   height: 20px;
   display: block;
+  /* The SVG must never be the hit target. See the note on .fabnav-icon. */
+  pointer-events: none;
 }
 
 .fabnav-label {
@@ -564,6 +733,12 @@ main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* The label is the hit target across the lower third of the bar — measured
+     with elementFromPoint, which returns `.fabnav-label` (not the anchor) at
+     70% of the bar's height. Without this it computes to `auto` and swallows
+     vertical scrolls started there. Same rule, same reason, one more element:
+     `touch-action` must be declared on whatever the finger actually lands on. */
+  touch-action: pan-y;
 }
 
 /* Active state is carried by THREE signals, not colour alone: a yellow tint,
@@ -2327,3 +2502,4 @@ details.disc .disc-body {
     padding: var(--s3);
   }
 }
+
