@@ -415,9 +415,9 @@ test.describe("Swipe on the navigation bar", () => {
   });
 
   test("the bar stays pinned while swiping — it does not drag with the finger", async ({ page }) => {
-    // A SHORT FLICK changes destination and leaves the bar where it is. The
-    // bar is repositioned only by a deliberate press-and-hold, which is
-    // covered in fabnav-drag.spec.ts.
+    // A HORIZONTAL swipe changes destination and leaves the bar where it is.
+    // The bar is repositioned by a VERTICAL drag instead, which is covered in
+    // fabnav-drag.spec.ts. The axis, not a timer, is what separates them.
     //
     // This assertion was rewritten when the centring mechanism changed. It
     // used to require `transform: matrix(1,0,0,1,-halfWidth,0)`, i.e. the

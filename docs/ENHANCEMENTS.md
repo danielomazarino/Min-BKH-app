@@ -173,6 +173,24 @@ margins, stays below the header, persists across reload, and stays legal after
 rotation. **Not yet verified on real iOS or Android hardware** — the long-press
 timing in particular needs a human check with a thumb.
 
+**SUPERSEDED 2026-10-03 by E-013.** The press-and-hold trigger is gone, and so
+is horizontal travel. Two things in this entry are now historical, not current
+behaviour:
+
+- **The hold is no longer the drag trigger.** It is a fallback for a
+  *stationary* press only. The trigger is now **vertical movement**; horizontal
+  movement is the navigation swipe. A hold could not be trusted as the primary
+  trigger because it made the drag conditional on a timing guess (see E-012).
+- **There is no horizontal travel and no horizontal position.** The bar is
+  always horizontally centred and drags only up and down, per the 2026-10-03
+  requirement. The narrow pill that created *horizontal* travel is now just how
+  the bar looks; vertical travel comes from the `--fabnav-top: 56px` band down
+  to the resting bottom position, which is roughly 300px on a 390px phone.
+
+The centring lessons from this entry still stand and were extended by E-013:
+`transform` cannot be overwritten by JS, and *visual* measurements differ from
+*layout* measurements while the bar is scaled up.
+
 ### E-012 · The drag still did not work on iOS — the callout ate the gesture
 
 **Status:** FIXED · **Found 2026-10-03 · Cause reasoned, not yet confirmed on
@@ -220,6 +238,73 @@ drops it, so it never appears in `rule.cssText`.
 **STILL NOT VERIFIED ON REAL iPhone/iPad.** The reasoning is specific and
 testable by hand, but "reasoned from documented WebKit behaviour" is not
 "observed". Needs a thumb on a real device before this can be called done.
+
+### E-013 · The bar was never actually centred while it was lifted
+
+**Status:** FIXED · **Found 2026-10-03 · Caught by the centring requirement,
+not by any gesture test**
+
+New requirement: the bar must be horizontally centred at all times and drag
+only vertically. Four defects followed from enforcing that.
+
+**1. The visual box is not the layout box — the real bug.** `data-lifted`
+scales the bar to `1.035`, and `getBoundingClientRect()` reports the **visual**
+box: 269.1px where the bar is 260px. Every re-centring that read the rect
+therefore computed `(390 - 269.1) / 2 = 60.4` instead of `(390 - 260) / 2 = 65`
+and placed the bar **9.1px left of centre** — but *only while lifted*. It
+looked perfect at rest, which is why nothing caught it. All measurements now
+go through `layoutWidth()`/`layoutHeight()`, which use `offsetWidth` /
+`offsetHeight` and ignore transforms. This is a genuinely hard trap: a
+measurement that is correct 95% of the time and wrong exactly when it matters.
+
+**2. Vertical travel was released instead of dragging.** After pivoting to
+vertical-only I left the old rule in place — "vertical goes to the page" —
+which was correct for a *horizontal* drag bar and is now exactly backwards. The
+axis test is now: **vertical → reposition, horizontal → navigation swipe.** No
+timer involved, so no timing value can break the drag.
+
+**3. The stationary-press hold could steal a swipe (a real race).** The hold is
+a fallback for a finger that never moves, but the first `touchmove` can arrive
+**late**: under CPU load, 8 undelayed touchmoves put it past the 90ms touch
+hold. The hold then promoted the gesture to a drag before the axis had ever
+been evaluated, and a horizontal flick that should have navigated did not.
+
+The signature was the confusing part — **the test passed when run alone and
+failed in the full suite.** That is precisely what a race looks like, and it is
+why guessing at it from the failure message would have been wrong. The hold is
+now **revocable**: while the finger has travelled less than
+`DRAG_THRESHOLD_PX` horizontally the classification is re-checked, and if the
+travel turns out to be mostly sideways the gesture is handed back to the swipe
+handler, the bar re-placed and the stale transform cleared. Pinned
+deterministically by *"a DELAYED horizontal flick is not stolen by the
+stationary-press hold"*, which forces the race instead of hoping for it.
+
+**4. Dead code from the pivot.** `movedAt` was written and never read;
+`--fabnav-min-travel` and the horizontal half of `Track`/`Dock` are gone.
+`isSwipeCommit` is still live — it gates the swipe commit in `onPointerUp`.
+
+**Lesson worth keeping:** `getBoundingClientRect()` returns the box *after*
+transforms; `offsetWidth`/`offsetHeight` return the box *before* them. For
+anything layout-related — centring, sizing, travel — use the layout box.
+
+### E-014 · "Passes alone, fails in the suite" means a race, not a bad test
+
+**Status:** APPLIED (rule) · **Recorded 2026-10-03**
+
+A test that passes in isolation and fails under load is the clearest possible
+signal that something is timing-dependent. Two distinct causes showed up in this
+session with the same symptom:
+
+- a genuinely correct test whose subject was being decided by a **timer**
+  (E-013 defect 3);
+- a real defect where the **layout measurement** was wrong only in the lifted
+  state (E-013 defect 1).
+
+Do not "fix" such a test by relaxing it, and do not re-run it hoping for a
+different answer. Re-run the suite to get the failure *under load*, and
+separately force the timing deterministically so the test pins the race rather
+than the machine's mood. A timing-sensitive test that does not deterministically
+reproduce its own timing condition is not a regression test.
 
 ### E-011 · A green workflow run does not mean the Gemini probe succeeded
 
@@ -614,6 +699,7 @@ the source recorded so any claim can be checked.
 | **E-002** | "1 caution left", "3 cautions", "suspended" all appeared separately and repetitively | Grouped into one clear state per player |
 | **E-003** | A player who had left the club was counted as a current risk | Removed from the current count |
 | **E-004** | Swiping down did nothing on real iPhones (works in emulators) | Works on real touch devices |
+| **E-010 – E-013** | The menu bar could be tapped but not dragged, and was never actually centred | Drags vertically only, always centred; the iOS link callout no longer eats the gesture |
 | **E-006 – E-009** | Former-player identity could be wrong or unsourced | Now resolved from live sources, with provenance recorded |
 | **B-002** | News cards had no images | Feed supplies them |
 | **B-005** | The overnight data job could finish successfully and never actually publish — data silently went stale for two days | Deploy guard now proves committed bytes match served bytes |

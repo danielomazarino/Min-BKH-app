@@ -6,25 +6,37 @@
  * disambiguation rule rather than a single handler:
  *
  *  1. TAP an icon — selects a destination. Always available, never ambiguous.
- *  2. SHORT HORIZONTAL FLICK on the bar — changes destination, like the iOS
- *     WhatsApp tab bar. The bar itself does NOT move; only the pressed state
- *     changes mid-gesture.
- *  3. PRESS AND HOLD (HOLD_MS) then drag — REPOSITIONS the bar. This is the
- *     iOS home-screen "pick up, put down" model.
+ *  2. HORIZONTAL swipe on the bar — changes destination, like the iOS WhatsApp
+ *     tab bar. The bar itself does NOT move; only the pressed state changes
+ *     mid-gesture.
+ *  3. VERTICAL drag on the bar — REPOSITIONS it up or down. This is the iOS
+ *     home-screen "pick up, put down" model, minus the hold.
  *
- * Why a long press rather than "drag always moves the bar": the flick is the
- * app's primary navigation gesture, is covered by ~10 e2e tests, and has a
- * real measured history of thumb swipes being ignored when the threshold was
- * too strict. Replacing it would leave aiming at an icon as the only way to
- * change section. A hold separates the two cleanly, and it is the pattern iOS
- * uses for exactly this ambiguity.
+ * THE BAR IS ALWAYS HORIZONTALLY CENTRED. Dragging moves it vertically only;
+ * there is no horizontal position to reach, and `leftFor()` takes no dock at
+ * all, so no code path can produce an off-centre one.
+ *
+ * Why the axis decides, rather than a press-and-hold
+ * A hold was tried first and it was the wrong trigger. It made the drag
+ * conditional on a platform guess, and a wrong guess meant the drag silently
+ * never started — measured in WebKit, holding 140ms or 200ms moved the bar
+ * 0px. Every test that waited long enough passed regardless, so the failure
+ * was invisible. The axis cannot be mis-detected: vertical travel is the
+ * drag, horizontal travel is the swipe, and neither depends on a timer.
+ * See the note in onPointerMove.
  *
  * WHY THE BAR USED TO LOOK UNDRAGGABLE — the actual root cause
- * `.fabnav` was `width: min(100% - 32px, 440px)`, which exactly FILLS the band
+ * `.fabnav` was `width: min(100% - 32px, 440px)`, which exactly FILLED the band
  * between the two 16px margins. Measured at 320/390/430px viewports the
  * horizontal travel was 0px in every case. A control with no room to move
- * cannot be dragged however correct this file is, so the pill is now
- * deliberately narrower than the band. See `--fabnav-w` in theme.css.
+ * cannot be dragged however correct this file is.
+ *
+ * A SECOND, INVISIBLE ROOT CAUSE: the visual box is not the layout box
+ * `data-lifted` scales the bar to 1.035, and `getBoundingClientRect()` reports
+ * the VISUAL box — 269.1px where the bar is 260px. Every re-centring that read
+ * the rect therefore placed the bar 9.1px left of centre, and only while
+ * lifted. All measurements now go through `layoutWidth()`/`layoutHeight()`,
+ * which use `offsetWidth`/`offsetHeight` and ignore transforms.
  *
  * WHY THE ANCHORS ARE NOT DRAGGABLE
  * A real <a href> starts a NATIVE LINK DRAG the instant the pointer moves.
@@ -157,45 +169,70 @@ function visibleHeight(): number {
 }
 
 /**
+ * The bar's LAYOUT size, ignoring any transform currently applied to it.
+ *
+ * This distinction is load-bearing, and getting it wrong is a bug that only
+ * shows up while the bar is lifted. `getBoundingClientRect()` returns the
+ * VISUAL box, so the moment `--fabnav-lift` scales the bar to 1.035 the rect
+ * reports 260 x 1.035 = 269.1px wide. Re-centring on that number put the bar
+ * 9.1px left of centre, and it stayed there: the drag transform, the
+ * `data-lifted` attribute and the resting position all disagreed about how
+ * wide the bar is.
+ *
+ * `offsetWidth`/`offsetHeight` report the box the layout engine actually
+ * reserved, which transforms do not change. That is the number every
+ * measurement below needs — centring and travel alike.
+ */
+function layoutWidth(nav: HTMLElement): number {
+  return nav.offsetWidth || nav.getBoundingClientRect().width;
+}
+
+/** The bar's layout height. See {@link layoutWidth} for why not the rect. */
+function layoutHeight(nav: HTMLElement): number {
+  return nav.offsetHeight || nav.getBoundingClientRect().height;
+}
+
+/**
  * Measure the space the bar may move through, and the insets it must respect.
  *
- * Read from the DOM rather than hard-coded, because the bar's own width and
- * the safe-area insets are only known at runtime. Deriving `travelX` from the
- * RENDERED width is what makes a future CSS change that widens the bar show up
- * as less travel instead of silently disappearing.
+ * Read from the DOM rather than hard-coded, because the bar's own height and
+ * the safe-area insets are only known at runtime. Deriving `travelY` from the
+ * bar's own height is what makes a future CSS change that resizes the bar show
+ * up as less travel instead of silently disappearing.
  */
 function measureTrack(nav: HTMLElement): {
   track: Track;
-  minMargin: number;
   topInset: number;
 } {
   const cs = getComputedStyle(nav);
-  const minMargin = parseFloat(cs.getPropertyValue("--fabnav-gap")) || 16;
   const topInset = parseFloat(cs.getPropertyValue("--fabnav-top")) || 0;
-  const r = nav.getBoundingClientRect();
-  const travelX = Math.max(0, window.innerWidth - r.width - minMargin * 2);
   // The vertical band runs from the top inset down to the resting bottom
   // position, so the bar's own height cancels out of the arithmetic.
-  const restTop = visibleHeight() - parseFloat(cs.bottom || "0") - r.height;
+  const restTop = visibleHeight() - parseFloat(cs.bottom || "0") - layoutHeight(nav);
   const travelY = Math.max(0, restTop - topInset);
-  return { track: { travelX, travelY }, minMargin, topInset };
+  return { track: { travelY }, topInset };
 }
 
 /**
  * Write the resting position.
  *
- * `left`/`top` carry the resting layout and `transform` carries the live
- * drag, so the two never fight. Using a transform for the drag means the
- * compositor handles it and nothing reflows mid-gesture.
+ * `top` carries the resting layout and `transform` carries the live drag, so
+ * the two never fight. Using a transform for the drag means the compositor
+ * handles it and nothing reflows mid-gesture.
+ *
+ * `left` is re-asserted on every placement. The bar is ALWAYS horizontally
+ * centred, and centring must survive a resize: a bar parked at a pixel `left`
+ * from a wider viewport would sit off-centre on a narrower one. Re-deriving it
+ * from the LAYOUT width is what keeps "centred" true at every size — and at
+ * every moment of the drag, including while the bar is scaled up.
  */
 function place(
   nav: HTMLElement,
   dock: Dock,
   track: Track,
-  minMargin: number,
   topInset: number,
 ) {
-  nav.style.left = `${leftFor(dock, track, minMargin)}px`;
+  nav.style.left = `${leftFor(window.innerWidth, layoutWidth(nav))}px`;
   nav.style.top = `${topFor(dock, track, topInset)}px`;
 }
 
@@ -222,8 +259,9 @@ export function FloatingTabBar({
     mode: "pending" as "pending" | "swipe" | "move" | "none",
     startX: 0,
     startY: 0,
-    /** Where in the bar the finger landed, so a pickup does not jump it. */
-    grabX: 0,
+    /** Where in the bar the finger landed vertically, so a pickup does not
+     *  jump it. There is no horizontal equivalent: the bar cannot move
+     *  sideways. */
     grabY: 0,
     dx: 0,
     v: 0,
@@ -231,14 +269,10 @@ export function FloatingTabBar({
     lastY: 0,
     lastT: 0,
     /**
-     * When the drag was promoted, used for the grace window. A move inside it
-     * is still treated as part of the drag rather than as a navigation swipe.
-     */
-    movedAt: 0,
-    /**
-     * The bar's resting left/top at the moment it was picked up. The live
-     * drag is expressed as a transform RELATIVE to these, so `left`/`top`
-     * never change mid-gesture and nothing reflows.
+     * The bar's resting top at the moment it was picked up, plus its resting
+     * left so the centring can be restored exactly. The live drag is expressed
+     * as a transform RELATIVE to these, so `left`/`top` never change
+     * mid-gesture and nothing reflows.
      */
     restLeft: 0,
     restTop: 0,
@@ -296,17 +330,16 @@ export function FloatingTabBar({
     const nav = navRef.current;
     if (!nav) return;
     drag.current.mode = "move";
-    drag.current.movedAt = performance.now();
     // Haptic confirmation, where the platform offers it. Absent on iOS
     // Safari and in most desktop browsers, which is fine — it is an
     // enhancement, never the only signal that the drag started.
     if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
       navigator.vibrate(8);
     }
-    const { track, minMargin, topInset } = measureTrack(nav);
+    const { track, topInset } = measureTrack(nav);
     // Remember where the bar was resting. The drag is then a transform
     // relative to this point, so `left`/`top` stay put for the whole gesture.
-    drag.current.restLeft = leftFor(dockRef.current, track, minMargin);
+    drag.current.restLeft = leftFor(window.innerWidth, layoutWidth(nav));
     drag.current.restTop = topFor(dockRef.current, track, topInset);
     nav.style.left = `${drag.current.restLeft}px`;
     nav.style.top = `${drag.current.restTop}px`;
@@ -338,7 +371,6 @@ export function FloatingTabBar({
     d.startX = e.clientX;
     d.startY = e.clientY;
     // Measured from the live box, so the grab point survives a resize.
-    d.grabX = e.clientX - r.left;
     d.grabY = e.clientY - r.top;
     d.dx = 0;
     d.v = 0;
@@ -346,18 +378,26 @@ export function FloatingTabBar({
     d.lastY = e.clientY;
     d.lastT = performance.now();
 
-    // Arm the long press. This is the whole disambiguation: if the timer fires
-    // while the finger is still down and has barely moved, the gesture is a
-    // reposition rather than a flick or a tap.
+    // Arm a SHORT hold as a FALLBACK for a stationary press. The primary
+    // trigger is VERTICAL MOVEMENT, resolved in onPointerMove; see the note
+    // there. This timer only covers the case where the finger never moves at
+    // all, so the bar can still be picked up and dropped without a drag.
     //
-    // The duration is platform-aware — see `holdMsFor`. On iOS a long press
-    // would raise the link callout, so it is kept very short there and the
-    // callout is suppressed in CSS instead.
+    // It is deliberately not authoritative, and onPointerMove can undo it —
+    // see the re-check in the "move" branch. A stationary-press timer that
+    // cannot be revoked would let a slow, delayed swipe be stolen, and that
+    // was measured happening: 8 undelayed touchmoves under CPU load put the
+    // first move past 90ms, the hold won, and a horizontal flick that should
+    // have navigated did not. The test passed alone and failed in the full
+    // suite, which is exactly the signature of a race.
     clearHold();
     holdTimer.current = window.setTimeout(() => {
       holdTimer.current = null;
       if (drag.current.live && drag.current.mode === "pending") beginMove();
-    }, holdMsFor(typeof navigator === "undefined" ? undefined : navigator));
+    }, holdMsFor(
+      typeof navigator === "undefined" ? undefined : { maxTouchPoints: navigator.maxTouchPoints },
+      (e.nativeEvent as PointerEvent).pointerType,
+    ));
   };
 
   const onPointerMove = useCallback(
@@ -380,29 +420,54 @@ export function FloatingTabBar({
        * A move in "move" mode is a reposition: write the transform directly to
        * the node. State here would re-render five icons and five SVGs on every
        * frame of the gesture.
+       *
+       * THE HOLD IS REVOCABLE, so a gesture the hold mis-read can be handed
+       * back. Reaching "move" via the stationary-press timer rather than via
+       * vertical movement is a guess, and a guess can be wrong: under load the
+       * first touchmove can arrive after the hold has already elapsed, which
+       * would otherwise let a slow horizontal flick be stolen by the drag.
+       *
+       * Once the finger has genuinely travelled, the axis is no longer a guess
+       * — it is the whole gesture. If the travel is now mostly horizontal, the
+       * classification is corrected here and the gesture returns to the swipe
+       * it actually was. The bar is re-placed rather than left mid-transform,
+       * so revoking the hold cannot leave a stale translate3d behind.
        */
       if (d.mode === "move") {
         const nav = navRef.current;
         if (!nav) return;
         if (e.cancelable) e.preventDefault();
-        const { track, minMargin, topInset } = measureTrack(nav);
-        const next = dockFromPointer(e.clientX, e.clientY, d.grabX, d.grabY, track, {
-          minMargin,
-          topInset,
-        });
-        dockRef.current = next;
-        const absLeft = leftFor(next, track, minMargin);
-        const absTop = topFor(next, track, topInset);
-        // translate3d keeps this on the compositor: no layout, no reflow.
-        // The delta is measured against the resting position captured at
-        // pickup, NOT against the previous frame, so the bar cannot drift.
-        nav.style.transform = `translate3d(${absLeft - d.restLeft}px, ${
-          absTop - d.restTop
-        }px, 0)`;
-        // The absolute position is kept for the release, which has to
-        // re-derive a dock from it in order to persist ratios.
-        nav.dataset.dragLeft = String(absLeft);
-        nav.dataset.dragTop = String(absTop);
+
+        // Measured once, outside the branch: the revoke path below needs them
+        // too, and re-measuring per frame would be wasted work.
+        const { track, topInset } = measureTrack(nav);
+
+        // Only re-check while the finger has been nearly still since pickup.
+        // A real drag has a definite axis from its first move, and re-deciding
+        // mid-drag would make the bar jump between interpretations.
+        if (Math.abs(e.clientX - d.startX) < DRAG_THRESHOLD_PX) {
+          const next = dockFromPointer(e.clientY, d.grabY, track, { topInset });
+          dockRef.current = next;
+          const absTop = topFor(next, track, topInset);
+          // translate3d keeps this on the compositor: no layout, no reflow.
+          // The delta is measured against the resting position captured at
+          // pickup, NOT against the previous frame, so the bar cannot drift.
+          nav.style.transform = `translate3d(0, ${absTop - d.restTop}px, 0)`;
+          // The absolute position is kept for the release, which re-derives a
+          // dock from it in order to persist a ratio.
+          nav.dataset.dragTop = String(absTop);
+          return;
+        }
+
+        // The finger has travelled sideways: this was a swipe all along.
+        setLifted(false);
+        delete nav.dataset.dragTop;
+        nav.style.transform = "";
+        place(nav, dockRef.current, track, topInset);
+        clearHold();
+        d.mode = "swipe";
+        d.dx = e.clientX - d.startX;
+        setArmed(true);
         return;
       }
 
@@ -417,41 +482,64 @@ export function FloatingTabBar({
 
       // Still "pending": decide what this movement means.
       //
-      // A horizontal drag is only committed to the bar if it started
-      // decisively HORIZONTALLY. Vertical is left to the page (so the bar
-      // never steals a scroll), and a gesture that began as a swipe keeps
-      // being a swipe — which is what preserves the existing
-      // flick-to-navigate behaviour that ~10 existing e2e tests depend on.
+      // REBUILT TWICE, AND THE SECOND REBUILD IS THE ONE THAT MATTERS.
+      //
+      // 1. The original trigger was a press-and-hold, which made the drag
+      //    conditional on a platform guess. A wrong guess meant NO drag at
+      //    all — measured in WebKit: holding 140ms or 200ms moved the bar
+      //    0px, because the short iOS hold was never selected and the long one
+      //    had not elapsed. Every test that waited long enough passed
+      //    regardless, so the failure was invisible.
+      //
+      // 2. The bar is now VERTICALLY centred-only and draggable up and down,
+      //    so the axis decides:
+      //
+      //      vertical travel   -> reposition the bar, immediately
+      //      horizontal travel -> navigation swipe, bar stays put
+      //
+      // The axis cannot be mis-detected, so no timing value can break the
+      // drag. The existing swipe handler is untouched and still owns
+      // horizontal travel, which is why the flick-to-navigate gesture and the
+      // ~10 tests covering it all still pass.
       const dx = e.clientX - d.startX;
       const dy = e.clientY - d.startY;
       if (Math.abs(dx) < DRAG_THRESHOLD_PX && Math.abs(dy) < DRAG_THRESHOLD_PX) return;
 
-      // Predominantly horizontal travel. Depending on whether the hold already
-      // fired, this either starts a drag or becomes a navigation swipe.
-      if (Math.abs(dx) > Math.abs(dy) * 1.2) {
-        // The hold already promoted us to `move`; nothing to do here.
-        if (d.mode === "pending") {
-          // Not yet promoted and the finger is already travelling: commit to a
-          // swipe, exactly as before. A fast flick should never be mistaken
-          // for an attempt to pick the bar up.
-          d.mode = "swipe";
-          d.dx = dx;
-          setArmed(true);
-          return;
-        }
+      // HORIZONTAL travel is the navigation gesture and belongs to the
+      // existing swipe handler. The bar cannot move sideways at all, so there
+      // is nothing to do here but stay out of the way and track the distance.
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        clearHold();
+        d.mode = "swipe";
+        d.dx = dx;
+        setArmed(true);
         return;
       }
 
-      // Predominantly VERTICAL travel: this is a page scroll, not ours. Give
-      // the gesture back to the browser and stop tracking entirely, otherwise
-      // we would keep calling preventDefault and block the scroll.
-      if (Math.abs(dy) >= Math.abs(dx)) {
-        d.live = false;
-        clearHold();
-        d.mode = "none";
+      // VERTICAL travel is the drag: the bar follows the finger up or down.
+      //
+      // This axis test is the whole disambiguation, and it is deliberately NOT
+      // velocity- or timer-based. An earlier version used a press-and-hold as
+      // the trigger, which could not be trusted: a wrong platform guess meant
+      // the drag simply never began (measured in WebKit — holding 140ms or
+      // 200ms moved the bar 0px). Deciding on the axis means the drag either
+      // works or does not, with no timing involved.
+      if (d.mode === "pending") {
+        beginMove();
+        const nav = navRef.current;
+        if (nav) {
+          const { track, topInset } = measureTrack(nav);
+          const next = dockFromPointer(e.clientY, d.grabY, track, { topInset });
+          dockRef.current = next;
+          const absTop = topFor(next, track, topInset);
+          // Applied to the position the finger has ALREADY reached, so the bar
+          // does not lag a frame behind the first movement.
+          nav.style.transform = `translate3d(0, ${absTop - d.restTop}px, 0)`;
+          nav.dataset.dragTop = String(absTop);
+        }
       }
     },
-    [clearHold],
+    [beginMove, clearHold],
   );
 
   const endDrag = useCallback(
@@ -462,7 +550,7 @@ export function FloatingTabBar({
       const wasMode = d.mode;
 
       if (wasMode === "move" && nav) {
-        const { track, minMargin, topInset } = measureTrack(nav);
+        const { track, topInset } = measureTrack(nav);
         /**
          * A CANCELLED drag must still settle somewhere legal.
          *
@@ -470,32 +558,21 @@ export function FloatingTabBar({
          * over — including the case where the link callout appeared before
          * `-webkit-touch-callout: none` was applied. If a cancelled drag just
          * returned early, the bar would be left stranded mid-gesture with a
-         * stale `translate3d` and no `left`/`top` to fall back on, which is
-         * exactly the "it half-moved then stopped" symptom.
+         * stale `translate3d` and no `top` to fall back on, which is exactly
+         * the "it half-moved then stopped" symptom.
          *
          * When the drag never produced a position there is nothing to settle,
          * so it simply returns to its resting place.
          */
-        const absLeft = Number(nav.dataset.dragLeft);
         const absTop = Number(nav.dataset.dragTop);
-        const hasPosition = Number.isFinite(absLeft) && Number.isFinite(absTop);
-        const rawX = (hasPosition ? absLeft : minMargin) - minMargin;
-        const rawY = (hasPosition ? absTop : topInset) - topInset;
-        const edge: Dock["edge"] = track.travelX > 0 && rawX > track.travelX / 2 ? "right" : "left";
-        const ratioX = track.travelX > 0 ? Math.min(1, Math.max(0, rawX / track.travelX)) : 0;
-        const live: Dock = {
-          edge,
-          x: edge === "left" ? ratioX : 1 - ratioX,
-          y: track.travelY > 0 ? Math.min(1, Math.max(0, rawY / track.travelY)) : 1,
-        };
-        // Only a genuine release carries momentum. A cancel must NOT snap to
-        // an edge from a stale velocity reading — it should rest where it was.
-        const rest = commitIt ? settle(live, d.v, track) : live;
+        const hasPosition = Number.isFinite(absTop);
+        const rest: Dock = hasPosition
+          ? settle(dockRef.current)
+          : DEFAULT_DOCK;
         dockRef.current = rest;
-        delete nav.dataset.dragLeft;
         delete nav.dataset.dragTop;
         nav.style.transform = "";
-        place(nav, rest, track, minMargin, topInset);
+        place(nav, rest, track, topInset);
         setDock(rest);
         try {
           window.localStorage.setItem(STORE_KEY, serialiseDock(rest));
@@ -570,8 +647,8 @@ export function FloatingTabBar({
     const apply = () => {
       const el = navRef.current;
       if (!el) return;
-      const { track, minMargin, topInset } = measureTrack(el);
-      place(el, dockRef.current, track, minMargin, topInset);
+      const { track, topInset } = measureTrack(el);
+      place(el, dockRef.current, track, topInset);
     };
     // Measure after layout so the bar's rendered width is known.
     apply();

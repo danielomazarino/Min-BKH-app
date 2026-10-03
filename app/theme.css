@@ -86,11 +86,6 @@
    * all. The five destinations are laid out with `flex: 1 1 0` and their
    * labels ellipsise, so a narrower bar degrades legibly rather than clipping. */
   --fabnav-w: 260px;
-  /* The smallest horizontal travel worth dragging with a thumb. A 260px bar
-     on a 320px screen would otherwise leave 28px, which clears the 8px tap
-     threshold but is not a comfortable throw. Subtracting this from the width
-     guarantees the gesture survives on the narrowest supported phone. */
-  --fabnav-min-travel: 40px;
 
   /* GLASS — every part of the floating-nav surface in one place, so the look
    * can be retuned without hunting through declarations.
@@ -341,21 +336,20 @@ main {
      rather than a stale 58px assumption. */
   bottom: calc(var(--fabnav-gap) + env(safe-area-inset-bottom, 0px));
   z-index: 40;
-  /* THE CEILING, and a guaranteed minimum amount of travel.
+  /* THE WIDTH CAP.
    *
-   * Travel = viewport - width - 2 x --fabnav-gap, so a fixed ceiling still
-   * collapses on a narrow phone. At 320px a 260px bar left only 28px of
-   * travel — technically draggable, practically not. Subtracting a minimum
-   * travel keeps the gesture usable on the smallest screen worth supporting:
+   * The bar is ALWAYS horizontally centred and cannot be dragged sideways, so
+   * this is purely about how much room the five destinations need. It is still
+   * worth capping: 260px keeps each of the five labels legible with its icon,
+   * where filling the full band made the control read as a system tab bar
+   * rather than a floating pill.
    *
-   *   320px -> min(260, 248) = 248px wide -> 40px travel
-   *   390px -> min(260, 318) = 260px wide -> 98px travel
-   *   430px -> min(260, 358) = 260px wide -> 138px travel
-   *
-   * Do not raise --fabnav-w without re-checking these three numbers; at
-   * 440px the bar would exactly refill the band on a 390px phone and the drag
-   * would silently die again. That regression is what this whole feature is. */
-  width: min(var(--fabnav-w), calc(100% - var(--fabnav-gap) * 2 - var(--fabnav-min-travel)));
+   * This was originally a horizontal-travel budget. That is gone — the bar
+   * used to be dockable to the left and right edges, and when it stopped
+   * being, `--fabnav-min-travel` lost its purpose and was removed rather than
+   * left as a dead token. Do not reintroduce a travel calculation here: there
+   * is no horizontal movement to budget for. */
+  width: min(var(--fabnav-w), calc(100% - var(--fabnav-gap) * 2));
   height: var(--fabnav-h);
   /* No `transform` here on purpose — see the `left` note above. The drag
      transform is written by JS and must not be fighting a CSS shim. */
