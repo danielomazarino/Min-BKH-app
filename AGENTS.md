@@ -151,6 +151,15 @@ Report precisely: use "verified", "observed", "not yet tested". Distinguish
 *"the workflow file is correct"* from *"production now serves the right data"*.
 Never present an assumption as a fact.
 
+## 12. For iPhone testing, deployed is the only "done"
+
+A task delivered for testing on a real iPhone is finished only when: the
+changes are on GitHub Pages, the deployment succeeded, and the public site
+displays the expected build id (`<html data-build>` in the served document).
+
+A local build or a `localhost` preview is **not** delivery. If deployment
+cannot be completed, say so explicitly and do not ask for device feedback.
+
 ---
 
 ## Quick pre-production checklist
@@ -159,9 +168,11 @@ Never present an assumption as a fact.
 - [ ] Can this change reach production, or is it behind a deploy gap?
 - [ ] If a deploy chain was added, is it pinned to the data commit?
 - [ ] If LLM output is involved, is it explicitly gated and evaluated?
-- [ ] Did I verify the root cause from the artifact, not from proximity?
+- [ ] Did I verify the root cause from the artifact, not by proximity?
 - [ ] Are scope prohibitions respected (no opportunistic refactoring)?
 - [ ] Did I state clearly what I did **not** change, and what is unverified?
+- [ ] If this is for iPhone testing: is it **deployed**, and does the public
+      build id match the build I intended to ship?
 
 ---
 
