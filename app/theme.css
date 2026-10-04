@@ -71,7 +71,7 @@
      Raised 64 -> 92px on 2026-10-04: the whole bar was too small to hit with a
      thumb on a real iPhone, so it was scaled up by roughly 50% as a whole —
      height, width, icon, label and indicator inset together. */
-  --fabnav-h: 92px;
+  --fabnav-h: 78px;
   /* Distance from the viewport edge to the bar. */
   --fabnav-gap: 16px;
   /* WIDTH — 330px -> 480px on 2026-10-04.
@@ -714,7 +714,7 @@ main {
    * `pan-y` hands the vertical axis back to the browser while keeping the
    * horizontal axis for our swipe, which is what a bottom bar should do. */
   touch-action: pan-y;
-  min-height: 86px;
+  min-height: 72px;
   padding: 6px 2px;
   color: var(--text-3);
   text-decoration: none;
@@ -734,8 +734,11 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* 23 -> 34px: scaled with the bar so the icon reads at thumb distance. */
-  height: 34px;
+  /* 34 -> 23px: REVERTED to the pre-scale-up size on 2026-10-04. The 30px icon
+     rendered blurry when scaled up on the iPhone, which looked like a rendering
+     fault rather than a design choice. The bar keeps its larger WIDTH, so each
+     tab is still much easier to hit horizontally; only the glyph is smaller. */
+  height: 23px;
   transition: transform var(--dur-tap) var(--ease-ios);
   /* CRITICAL, AND FOUND BY MEASURING RATHER THAN REASONING.
    *
@@ -767,16 +770,18 @@ main {
   pointer-events: none;
 }
 .fabnav-icon svg {
-  width: 30px;
-  height: 30px;
+  /* Back to the crisp 20px the icon was designed at. Scaling the rasterised
+     SVG up is what made it blurry on the iPhone. */
+  width: 20px;
+  height: 20px;
   display: block;
   /* The SVG must never be the hit target. See the note on .fabnav-icon. */
   pointer-events: none;
 }
 
 .fabnav-label {
-  /* 9.5 -> 13px, scaled with the bar. */
-  font-size: 13px;
+  /* 9.5px, unchanged from before the scale-up: upscaled text was blurry too. */
+  font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1;

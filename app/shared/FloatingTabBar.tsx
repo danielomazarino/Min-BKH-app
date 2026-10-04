@@ -598,19 +598,12 @@ export function FloatingTabBar({
                 }}
               >
                 <span className="fabnav-icon" aria-hidden="true">
-                  {/*
-                    The icon box is scaled with the bar (24 -> 34 user units on a
-                    24-unit viewBox) so the glyph is not clipped as the CSS grows
-                    it from 20px to 30px. `width`/`height` here override the SVG's
-                    default 24x24; the CSS still controls the rendered size.
-                  */}
-                  <Icon
-                    width={34}
-                    height={34}
-                    x={-5}
-                    y={-5}
-                    strokeWidth={isActive ? 2.4 : 2}
-                  />
+                  {/* Back to the icon box the glyph was designed at. It was
+                      scaled to 34 units while the bar was scaled up, which
+                      rendered blurry on the iPhone; 24 units at 20px is crisp.
+                      The bar keeps its larger width, so the tabs are still easy
+                      to hit — only the glyph shrank. */}
+                  <Icon x={23} y={23} strokeWidth={isActive ? 2.2 : 1.8} />
                 </span>
                 <span className="fabnav-label">{d.label}</span>
               </a>
