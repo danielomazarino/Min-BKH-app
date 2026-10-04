@@ -66,26 +66,25 @@
 
   /* Chrome heights */
   --header-h: 44px;
-  /* The floating bar is 64px tall and floats 16px above the safe area, so
-     content needs ~64 + 2x16 + the inset of clearance to scroll fully clear.
-     Raised from 58px on 2026-10-03 so the five destinations get a bigger hit
-     target without the bar reading as a full-width system tab bar. */
-  --fabnav-h: 64px;
-  /* Distance from the viewport edge to the bar. Kept separate from the height
-     so the two can be tuned independently. */
+  /* The floating bar is 92px tall and floats 16px above the safe area, so
+     content needs ~92 + 2x16 + the inset of clearance to scroll fully clear.
+     Raised 64 -> 92px on 2026-10-04: the whole bar was too small to hit with a
+     thumb on a real iPhone, so it was scaled up by roughly 50% as a whole —
+     height, width, icon, label and indicator inset together. */
+  --fabnav-h: 92px;
+  /* Distance from the viewport edge to the bar. */
   --fabnav-gap: 16px;
-  /* WIDTH — raised from 260px to 330px on 2026-10-03.
+  /* WIDTH — 330px -> 480px on 2026-10-04.
    *
-   * At 260px on a 390px phone each of the five tabs got only 52px, which is
-   * below the 44px-plus comfortable target once the label is included, and
-   * the end tabs (Hem, Spelare) were the hardest to hit. At 330px the bar is
-   * still clearly a floating pill with 30px of margin each side, and each tab
-   * gets 66px.
+   * THUMB SCALING. Everything in the bar was too small to hit reliably with a
+   * thumb on a real iPhone, so the whole bar was scaled up by roughly 50%:
+   * this width, --fabnav-h, the icon, the label and the pill inset all
+   * together. At 480px on a 390px screen the width token is capped by the
+   * `min()` in `.fabnav`, so the bar spans the viewport minus the gaps.
    *
-   * The destinations are laid out with `flex: 1 1 0`, so they share whatever
-   * width the bar has. Do not raise this toward 100%: the bar is meant to read
-   * as floating over the app, not as a system tab bar. */
-  --fabnav-w: 330px;
+   * 480 leaves a ~390px bar with 5 tabs = 78px each, comfortably above the
+   * 44px accessible minimum with room to spare. */
+  --fabnav-w: 480px;
 
   /* Horizontal INSET of the glass pill inside the bar, and the matching
    * vertical inset.
@@ -100,8 +99,33 @@
    * fully inside the rounded frame AND centres it on each icon.
    *
    * This value is read by JS in measure() and must match the pill's `top`/
-   * `bottom` below. */
-  --fabnav-pill-inset: 5px;
+   * `bottom` below.
+   *
+   * 3px, i.e. the SMALLEST distance that still reads as a gap. The indicator is
+   * a concentric band inside the bar, so this value is simultaneously the
+   * visible gap all the way round. */
+  --fabnav-pill-inset: 3px;
+
+  /* CONCENTRIC GEOMETRY.
+   *
+   * `border-radius: 999px` made the indicator a stadium — fully rounded ends —
+   * so it pulled IN from the bar's own curve and read as a lozenge floating
+   * inside a differently-shaped frame. Reported from a real iPhone: the
+   * alignment was right but the SHAPE did not follow the outer border.
+   *
+   * For a concentric band the indicator's corner radius must equal the bar's
+   * radius MINUS the inset, and its edge must sit exactly one inset inside the
+   * bar's edge. Then both curves share a centre and the gap is the same on
+   * every side, all the way round.
+   *
+   * 32 - 4 = 28, not 32 - 3. The inset from the bar's OUTER edge is the CSS
+   * inset PLUS the bar's 1px border, so the concentric radius has to allow for
+   * both. Using 29 here left the arc off-centre by 1px — invisible to the eye
+   * but exactly the "does not quite follow the border" complaint.
+   *
+   * Kept as a token so the pair cannot drift apart. */
+  --fabnav-radius: 32px;
+  --fabnav-pill-radius: 28px;
 
   /* GLASS — every part of the floating-nav surface in one place, so the look
    * can be retuned without hunting through declarations.
@@ -449,7 +473,9 @@ main {
   -webkit-backdrop-filter: var(--fabnav-blur);
   backdrop-filter: var(--fabnav-blur);
   border: 1px solid var(--fabnav-edge);
-  border-radius: 24px;
+  /* 32px, and the indicator's radius is derived from it (32 - 3 = 29) so the
+     two curves stay concentric at any inset. */
+  border-radius: var(--fabnav-radius);
   box-shadow:
     0 6px 22px rgba(0, 0, 0, 0.5),
     /* Top inner highlight: the single strongest cue that a surface is a
@@ -584,8 +610,9 @@ main {
      pass that computes the tab stops, so the two can never disagree. */
   width: 52px;
   left: 0;
-  /* Fully rounded, so its own corners match the bar's curve. */
-  border-radius: 999px;
+  /* CONCENTRIC, not a stadium. See --fabnav-pill-radius: radius - inset, so
+     this curve shares a centre with the bar's and the gap is uniform. */
+  border-radius: var(--fabnav-pill-radius);
   background: var(--fabnav-pill);
   border: 1px solid var(--fabnav-pill-edge);
   box-shadow:
@@ -687,8 +714,8 @@ main {
    * `pan-y` hands the vertical axis back to the browser while keeping the
    * horizontal axis for our swipe, which is what a bottom bar should do. */
   touch-action: pan-y;
-  min-height: 58px;
-  padding: 5px 2px;
+  min-height: 86px;
+  padding: 6px 2px;
   color: var(--text-3);
   text-decoration: none;
   border-radius: 18px;
@@ -707,7 +734,8 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 23px;
+  /* 23 -> 34px: scaled with the bar so the icon reads at thumb distance. */
+  height: 34px;
   transition: transform var(--dur-tap) var(--ease-ios);
   /* CRITICAL, AND FOUND BY MEASURING RATHER THAN REASONING.
    *
@@ -739,15 +767,16 @@ main {
   pointer-events: none;
 }
 .fabnav-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   display: block;
   /* The SVG must never be the hit target. See the note on .fabnav-icon. */
   pointer-events: none;
 }
 
 .fabnav-label {
-  font-size: 9.5px;
+  /* 9.5 -> 13px, scaled with the bar. */
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1;
