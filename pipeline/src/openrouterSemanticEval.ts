@@ -357,6 +357,32 @@ Endast artiklar med scope "men" ska ingå i events.`,
     text = env.choices?.[0]?.message?.content ?? "";
   } catch { /* reported below */ }
 
+  // VERBATIM DUMP — opt-in, and the reason is auditability.
+  //
+  // Everything below this line RE-INTERPRETS the model's answer: it parses the
+  // JSON, drops unknown ids, truncates summaries, and judges traceability. That
+  // is the right thing for an evaluation, and the wrong thing for inspecting
+  // what the model actually said. A human asked to trust a verdict needs to see
+  // the unedited response, not our rendering of it.
+  //
+  // Off by default because the parsed report is the useful artefact for the
+  // five closing questions; this is for when the parsed output looks wrong and
+  // the question is whether the MODEL was wrong or the PARSER was.
+  if (process.env.EVAL_DUMP_RAW === "1" && text) {
+    hr("3b. VERBATIM MODEL RESPONSE (unparsed, unedited)");
+    console.log(text);
+    hr("3c. RAW HTTP ENVELOPE (provider, id, usage)");
+    try {
+      const env = JSON.parse(raw);
+      console.log(`provider : ${env.provider ?? "n/a"}`);
+      console.log(`id       : ${env.id ?? "n/a"}`);
+      console.log(`model    : ${env.model ?? "n/a"}`);
+      console.log(`usage    : ${JSON.stringify(env.usage ?? {})}`);
+    } catch { /* envelope unavailable; the text above is the important part */ }
+    hr("3d. SENT PAYLOAD (what the model was asked)");
+    console.log(body);
+  }
+
   hr("4. VERDICTS — men / women / youth / club / unknown");
   if (!text.trim()) {
     console.log("RESULT: reachable-empty — HTTP 200 with no model text.");
