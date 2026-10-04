@@ -37,7 +37,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **395 passing, 1 failing** (18 files) — re-run 2026-10-04. The failure is **pre-existing and unrelated** (`pipeline/src/data.test.ts` › "picks next upcoming and last finished"); confirmed identical on a clean tree with these changes stashed. **Not fixed in this round** |
+| Tests | **396 passing, 0 failing** (18 files) — re-run 2026-10-04. The long-standing failure in `pipeline/src/data.test.ts` ("picks next upcoming and last finished") is **FIXED**: it was a time bomb, not a regression — see **B-009** |
 | Data last generated | **2026-10-04 05:10 UTC** — served bytes verified to match the data commit (`1fe721c…`) |
 | Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). **Measured over 35 probe runs to 2026-10-04: reachable ~48% of the time, but the chat probe that resembles real work succeeded 0/15 — never once.** Still disabled in the nightly (the key is deliberately not injected). B-004 unvalidated. |
 | OpenRouter | **Not yet tested — no key exists.** `OPENROUTER_API_KEY` is not set in this repo. Probe tooling is committed and manual-only; see **B-008** |
@@ -267,6 +267,51 @@ cost; that is a deliberate decision, not something to slip in silently.
 **If it does work,** the next step is still B-004: run the real semantic
 evaluation and get an actual quality verdict. A 200 would only prove the transport
 works — and this repo has already been bitten by a 200 that meant nothing.
+
+---
+
+## B-009 · A test that failed on its own, at a specific moment
+
+**Status:** FIXED · **Was blocking every deploy**
+
+**What happened.** One unit test had been failing since roughly 15:00 UTC on
+2026-10-04:
+
+```
+AssertionError: expected undefined to be 3
+  pipeline/src/data.test.ts > fixture normalization > picks next upcoming and last finished
+```
+
+Because both CI and the deploy workflow run the test suite, **this one stale
+assertion was failing every push** — including the push that only intended to
+change documentation and CI config.
+
+**Why it failed.** `pickNextAndLast` decides what is "upcoming" by comparing each
+match against the real clock:
+
+```ts
+const now = new Date().toISOString();
+const upcoming = sortMatches(matches.filter((m) => m.date > now && ...));
+```
+
+The test supplied a hardcoded fixture date of `2026-10-04T15:00:00Z` and asserted
+it would be treated as an upcoming match. At 15:00 UTC on 2026-10-04 that date
+became **the past**, so the function correctly stopped calling it upcoming and
+`next` became `undefined`.
+
+**Nothing was wrong with the production code.** The function did the right thing.
+The test was asserting something about the calendar, and the calendar moved.
+
+**The lesson worth keeping.** A test that hardcodes a date and then asks a
+function to compare it to `Date.now()` is not testing behaviour — it is setting a
+timer. It will pass, sit green for months, and then fail on its own with no code
+change at all, which reads exactly like a regression and sends you hunting in the
+wrong place. The same applies to any future timestamp, any expiry assertion, and
+any "recent" or "upcoming" window.
+
+**The fix.** Both fixture dates are now derived from the clock at call time
+(±3 hours), so the relationship under test — one match in the future, one in the
+past — holds whenever the suite runs. No production code was touched.
 
 ---
 
@@ -894,6 +939,7 @@ the source recorded so any claim can be checked.
 | **B-006** | OPEN — cause **measured** | News is 9 days stale, but **the prefilter is innocent**: of 66 drops, 65 are general football it correctly rejects. Feeds carry ~23 Häcken items at most, and the nightly samples them **once at 03:30 UTC**. Fix = fetch more often, not filter differently |
 | **B-006 diagnostics** | **DONE** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason now in the nightly log, with a `ZERO CONTRIBUTED` flag. +7 tests, 349→356. **Not yet seen in a real run** |
 | **B-008** | **OPEN — tooling ready, untested** | **OpenRouter free tier as an alternative to Gemini.** Probe tooling committed (`openrouter-availability.yml` + 3 scripts), **manual-only, zero requests spent**. Blocked on one thing: **`OPENROUTER_API_KEY` does not exist in this repo.** See below |
+| **B-009** | **DONE** | A unit test hardcoded a fixture date and asked the code to compare it to the real clock. At 15:00 UTC on 2026-10-04 the fixture silently became historical and the test began failing on its own — **with no code change**. Because CI and deploy both run the suite, it was **blocking every deploy**. Dates now derive from the clock at call time; no production code touched. Suite is **396/396 green** |
 | **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |
 | E-006 – E-009 | DONE | Superseded by the Wikidata search redesign |

@@ -158,9 +158,20 @@ describe("fixture normalization", () => {
   });
 
   it("picks next upcoming and last finished", () => {
+    // Dates are derived from the REAL clock, not hardcoded.
+    //
+    // This test used to hardcode "2026-10-04T15:00:00Z" as the upcoming match.
+    // pickNextAndLast compares m.date > new Date().toISOString(), so that
+    // fixture silently stopped being "upcoming" at exactly 15:00 UTC on
+    // 2026-10-04 and the test began failing on its own — a time bomb, not a
+    // regression. Anything hardcoded here would eventually do the same.
+    const now = Date.now();
+    const upcomingDate = new Date(now + 3 * 60 * 60 * 1000).toISOString();
+    const finishedDate = new Date(now - 3 * 60 * 60 * 1000).toISOString();
+
     const { next, last } = pickNextAndLast([
-      normalizeFixture(fixture({ fixture: { id: 3, date: "2026-10-04T15:00:00Z", status: { short: "NS", long: "Not Started" } } })),
-      normalizeFixture(fixture({})),
+      normalizeFixture(fixture({ fixture: { id: 3, date: upcomingDate, status: { short: "NS", long: "Not Started" } } })),
+      normalizeFixture(fixture({ fixture: { id: 1, date: finishedDate, status: { short: "FT", long: "Full Time" } } })),
     ]);
     expect(next?.id).toBe(3);
     expect(last?.id).toBe(1);
