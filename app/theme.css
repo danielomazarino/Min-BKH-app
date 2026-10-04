@@ -2598,20 +2598,17 @@ details.disc .disc-body {
   gap: var(--s2);
 }
 
-.mrow {
+/* NOTE: these row classes are `metsrow`, NOT `mrow`. `.mrow` already belongs
+   to the archive match list further up this file (display:flex, align-items
+   center). Reusing it here silently inherited that flex layout, which put the
+   name and the value grid side by side and crushed the grid to ~24px on a
+   390px screen. Renaming is the fix; do not reintroduce the collision. */
+.metsrow {
+  display: block;
   border: 1px solid var(--hairline);
   border-radius: 8px;
   padding: var(--s3);
   background: var(--surface);
-}
-
-/* One row per source: name on the left, status pill on the right. */
-.mrow.mhead {
-  display: none;
-}
-
-.mc {
-  min-width: 0;
 }
 
 .mname {
@@ -2625,6 +2622,14 @@ details.disc .disc-body {
   overflow-wrap: anywhere;
 }
 
+/* The label side must be allowed to shrink and wrap. A flex item defaults to
+   min-width:auto, i.e. it refuses to be narrower than its longest word — which
+   let the 8-publisher list push the status pill off the available width. */
+.mname > span:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .msub {
   display: block;
   font-weight: 400;
@@ -2632,6 +2637,12 @@ details.disc .disc-body {
   line-height: 1.4;
   color: var(--text-3);
   margin-top: 3px;
+  /* The grouped feeds list 8 publisher names. Without this they stay on one
+     logical line, the flex parent refuses to shrink, and the value grid beside
+     it is crushed to ~24px — which is exactly how the first version broke.
+     Letting it wrap keeps the grid at full width. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Label/value pairs. `repeat(2, 1fr)` is chosen because every label here is

@@ -315,7 +315,7 @@ export function ApiMetricsPanel() {
               nothing is ever ambiguous about which column it belongs to. */}
           <div className="mtable" data-testid="metrics-services">
             {groupServices(run.services).map((g) => (
-              <div className="mrow" key={g.key} role="group" aria-label={g.label}>
+              <div className="metsrow" key={g.key} role="group" aria-label={g.label}>
                 <div className="mname">
                   <span>
                     {g.label}
