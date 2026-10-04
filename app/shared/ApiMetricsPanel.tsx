@@ -25,7 +25,7 @@
  *   "Teknisk information och proveniens" disclosure. No secret is ever
  *   rendered here: the recorder strips query strings before writing.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { loadApiMetrics, type MetricsState } from "../data";
 import type { ApiMetrics, ServiceAggregate } from "./types";
 
@@ -60,6 +60,38 @@ interface Group {
 
 const sum = (rows: ServiceAggregate[], pick: (s: ServiceAggregate) => number) =>
   rows.reduce((n, s) => n + pick(s), 0);
+
+/**
+ * A column explainer.
+ *
+ * Deliberately NOT a `title` attribute alone: tooltips are mouse-only, so on a
+ * phone — which is where this app actually lives — they would be unreachable.
+ * This is a real <button> that toggles visible text, so it works with a tap
+ * and is announced by a screen reader via aria-expanded.
+ */
+function Info({ label }: { label: string }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <span className="minfo">
+      <button
+        type="button"
+        className="minfo-btn"
+        aria-expanded={open}
+        aria-controls={id}
+        aria-label={`Vad betyder detta? ${label}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        i
+      </button>
+      {open && (
+        <span className="minfo-body" id={id} role="note">
+          {label}
+        </span>
+      )}
+    </span>
+  );
+}
 
 export function groupServices(services: ServiceAggregate[]): Group[] {
   const feeds = services.filter((s) => s.service.startsWith("rss:"));
@@ -238,30 +270,67 @@ export function ApiMetricsPanel() {
             </p>
           )}
 
-          <div data-testid="metrics-services">
+          {/* A REAL TABLE, one line per source.
+              The previous layout was two stacked label/value pairs per row,
+              which read as a run-on sentence ("article-text25.9 s totalt · 2.1 s
+              max") and mixed the source name into its own statistics. Each
+              column now has a header with a plain-language explanation, because
+              "max" and "in/ut" are not self-explanatory to a supporter. */}
+          <div className="mtable" data-testid="metrics-services">
+            <div className="mrow mhead" role="row">
+              <span className="mc mname" role="columnheader">Källa</span>
+              <span className="mc" role="columnheader" title="Antal anrop mot den här källan under hela körningen.">
+                Anrop
+                <Info label="Antal anrop mot den här källan under hela körningen." />
+              </span>
+              <span className="mc" role="columnheader" title="Total tid för alla anrop. Längre tid betyder oftast mer att hämta, inte fler anrop.">
+                Tid
+                <Info label="Total tid för alla anrop. Längre tid betyder oftast mer att hämta, inte fler anrop." />
+              </span>
+              <span className="mc" role="columnheader" title="Det långsammaste enskilda anropet. En hög siffra här men låg totaltid betyder ett enstaka långsamt svar.">
+                Längsta
+                <Info label="Det långsammaste enskilda anropet. En hög siffra här men låg totaltid betyder ett enstaka långsamt svar." />
+              </span>
+              <span className="mc" role="columnheader" title="Hur mycket data som skickades till källan (in) och vad den svarade med (ut).">
+                Data
+                <Info label="Hur mycket data som skickades till källan (in) och vad den svarade med (ut)." />
+              </span>
+              <span className="mc" role="columnheader" title="Källans status just nu: påslagen, avstängd eller med fel.">
+                Status
+                <Info label="Källans status just nu: påslagen, avstängd eller med fel." />
+              </span>
+            </div>
+
             {groupServices(run.services).map((g) => (
-              <div className="srcrow" key={g.key}>
-                <span className="nm">
+              <div className="mrow" key={g.key} role="row">
+                <span className="mc mname" role="cell">
                   {g.label}
-                  <span className="meta">
-                    {ms(g.totalDurationMs)} totalt · {ms(g.maxDurationMs)} max ·{" "}
-                    {kb(g.requestBytes)} in · {kb(g.responseBytes)} ut
-                    {/* A skipped call is NOT an error: it never left the
-                        machine. Labelling it "fel" made a clean run look
-                        broken in the live UI. */}
-                    {g.failures > 0 ? ` · ${g.failures} fel` : ""}
-                    {g.skipped > 0 ? ` · ${g.skipped} ej körd` : ""}
-                  </span>
                   {/* Per-publisher detail stays available, so grouping hides
                       nothing — it only stops eight identical rows from burying
                       the two services that do the work. */}
                   {g.members.length > 1 && (
-                    <span className="meta">
-                      {g.members.map((m) => `${m.service.replace("rss:", "")} ${m.calls}`).join(" · ")}
+                    <span className="msub">
+                      {g.members.map((m) => m.service.replace("rss:", "")).join(", ")}
                     </span>
                   )}
                 </span>
-                <span className="rl">{g.calls} anrop</span>
+                <span className="mc" role="cell">{g.calls}</span>
+                <span className="mc" role="cell">{ms(g.totalDurationMs)}</span>
+                <span className="mc" role="cell">{ms(g.maxDurationMs)}</span>
+                <span className="mc" role="cell">
+                  {kb(g.requestBytes)} in · {kb(g.responseBytes)} ut
+                </span>
+                <span className="mc" role="cell">
+                  {/* "ej körd" was wrong Swedish for a switched-off source.
+                      An API that is not wired in is AV, not "not driven". */}
+                  {g.failures > 0 ? (
+                    <span className="mstat mbad">{g.failures} fel</span>
+                  ) : g.skipped > 0 ? (
+                    <span className="mstat moff">Ej påslaget</span>
+                  ) : (
+                    <span className="mstat mok">Påslaget</span>
+                  )}
+                </span>
               </div>
             ))}
           </div>

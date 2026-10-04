@@ -2573,3 +2573,148 @@ details.disc .disc-body {
   }
 }
 
+
+/* ==========================================================================
+   API measurement table — the diagnostics list under the cog wheel.
+
+   A real table rather than stacked label/value pairs: the old layout ran the
+   source name straight into its own statistics ("article-text25.9 s totalt")
+   and gave every column the same visual weight, so nothing could be scanned.
+
+   Every column header carries an explainer. It is a <button>, not a `title`
+   attribute, because tooltips are mouse-only and this app is used on phones.
+   ========================================================================== */
+
+.mtable {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) 44px 62px 62px minmax(0, 1.5fr) 74px;
+  gap: var(--s2);
+  align-items: center;
+  padding: 7px var(--s3);
+  border-bottom: 1px solid var(--hairline);
+  font-size: var(--t-meta);
+}
+.mrow:last-child {
+  border-bottom: none;
+}
+
+/* Header row: quieter than the data, but still selectable text. */
+.mhead {
+  background: var(--surface-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  align-items: start;
+}
+
+.mc {
+  min-width: 0;
+  color: var(--text-2);
+  /* Numbers must not reflow as digits change between runs. */
+  font-variant-numeric: tabular-nums;
+}
+.mname {
+  color: var(--text-1);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+/* Publisher names under a grouped row. */
+.msub {
+  display: block;
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.mstat {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--hairline);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.mstat.mok {
+  color: var(--ok);
+  border-color: rgba(70, 167, 88, 0.4);
+  background: rgba(70, 167, 88, 0.12);
+}
+/* Off means deliberately not wired in — NOT an error. Neutral, not red. */
+.mstat.moff {
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.04);
+}
+.mstat.mbad {
+  color: var(--danger);
+  border-color: rgba(255, 90, 95, 0.45);
+  background: var(--danger-dim);
+}
+
+/* Column explainer. */
+.minfo {
+  position: relative;
+  display: inline-block;
+  margin-left: 3px;
+  vertical-align: middle;
+}
+.minfo-btn {
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--hairline-strong);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 9px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.minfo-btn:hover,
+.minfo-btn:focus-visible {
+  color: var(--text-1);
+  border-color: var(--text-3);
+}
+.minfo-body {
+  display: block;
+  position: static;
+  margin-top: 5px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  /* The header cell is narrow, so the note needs to escape it. */
+  width: min(46ch, 62vw);
+  line-height: 1.45;
+}
+
+@media (max-width: 380px) {
+  .mrow {
+    grid-template-columns: minmax(0, 1.4fr) 36px 54px 54px minmax(0, 1.2fr) 66px;
+    gap: var(--s1);
+    padding: 7px var(--s2);
+  }
+  .minfo-body {
+    width: min(40ch, 76vw);
+  }
+}
