@@ -38,6 +38,11 @@ jobs:
           ! grep -rE "API_FOOTBALL_KEY|apisports-key" dist/ public/data/ 2>/dev/null
           ! grep -rE "fc-[a-zA-Z0-9]{20,}" dist/ public/data/ 2>/dev/null
           ! grep -rE "GEMINI_API_KEY|AIza[0-9A-Za-z_-]{30,}" dist/ public/data/ 2>/dev/null
+          # OpenRouter keys are prefixed sk-or-v1-. They are only ever injected
+          # as workflow secrets into the openrouter-* measurement workflows, so
+          # finding one in a build artifact or committed data would be a real
+          # leak, not a false positive.
+          ! grep -rE "OPENROUTER_API_KEY|sk-or-v1-[A-Za-z0-9]{20,}" dist/ public/data/ 2>/dev/null
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

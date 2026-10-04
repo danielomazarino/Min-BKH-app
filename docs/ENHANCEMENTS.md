@@ -37,25 +37,48 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **356 passing**, 0 failing (17 files) — last full run 2026-09-30; not re-run since the 2026-10-02 workflow/docs edits, which touch no source under test |
-| Data last generated | **2026-10-01 03:49 UTC** — B-005 guard passed, served bytes match the data commit (`447846b6…`) |
-| Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). In practice: **503 UNAVAILABLE** "high demand", and **429** once the daily allowance is gone. Still disabled in the nightly. B-004 unvalidated. |
-| Next event | **03:00–23:00 UTC every 2h**, one availability sample per firing · **03:30 UTC** nightly |
+| Tests | **395 passing, 1 failing** (18 files) — re-run 2026-10-04. The failure is **pre-existing and unrelated** (`pipeline/src/data.test.ts` › "picks next upcoming and last finished"); confirmed identical on a clean tree with these changes stashed. **Not fixed in this round** |
+| Data last generated | **2026-10-04 05:10 UTC** — served bytes verified to match the data commit (`1fe721c…`) |
+| Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). **Measured over 35 probe runs to 2026-10-04: reachable ~48% of the time, but the chat probe that resembles real work succeeded 0/15 — never once.** Still disabled in the nightly (the key is deliberately not injected). B-004 unvalidated. |
+| OpenRouter | **Not yet tested — no key exists.** `OPENROUTER_API_KEY` is not set in this repo. Probe tooling is committed and manual-only; see **B-008** |
+| Next event | **03:30 UTC** nightly only — the Gemini availability probe schedule was **stopped 2026-10-04** |
 
-### ⚠️ The overnight probe changed on 2026-10-02 — old checkpoint text follows
+### The Gemini availability probe was STOPPED on 2026-10-04
 
-The section immediately below described the **previous** design (five samples ×
-two requests at 02/04/06/08/10 UTC). That is no longer how it runs. The current
-design, in one line: **eleven samples, 03:00 → 23:00 UTC every 2 hours, one
-request each, alternating between the availability ping and the chat question.**
-See `gemini-overnight-availability.yml` and the "Gemini capacity" section below
-for why the two probes were unbundled — a 200 and a 429 **0.2 seconds apart** in
-the same job made the results unattributable.
+Its schedule had a self-imposed deadline ("remove on Sunday 2026-10-05"); it was
+met one day early. **Nothing was deleted** — both probe scripts, the workflow and
+the repository secret all remain, and the schedule is one uncommented line. To
+take a single measurement by hand:
 
-> **BOUNDED EXPERIMENT — a human must disable the schedule on Sunday
-> 2026-10-05.** The workflow commits nothing, so it cannot remove itself. At 11
-> requests/day it sits well under the 20/day free-tier ceiling, but left running
-> it spends requests indefinitely.
+```bash
+gh workflow run gemini-overnight-availability.yml   # exactly ONE request
+```
+
+That is also the supported way to run the decisive experiment in **B-004**. If
+you later go to a **paid** Gemini tier, or want another go at the free one, the
+restore steps are written out at the top of
+`.github/workflows/gemini-overnight-availability.yml`.
+
+**What the 35 runs actually showed** (1 request per firing, never retried):
+
+| Probe | Input | Result |
+| --- | --- | --- |
+| availability ping | 144 B | **10 / 21 succeeded (48%)** |
+| chat question | 586 B | **0 / 15 succeeded (0%)** |
+
+Gemini is **not down**. But the probe that resembles real work has never once
+worked, so the experiment could not answer the question it existed to answer —
+and 11 requests a day cannot answer it either.
+
+> **One caveat that must not be forgotten.** The two probes fired at *disjoint
+> hours*: chat only at 05/09/13/17/21 UTC, ping only at 03/07/11/15/19/23. So
+> "chat always fails" and "those hours always fail" were **indistinguishable**.
+> That was a design flaw, not a finding. The five ways the two payloads differ
+> are input size, output tokens (2048 vs 1024), temperature (0.5 vs 0.1),
+> `responseMimeType`/`response_format` JSON mode, and the system message. Which
+> of those matters is **still untested**.
+
+### The previous overnight checkpoint (2026-10-01 to 10-04) — now historical
 
 ### Historical: the previous overnight checkpoint
 
@@ -186,6 +209,64 @@ two different casings. Measured over 60 days: it happened on **47 of them**.
 supporter how current something is, which a bare date does not. Older days drop
 the heading and the row's own date carries it — so each day now shows its date
 **once**, never zero.
+
+---
+
+## B-008 · Trying OpenRouter's free tier instead of Gemini
+
+**Status:** tooling committed and tested · **no requests spent** · **blocked on a
+key that does not exist**
+
+**Why this is worth trying.** Gemini's news grouping (B-004) has never produced a
+single usable answer. The stopping probe was not the whole story, though: over 35
+runs the tiny availability ping succeeded **10 times out of 21**, so Gemini is
+genuinely reachable about half the time. It is the *bigger* request that has never
+worked — 0 out of 15. That is worth one more attempt somewhere else before anyone
+pays for a tier.
+
+**What is already built**, mirroring the Gemini probes so the two can be compared
+without re-reading two methodologies:
+
+- `openrouter-availability-sample.sh` — the 144-byte ping
+- `openrouter-chat-probe.sh` — the same chat question, with all five shape
+  differences from the ping deliberately preserved, so the result is comparable
+  to Gemini's 0/15
+- `openrouter-key-info.sh` — reads the key's own daily counter (**0 requests**)
+- `openrouter-availability.yml` — runs them, **by hand only**, one request per
+  run
+
+**What is blocked.** There is no OpenRouter key. Not in this repo's secrets (only
+`API_FOOTBALL_KEY` and `GEMINI_API_KEY` exist), not in the environment, and not in
+any config file. To start:
+
+```bash
+gh secret set OPENROUTER_API_KEY      # paste the sk-or-v1-… key
+gh workflow run openrouter-availability.yml            # one ping
+gh workflow run openrouter-availability.yml -f probe=2 # the chat question
+```
+
+**What it costs.** Free models are capped at **20 requests/minute and 50
+requests/day** until at least 10 credits have ever been bought, after which it is
+1000/day. One request per manual run is a trivial fraction of that. Two things
+worth knowing before trusting a failure:
+
+- OpenRouter needs a **positive account balance** even to use `:free` models. A
+  zero balance returns **402**, which looks like a billing problem, not a quota
+  problem.
+- **503 means "no provider available"**, which is a different failure from
+  Gemini's "model experiencing high demand". Free models often have very few
+  providers behind them.
+
+**The honest limit on what this can prove.** The workflow alternates probes by UTC
+hour, exactly as the Gemini one did — so OpenRouter would inherit the *same*
+time-of-day confound. Comparing its chat result against Gemini's 0/15 is
+therefore **not a clean comparison**, and must not be reported as one. Removing
+that confound means running both probes in a single firing, which doubles the
+cost; that is a deliberate decision, not something to slip in silently.
+
+**If it does work,** the next step is still B-004: run the real semantic
+evaluation and get an actual quality verdict. A 200 would only prove the transport
+works — and this repo has already been bitten by a 200 that meant nothing.
 
 ---
 
@@ -806,12 +887,13 @@ the source recorded so any claim can be checked.
 | Item | Status | Notes |
 | --- | --- | --- |
 | **B-003** | OPEN | Live data is **6/6 single-source**. UI supports multi-source; the pipeline does not produce it. Depends on B-004 |
-| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. Every live eval has returned **503 or 429** — 20+ attempts, zero usable answers. Size is **not** the discriminator (a 586-byte request also failed) and quota is **not** eliminated (free tier = 20 req/UTC day, measured from a 429 body). Availability experiment runs 03:00–23:00 UTC every 2h from 2026-10-02; **it measures, it does not validate** |
+| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. **Zero usable answers in 20+ live attempts.** Availability measured over 35 runs: ping **10/21 (48%)**, chat **0/15 (0%)**. Gemini is **reachable, not down** — but the real-work probe has never succeeded, and the two probes fired on **disjoint hours**, so shape and time-of-day are still confounded. Probe schedule **stopped 2026-10-04**; one-request runs still available by hand |
 | **E-005** | **DONE — verified in production 2026-10-01** | Served `app.json` shows Layouni `status: "departed"`, `departed: true`, with history preserved (`warningCount: 2`, both `relevantWarnings` intact). 18 ledger entries, `cardMatchesInspected: 22` |
 | **N-001a** | OPEN | `MatchDetail.playerStats` declared, never populated. No inferred stats, ever |
 | **N-001b** | OPEN | Needs physical iPhone 13 verification. **Automation cannot close this** |
 | **B-006** | OPEN — cause **measured** | News is 9 days stale, but **the prefilter is innocent**: of 66 drops, 65 are general football it correctly rejects. Feeds carry ~23 Häcken items at most, and the nightly samples them **once at 03:30 UTC**. Fix = fetch more often, not filter differently |
 | **B-006 diagnostics** | **DONE** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason now in the nightly log, with a `ZERO CONTRIBUTED` flag. +7 tests, 349→356. **Not yet seen in a real run** |
+| **B-008** | **OPEN — tooling ready, untested** | **OpenRouter free tier as an alternative to Gemini.** Probe tooling committed (`openrouter-availability.yml` + 3 scripts), **manual-only, zero requests spent**. Blocked on one thing: **`OPENROUTER_API_KEY` does not exist in this repo.** See below |
 | **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |
 | E-006 – E-009 | DONE | Superseded by the Wikidata search redesign |

@@ -1,0 +1,155 @@
+name: OpenRouter availability (11 samples, alternating probe)
+
+# ============================================================================
+# WHY THIS EXISTS
+#
+# Gemini's overnight probe (stopped 2026-10-04) answered a question it could not
+# ask properly. Measured over 35 runs at 1 request per firing:
+#
+#     availability ping (144 B) : 10 / 21 succeeded  (48%)
+#     chat question  (586 B)    :  0 / 15 succeeded  ( 0%)
+#
+# Gemini is NOT down — it is reachable about half the time. But the probe that
+# resembles real work NEVER succeeded. Two explanations fit equally well:
+#
+#   (a) REQUEST SHAPE — the chat probe differs from the ping in five ways
+#       (input 586 vs 144 B, max tokens 2048 vs 1024, temperature 0.5 vs 0.1,
+#       response_format json_object present, system message present).
+#   (b) TIME OF DAY — the Gemini schedule derived probe parity from the UTC
+#       hour, so chat ONLY ever fired at 05/09/13/17/21 UTC and ping ONLY at
+#       03/07/11/15/19/23. The probes sampled DISJOINT HOURS, making "chat
+#       always fails" indistinguishable from "those hours always fail".
+#       That was a design flaw, not a finding.
+#
+# This workflow runs the SAME two probes against OpenRouter. Because the probes
+# fire on the same alternating schedule here too, the time-of-day confound is
+# shared rather than removed — so a comparison against Gemini's historical 0/15
+# is NOT clean, and must not be presented as one. What this DOES establish is
+# whether a free tier exists that can do the work at all.
+#
+# FREE-TIER BUDGET (documented, docs/api-reference/limits)
+#   < 10 credits purchased all-time : 20 requests/min,  50 requests/day
+#   >= 10 credits purchased         : 20 requests/min, 1000 requests/day
+#
+#   11 firings x 1 request = 11/day sits UNDER the 50/day no-credits ceiling.
+#   That headroom is deliberate: a run that saturates the budget cannot tell
+#   "tier exhausted" from "service unhealthy", because both look like failure.
+#   Do NOT raise the count above the documented ceiling for the same reason.
+#
+#   OpenRouter also requires a POSITIVE account balance to use :free models.
+#   A zero balance returns 402 even on free variants — which is a billing
+#   problem, not a quota problem, and is easy to misread.
+#
+# COST DISCIPLINE (the standing rule from the 84-request incident)
+#   - exactly ONE generation request per firing, NEVER retried
+#   - no model fallback, no loop, no pipeline invocation
+#   - the model MUST be a :free variant; both scripts REFUSE to run otherwise,
+#     so a measurement can never silently start spending real credits
+#   - GET /api/v1/key is a metadata call and costs nothing; it runs first
+#
+# STOP CONDITION
+#   Leave this manual (workflow_dispatch) by default. Enable the schedule only
+#   if you decide to pursue OpenRouter — it commits nothing, so it cannot remove
+#   itself. See the RESTORE block below.
+#
+# See docs/ENHANCEMENTS.md (B-004, "Gemini capacity") for the Gemini evidence.
+# ============================================================================
+
+on:
+  # schedule:
+  #   - cron: "0 3-23/2 * * *"   # RESTORE: 03:00-23:00 UTC every 2h, 1 req each
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: "Which probe to run (blank = decide by UTC-hour parity, as the schedule does)"
+        required: false
+        type: string
+      model:
+        description: "OpenRouter model id — MUST end in :free"
+        required: false
+        type: string
+
+concurrency:
+  group: openrouter-availability
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `npm ci`: these are single curl calls and need no repository
+      # dependencies. Installing them would add minutes of failure surface to a
+      # measurement run.
+      - name: Read key accounting (0 generation requests)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: bash .github/scripts/openrouter-key-info.sh
+
+      # The parity gate runs FIRST so the chosen probe is announced before any
+      # request is spent. If the selection logic is ever wrong, the log says
+      # which probe was chosen and why, before the evidence is destroyed.
+      - name: Select probe
+        id: pick
+        env:
+          REQUESTED: ${{ inputs.probe }}
+          INPUT_MODEL: ${{ inputs.model }}
+        run: |
+          # Default model. Chosen from GET /api/v1/models on 2026-10-04: of 466
+          # listed models, 17 carry the :free suffix. This one has a 262k
+          # context window and supports JSON output, which the news-grouping
+          # prompt needs. Override freely — it must always end in :free.
+          DEFAULT_MODEL="qwen/qwen3.8-27b:free"
+          MODEL="${INPUT_MODEL:-$DEFAULT_MODEL}"
+
+          if [ -n "$REQUESTED" ]; then
+            PROBE="$REQUESTED"
+            DESC="explicitly requested via workflow_dispatch"
+          else
+            HOUR=$(date -u +%-H)
+            # Same parity rule as the Gemini workflow, so both providers are
+            # sampled at the SAME hours and are therefore comparable. Note this
+            # RETAINS the confound rather than removing it: alternating by hour
+            # keeps the two probes on disjoint hours. Fixing that requires
+            # running BOTH probes in ONE firing, which doubles cost. That trade
+            # is left to a deliberate decision, not made silently.
+            PARITY=$(( (HOUR / 2) % 2 ))
+            if [ "$PARITY" -eq 1 ]; then
+              PROBE=1; DESC="availability ping (reply: ok)"
+            else
+              PROBE=2; DESC="chat question (structured Swedish answer)"
+            fi
+          fi
+
+          case "$PROBE" in
+            1) SCRIPT=openrouter-availability-sample.sh ;;
+            2) SCRIPT=openrouter-chat-probe.sh ;;
+            *) echo "::error::probe must be 1 or 2"; exit 2 ;;
+          esac
+
+          echo "utc_hour   =$(date -u +%-H)"
+          echo "probe      =$PROBE  $DESC"
+          echo "script     =$SCRIPT"
+          echo "model      =$MODEL"
+          echo "started_utc=$(date -u +%FT%TZ)"
+          {
+            echo "probe=$PROBE"
+            echo "script=$SCRIPT"
+            echo "model=$MODEL"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run the selected probe (ONE request, never retried)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ steps.pick.outputs.model }}
+        run: bash ".github/scripts/${{ steps.pick.outputs.script }}"
+
+      - name: Emit machine-readable outcome
+        run: |
+          echo "note: HTTP code, model and provider are in the log, not here."
+          echo "note: this workflow writes NO summary and commits NOTHING."

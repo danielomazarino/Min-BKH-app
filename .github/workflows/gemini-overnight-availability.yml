@@ -96,11 +96,58 @@ name: Gemini availability (11 samples, alternating probe)
 #   commit would trigger deploy.yml on data that did not change. The evidence
 #   is the run log; `docs/ENHANCEMENTS.md` is updated by a human afterwards.
 
+# ============================================================================
+# SCHEDULE IS INTENTIONALLY DISABLED — as of 2026-10-04.
+#
+# WHY IT WAS STOPPED
+#   The 11-firings-a-day experiment produced its answer and then kept spending.
+#   Measured over 35 runs (2026-09-30 -> 2026-10-04), at 1 request per firing:
+#
+#     availability ping (144 B) : 10 / 21 succeeded  (48%)
+#     chat question  (586 B)    :  0 / 15 succeeded  ( 0%)
+#
+#   Gemini is therefore NOT down — it is reachable roughly half the time. But
+#   the probe that resembles real work has NEVER succeeded, so the experiment
+#   could not answer the question it existed to answer, and 11 requests/day
+#   cannot answer it either. That is a reason to stop, not to keep sampling.
+#
+#   The deadline this file set for itself ("remove on Sunday 2026-10-05") was
+#   met one day early. Nothing is lost: the schedule is one uncommented line.
+#
+# NOTHING IS DELETED
+#   Both probe scripts, this workflow, and the repository secret all remain.
+#   The scripts still work by hand:
+#     gh workflow run gemini-overnight-availability.yml
+#   which runs exactly ONE request (the parity gate picks the probe). That is
+#   the supported way to take a single measurement, and it is how the decisive
+#   experiment in docs/ENHANCEMENTS.md should be run.
+#
+# TO RESTORE THE SCHEDULE (only if you go paid tier, or want another free try)
+#   1. Get a key that can actually generate:
+#        - PAID:  put a billing-enabled key in as GEMINI_API_KEY. Free tier is
+#          hard-capped at 20 generateContent requests per UTC day (measured from
+#          a real 429 body, run 36813438657) — that cap is the binding constraint,
+#          not capacity.
+#        - FREE:  keep the current key, accept the 20/day cap, and expect the
+#          ~48% availability measured above.
+#   2. Uncomment the cron block below.
+#   3. Optionally widen the budget: 11 requests/day sits under the 20/day
+#      ceiling with headroom, deliberately. Do NOT raise it above 20 — a run
+#      that saturates the budget cannot tell "tier exhausted" from "service
+#      unhealthy", because both look like failure. See B-004 in
+#      docs/ENHANCEMENTS.md.
+#   4. Re-run the decisive experiment FIRST, before trusting any schedule:
+#      run the chat probe's exact payload at a PING hour (07/15/19 UTC). A 200
+#      means the chat failures were time-of-day; a 503 means request SHAPE
+#      (prime suspect: responseMimeType application/json). See
+#      .github/scripts/gemini-chat-probe.sh for the recorded 0/15 result.
+#
+#   See docs/ENHANCEMENTS.md (B-004, "Gemini capacity") for the full evidence.
+# ============================================================================
+
 on:
-  schedule:
-    # Eleven firings: 03:00, 05:00, 07:00 ... 23:00 UTC. One request each.
-    # BOUNDED EXPERIMENT — remove this block on Sunday 2026-10-05.
-    - cron: "0 3-23/2 * * *"
+  # schedule:
+  #   - cron: "0 3-23/2 * * *"   # RESTORE: 03:00-23:00 UTC every 2h, 1 req each
   workflow_dispatch:
 
 concurrency:
