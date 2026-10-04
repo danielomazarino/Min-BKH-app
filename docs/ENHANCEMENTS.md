@@ -40,7 +40,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | Tests | **396 passing, 0 failing** (18 files) — re-run 2026-10-04. The long-standing failure in `pipeline/src/data.test.ts` ("picks next upcoming and last finished") is **FIXED**: it was a time bomb, not a regression — see **B-009** |
 | Data last generated | **2026-10-04 05:10 UTC** — served bytes verified to match the data commit (`1fe721c…`) |
 | Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). **Measured over 35 probe runs to 2026-10-04: reachable ~48% of the time, but the chat probe that resembles real work succeeded 0/15 — never once.** Still disabled in the nightly (the key is deliberately not injected). B-004 unvalidated. |
-| OpenRouter | **Not yet tested — no key exists.** `OPENROUTER_API_KEY` is not set in this repo. Probe tooling is committed and manual-only; see **B-008** |
+| OpenRouter | **Transport VERIFIED WORKING 2026-10-04.** Key added; ping **1/1 = 200**, chat probe **1/1 = 200** on the payload Gemini failed **0/15** on. Free model, **cost 0 credits**, key reports **1000 req/day**. **Quality still unvalidated** — see **B-008** |
 | Next event | **03:30 UTC** nightly only — the Gemini availability probe schedule was **stopped 2026-10-04** |
 
 ### The Gemini availability probe was STOPPED on 2026-10-04
@@ -214,8 +214,44 @@ the heading and the row's own date carries it — so each day now shows its date
 
 ## B-008 · Trying OpenRouter's free tier instead of Gemini
 
-**Status:** tooling committed and tested · **no requests spent** · **blocked on a
-key that does not exist**
+**Status:** tooling committed · **transport VERIFIED WORKING** · **quality still
+unvalidated** · blocked on nothing
+
+### The result: OpenRouter works where Gemini did not
+
+A key was added on 2026-10-04 and both probes were run — **two requests total**.
+
+| Probe | Gemini | OpenRouter |
+| --- | --- | --- |
+| availability ping | 10 / 21 (48%) | **1 / 1 — HTTP 200** |
+| chat question (same payload) | **0 / 15 (0%)** | **1 / 1 — HTTP 200** |
+
+The chat probe returned 1170 characters, parsed **5 of 5 items**, every summary
+between 114 and 128 characters (inside the 200 limit), `finish_reason: stop`,
+provider `ModelRun`, and **cost: 0 credits**.
+
+**What this establishes.** The identical payload that failed 15 times out of 15
+on Gemini succeeded first time here. So Gemini's 0/15 was **provider-specific,
+not a property of the task** — which retires one of the two explanations for
+B-004, and weakens the pure time-of-day theory (both probes ran within two
+minutes of each other).
+
+**What it does NOT establish.** A 200 is not a quality verdict. B-004's real
+risk is **false merges** of pre-match articles into post-match result events,
+which reached production once. Nothing here has tested grouping accuracy on real
+news, and OpenRouter's own FAQ describes free models as *"usually not suitable
+for production use"* — which is fine for one request a night, and wrong for
+anything a supporter sees.
+
+### Account facts, measured
+
+- Free requests today: **used 0, limit 1000, remaining 1000**
+- `is_free_tier: false` — it has never bought credits, yet reports the higher
+  tier. **So do not derive the ceiling from `is_free_tier`; read
+  `free_model_daily_requests`.**
+- Per-key cap: 50 credits (the `$50` ceiling set in the OpenRouter UI — a cap,
+  not a charge; free models cost nothing)
+- Credits used, today and total: **0**
 
 **Why this is worth trying.** Gemini's news grouping (B-004) has never produced a
 single usable answer. The stopping probe was not the whole story, though: over 35
@@ -235,20 +271,21 @@ without re-reading two methodologies:
 - `openrouter-availability.yml` — runs them, **by hand only**, one request per
   run
 
-**What is blocked.** There is no OpenRouter key. Not in this repo's secrets (only
-`API_FOOTBALL_KEY` and `GEMINI_API_KEY` exist), not in the environment, and not in
-any config file. To start:
+**What is blocked.** Nothing. The key was added on 2026-10-04 and both probes
+have since run successfully — see the result above. To take further measurements
+by hand:
 
 ```bash
-gh secret set OPENROUTER_API_KEY      # paste the sk-or-v1-… key
 gh workflow run openrouter-availability.yml            # one ping
 gh workflow run openrouter-availability.yml -f probe=2 # the chat question
 ```
 
-**What it costs.** Free models are capped at **20 requests/minute and 50
-requests/day** until at least 10 credits have ever been bought, after which it is
-1000/day. One request per manual run is a trivial fraction of that. Two things
-worth knowing before trusting a failure:
+**What it costs.** Free models are capped at **20 requests/minute**. The daily
+ceiling depends on the account: the documented figures are 50/day below 10
+credits purchased and 1000/day above it. **This key reports 1000/day** — and note
+it reports that while `is_free_tier` is `false`, so do not derive the ceiling
+from that flag. One request per manual run is a trivial fraction of it. Two
+things worth knowing before trusting a failure:
 
 - OpenRouter documents that free variants cost nothing, and that **new accounts
   receive a small free allowance** — so **you should not have to pay to test
@@ -941,7 +978,7 @@ the source recorded so any claim can be checked.
 | **N-001b** | OPEN | Needs physical iPhone 13 verification. **Automation cannot close this** |
 | **B-006** | OPEN — cause **measured** | News is 9 days stale, but **the prefilter is innocent**: of 66 drops, 65 are general football it correctly rejects. Feeds carry ~23 Häcken items at most, and the nightly samples them **once at 03:30 UTC**. Fix = fetch more often, not filter differently |
 | **B-006 diagnostics** | **DONE** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason now in the nightly log, with a `ZERO CONTRIBUTED` flag. +7 tests, 349→356. **Not yet seen in a real run** |
-| **B-008** | **OPEN — tooling ready, untested** | **OpenRouter free tier as an alternative to Gemini.** Probe tooling committed (`openrouter-availability.yml` + 3 scripts), **manual-only, zero requests spent**. Blocked on one thing: **`OPENROUTER_API_KEY` does not exist in this repo.** See below |
+| **B-008** | **OPEN — transport PROVEN, quality UNVALIDATED** | **OpenRouter free tier works where Gemini did not.** Same chat payload: Gemini **0/15**, OpenRouter **1/1 (200)**, 5/5 items parsed, **0 credits**, 1000 req/day. So Gemini's failure was **provider-specific, not a property of the task**. Still not a quality verdict — B-004's false-merge risk is untested. See below |
 | **B-009** | **DONE** | A unit test hardcoded a fixture date and asked the code to compare it to the real clock. At 15:00 UTC on 2026-10-04 the fixture silently became historical and the test began failing on its own — **with no code change**. Because CI and deploy both run the suite, it was **blocking every deploy**. Dates now derive from the clock at call time; no production code touched. Suite is **396/396 green** |
 | **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |
