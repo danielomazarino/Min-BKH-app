@@ -129,12 +129,14 @@ export function ApiMetricsPanel() {
                   <span className="meta">
                     {ms(s.totalDurationMs)} totalt · {ms(s.maxDurationMs)} max ·{" "}
                     {kb(s.requestBytes)} in · {kb(s.responseBytes)} ut
+                    {/* A skipped call is NOT an error: it never left the
+                        machine. Labelling it "fel" made a clean run look
+                        broken in the live UI. */}
                     {s.failures > 0 ? ` · ${s.failures} fel` : ""}
+                    {s.skipped > 0 ? ` · ${s.skipped} ej körd` : ""}
                   </span>
                 </span>
-                <span className="rl">
-                  {s.calls} {s.calls === 1 ? "anrop" : "anrop"}
-                </span>
+                <span className="rl">{s.calls} anrop</span>
               </div>
             ))}
           </div>

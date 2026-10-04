@@ -140,6 +140,30 @@ describe("noteSkippedCall", () => {
     expect(c.metered).toBe(true);
     expect(c.ok).toBe(false);
   });
+
+  it("does NOT count a skipped call as a failure", () => {
+    // REGRESSION, found by reading the LIVE UI on 2026-10-04: the panel showed
+    // "gemini ... 1 fel" and a headline of "1 misslyckade" on a night Gemini
+    // was deliberately never called. A run with zero real failures was being
+    // reported as broken. Skipped is now its own column.
+    noteSkippedCall("gemini", "not attempted — no key injected", true);
+    const m = buildMetrics(null);
+    expect(m.latestRun!.failures).toBe(0);
+    const gem = m.latestRun!.services.find((s) => s.service === "gemini")!;
+    expect(gem.failures).toBe(0);
+    expect(gem.skipped).toBe(1);
+  });
+
+  it("still counts a genuinely failed attempt as a failure", () => {
+    // The fix must not blind the panel to real errors.
+    noteLlmCall("openrouter", {
+      model: "m:free", status: 503, ok: false, durationMs: 900,
+      responseBytes: null, cost: null, error: "HTTP 503",
+    });
+    const m = buildMetrics(null);
+    expect(m.latestRun!.failures).toBe(1);
+    expect(m.latestRun!.services[0].skipped).toBe(0);
+  });
 });
 
 describe("buildMetrics", () => {

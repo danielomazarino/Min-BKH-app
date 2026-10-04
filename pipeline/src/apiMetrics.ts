@@ -88,6 +88,17 @@ export interface ServiceAggregate {
   service: string;
   calls: number;
   failures: number;
+  /**
+   * Calls that were never attempted (e.g. a provider with no key injected).
+   *
+   * KEPT SEPARATE FROM `failures` ON PURPOSE. A skipped call has `ok: false`
+   * because nothing came back, so counting it as a failure made a run with
+   * ZERO real failures report "1 misslyckade" — the panel showed Gemini as an
+   * error on a night it was deliberately never called. "Did not run" and "ran
+   * and failed" are different facts and a monitoring surface must not merge
+   * them. Found by looking at the live UI, not by a test.
+   */
+  skipped: number;
   totalDurationMs: number;
   maxDurationMs: number;
   requestBytes: number;
@@ -367,7 +378,8 @@ function aggregate(list: ApiCallRecord[]): ServiceAggregate[] {
     .map(([service, group]) => ({
       service,
       calls: group.length,
-      failures: group.filter((c) => !c.ok).length,
+      failures: group.filter((c) => !c.ok && c.attempts > 0).length,
+      skipped: group.filter((c) => c.attempts === 0).length,
       totalDurationMs: group.reduce((n, c) => n + c.durationMs, 0),
       maxDurationMs: group.reduce((n, c) => Math.max(n, c.durationMs), 0),
       requestBytes: group.reduce((n, c) => n + (c.requestBytes ?? 0), 0),
@@ -384,7 +396,8 @@ function summarise(list: ApiCallRecord[], startedAt: number): RunRecord {
     runAt: new Date(startedAt).toISOString(),
     durationMs: Math.round((Date.now() - startedAt) / 1) || 0,
     calls: list.length,
-    failures: list.filter((c) => !c.ok).length,
+    // Only real attempts can fail. A skipped call is reported separately.
+    failures: list.filter((c) => !c.ok && c.attempts > 0).length,
     costCredits: list.reduce((n, c) => n + (c.costCredits ?? 0), 0),
     services: aggregate(list),
   };
@@ -454,8 +467,7 @@ export function buildMetrics(previous: ApiMetrics | null): ApiMetrics {
       failures: latest.failures,
       costCredits: latest.costCredits,
       meteredRequests: calls.filter((c) => c.metered).length,
-    },
-  };
+    },  };
 }
 
 /**
