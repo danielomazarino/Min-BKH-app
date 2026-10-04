@@ -377,7 +377,11 @@ function aggregate(list: ApiCallRecord[]): ServiceAggregate[] {
   return [...by.entries()]
     .map(([service, group]) => ({
       service,
-      calls: group.length,
+      // A skipped call never left the machine, so it is not a call. Counting it
+      // made the panel show "1 anrop" for a source that is switched off, which
+      // contradicts the "Ej påslaget" pill right beside it. `calls` counts real
+      // attempts; `skipped` reports the non-attempts separately.
+      calls: group.filter((c) => c.attempts > 0).length,
       failures: group.filter((c) => !c.ok && c.attempts > 0).length,
       skipped: group.filter((c) => c.attempts === 0).length,
       totalDurationMs: group.reduce((n, c) => n + c.durationMs, 0),
@@ -395,7 +399,9 @@ function summarise(list: ApiCallRecord[], startedAt: number): RunRecord {
   return {
     runAt: new Date(startedAt).toISOString(),
     durationMs: Math.round((Date.now() - startedAt) / 1) || 0,
-    calls: list.length,
+    // Real attempts only, so this equals the sum of the per-service `calls`
+    // and does not drift from the rows shown in the panel.
+    calls: list.filter((c) => c.attempts > 0).length,
     // Only real attempts can fail. A skipped call is reported separately.
     failures: list.filter((c) => !c.ok && c.attempts > 0).length,
     costCredits: list.reduce((n, c) => n + (c.costCredits ?? 0), 0),
@@ -458,15 +464,15 @@ export function buildMetrics(previous: ApiMetrics | null): ApiMetrics {
     generatedAt: new Date().toISOString(),
     latestRun: latest,
     latestCalls: calls.slice(0, MAX_LATEST_CALLS),
-    latestCallsTotal: calls.length,
-    latestCallsTruncated: calls.length > MAX_LATEST_CALLS,
+    latestCallsTotal: latest.calls,
+    latestCallsTruncated: latest.calls > MAX_LATEST_CALLS,
     history,
     budget: budgetFrom(previous, calls),
     totals: {
-      calls: calls.length,
+      calls: latest.calls,
       failures: latest.failures,
       costCredits: latest.costCredits,
-      meteredRequests: calls.filter((c) => c.metered).length,
+      meteredRequests: calls.filter((c) => c.metered && c.attempts > 0).length,
     },  };
 }
 

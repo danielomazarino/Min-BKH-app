@@ -2574,105 +2574,144 @@ details.disc .disc-body {
 }
 
 
+
 /* ==========================================================================
-   API measurement table — the diagnostics list under the cog wheel.
+   API measurement table — diagnostics under the cog wheel.
 
-   A real table rather than stacked label/value pairs: the old layout ran the
-   source name straight into its own statistics ("article-text25.9 s totalt")
-   and gave every column the same visual weight, so nothing could be scanned.
+   REBUILT after the first version was unreadable on a 390px iPhone. Six
+   columns in a fixed grid left ~30px per cell, so every value wrapped to one
+   or two characters per line ("articl e-te xt", "1836 .3 kB ut") and the
+   STATUS pill overlapped the number beside it.
 
-   Every column header carries an explainer. It is a <button>, not a `title`
-   attribute, because tooltips are mouse-only and this app is used on phones.
+   So this is NOT a grid on a phone. Each source is a stacked card: the name
+   and status on the first line, then a labelled value grid below. Labels are
+   always visible — a bare number is meaningless without knowing its column,
+   which is exactly what the old table assumed away.
+
+   The ⓘ explainers stay tappable at this width, which a `title` tooltip
+   could never be (mouse-only, and this app is used on phones).
    ========================================================================== */
 
 .mtable {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
-  overflow: hidden;
+  gap: var(--s2);
 }
 
 .mrow {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) 44px 62px 62px minmax(0, 1.5fr) 74px;
-  gap: var(--s2);
-  align-items: center;
-  padding: 7px var(--s3);
-  border-bottom: 1px solid var(--hairline);
-  font-size: var(--t-meta);
-}
-.mrow:last-child {
-  border-bottom: none;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: var(--s3);
+  background: var(--surface);
 }
 
-/* Header row: quieter than the data, but still selectable text. */
-.mhead {
-  background: var(--surface-2);
+/* One row per source: name on the left, status pill on the right. */
+.mrow.mhead {
+  display: none;
+}
+
+.mc {
+  min-width: 0;
+}
+
+.mname {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  color: var(--text);
+  font-size: var(--t-body);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.msub {
+  display: block;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+/* Label/value pairs. `repeat(2, 1fr)` is chosen because every label here is
+   short (Anrop, Tid, Längsta, Data) and two per row fits 390px with room for
+   the value; three per row did not, and re-wrapped the labels themselves. */
+.mstats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s2) var(--s3);
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--hairline);
+}
+
+.mstatcell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.mstatlabel {
+  display: inline-flex;
+  align-items: center;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-3);
-  align-items: start;
 }
 
-.mc {
-  min-width: 0;
-  color: var(--text-2);
-  /* Numbers must not reflow as digits change between runs. */
-  font-variant-numeric: tabular-nums;
+/* The DATA cell holds "in · out", which is too wide for one column at 390px,
+   so it spans both and keeps the pair together on one line. */
+.mstatcell.wide {
+  grid-column: 1 / -1;
 }
-.mname {
-  color: var(--text-1);
-  font-weight: 600;
+
+.mstatval {
+  font-size: var(--t-body);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
-/* Publisher names under a grouped row. */
-.msub {
-  display: block;
-  font-weight: 400;
-  font-size: 10px;
-  color: var(--text-3);
-  margin-top: 1px;
-}
 
-.mstat {
+.mpill {
   display: inline-block;
   font-size: 10px;
   font-weight: 700;
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 3px;
   border: 1px solid var(--hairline);
   color: var(--text-3);
   white-space: nowrap;
+  flex: none;
 }
-.mstat.mok {
+.mpill.mok {
   color: var(--ok);
   border-color: rgba(70, 167, 88, 0.4);
   background: rgba(70, 167, 88, 0.12);
 }
 /* Off means deliberately not wired in — NOT an error. Neutral, not red. */
-.mstat.moff {
+.mpill.moff {
   color: var(--text-3);
   background: rgba(255, 255, 255, 0.04);
 }
-.mstat.mbad {
+.mpill.mbad {
   color: var(--danger);
   border-color: rgba(255, 90, 95, 0.45);
   background: var(--danger-dim);
 }
 
-/* Column explainer. */
 .minfo {
-  position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   margin-left: 3px;
   vertical-align: middle;
 }
 .minfo-btn {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   padding: 0;
   border-radius: 50%;
   border: 1px solid var(--hairline-strong);
@@ -2683,16 +2722,18 @@ details.disc .disc-body {
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
+  flex: none;
 }
 .minfo-btn:hover,
 .minfo-btn:focus-visible {
-  color: var(--text-1);
+  color: var(--text);
   border-color: var(--text-3);
 }
+/* Static, not a floating tooltip: it must survive a narrow column and stay
+   readable rather than escaping into the rest of the card. */
 .minfo-body {
   display: block;
-  position: static;
-  margin-top: 5px;
+  margin-top: 4px;
   padding: 6px 8px;
   border-radius: 5px;
   border: 1px solid var(--hairline);
@@ -2703,18 +2744,16 @@ details.disc .disc-body {
   font-style: normal;
   letter-spacing: normal;
   text-transform: none;
-  /* The header cell is narrow, so the note needs to escape it. */
-  width: min(46ch, 62vw);
   line-height: 1.45;
 }
 
-@media (max-width: 380px) {
-  .mrow {
-    grid-template-columns: minmax(0, 1.4fr) 36px 54px 54px minmax(0, 1.2fr) 66px;
-    gap: var(--s1);
-    padding: 7px var(--s2);
+/* Wider screens get the values on one line each, which is easier to compare
+   down a column, but the label/value pairing is kept either way. */
+@media (min-width: 700px) {
+  .mstats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .minfo-body {
-    width: min(40ch, 76vw);
+  .mstatcell.wide {
+    grid-column: auto;
   }
 }

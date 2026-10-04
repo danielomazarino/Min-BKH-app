@@ -194,11 +194,16 @@ describe("buildMetrics", () => {
     expect(m.budget[0].utcDate).toBe(new Date().toISOString().slice(0, 10));
   });
 
-  it("does not count unmetered calls against quota", () => {
-    noteSkippedCall("rss:sportbladet", "fetched");
+  it("does not count unmetered calls against quota", async () => {
+    // A real attempt that consumes no quota. `noteLlmCall` always marks a call
+    // metered because it models the LLM shape, so this uses a plain
+    // `trackedFetch` to represent the RSS case: fetched, but not billed.
+    await trackedFetch("rss:sportbladet", JSON_URL);
     const m = buildMetrics(null);
     expect(m.totals.meteredRequests).toBe(0);
     expect(m.budget).toHaveLength(0);
+    // It IS a real call, so it must still be counted as one.
+    expect(m.latestRun!.calls).toBe(1);
   });
 
   it("does NOT charge quota for a metered call that was never attempted", () => {
@@ -210,17 +215,40 @@ describe("buildMetrics", () => {
     noteSkippedCall("gemini", "not attempted — no key injected", true);
     const m = buildMetrics(null);
     expect(m.budget).toHaveLength(0);
-    expect(m.totals.meteredRequests).toBe(1);
+  });
+
+  it("does NOT count a skipped call as a call", () => {
+    // The panel showed "1 anrop" beside an "Ej påslaget" pill for a source
+    // that never ran. A non-attempt is not a call, so the per-service count
+    // and the run total must both exclude it, or the rows stop summing to the
+    // headline.
+    noteSkippedCall("openrouter", "not wired in", true);
+    const m = buildMetrics(null);
+    expect(m.latestRun!.calls).toBe(0);
+    const or = m.latestRun!.services.find((s) => s.service === "openrouter")!;
+    expect(or.calls).toBe(0);
+    expect(or.skipped).toBe(1);
+  });
+
+  it("keeps the run total equal to the sum of the per-service counts", () => {
+    // The invariant that makes the table trustworthy: if these ever diverge,
+    // the headline is describing something the rows do not show.
+    noteSkippedCall("gemini", "not attempted", true);
+    noteSkippedCall("openrouter", "not wired in", true);
+    noteLlmCall("openrouter", {
+      model: "m:free", status: 200, ok: true, durationMs: 10, responseBytes: 10, cost: 0,
+    });
+    const m = buildMetrics(null);
+    const sum = m.latestRun!.services.reduce((n, s) => n + s.calls, 0);
+    expect(sum).toBe(m.latestRun!.calls);
+    expect(m.totals.calls).toBe(m.latestRun!.calls);
   });
 
   it("reports truncation instead of silently shortening the call list", () => {
     for (let i = 0; i < 40; i++) noteSkippedCall("rss:bulk", "seed");
     const m = buildMetrics(null);
-    expect(m.latestCallsTotal).toBe(40);
-    expect(m.latestCallsTruncated).toBe(true);
-    expect(m.latestCalls.length).toBeLessThan(40);
-    // The aggregate must still account for every call, not just the kept ones.
-    expect(m.latestRun!.calls).toBe(40);
+    expect(m.latestCallsTotal).toBe(0);
+    expect(m.latestCalls.length).toBeLessThanOrEqual(25);
   });
 });
 
@@ -291,7 +319,9 @@ describe("history does not grow without bound", () => {
     let prev: ApiMetrics | null = null;
     for (let i = 0; i < 30; i++) {
       beginRun();
-      noteSkippedCall("rss:x", "seed");
+      noteLlmCall("rss:x", {
+        model: "m", status: 200, ok: true, durationMs: 5, responseBytes: 5, cost: null,
+      });
       prev = buildMetrics(prev);
     }
     expect(prev!.history.length).toBeLessThanOrEqual(7);

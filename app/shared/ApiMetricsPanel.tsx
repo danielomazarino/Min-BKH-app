@@ -58,6 +58,35 @@ interface Group {
   members: ServiceAggregate[];
 }
 
+/**
+ * A labelled value inside a source card.
+ *
+ * The label is always rendered. A bare number is meaningless without knowing
+ * what it measures, and the previous grid layout assumed the column position
+ * carried that information — which it did not, once the text wrapped.
+ */
+function Cell({
+  label,
+  info,
+  wide,
+  children,
+}: {
+  label: string;
+  info: string;
+  wide?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={wide ? "mstatcell wide" : "mstatcell"}>
+      <span className="mstatlabel">
+        {label}
+        <Info label={info} />
+      </span>
+      <span className="mstatval">{children}</span>
+    </div>
+  );
+}
+
 const sum = (rows: ServiceAggregate[], pick: (s: ServiceAggregate) => number) =>
   rows.reduce((n, s) => n + pick(s), 0);
 
@@ -235,32 +264,40 @@ export function ApiMetricsPanel() {
             </span>
           </p>
 
-          {/* WHAT THE NUMBER MEANS. "63 anrop" on its own answers nothing —
-              a reader cannot tell whether that is a lot. This says where the
-              calls went, in plain terms, with the two dominant services named
-              so the shape of the run is obvious at a glance. */}
+          {/* WHAT THE NUMBER MEANS. "63 anrop" on its own answers nothing — a reader
+              cannot tell whether that is a lot, and cannot tell why one source
+              shows 26 calls while another shows 1. This spells out both: what
+              a run IS, and why the per-source counts differ. */}
           <p className="small dim" data-testid="metrics-plain">
             {(() => {
               const groups = groupServices(run.services);
               const top = groups[0];
               const feeds = groups.find((g) => g.key === "rss");
-              // The AI service, whichever provider is configured. Matched on
-              // `key` because a Group has no `service` field.
-              const ai = groups.find(
-                (g) => g.key === "openrouter" || g.key === "gemini",
-              );
               const pct = (n: number) => (run.calls ? Math.round((n / run.calls) * 100) : 0);
-              const parts = [
-                `${pct(top.calls)} % av anropen gick till ${top.label}`,
-                feeds ? `${feeds.calls} var nyhetsflöden (${feeds.members.length} källor, 1 hämtning var)` : "",
-                ai
-                  ? ai.skipped > 0
-                    ? `ingen AI användes (${ai.label} är inte inkopplad)`
-                    : `1 AI-anrop via ${ai.label}`
-                  : "ingen AI användes",
-              ].filter(Boolean);
-              return `${run.calls} anrop: ${parts.join(", ")}.`;
+              return (
+                <>
+                  En <strong>körning</strong> är hela nattens datahämtning — en enda
+                  omgång som börjar 03:30 UTC och skriver alla källor på en gång.
+                  Alla nedan är delar av samma körning, inte olika körningar.{" "}
+                  {run.calls} anrop totalt: {pct(top.calls)} % gick till {top.label}
+                  {feeds
+                    ? `, ${feeds.calls} var nyhetsflöden (${feeds.members.length} källor, en hämtning var)`
+                    : ""}
+                  .
+                </>
+              );
             })()}
+          </p>
+          <p className="small dim">
+            <strong>Varför så olika antal?</strong> En källa läses en gång per
+            körning — därför står det 1 för varje nyhetsflöde och för AI-tjänsterna.
+            {" "}
+            <strong>article-text</strong> och <strong>sportomedia</strong> läses
+            däremot många gånger, en gång per objekt de hämtar. Det är inte
+            fel: de går igenom klubbens artikel- och matchdataserver gång för
+            gång. <strong>article-text</strong> är inte Firecrawl — det är en
+            vanlig hämtning av artiklarnas egna webbsidor för att läsa själva
+            texten, eftersom RSS-beskrivningarna oftast är avklippta.
           </p>
 
           {m.latestCallsTruncated && (
@@ -270,67 +307,68 @@ export function ApiMetricsPanel() {
             </p>
           )}
 
-          {/* A REAL TABLE, one line per source.
-              The previous layout was two stacked label/value pairs per row,
-              which read as a run-on sentence ("article-text25.9 s totalt · 2.1 s
-              max") and mixed the source name into its own statistics. Each
-              column now has a header with a plain-language explanation, because
-              "max" and "in/ut" are not self-explanatory to a supporter. */}
+          {/* NOT A GRID ON A PHONE. The first version used six columns, which left
+              ~30px per cell on a 390px iPhone: every value wrapped to one or
+              two characters per line and the status pill overlapped the
+              number beside it. Each source is now a stacked card with the
+              name and status on the first line and labelled values below, so
+              nothing is ever ambiguous about which column it belongs to. */}
           <div className="mtable" data-testid="metrics-services">
-            <div className="mrow mhead" role="row">
-              <span className="mc mname" role="columnheader">Källa</span>
-              <span className="mc" role="columnheader" title="Antal anrop mot den här källan under hela körningen.">
-                Anrop
-                <Info label="Antal anrop mot den här källan under hela körningen." />
-              </span>
-              <span className="mc" role="columnheader" title="Total tid för alla anrop. Längre tid betyder oftast mer att hämta, inte fler anrop.">
-                Tid
-                <Info label="Total tid för alla anrop. Längre tid betyder oftast mer att hämta, inte fler anrop." />
-              </span>
-              <span className="mc" role="columnheader" title="Det långsammaste enskilda anropet. En hög siffra här men låg totaltid betyder ett enstaka långsamt svar.">
-                Längsta
-                <Info label="Det långsammaste enskilda anropet. En hög siffra här men låg totaltid betyder ett enstaka långsamt svar." />
-              </span>
-              <span className="mc" role="columnheader" title="Hur mycket data som skickades till källan (in) och vad den svarade med (ut).">
-                Data
-                <Info label="Hur mycket data som skickades till källan (in) och vad den svarade med (ut)." />
-              </span>
-              <span className="mc" role="columnheader" title="Källans status just nu: påslagen, avstängd eller med fel.">
-                Status
-                <Info label="Källans status just nu: påslagen, avstängd eller med fel." />
-              </span>
-            </div>
-
             {groupServices(run.services).map((g) => (
-              <div className="mrow" key={g.key} role="row">
-                <span className="mc mname" role="cell">
-                  {g.label}
-                  {/* Per-publisher detail stays available, so grouping hides
-                      nothing — it only stops eight identical rows from burying
-                      the two services that do the work. */}
-                  {g.members.length > 1 && (
-                    <span className="msub">
-                      {g.members.map((m) => m.service.replace("rss:", "")).join(", ")}
-                    </span>
-                  )}
-                </span>
-                <span className="mc" role="cell">{g.calls}</span>
-                <span className="mc" role="cell">{ms(g.totalDurationMs)}</span>
-                <span className="mc" role="cell">{ms(g.maxDurationMs)}</span>
-                <span className="mc" role="cell">
-                  {kb(g.requestBytes)} in · {kb(g.responseBytes)} ut
-                </span>
-                <span className="mc" role="cell">
-                  {/* "ej körd" was wrong Swedish for a switched-off source.
-                      An API that is not wired in is AV, not "not driven". */}
+              <div className="mrow" key={g.key} role="group" aria-label={g.label}>
+                <div className="mname">
+                  <span>
+                    {g.label}
+                    {/* Publisher names under a grouped row, so grouping hides
+                        nothing — it only stops eight identical rows from
+                        burying the two services that do the work. */}
+                    {g.members.length > 1 && (
+                      <span className="msub">
+                        {g.members.map((m) => m.service.replace("rss:", "")).join(" · ")}
+                      </span>
+                    )}
+                  </span>
+                  {/* "ej körd" was wrong Swedish for a source that is not
+                      switched on — it reads like a car that was not driven.
+                      An unwired API is AV, and deliberately neutral grey rather
+                      than red: it is a configuration state, not a fault. */}
                   {g.failures > 0 ? (
-                    <span className="mstat mbad">{g.failures} fel</span>
+                    <span className="mpill mbad">{g.failures} fel</span>
                   ) : g.skipped > 0 ? (
-                    <span className="mstat moff">Ej påslaget</span>
+                    <span className="mpill moff">Ej påslaget</span>
                   ) : (
-                    <span className="mstat mok">Påslaget</span>
+                    <span className="mpill mok">Påslaget</span>
                   )}
-                </span>
+                </div>
+
+                <div className="mstats">
+                  <Cell
+                    label="Anrop"
+                    info={
+                      g.skipped > 0
+                        ? "Antal anrop mot källan. En avstängd källa har 0 anrop — den körs inte alls just nu."
+                        : "Antal anrop mot den här källan under hela körningen."
+                    }
+                  >
+                    {g.skipped > 0 ? "0" : g.calls}
+                  </Cell>
+                  <Cell label="Tid" info="Total tid för alla anrop. Lång tid betyder oftast mycket data, inte fler anrop.">
+                    {ms(g.totalDurationMs)}
+                  </Cell>
+                  <Cell label="Längsta" info="Det långsammaste enskilda anropet. Hög siffra här men låg totaltid betyder ett enstaka långsamt svar.">
+                    {ms(g.maxDurationMs)}
+                  </Cell>
+                  <Cell label="Status" info="Påslagen användes i körningen. Ej påslagen betyder att källan inte är inkopplad — det är inte ett fel.">
+                    {g.failures > 0 ? `${g.failures} fel` : g.skipped > 0 ? "Ej påslaget" : "Påslaget"}
+                  </Cell>
+                  <Cell
+                    label="Data"
+                    wide
+                    info="Hur mycket data som skickades till källan (in) och vad den svarade med (ut)."
+                  >
+                    {kb(g.requestBytes)} in · {kb(g.responseBytes)} ut
+                  </Cell>
+                </div>
               </div>
             ))}
           </div>
