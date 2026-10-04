@@ -458,6 +458,14 @@ async function main() {
     // Not attempted at all. Recorded explicitly so the metrics log shows a
     // zero-quota night instead of a silent absence.
     noteSkippedCall("gemini", "not attempted — no key injected", true);
+    // OpenRouter is the provider under evaluation, and this pipeline is NOT
+    // wired to call it yet: B-004 stays gated until the semantic layer is
+    // proven on several nights of real news. Recording it as skipped — rather
+    // than omitting it — is the honest state, and it means the panel shows the
+    // row at all. The moment the LLM stage is switched to OpenRouter, this
+    // noteSkippedCall is replaced by a real trackedFetch and the numbers move
+    // from "ej körd" to actual calls, timings and cost.
+    noteSkippedCall("openrouter", "not wired into the pipeline — B-004 still gated", true);
     console.log("   quota: gemini not attempted (no key injected) — 0 requests spent");
   }
 
