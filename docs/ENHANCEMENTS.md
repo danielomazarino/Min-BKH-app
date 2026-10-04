@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-10-02 (01:00 CEST / 2026-10-01 23:00 UTC)
+## Current state — 2026-10-04 (00:40 CEST / 2026-10-03 22:40 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -124,6 +124,68 @@ A supporter reported the player search field shifting the page sideways on an
 iPhone 13. Automated testing on a desktop browser could **not** reproduce it. That
 does **not** mean it is fixed — it means the only place it was ever seen has not
 been checked. Only the person holding the phone can confirm. See **N-001b**.
+
+---
+
+## Closed since the last update (2026-10-03 → 2026-10-04)
+
+All three were found by **testing on a real iPhone**, not by automated tests. Each
+one is invisible in desktop Chromium, which is the central lesson of this round.
+
+### E-015 · The menu was too small for a thumb, and the indicator poked out of the bar
+
+**Status:** FIXED · **Deployed** · **Affects:** the one piece of navigation every
+supporter uses
+
+**What the phone showed.** The five destinations were hard to hit with a thumb,
+and — clearest at the right-most tab, **Spelare** — the selected glass indicator
+visibly stuck out past the menu's rounded border.
+
+**Two separate causes, and neither was the gesture code.**
+
+1. **Too small.** Each tab was about 66×58px on a 390px phone. That is above the
+   44px accessibility minimum, but it is not a comfortable thumb target. The bar
+   is now ~358×78px with 71px-wide tabs: the width roughly doubled in usable
+   terms while the height was deliberately kept moderate, since a taller bar was
+   also reported as too big.
+2. **The indicator protruded.** The tab positions were computed across
+   `offsetWidth`, which is the **border** box, so the last position overshot the
+   usable area by twice the border width and the indicator's corners reached
+   outside the bar's rounded edge. Clipping the overflow would have hidden the
+   symptom and left the geometry wrong, so the positions are now measured on the
+   padding box and inset from the edges by the smallest distance that still
+   reads as a gap.
+
+**Measured result, all five tabs:** the indicator protrudes by 0.00px on every
+edge and sits within 0.10px of its tab's centre.
+
+**One further correction, from the same screenshot.** The indicator's corners did
+not follow the bar's curve — it read as a lozenge inside a differently-shaped
+frame. It is now a **concentric band**: its corner radius equals the bar's radius
+minus the inset, so both curves share a centre and the gap is identical on every
+side.
+
+### B-007 · The news list showed the same date twice
+
+**Status:** FIXED · **Deployed**
+
+**What supporters saw.** In the news archive a day heading was immediately
+followed by the same date on its first row:
+
+```
+2 SEP.
+2 sep.   Officiellt: BK Häcken lånar ut Sanders Ngabo
+```
+
+**Why it happened.** For anything older than two weeks the day heading fell back
+to the same date format the row already prints, so the date appeared twice, in
+two different casings. Measured over 60 days: it happened on **47 of them**.
+
+**The fix keeps the useful part.** Recent days keep their relative heading
+("I dag", "I går", "För 3 dagar sedan", "Förra veckan") because that tells a
+supporter how current something is, which a bare date does not. Older days drop
+the heading and the row's own date carries it — so each day now shows its date
+**once**, never zero.
 
 ---
 
@@ -699,9 +761,13 @@ the source recorded so any claim can be checked.
 | **E-002** | "1 caution left", "3 cautions", "suspended" all appeared separately and repetitively | Grouped into one clear state per player |
 | **E-003** | A player who had left the club was counted as a current risk | Removed from the current count |
 | **E-004** | Swiping down did nothing on real iPhones (works in emulators) | Works on real touch devices |
-| **E-010 – E-013** | The menu bar could be tapped but not dragged, and was never actually centred | Drags vertically only, always centred; the iOS link callout no longer eats the gesture |
+| **E-010 – E-013** | The menu bar could be tapped but not dragged, and was never actually centred | Vertical dragging removed as over-engineering; the bar is now a fixed floating pill with a glass indicator that follows the thumb and springs to the nearest destination. The iOS link callout no longer eats the gesture. Superseded in part by **E-015** |
 | **E-006 – E-009** | Former-player identity could be wrong or unsourced | Now resolved from live sources, with provenance recorded |
 | **B-002** | News cards had no images | Feed supplies them |
+| **B-007** | The news archive printed the same date twice — a "2 SEP." heading immediately followed by "2 sep." on the row beneath it | Each day now shows its date once; recent days keep a useful relative heading |
+| **E-015** | On a real iPhone the menu was too small to tap reliably, and the selected indicator poked out past the bar's rounded edge | Menu scaled ~50% wider for thumb use; the indicator is now a concentric band with the smallest uniform gap. See the detail below |
+| **B-007** | The news archive printed the same date twice — a "2 SEP." heading immediately followed by "2 sep." on the row | Each day now shows its date once; recent days keep a useful relative heading |
+| **E-015** | On a real iPhone the menu was too small to tap reliably, and the selected indicator visibly poked out past the bar's rounded edge | Menu scaled ~50% wider for thumb use; the indicator is now a concentric band with the smallest uniform gap |
 | **B-005** | The overnight data job could finish successfully and never actually publish — data silently went stale for two days | Deploy guard now proves committed bytes match served bytes |
 
 ---
@@ -750,6 +816,16 @@ the source recorded so any claim can be checked.
 | E-001 – E-004 | DONE | Verified in code |
 | E-006 – E-009 | DONE | Superseded by the Wikidata search redesign |
 | B-002, B-005 | DONE | B-005's deploy guard ran and **passed** — do not reopen |
+| **E-015** | **DONE** — verified on device | Indicator 0.00px protrusion on all 4 edges at all 5 tabs, off-centre ≤0.10px, radii 32/28 (concentric). Tab targets 71×78px. Public build `c109164.1fb897f` |
+| **B-007** | **DONE** | Duplicate measured on 47 of 60 days. Now impossible by construction; pinned by an invariant asserted across a full year |
+| **N-001c** | **OPEN** | **The Liquid Glass menu's touch behaviour is verified only in Chromium and in synthetic-event WebKit.** Playwright's CDP touch injection is Chromium-only (`newCDPSession` throws in WebKit), so the WebKit project dispatches synthetic `PointerEvent`s that bypass iOS's **native gesture recogniser** — the layer that decides scroll-versus-drag and raises the link callout. Hardware testing found four defects Chromium could not. Treat any future change here as **unverified until a thumb confirms it** |
+
+### Reusable: `.github/skills/liquid-glass-tab-bar/SKILL.md`
+
+The token set, the concentric-geometry arithmetic, the touch-action rules and the
+seven iOS-only traps are written up as a reusable skill, for reuse in this project
+and in other PWAs. Written from what actually broke, not from how the code looks
+now.
 
 ### Deploy discipline this session — two data-neutral deploys
 
