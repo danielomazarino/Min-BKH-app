@@ -84,8 +84,9 @@ PY
     ;;
   402)
     printf '\n=== NO CREDITS ===\n'
-    printf 'Account balance is exhausted. Note: OpenRouter requires a POSITIVE\n'
-    printf 'balance even to use :free models — a zero balance 402s.\n'
+    printf 'Balance or per-key credit limit is exhausted. A NEGATIVE balance can\n'
+    printf '402 even on :free models; a zero balance may be fine. New accounts\n'
+    printf 'also get a small free allowance - check the Activity page.\n'
     ;;
   *)
     printf '\n=== UNEXPECTED STATUS %s ===\n' "$CODE"

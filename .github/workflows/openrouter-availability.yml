@@ -36,9 +36,10 @@ name: OpenRouter availability (11 samples, alternating probe)
 #   "tier exhausted" from "service unhealthy", because both look like failure.
 #   Do NOT raise the count above the documented ceiling for the same reason.
 #
-#   OpenRouter also requires a POSITIVE account balance to use :free models.
-#   A zero balance returns 402 even on free variants — which is a billing
-#   problem, not a quota problem, and is easy to misread.
+#   A 402 is a BILLING answer, not a quota one, and the two are easy to
+#   confuse. Per the docs a NEGATIVE balance can produce 402 even on :free
+#   models; a zero balance may be fine, and new accounts receive a small free
+#   allowance. So treat a 402 as "read the body", not as "you must pay".
 #
 # COST DISCIPLINE (the standing rule from the 84-request incident)
 #   - exactly ONE generation request per firing, NEVER retried

@@ -250,9 +250,12 @@ requests/day** until at least 10 credits have ever been bought, after which it i
 1000/day. One request per manual run is a trivial fraction of that. Two things
 worth knowing before trusting a failure:
 
-- OpenRouter needs a **positive account balance** even to use `:free` models. A
-  zero balance returns **402**, which looks like a billing problem, not a quota
-  problem.
+- OpenRouter documents that free variants cost nothing, and that **new accounts
+  receive a small free allowance** — so **you should not have to pay to test
+  this**. A **402** means billing, not quota, and the two are easy to confuse.
+  The docs specifically tie 402 on `:free` models to a **negative** balance; a
+  zero balance may be fine. If free requests start failing, read the response
+  body before topping up.
 - **503 means "no provider available"**, which is a different failure from
   Gemini's "model experiencing high demand". Free models often have very few
   providers behind them.

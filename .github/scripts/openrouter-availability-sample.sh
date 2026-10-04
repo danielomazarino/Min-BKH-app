@@ -83,8 +83,9 @@ PY
     ;;
   402)
     printf '\n=== NO CREDITS ===\n'
-    printf 'Account balance or key limit is exhausted. Free models also require\n'
-    printf 'a POSITIVE balance — a zero/negative balance 402s even on :free.\n'
+    printf 'Account balance or key credit limit is exhausted. Per the docs a\n'
+    printf 'NEGATIVE balance can produce 402 even on :free models; a zero balance\n'
+    printf 'may be fine. Do not assume this is a quota problem - read the body.\n'
     ;;
   429)
     printf '\n=== RATE LIMITED ===\n'
