@@ -12,6 +12,8 @@
  * API-Football is historical only (seasons 2022–2024, team ID 367).
  */
 
+import { trackedFetch } from "./apiMetrics";
+
 const ENDPOINT_URL = "https://gql.sportomedia.se/graphql";
 
 /** BK Häcken men's team abbreviation in SportoMedia (verified 2026-09-25). */
@@ -29,7 +31,7 @@ export interface SportoMediaStatus {
 
 async function gql<T>(query: string): Promise<{ data: T | null; status: SportoMediaStatus }> {
   try {
-    const res = await fetch(ENDPOINT_URL, {
+    const res = await trackedFetch("sportomedia", ENDPOINT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query }),

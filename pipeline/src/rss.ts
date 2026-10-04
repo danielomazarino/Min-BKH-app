@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import type { NewsItem } from "./types";
+import { trackedFetch } from "./apiMetrics";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
 
@@ -32,7 +33,7 @@ export async function fetchRss(
   discoveredVia = "rss",
 ): Promise<FetchedFeed> {
   try {
-    const res = await fetch(url, {
+    const res = await trackedFetch(`rss:${publisher}`, url, {
       headers: { "User-Agent": "MinBKH/0.1 (supporter PWA; contact: repo issues)" },
       signal: AbortSignal.timeout(20000),
     });

@@ -18,7 +18,8 @@
     "gemini:history": "bash .github/scripts/gemini-status.sh --history",
     "gemini:size-probe": "bash .github/scripts/gemini-size-probe.sh",
     "gemini:recheck": "tsx pipeline/src/geminiRecheck.ts",
-    "gemini:eval": "tsx pipeline/src/geminiSemanticEval.ts"
+    "gemini:eval": "tsx pipeline/src/geminiSemanticEval.ts",
+    "openrouter:eval": "tsx pipeline/src/openrouterSemanticEval.ts"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

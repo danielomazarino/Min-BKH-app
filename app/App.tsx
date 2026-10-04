@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { HashRouter, Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
 import { Settings as SettingsIcon } from "lucide-react";
+import { ApiMetricsPanel } from "./shared/ApiMetricsPanel";
 import Brief from "./pages/Brief";
 import News from "./pages/News";
 import Matches from "./pages/Matches";
@@ -290,6 +291,12 @@ function SettingsPanel({ state }: { state: AppDataState }) {
             Artiklar hämtas från källornas egna RSS-flöden. Firecrawl används bara för att hitta artiklar
             — det är aldrig en källa.
           </p>
+
+          {/* API measurement log. Rendered inside the existing technical
+              disclosure, and fetched lazily by the panel itself, so it costs
+              nothing until someone actually opens this section. */}
+          <div className="mod-label">Mätlogg</div>
+          <ApiMetricsPanel />
         </div>
       </details>
 

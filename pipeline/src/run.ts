@@ -46,6 +46,7 @@ import { matchesSquadPlayer, resolveCanonicalId } from "./playerIdentity";
 import { buildLedger, computeSeasonDiscipline, type CardEvent } from "./discipline";
 import { classifyRelevance, type KnownPersons } from "./newsRelevance";
 import { getRule } from "./rules";
+import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall } from "./apiMetrics";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
@@ -365,6 +366,7 @@ async function collectCurrentFootballData(): Promise<FootballData> {
 
 async function main() {
   mkdirSync(DATA_DIR, { recursive: true });
+  beginRun();
 
   const news = await collectNews();
   const foot = await collectCurrentFootballData();
@@ -438,6 +440,27 @@ async function main() {
 
   const gem = await synthesizeWithGemini(geminiInput);
   STATUS.gemini = gem.status.ok ? "ok" : gem.result === null ? "failed" : "ok";
+
+  // Quota visibility for the metered LLM call.
+  //
+  // `calls` is what actually left the machine. The Gemini REST API reports no
+  // credit figure, so cost stays null — recorded as "unreported" rather than
+  // as 0, because 0 would falsely claim the call was free.
+  if (gem.status.calls > 0) {
+    noteSkippedCall("gemini", `no-key-or-blocked (${gem.status.error ?? "unknown"})`, true);
+    noteCost("gemini", null);
+    const today = new Date().toISOString().slice(0, 10);
+    console.log(
+      `   quota: gemini used ${gem.status.calls} request(s) today (${today}); ` +
+        `free tier is capped at 20/UTC day`,
+    );
+  } else {
+    // Not attempted at all. Recorded explicitly so the metrics log shows a
+    // zero-quota night instead of a silent absence.
+    noteSkippedCall("gemini", "not attempted — no key injected", true);
+    console.log("   quota: gemini not attempted (no key injected) — 0 requests spent");
+  }
+
   console.log(
     `news: gemini ok=${gem.status.ok} model=${gem.status.model ?? "none"} calls=${gem.status.calls} events=${gem.result?.events.length ?? 0} articleTextUnavailable=${textFailures}` +
       (gem.status.error ? ` error="${gem.status.error}"` : ""),
@@ -506,6 +529,32 @@ async function main() {
     !d.nextMatch && !d.lastResult && d.news.length === 0 && !d.lastMatchDetail;
 
   writeAppIfBetter(resolve(DATA_DIR, "app.json"), appData, appEmpty);
+
+  // API measurement log. Written LAST so it captures every call, and it can
+  // never fail the pipeline: writeMetrics swallows its own errors.
+  //
+  // Gemini is recorded as a METERED call when it was actually attempted. When
+  // the key is absent the pipeline never calls out at all — that is recorded
+  // as a skipped call with attempts: 0, because "did not run" and "ran and was
+  // rejected" are completely different facts and the quota view depends on
+  // telling them apart.
+  const metricsPath = resolve(DATA_DIR, "api-metrics.json");
+  const metrics = writeMetrics(metricsPath, readMetrics(metricsPath));
+  if (metrics) {
+    const svc = metrics.latestRun?.services ?? [];
+    console.log(
+      `api-metrics: ${metrics.totals.calls} calls, ${metrics.totals.failures} failed, ` +
+        `${metrics.totals.meteredRequests} metered, cost ${metrics.totals.costCredits} credits`,
+    );
+    for (const s of svc.slice(0, 4)) {
+      console.log(
+        `   ${s.service.padEnd(26)} ${String(s.calls).padStart(2)} calls  ` +
+          `${s.totalDurationMs}ms total  ${s.maxDurationMs}ms max  ` +
+          `${s.responseBytes}B out  cost ${s.costCredits}` +
+          (s.costReported === 0 ? " (unreported)" : ""),
+      );
+    }
+  }
 
   console.log("Pipeline complete:", JSON.stringify(appData.freshness.sourceStatus));
 }

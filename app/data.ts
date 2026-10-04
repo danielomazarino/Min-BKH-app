@@ -1,4 +1,4 @@
-import type { AppData } from "./shared/types";
+import type { AppData, ApiMetrics } from "./shared/types";
 
 export type AppDataState =
   | { status: "loading" }
@@ -19,6 +19,29 @@ export async function loadAppData(): Promise<AppDataState> {
     return { status: "ready", data };
   } catch (e) {
     return { status: "error", message: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+// ---------- API measurement log (diagnostics only) ----------
+
+/**
+ * The measurement log is loaded LAZILY, on demand, never during first paint.
+ *
+ * This is the whole reason it is a separate file rather than a field on
+ * AppData: `app.json` is fetched by every supporter on every visit, so adding
+ * diagnostics to it would tax the common case to serve the rare one. Opening
+ * the cog wheel's diagnostics section is the only trigger, and a failure there
+ * must never affect the app, so this resolves to `null` rather than throwing.
+ */
+export type MetricsState = { status: "loaded"; data: ApiMetrics } | { status: "unavailable" };
+
+export async function loadApiMetrics(): Promise<MetricsState> {
+  try {
+    const res = await fetch(`${BASE}data/api-metrics.json`);
+    if (!res.ok) return { status: "unavailable" };
+    return { status: "loaded", data: (await res.json()) as ApiMetrics };
+  } catch {
+    return { status: "unavailable" };
   }
 }
 

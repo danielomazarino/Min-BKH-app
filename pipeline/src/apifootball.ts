@@ -19,6 +19,8 @@ export const BKH_TEAM_ID = 367;
 /** Hammarby FF in API-Football — must never be used for BK Häcken. */
 export const HAMMARBY_TEAM_ID = 363;
 export const ALLSVENSKAN_LEAGUE_ID = 113;
+import { trackedFetch } from "./apiMetrics";
+
 /** API-Football Free plan ceiling: seasons 2022–2024 only. */
 export const API_FOOTBALL_MAX_SEASON = 2024;
 
@@ -44,7 +46,7 @@ async function call<T>(path: string, params: Record<string, string | number>): P
   const url = new URL(`${BASE}/${path}`);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
   try {
-    const res = await fetch(url, {
+    const res = await trackedFetch("apifootball", url.toString(), {
       headers: { "x-apisports-key": key },
       signal: AbortSignal.timeout(20000),
     });

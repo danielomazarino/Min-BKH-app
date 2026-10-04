@@ -26,6 +26,8 @@ export interface ArticleText {
   sourceTags?: string[];
 }
 
+import { trackedFetch } from "./apiMetrics";
+
 const UA = "MinBKH/0.1 (supporter PWA; news synthesis; contact: repo issues)";
 
 /**
@@ -78,7 +80,7 @@ export function extractTextFromHtml(html: string): string {
 export async function fetchArticleText(url: string): Promise<ArticleText> {
   if (!/^https?:\/\//i.test(url)) return { url, ok: false, error: "not an http(s) url" };
   try {
-    const res = await fetch(url, {
+    const res = await trackedFetch("article-text", url, {
       headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
       redirect: "follow",
       signal: AbortSignal.timeout(20000),
