@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-04T05:11:24.884Z",
+    "generatedAt": "2026-10-05T01:28:33.839Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -19,7 +19,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-04T05:11:10.793Z",
+    "retrievedAt": "2026-10-05T01:28:21.216Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -893,7 +893,7 @@
   "cardMatchesInspected": 22,
   "news": [
     {
-      "id": "BK Häcken-2-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "id": "BK Häcken-3-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
       "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
@@ -909,7 +909,7 @@
       ]
     },
     {
-      "id": "BK Häcken-12-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "BK Häcken-13-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -925,7 +925,7 @@
       ]
     },
     {
-      "id": "BK Häcken-14-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "BK Häcken-15-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
@@ -955,7 +955,7 @@
   ],
   "newsEvents": [
     {
-      "id": "event-BK Häcken-2-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "id": "event-BK Häcken-3-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
       "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
       "publishedAt": "2026-10-01T13:35:00.000Z",
@@ -974,7 +974,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-12-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "event-BK Häcken-13-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-20T16:00:00.000Z",
@@ -993,7 +993,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-14-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-19T13:50:05.000Z",
@@ -1251,7 +1251,7 @@
       "playerId": "fogis:1034709",
       "playerName": "Nikola Mitrovic",
       "positionGroup": "midfields",
-      "matchesPlayed": 4,
+      "matchesPlayed": 5,
       "matchesStarted": 3,
       "goals": 0,
       "assists": 0,
