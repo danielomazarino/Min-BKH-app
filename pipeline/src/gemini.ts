@@ -86,7 +86,13 @@ export interface GeminiResult {
   events: GeminiEvent[];
 }
 
-const RawSchema = {
+/**
+ * Exported so the OpenRouter path can hold its model to the IDENTICAL output
+ * contract. Two providers are only comparable if the instruction, the schema
+ * and the parser are the same objects — otherwise a difference in the result
+ * could be the harness's doing rather than the provider's.
+ */
+export const RawSchema = {
   type: "OBJECT",
   properties: {
     verdicts: {
@@ -118,7 +124,8 @@ const RawSchema = {
   required: ["verdicts", "events"],
 } as const;
 
-const SYSTEM_INSTRUCTION = `Du redigerar nyhetsflödet för en PWA om BK HÄCKENS HERRLAG.
+/** Exported for the same reason as RawSchema — see the note there. */
+export const SYSTEM_INSTRUCTION = `Du redigerar nyhetsflödet för en PWA om BK HÄCKENS HERRLAG.
 
 För varje artikel bestämmer du:
 1. Om den gäller herrlaget, damlaget, ungdom/academi eller klubb generellt.

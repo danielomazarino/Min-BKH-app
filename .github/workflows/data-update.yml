@@ -49,6 +49,27 @@ jobs:
           # research workflows still need it for manual, deliberate runs.
           # Re-enabling requires B-004 to be fixed first — restoring this one
           # line is not sufficient on its own.
+          #
+          # OPENROUTER_API_KEY IS injected, but it buys MEASUREMENT, not
+          # production output. run.ts calls it once per night, logs what came
+          # back, records the timing and cost in api-metrics.json, and then
+          # THROWS THE ANSWER AWAY — `newsEvents` is built from the
+          # deterministic path either way. See the long comment at the call
+          # site in run.ts before assuming otherwise.
+          #
+          # Why this is safe to run unattended:
+          # - exactly ONE upstream request per night (MAX_TOTAL_CALLS in
+          #   openrouter.ts), never retried, no fallback model;
+          # - the answer cannot reach app.json, so no supporter-visible
+          #   regression is possible from it;
+          # - a 429 or a 5xx is a valid, logged outcome — not a pipeline
+          #   failure — so an unavailable provider cannot break the nightly;
+          # - without the key the stage is skipped and recorded as skipped,
+          #   so removing the secret is a clean, immediate off switch.
+          #
+          # This is the evidence-gathering step. Whether the answer is good
+          # enough to SHIP is a separate decision that this run does not make.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npm run pipeline
 
       - name: Validate generated data

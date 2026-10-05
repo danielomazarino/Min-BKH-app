@@ -47,6 +47,7 @@ import { buildLedger, computeSeasonDiscipline, type CardEvent } from "./discipli
 import { classifyRelevance, type KnownPersons } from "./newsRelevance";
 import { getRule } from "./rules";
 import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall } from "./apiMetrics";
+import { synthesizeWithOpenRouter } from "./openrouter";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
@@ -458,14 +459,6 @@ async function main() {
     // Not attempted at all. Recorded explicitly so the metrics log shows a
     // zero-quota night instead of a silent absence.
     noteSkippedCall("gemini", "not attempted — no key injected", true);
-    // OpenRouter is the provider under evaluation, and this pipeline is NOT
-    // wired to call it yet: B-004 stays gated until the semantic layer is
-    // proven on several nights of real news. Recording it as skipped — rather
-    // than omitting it — is the honest state, and it means the panel shows the
-    // row at all. The moment the LLM stage is switched to OpenRouter, this
-    // noteSkippedCall is replaced by a real trackedFetch and the numbers move
-    // from "ej körd" to actual calls, timings and cost.
-    noteSkippedCall("openrouter", "not wired into the pipeline — B-004 still gated", true);
     console.log("   quota: gemini not attempted (no key injected) — 0 requests spent");
   }
 
@@ -473,6 +466,56 @@ async function main() {
     `news: gemini ok=${gem.status.ok} model=${gem.status.model ?? "none"} calls=${gem.status.calls} events=${gem.result?.events.length ?? 0} articleTextUnavailable=${textFailures}` +
       (gem.status.error ? ` error="${gem.status.error}"` : ""),
   );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // OPENROUTER — MEASUREMENT ONLY. NOT A PRODUCTION PATH.
+  //
+  // This sends the SAME articles, with the SAME instruction and the SAME output
+  // schema, and asks the model to do the same job Gemini used to do. Its answer
+  // is deliberately DISCARDED: `newsEvents` below is built from the
+  // deterministic path either way. Nothing a supporter sees can change here.
+  //
+  // What it buys: real numbers, on real news, on a real schedule — availability
+  // at 03:30, latency, and whether the answer actually holds up. Those are the
+  // three things that decide whether this provider can ever be switched on, and
+  // none of them can be learned from a one-off manual test.
+  //
+  // Cost: one request per night, hard-capped, never retried. See openrouter.ts.
+  // ─────────────────────────────────────────────────────────────────────────
+  const orKeyPresent = Boolean(process.env.OPENROUTER_API_KEY);
+  if (!orKeyPresent) {
+    // No key injected: record it so the log shows the true state rather than a
+    // row that silently disappears.
+    noteSkippedCall("openrouter", "no key injected — measurement disabled", true);
+  } else {
+    const or = await synthesizeWithOpenRouter(geminiInput);
+    const today = new Date().toISOString().slice(0, 10);
+    if (or.ok && or.answer) {
+      // Measured, then discarded on purpose. The event count is logged so a
+      // regression like B-004 (over-merging into fewer, wrong events) would be
+      // visible in the nightly log without ever reaching a supporter.
+      console.log(
+        `openrouter: MEASUREMENT ONLY — answer discarded. ` +
+          `ok model=${or.model} events=${or.answer.events.length} calls=${or.calls} ` +
+          `unknownIds=${or.unknownIds.length}`,
+      );
+      console.log(
+        `   quota: openrouter used ${or.calls} request(s) today (${today}); ` +
+          `free tier reports limit=1000/day`,
+      );
+    } else {
+      // A failed or unavailable call is itself the measurement. Log it plainly
+      // and carry on: the deterministic path is unaffected.
+      noteCost("openrouter", null);
+      console.log(
+        `openrouter: MEASUREMENT ONLY — no usable answer. ok=${or.ok} calls=${or.calls} ` +
+          `error="${or.error ?? "unknown"}"`,
+      );
+      console.log(
+        `   quota: openrouter spent ${or.calls} request(s) today (${today}) — answer discarded, app unaffected`,
+      );
+    }
+  }
 
   let newsEvents: ReturnType<typeof buildNewsEvents> | ReturnType<typeof buildEventsFromGemini>;
   if (gem.result) {

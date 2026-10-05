@@ -99,6 +99,15 @@ export interface ServiceAggregate {
    * them. Found by looking at the live UI, not by a test.
    */
   skipped: number;
+  /**
+   * Why calls were skipped, taken from the recorded `error` of non-attempts.
+   *
+   * Carried through so the panel can say WHY a source is not switched on
+   * instead of showing a bare grey pill. Previously the reason was written to
+   * the log and then dropped at the aggregation boundary — the information
+   * existed and was discarded one step before the person who needed it.
+   */
+  skipReasons?: string[];
   totalDurationMs: number;
   maxDurationMs: number;
   requestBytes: number;
@@ -384,6 +393,9 @@ function aggregate(list: ApiCallRecord[]): ServiceAggregate[] {
       calls: group.filter((c) => c.attempts > 0).length,
       failures: group.filter((c) => !c.ok && c.attempts > 0).length,
       skipped: group.filter((c) => c.attempts === 0).length,
+      skipReasons: group
+        .filter((c) => c.attempts === 0 && !!c.error)
+        .map((c) => c.error as string),
       totalDurationMs: group.reduce((n, c) => n + c.durationMs, 0),
       maxDurationMs: group.reduce((n, c) => Math.max(n, c.durationMs), 0),
       requestBytes: group.reduce((n, c) => n + (c.requestBytes ?? 0), 0),
