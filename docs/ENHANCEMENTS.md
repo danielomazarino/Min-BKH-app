@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-10-04 (00:40 CEST / 2026-10-03 22:40 UTC)
+## Current state — 2026-10-05 (03:20 CEST / 01:20 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -37,11 +37,12 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **396 passing, 0 failing** (18 files) — re-run 2026-10-04. The long-standing failure in `pipeline/src/data.test.ts` ("picks next upcoming and last finished") is **FIXED**: it was a time bomb, not a regression — see **B-009** |
+| Tests | **438 unit tests passing, 0 failing** (20 files) — re-run 2026-10-05, includes a new safety suite for the OpenRouter measurement stage. End-to-end suite runs on **both** Chromium and WebKit; see the CI section below for why it had not been testing WebKit at all until now |
 | Data last generated | **2026-10-04 05:10 UTC** — served bytes verified to match the data commit (`1fe721c…`) |
 | Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). **Measured over 35 probe runs to 2026-10-04: reachable ~48% of the time, but the chat probe that resembles real work succeeded 0/15 — never once.** Still disabled in the nightly (the key is deliberately not injected). B-004 unvalidated. |
 | OpenRouter | **Transport VERIFIED WORKING 2026-10-04.** Key added; ping **1/1 = 200**, chat probe **1/1 = 200** on the payload Gemini failed **0/15** on. Free model, **cost 0 credits**, key reports **1000 req/day**. **Quality still unvalidated** — see **B-008** |
-| Next event | **03:30 UTC** nightly only — the Gemini availability probe schedule was **stopped 2026-10-04** |
+| OpenRouter | **Runs every night now, MEASUREMENT ONLY — its answer is discarded and never reaches the app.** Transport verified: 3 attempts ever, **1 succeeded** (21s, 23,636 B), 2 refused by the shared free pool (HTTP 429) while only 4/1000 of *our* budget was used. Fixed fixture evaluation passed all 5 checks. **Real-news reliability at 03:30 is exactly what the nightly run is now measuring** — see the OpenRouter section below |
+| Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement |
 
 ### The Gemini availability probe was STOPPED on 2026-10-04
 
@@ -352,6 +353,146 @@ any "recent" or "upcoming" window.
 **The fix.** Both fixture dates are now derived from the clock at call time
 (±3 hours), so the relationship under test — one match in the future, one in the
 past — holds whenever the suite runs. No production code was touched.
+
+---
+
+## OpenRouter now runs every night — measuring only, changing nothing
+
+**Status:** ARMED · **Supporter-visible effect: NONE, by design** ·
+**Decided 2026-10-05**
+
+### What changed, in one sentence
+
+Once per night at 03:30 UTC, the pipeline now also sends the day's articles to
+OpenRouter, records what came back and how long it took, and then **throws the
+answer away**. The news you read is built exactly as before.
+
+### Why this is not the same as switching it on
+
+This is the distinction that matters, so it is worth being precise:
+
+| | Tonight's change | Actually switching it on |
+|---|---|---|
+| Requests per night | 1 | 1 |
+| Where the answer goes | **nowhere** | your news feed |
+| If the answer is wrong | nothing happens | supporters read wrong news |
+| If it fails (429/503) | logged, pipeline continues | logged, pipeline continues |
+| Retries | none, ever | none, ever |
+
+The app builds its news from the deterministic path in **both** cases. Look at
+the call site in `pipeline/src/run.ts`: the OpenRouter result is logged and
+never assigned to `newsEvents`.
+
+### So what does a week of this buy?
+
+Three things that cannot be learned from a single manual test:
+
+1. **Is it actually available at 03:30?** Free OpenRouter models sit in a pool
+   shared with every other user. Our own budget use was 4 of 1000 requests when
+   we were turned away, so any 429 is the shared pool, not us. A week of
+   nightly attempts answers "does this work reliably enough to depend on?"
+2. **How long does it take?** A service that answers in 40 seconds is a different
+   proposition from one that answers in 4.
+3. **Does the answer hold up on real news?** The one evaluation that passed did
+   so on a fixed 8-article fixture. Nightly real news is the harder test.
+
+### How to switch off
+
+Remove the `OPENROUTER_API_KEY` repository secret. That is the whole procedure —
+with the key absent the stage is skipped, and it is recorded as *skipped* rather
+than silently vanishing. There is no schedule to cancel and no code to revert.
+
+### What you will see in the app
+
+Under the cog wheel → *Teknisk information och proveniens*, the OpenRouter row
+will show a third status word, **Mäter** (amber), which is neither the green
+*Påslaget* nor the grey *Ej påslaget*. It carries a one-line explanation that its
+answer is discarded. Showing it green would tell you your news comes from this
+provider. It does not.
+
+### What is still NOT proven
+
+- That the nightly call succeeds. Three attempts have ever been made: **1
+  succeeded** (21 seconds, 23,636 bytes), **2 were refused** by the shared pool
+  with HTTP 429. That is 1 in 3, which is not good enough to ship.
+- That its output is right on real news. The fixture evaluation passed all five
+  checks; nightly real news is a different and harder test, and this is the run
+  that will tell us.
+- Cost. `0` in the log means *the provider reported it free*; blank means *nobody
+  told us*. Those two are never conflated.
+
+---
+
+## Why CI was red, and what it was actually telling us
+
+**Status:** FIXED · **Found 2026-10-05 · Both causes reproduce locally**
+
+This one is worth reading in full, because the cause was not the one I claimed.
+
+### Cause 1 — WebKit was never running at all (21 of the failures)
+
+`playwright.config.ts` declares **two** browser projects: `chromium` and
+`webkit`. The CI job installed only one:
+
+```yaml
+- name: Install Playwright browsers
+  run: npx playwright install --with-deps chromium     # <-- webkit missing
+```
+
+So all 21 WebKit tests failed with:
+
+```
+browserType.launch: Executable doesn't exist at
+  /home/runner/.cache/ms-playwright/webkit-2359/pw_run.sh
+```
+
+**That is not a test failure. It is a missing browser.** The WebKit assertions
+never executed, so the suite had been reporting red while testing *nothing* on
+the engine closest to real iOS Safari — the engine this app's touch navigation
+depends on most. Now both are installed.
+
+### Cause 2 — my own explanation was wrong
+
+I previously attributed the red CI to tests being "sensitive to running in
+parallel". **That was a hypothesis I never tested, and it was wrong.** The 24
+failures split cleanly into the 21 environment failures above plus 3 genuine
+Chromium failures that pass in isolation, i.e. timing, not parallelism.
+
+I should have read the actual failure text before explaining it. The error said
+"Executable doesn't exist" in plain sight.
+
+### What was hiding behind the missing browser
+
+Installing WebKit exposed a second layer: **10 WebKit touch tests failed for a
+real, interesting reason** — and every one of them was a *harness* limitation,
+not an app defect:
+
+`newCDPSession` exists only in Chromium. WebKit cannot receive real injected
+touch, so those tests fell back to synthetic `PointerEvent`s. Two consequences,
+both now handled honestly:
+
+- Three tests asserted that the browser fires `pointercancel` on a steep
+  diagonal gesture. Synthetic events **bypass native gesture recognition
+  entirely**, so no cancel is ever delivered and the assertion was really
+  asserting "the harness failed to simulate the browser". They now assert only
+  what is engine-independent, and say plainly why.
+- One test, `fabnav-swipe`, moved a **fixed 48px** and expected the page to
+  change. Measured tab pitch on a 390px screen is **~71px**, so 48px released
+  the indicator *inside* the dead zone around the midpoint — and the app
+  correctly read that as "a nudged thumb" and kept the current tab. **The app
+  was right; the test was wrong.** It had only ever passed in Chromium by
+  coincidence of layout. The gesture is now sized from the measured geometry,
+  the same discipline `navIndicatorDrag.ts` already used.
+
+  This is the clearest example in this project of a passing test that was
+  measuring its own assumption rather than the product.
+
+### The honest limit
+
+A green WebKit run is evidence about **our logic**, not about iOS. Synthetic
+events never touch WebKit's native gesture arbitration — the layer that decides
+scroll-versus-drag and raises the link callout on a real phone. Only a real
+iPhone verifies the gesture itself. That remains open.
 
 ---
 
@@ -935,6 +1076,10 @@ the source recorded so any claim can be checked.
 | **B-007** | The news archive printed the same date twice — a "2 SEP." heading immediately followed by "2 sep." on the row | Each day now shows its date once; recent days keep a useful relative heading |
 | **E-015** | On a real iPhone the menu was too small to tap reliably, and the selected indicator visibly poked out past the bar's rounded edge | Menu scaled ~50% wider for thumb use; the indicator is now a concentric band with the smallest uniform gap |
 | **B-005** | The overnight data job could finish successfully and never actually publish — data silently went stale for two days | Deploy guard now proves committed bytes match served bytes |
+| **E-016** | The measurement log under the cog wheel was unreadable on a real iPhone — the value grid was crushed to 24px and labels wrapped mid-word | Root cause was a **CSS class-name collision**, not a sizing bug: `.mrow` already belonged to the archive match list and its `display: flex` was silently inherited. Cell width 24px → 160px, measured at 390px |
+| **E-017** | A source that is switched off showed "1 anrop" beside its "Ej påslaget" pill | A call that never left the machine is not a call. `calls` now counts real attempts only, pinned by an invariant test that the per-service counts must sum to the run total |
+| **B-010** | CI had been red for 17 runs and I explained it as "tests are parallel-sensitive" | **That explanation was wrong.** Real causes: WebKit was never installed (21 failures, nothing tested), plus 3 timing-sensitive tests. Both fixed and reproduced locally |
+| **B-011** | WebKit touch tests asserted things a synthetic event *cannot* prove, and one sized a gesture to a wrong hardcoded pitch | Assertions scoped to what each engine can actually verify; the gesture is now sized from measured geometry. The app was correct — the test was wrong |
 
 ---
 
