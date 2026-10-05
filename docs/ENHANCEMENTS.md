@@ -37,7 +37,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **440 unit tests passing, 0 failing** (20 files) — re-run 2026-10-05, including a 13-test safety suite for the OpenRouter measurement stage. End-to-end suite runs on **both** Chromium and WebKit; see the CI section below for why it had not been testing WebKit at all until now |
+| Tests | **440 unit tests passing** (20 files) and **367 end-to-end tests passing across Chromium AND WebKit** — both suites verified green 2026-10-05, and CI run `37264656883` concluded **success** on the deployed commit `808866f`. End-to-end runs on two engines only since WebKit was installed; before that it had never executed (see the CI section below) |
 | Data last generated | **2026-10-04 05:10 UTC** — served bytes verified to match the data commit (`1fe721c…`) |
 | Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). **Measured over 35 probe runs to 2026-10-04: reachable ~48% of the time, but the chat probe that resembles real work succeeded 0/15 — never once.** Still disabled in the nightly (the key is deliberately not injected). B-004 unvalidated. |
 | OpenRouter | **Transport VERIFIED WORKING 2026-10-04.** Key added; ping **1/1 = 200**, chat probe **1/1 = 200** on the payload Gemini failed **0/15** on. Free model, **cost 0 credits**, key reports **1000 req/day**. **Quality still unvalidated** — see **B-008** |
@@ -526,42 +526,55 @@ iPhone verifies the gesture itself. That remains open.
 
 ### The recurring lesson: a wait that asserts instead of waits
 
-Two of the flakes above were "fixed" three times each, and the first two
-attempts at each were **worse than the symptom**. That is worth recording,
-because it is easy to repeat.
+The failures above were "fixed" several times each, and the early attempts were
+**worse than the symptom**. That is worth recording, because it is easy to
+repeat.
 
-The honest bug in both cases was real — a test sampling a moving target, and a
-test racing a render. Both tempt you to add a wait. But a wait has three
-failure modes, not one:
+The honest bugs were real — a test sampling a moving target, a test racing a
+render. Both tempt you to add a wait. But a wait has three failure modes:
 
 | | Problem | Example |
 |---|---|---|
 | too short | still races | the original flakes |
-| **too strict** | now asserts a duration the test has no business knowing | "sheet stopped within 120ms" — failed on **all four** viewports, because the animation is simply longer than that |
+| **too strict** | now asserts a duration the test has no business knowing | "the sheet stopped within 120ms" — failed on **all four** viewports, because the animation is simply longer than that |
 | too narrow | waits for the wrong state | waiting for a result row in tests that *deliberately* produce none — broke two previously-passing tests |
 
-The fix that worked in both cases was the same idea: **stop guessing, and ask
-the thing that already knows.**
+The fix that worked was always the same idea: **stop guessing, and ask the thing
+that already knows.**
 
-- The sheet runs a named CSS animation, `sheet-in`, so the test now waits for
-  its `animationend`. No constant, no polling, and it cannot be wrong on a slow
+- The sheet runs a named CSS animation, `sheet-in`, so the test waits for its
+  `animationend`. No constant, no polling, and it cannot be wrong on a slow
   machine.
 - The search page renders `data-testid="searching"` with `aria-busy` **while a
   query is in flight**, so the test waits for *that* to clear.
 
-Both of my earlier attempts at the search wait tried to enumerate what the
-answer might be — a hit, an empty state, a too-short query, an ambiguous one, a
-rate limit, a transport failure. Each time I missed one and broke a different
-test, including the two most important in the file. **Enumerating outcomes is
-the wrong shape of question.** Asking "is this still pending?" has no such
-failure mode.
+Both earlier attempts at the search wait tried to enumerate what the answer
+might be — a hit, an empty state, a too-short query, an ambiguous one, a rate
+limit, a transport failure. Each time I missed one and broke a different test,
+including the two most important in the file. **Enumerating outcomes is the
+wrong shape of question.** Asking "is this still pending?" has no such failure
+mode.
 
 A `waitForTimeout(N)` in a test is an admission of not knowing when the app is
 ready. It is sometimes fine. It should never be load-bearing.
 
-**And the process lesson:** I ran the full gate locally before pushing, and
-still shipped red twice — because I had only tested the specs I touched. The
-whole suite is the gate.
+### And the one that was not a test bug at all
+
+After all of that, a **different** test failed on each run. That pattern was the
+real diagnosis: these were not flaky assertions but correct tests running out
+of wall clock.
+
+Playwright defaults to roughly half the CPU count, and the suite runs the whole
+spec set for **two** browser projects. On a two-core runner that is real
+oversubscription. The 45-second per-test budget had been sized back when only
+Chromium ran, and never fit once both engines executed in parallel.
+
+Fixed at the harness level rather than per test: budget raised to 90s, workers
+capped at 2 so both engines stay covered without thrashing.
+
+**The lesson I should have applied many attempts earlier:** when a *different*
+test fails each run, stop fixing tests. That is the signature of an environment
+problem, and no number of individual corrections will clear it.
 
 ---
 
@@ -1147,7 +1160,7 @@ the source recorded so any claim can be checked.
 | **B-005** | The overnight data job could finish successfully and never actually publish — data silently went stale for two days | Deploy guard now proves committed bytes match served bytes |
 | **E-016** | The measurement log under the cog wheel was unreadable on a real iPhone — the value grid was crushed to 24px and labels wrapped mid-word | Root cause was a **CSS class-name collision**, not a sizing bug: `.mrow` already belonged to the archive match list and its `display: flex` was silently inherited. Cell width 24px → 160px, measured at 390px |
 | **E-017** | A source that is switched off showed "1 anrop" beside its "Ej påslaget" pill | A call that never left the machine is not a call. `calls` now counts real attempts only, pinned by an invariant test that the per-service counts must sum to the run total |
-| **B-010** | CI had been red for 17 runs and I explained it as "tests are parallel-sensitive" | **That explanation was wrong.** Real causes: WebKit was never installed (21 failures, nothing tested), plus 3 timing-sensitive tests. Both fixed and reproduced locally |
+| **B-010** | CI had been red for 17 runs and I explained it as "tests are parallel-sensitive" | **That explanation was wrong.** Real causes: WebKit was never installed (21 failures, nothing tested), plus a 45s budget and uncapped workers that never fit two browser projects on one runner. Both fixed; CI run `37264656883` is **green** |
 | **B-011** | WebKit touch tests asserted things a synthetic event *cannot* prove, and one sized a gesture to a wrong hardcoded pitch | Assertions scoped to what each engine can actually verify; the gesture is now sized from measured geometry. The app was correct — the test was wrong |
 
 ---
