@@ -267,6 +267,12 @@ async function search(page: Page, query: string) {
  * outcome (a rate limit, a miss, an ambiguous hint), and baking "a row must
  * exist" into the shared helper broke exactly those. Only the few that touch a
  * row need this.
+ *
+ * The row is required explicitly rather than left to the caller's own auto-wait
+ * because these callers wait on something INSIDE the row (a button, a star
+ * toggle). When a loaded runner is slow, that inner wait can consume most of
+ * the 45s test budget and fail on a row that was merely late. Establishing the
+ * row first gives the inner wait a fair share of the remaining time.
  */
 async function searchForHit(page: Page, query: string) {
   await search(page, query);
@@ -310,13 +316,13 @@ test.describe("Spelare (footballer search)", () => {
     // the later script wins and the earlier default never applies.
     await stubWikidata(page, "single");
     await page.reload();
-    await search(page, "Jeremejeff");
+    await searchForHit(page, "Jeremejeff");
     await expect(page.getByTestId("former-player")).toHaveCount(1);
     await expect(page.getByTestId("ambiguous-hint")).toHaveCount(0);
   });
 
   test("finds a player and shows the Häcken link as enrichment, not as a gate", async ({ page }) => {
-    await search(page, "Jeremejeff");
+    await searchForHit(page, "Jeremejeff");
     const row = page.getByTestId("former-player").filter({ hasText: "Jeremejeff" });
     await expect(row).toBeVisible();
     await expect(row).toContainText("Alexander Jeremejeff");
@@ -324,7 +330,7 @@ test.describe("Spelare (footballer search)", () => {
   });
 
   test("a player with no recorded Häcken club is still shown", async ({ page }) => {
-    await search(page, "Bjärsmyr");
+    await searchForHit(page, "Bjärsmyr");
     const row = page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" });
     await expect(row).toBeVisible();
     await expect(row).not.toContainText("HÄCKEN");
@@ -335,6 +341,10 @@ test.describe("Spelare (footballer search)", () => {
     // that matters here is that the page offers the choice. The query must be
     // at least MIN_QUERY (2) characters or the page correctly refuses to
     // search at all — an earlier draft used "a" and failed for that reason.
+    //
+    // Plain `search`, NOT `searchForHit`: an ambiguous query must NOT produce a
+    // single result row, so demanding one here would assert the opposite of what
+    // this test is about. The two rows are asserted explicitly below.
     await search(page, "an");
     await expect(page.getByTestId("ambiguous-hint")).toBeVisible();
     await expect(page.getByTestId("former-player")).toHaveCount(2);
@@ -381,7 +391,7 @@ test.describe("Spelare (footballer search)", () => {
   });
 
   test("detail is deep-linkable and the back gesture closes it", async ({ page }) => {
-    await search(page, "Jeremejeff");
+    await searchForHit(page, "Jeremejeff");
     await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
     await expect(page.getByTestId("sheet")).toBeVisible();
     expect(await page.evaluate(() => location.hash)).toMatch(/^#\/spelare\?id=/);
@@ -390,7 +400,7 @@ test.describe("Spelare (footballer search)", () => {
   });
 
   test("the sheet states a missing Häcken link without denying one", async ({ page }) => {
-    await search(page, "Bjärsmyr");
+    await searchForHit(page, "Bjärsmyr");
     await page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" }).locator("button.open").click();
     const sheet = page.getByTestId("sheet");
     await expect(sheet.getByTestId("hacken-unknown")).toBeVisible();
@@ -399,7 +409,7 @@ test.describe("Spelare (footballer search)", () => {
   });
 
   test("the sheet never invents a status", async ({ page }) => {
-    await search(page, "Bjärsmyr");
+    await searchForHit(page, "Bjärsmyr");
     await page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" }).locator("button.open").click();
     const sheet = page.getByTestId("sheet");
     await expect(sheet.getByTestId("status-unknown")).toBeVisible();
@@ -417,25 +427,25 @@ test.describe("Spelare (footballer search)", () => {
   });
 
   test("a verified Häcken link is stated as verified", async ({ page }) => {
-    await search(page, "Jeremejeff");
+    await searchForHit(page, "Jeremejeff");
     await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
     await expect(page.getByTestId("sheet").getByTestId("hacken-yes")).toBeVisible();
   });
 
   test("favourites persist across a reload, keyed by Q-ID", async ({ page }) => {
-    await search(page, "Jeremejeff");
+    await searchForHit(page, "Jeremejeff");
     await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
     await page.getByTestId("sheet").getByTestId("fav-toggle").click();
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("fav-toggle").first()).toHaveAttribute("aria-pressed", "true");
 
     await page.reload();
-    await search(page, "Jeremejeff");
+    await searchForHit(page, "Jeremejeff");
     await expect(page.getByTestId("fav-toggle").first()).toHaveAttribute("aria-pressed", "true");
   });
 
   test("a repeated identical search is served from the session cache", async ({ page }) => {
-    await search(page, "Jeremejeff");
+    await searchForHit(page, "Jeremejeff");
     await expect(page.getByTestId("former-player").first()).toBeVisible();
     const afterFirst = await page.evaluate(() => window.__wdCalls.length);
     expect(afterFirst).toBeGreaterThan(0);
@@ -474,7 +484,7 @@ test.describe("Spelare (footballer search)", () => {
  */
 test.describe("Mats Hedén — findable and starable without a Häcken link", () => {
   test("he is found by search and opens into a player card", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     const card = page.getByTestId("former-player").first();
     await expect(card).toBeVisible();
     await expect(card).toContainText("Mats Hedén");
@@ -486,7 +496,7 @@ test.describe("Mats Hedén — findable and starable without a Häcken link", ()
   });
 
   test("the missing Häcken link is stated honestly, not hidden", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await page.getByTestId("former-player").first().getByRole("button", { name: /Visa uppgifter/ }).click();
     await expect(page.getByTestId("sheet")).toBeVisible();
     // Says "not recorded", and explicitly that this does NOT mean he never
@@ -498,7 +508,7 @@ test.describe("Mats Hedén — findable and starable without a Häcken link", ()
   });
 
   test("he can be starred even though the Häcken link is unverified", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await expect(page.getByTestId("hacken-yes")).toHaveCount(0);
 
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
@@ -507,7 +517,7 @@ test.describe("Mats Hedén — findable and starable without a Häcken link", ()
   });
 
   test("a verified Häcken player is starred through the same control", async ({ page }) => {
-    await search(page, "Martin Ericsson");
+    await searchForHit(page, "Martin Ericsson");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
     await expect(page.getByTestId("starred-player")).toHaveCount(1);
     // The confirmed link is labelled; the unverified one is labelled too, so
@@ -537,7 +547,7 @@ test.describe("Starred players (Section C)", () => {
   });
 
   test("a starred player stays visibly starred in the results", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     const toggle = page.getByTestId("former-player").first().getByTestId("fav-toggle");
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-pressed", "true");
@@ -545,7 +555,7 @@ test.describe("Starred players (Section C)", () => {
   });
 
   test("the starred list survives clearing the search", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
     await expect(page.getByTestId("starred-player")).toHaveCount(1);
 
@@ -558,7 +568,7 @@ test.describe("Starred players (Section C)", () => {
   });
 
   test("a starred player can be opened from the starred list", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
     await page.getByTestId("clear-search").click();
 
@@ -568,7 +578,7 @@ test.describe("Starred players (Section C)", () => {
   });
 
   test("a star can be removed, and the list empties", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
     await expect(page.getByTestId("starred-player")).toHaveCount(1);
 
@@ -578,7 +588,7 @@ test.describe("Starred players (Section C)", () => {
   });
 
   test("the starred set survives a reload", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
     await expect(page.getByTestId("starred-player")).toHaveCount(1);
 
@@ -590,7 +600,7 @@ test.describe("Starred players (Section C)", () => {
   });
 
   test("the starred set survives navigating away and back", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
     await page.getByTestId("tab-trupp").click();
     await expect(page).toHaveURL(/\u0023\/trupp$/);

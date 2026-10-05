@@ -9,8 +9,27 @@ const BASE_PATH = "/Min-BKH-app";
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 45000,
+  // 45s was sized when only chromium ran, and never fit a loaded runner once
+  // BOTH browser projects executed fully in parallel: a different test would
+  // time out each run, always a different one, always on something that is
+  // merely LATE rather than wrong. Those tests all pass in isolation and on a
+  // quiet machine, which is exactly the signature of a budget problem.
+  timeout: 90_000,
+  // Retries were already 1 in CI. What that bought was almost nothing, because
+  // the retry inherits the same loaded machine and the same budget.
   retries: process.env.CI ? 1 : 0,
+  // WHY WORKERS ARE CAPPED.
+  //
+  // Playwright defaults to roughly half the CPU count, and this suite runs the
+  // whole spec set for TWO browser projects. On a 2-core runner that is real
+  // oversubscription: several browsers competing for CPU while each is waiting
+  // on animations and network stubs. The failures that produces are not flaky
+  // assertions — they are correct tests that ran out of wall clock.
+  //
+  // Capping to 2 keeps both engines covered while stopping the thrash. Reducing
+  // total time is a side effect; the point is that each test gets a fair share
+  // of the machine.
+  workers: 2,
   use: {
     baseURL: `http://localhost:4173${BASE_PATH}`,
     viewport: { width: 390, height: 844 },
