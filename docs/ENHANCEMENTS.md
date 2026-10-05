@@ -123,11 +123,14 @@ treat it as suspect and re-check with `git log`.
 
 ## The three things that matter right now
 
-> **New since this list was written:** two more news sources were added
-> (Fotbolltransfers, Göteborgs-Posten) and the nightly log gained per-source
-> diagnostics, so a source silently contributing nothing is now visible instead
-> of invisible. None of the three items below is affected by that — all three
-> are unchanged. See **B-006** for the details.
+> **New since this list was written:** the app now SHOWS what the per-source
+> diagnostics measure. Settings → Nyhetskällor lists each feed with how many
+> articles it actually contributed ("3 av 20 behölls"), an info button
+> explaining in plain Swedish what the source does and what breaks without it,
+> and a table in the technical section showing those counts across the last
+> eight nightly runs. This makes the six-zero-contribution finding below
+> visible to anyone, not only to whoever reads the nightly log. See
+> **B-006** for the details.
 
 **1. A player who has left the club still appears in the "watch out for cards" list.**
 The fix is written, tested and deployed, but the app's data is only rewritten by
@@ -925,6 +928,33 @@ execute the live pipeline with real network fetches. Same trap as
 **+19 lines, zero deletions** — no existing line altered. Not one candidate is
 kept or dropped differently. `app.json` was not regenerated; served and
 committed hashes both `c8e247cb…`.
+
+### DONE 2026-10-05 — the counts are now visible in the app (`c3c71ca`)
+
+The diagnostics above lived only in the nightly's console output, which is gone
+by morning and invisible to a supporter. The app now shows the same numbers:
+
+- **Settings → Nyhetskällor**: each feed shows how many articles it actually
+  contributed ("3 av 20 artiklar behölls"), with an **i** button explaining in
+  plain Swedish what the source does and what breaks without it. The button is
+  a real tap target, not a hover tooltip, because this app lives on phones.
+- **Teknisk information → Mätlogg**: per-publisher counts under the rolled-up
+  feed row, and a table showing kept/fetched per source across the last eight
+  nightly runs. A run from before the measurement existed renders as **"—"**;
+  a source that answered and contributed nothing renders as **0**. Those are
+  different facts and the UI keeps them different.
+
+**First real numbers (2026-10-05):** 143 fetched, 6 kept — BK Häcken 3/20,
+Fotbolltransfers 3/20, and **six feeds contributed nothing**: Sportbladet 0/39,
+Expressen 0/20, SVT Sport 0/20, Göteborgs-Posten 0/13, Allsvenskan 0/10,
+Bollsvenskan 0/1. Every one of them reported "ok". That is the ambiguity this
+feature exists to make visible.
+
+**Honesty rules enforced by tests.** "Not measured" must never render as 0
+(unit test on `noteSourceArticles`, e2e on the dash cell). A non-article
+service (sportomedia) shows "Ej mätt", not "0 artiklar". A new feed with no
+description fails `sourcePurpose.test.ts` loudly instead of rendering a
+generic row.
 
 **Two things found while building it.** There is a **second filter stage**,
 `menRelevantNews()`, which runs *after* the prefilter and removes women's-team
