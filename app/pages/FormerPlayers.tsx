@@ -489,6 +489,14 @@ function PlayerSheet({
   onFav: () => void;
   onClose: () => void;
 }) {
+  /**
+   * The club list, derived from the career timeline rather than the raw
+   * `clubs` array. The raw array includes national teams (they are P54
+   * statements too), which read as clubs once "Landslag" has its own section
+   * — "Husqvarna FF · Sveriges U17-herrlandslag" was the visible
+   * inconsistency, caught in live verification after deploy.
+   */
+  const clubNames = [...new Set(c.career.map((s) => s.team))];
   return (
     <Sheet
       title={c.name}
@@ -623,12 +631,12 @@ function PlayerSheet({
           )}
         </div>
 
-        {/* ---- 3. clubs, with the same honesty ---- */}
+        {/* ---- 3. clubs — national teams are NOT clubs and are shown above ---- */}
         <div>
           <div className="mod-label">Klubbar</div>
-          {c.clubs.length > 0 ? (
+          {clubNames.length > 0 ? (
             <p className="small" style={{ margin: 0 }} data-testid="clubs">
-              {c.clubs.join(" · ")}
+              {clubNames.join(" · ")}
             </p>
           ) : (
             <p className="small dim" style={{ margin: 0 }} data-testid="no-clubs">
