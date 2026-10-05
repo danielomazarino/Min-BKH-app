@@ -201,6 +201,28 @@ test.describe("What each source does", () => {
   });
 
   test("the settings source list carries the same explanations and counts", async ({ page }) => {
+    // The settings sheet reads app.json, not the metrics log. The REAL app.json
+    // has no sourceCounts yet — the nightly has not run with the new pipeline —
+    // so without this mock the test would assert against data that does not
+    // exist and fail for a reason that has nothing to do with the UI.
+    await page.route("**/data/app.json", (route) =>
+      route.fulfill({
+        json: {
+          freshness: {
+            generatedAt: new Date().toISOString(),
+            sourceStatus: {
+              "rss:Sportbladet": "ok",
+              "rss:BK Häcken": "ok",
+              sportomedia: "ok",
+            },
+            sourceCounts: {
+              Sportbladet: { fetched: 39, kept: 0, dropped: 39 },
+              "BK Häcken": { fetched: 20, kept: 3, dropped: 17 },
+            },
+          },
+        },
+      }),
+    );
     await page.goto("/#/installningar");
     const sources = page.getByTestId("news-sources");
     await expect(sources).toContainText("3 av 20 artiklar behölls");
