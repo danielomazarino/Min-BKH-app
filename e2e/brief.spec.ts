@@ -10,7 +10,17 @@ import { readFileSync } from "node:fs";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/#/");
-  await expect(page.getByTestId("brief-page")).toBeAttached();
+  // `brief-page` only renders once app.json has loaded and parsed; while the
+  // state is "loading" the page shows nothing. The default 5s expectation
+  // timeout was occasionally too short on a loaded CI runner running both
+  // browser projects in parallel, and the failure surfaced as the baffling
+  // "element(s) not found" for the element every test in this file asserts on.
+  //
+  // A longer, EXPLICIT timeout is the right fix rather than a retry: nothing
+  // here is flaky about the app, the machine was simply slower than the default.
+  // If this still times out, the data genuinely failed to load and that IS a
+  // real failure worth seeing.
+  await expect(page.getByTestId("brief-page")).toBeAttached({ timeout: 20_000 });
 });
 
 test.describe("Brief (dashboard)", () => {

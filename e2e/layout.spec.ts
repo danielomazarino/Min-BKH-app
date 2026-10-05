@@ -261,8 +261,40 @@ test.describe("Layout", () => {
       await expect(page.getByTestId("tabbar")).toBeVisible();
       await page.getByTestId("open-settings").click();
       await expect(page.getByTestId("settings-sheet")).toBeVisible();
-      // Let sheet-in finish so the geometry is the resting state.
-      await page.waitForTimeout(500);
+
+      // WAIT FOR THE SHEET TO SETTLE, DO NOT GUESS A SLEEP.
+      //
+      // A fixed `waitForTimeout(500)` is a race: under parallel load on a
+      // loaded machine the sheet-in animation had not finished, so the sheet was
+      // measured mid-flight and reported a 642px overlap at 1024px. The same
+      // test passes in isolation on both engines, which is the signature of a
+      // timing problem rather than a CSS one — and a real overlap would fail
+      // every time, not intermittently.
+      //
+      // Polling for REST is the honest wait. An earlier attempt compared two
+      // reads 120ms apart and demanded they be identical, which failed on
+      // every viewport because the sheet-in animation is simply longer than
+      // 120ms — a stricter test, not a truer one. Polling until two consecutive
+      // reads agree waits for the animation to finish without asserting a
+      // duration the test has no business knowing.
+      const bottomOf = () =>
+        page.evaluate(() => {
+          const sheet = document.querySelector('[data-testid="settings-sheet"]');
+          if (!sheet) return null;
+          return Math.round(sheet.getBoundingClientRect().bottom);
+        });
+
+      await expect
+        .poll(
+          async () => {
+            const a = await bottomOf();
+            await page.waitForTimeout(150);
+            const b = await bottomOf();
+            return a === b ? b : -1;
+          },
+          { timeout: 10_000, message: "the sheet never came to rest" },
+        )
+        .not.toBe(-1);
 
       const geo = await page.evaluate(() => {
         const sheet = document.querySelector('[data-testid="settings-sheet"]')!;

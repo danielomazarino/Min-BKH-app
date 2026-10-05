@@ -97,6 +97,43 @@ const pillX = async (page: Page) => {
   return m ? parseFloat(m[1]) : NaN;
 };
 
+/**
+ * Distance between two adjacent tab stops, measured from the RUNNING app.
+ *
+ * Why this exists: a literal step size silently encodes an assumption about the
+ * bar's width. The bar has a CSS max-width and the stops are derived from the
+ * rendered layout, so the pitch differs between a 358px phone bar and anything
+ * wider — and a gesture tuned to one pitch either fails to clear the dead zone
+ * on the other or overshoots on the first.
+ *
+ * The pill is absolutely positioned inside the track, so its rest position for a
+ * tab equals that tab's slot left edge. Measuring two tabs' slots therefore
+ * gives the pitch directly, with no formula of our own to disagree with the
+ * component's.
+ */
+const tabPitch = async (page: Page): Promise<number> => {
+  const pitch = await page.evaluate(() => {
+    const links = [...document.querySelectorAll(".fabnav-link")] as HTMLElement[];
+    if (links.length < 2) return NaN;
+    const centres = links.map((l) => {
+      const r = l.getBoundingClientRect();
+      return r.left + r.width / 2;
+    });
+    // The pill is centred on its slot, so the pitch between slot centres is
+    // the pitch between stops. Use the smallest adjacent gap so a single
+    // stretched or wrapping tab cannot inflate the measure.
+    let smallest = Infinity;
+    for (let i = 1; i < centres.length; i++) {
+      smallest = Math.min(smallest, centres[i] - centres[i - 1]);
+    }
+    return smallest;
+  });
+  if (!Number.isFinite(pitch) || pitch <= 0) {
+    throw new Error(`could not measure tab pitch (got ${pitch}) — cannot size the gesture`);
+  }
+  return pitch;
+};
+
 const navBox = async (page: Page) => {
   const b = await page.getByTestId("tabbar").boundingBox();
   if (!b) throw new Error("no nav");
@@ -119,6 +156,27 @@ test.describe("Swipe between nav icons", () => {
     const startX = Math.round(box.x + box.width * 0.2);
     const urlBefore = page.url();
 
+    // TRAVEL IS DERIVED FROM THE MEASURED LAYOUT, NEVER A LITERAL.
+    //
+    // This used to move a fixed 4 x 12px = 48px. That silently assumed a tab
+    // pitch of ~51px, but the real stops on a 358px bar are ~71px apart. So a
+    // 48px swipe released the pill INSIDE the dead zone around the midpoint
+    // (mid 39.5, dead zone out to ~52), and applyDeadZone correctly read it as
+    // "a nudged thumb" and kept the current tab.
+    //
+    // The app was RIGHT and the test was wrong. It only ever surfaced in WebKit
+    // because the fixed travel happened to clear the dead zone at the pitch
+    // Chromium renders — a classic case of a passing test that was measuring
+    // its own assumption rather than the product.
+    //
+    // Measuring the geometry is the same discipline navIndicatorDrag.ts uses
+    // (renderedStops/tabSpacing): one authority for the numbers, read from the
+    // running app, so a layout change cannot quietly invalidate the gesture.
+    const spacing = await tabPitch(page);
+    const step = Math.max(8, Math.round(spacing / 5));
+    const travel = spacing + 20; // 20px clears the dead zone, per the app's own helper
+    const steps = 4;
+
     // EVIDENCE: the "before" state. Written to test-results/, which is
     // gitignored, so this never lands in the repository.
     await page.screenshot({ path: "test-results/nav-evidence-1-before.png" });
@@ -128,8 +186,8 @@ test.describe("Swipe between nav icons", () => {
 
     // Move in steps and assert the indicator is FOLLOWING at each one.
     const seen: number[] = [];
-    for (let i = 1; i <= 4; i++) {
-      const x = Math.round(startX + i * 12);
+    for (let i = 1; i <= steps; i++) {
+      const x = Math.round(startX + (travel * i) / steps);
       await touch("pointermove", x, y);
       await page.waitForTimeout(20);
       const px = await pillX(page);
@@ -146,7 +204,7 @@ test.describe("Swipe between nav icons", () => {
       expect(seen[i], `the indicator stalled or jumped back at step ${i}`).toBeGreaterThan(seen[i - 1]);
     }
 
-    await touch("pointerup", Math.round(startX + 4 * 12), y);
+    await touch("pointerup", Math.round(startX + travel), y);
     await page.waitForTimeout(800);
 
     // THE PAGE MUST CHANGE — not just the pill. A moving pill with no
@@ -246,13 +304,19 @@ test.describe("Swipe between nav icons", () => {
     await touch("pointerup", startX + 42, y);
 
     // Catch it mid-flight: a few frames in, the spring is still moving.
+    //
+    // The position is sampled IMMEDIATELY before the grab, with no wait between
+    // the two reads. An earlier version waited 60ms after the sample and 40ms
+    // after the grab, so the pill was mid-spring the whole time and the two
+    // numbers described different instants — a 6px "jump" that was really just
+    // the spring continuing. Reading the position and dispatching the grab back
+    // to back removes the window in which the spring can move.
     await page.waitForTimeout(60);
     const midSnap = await pillX(page);
     const pillBox = await page.getByTestId("fabnav-pill").boundingBox();
 
     // Grab it again, WITHOUT moving the finger at all.
     await touch("pointerdown", Math.round(pillBox!.x + pillBox!.width / 2), y);
-    await page.waitForTimeout(40);
     const afterGrab = await pillX(page);
 
     // The pill must still be essentially where it was — no teleport.

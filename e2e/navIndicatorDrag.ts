@@ -54,10 +54,32 @@ export const TAB_IDS = [
  * A single CDP session is created lazily and reused: creating one per gesture
  * was measurably slower and, on a memory-starved machine, contributed to
  * timeouts that had nothing to do with the code under test.
+ *
+ * WEBKIT HAS NO CDP. `newCDPSession` throws "CDP session is only available in
+ * Chromium" there, which is why this helper now detects the engine and falls
+ * back to synthetic PointerEvents with pointerType "touch". Before this, every
+ * touch test that used `touchDriver` failed in webkit with a launcher error —
+ * the assertions never ran. `fabnav-swipe.spec.ts` already had such a fallback;
+ * this puts the same behaviour in the shared helper so no caller can forget it.
+ *
+ * WHAT THE FALLBACK IS NOT: native gesture verification. Synthetic events
+ * exercise our own logic and WebKit's CSS/event handling, but they bypass
+ * WebKit's NATIVE gesture recognition — the layer that arbitrates
+ * scroll-versus-drag and raises the link callout on a real iPhone. A green
+ * webkit run is evidence about OUR LOGIC, not about iOS. See
+ * docs/ENHANCEMENTS.md.
  */
 export function touchDriver(page: Page) {
   let session: Promise<Cdp> | null = null;
+
   return async (type: "touchStart" | "touchMove" | "touchEnd", x: number, y: number) => {
+    // Engine detection is by capability, not by name: asking the browser
+    // avoids a hardcoded list that drifts when a project is added.
+    const isChromium = page.context().browser()?.browserType().name() === "chromium";
+    if (!isChromium) {
+      await dispatchSyntheticTouch(page, type, x, y);
+      return;
+    }
     if (!session) session = page.context().newCDPSession(page);
     const cdp = (await session) as Cdp;
     await cdp.send("Input.dispatchTouchEvent", {
@@ -65,6 +87,45 @@ export function touchDriver(page: Page) {
       touchPoints: type === "touchEnd" ? [] : [{ x: Math.round(x), y: Math.round(y), id: 1 }],
     });
   };
+}
+
+/**
+ * Dispatch a touch as PointerEvents, for engines without CDP (WebKit).
+ *
+ * The element under the finger is resolved with `document.elementFromPoint`, so
+ * the gesture lands on whatever the user would actually touch. `touchEnd` is
+ * dispatched with an empty point list and a zero coordinate, matching the CDP
+ * shape the app's handlers already expect.
+ */
+async function dispatchSyntheticTouch(
+  page: Page,
+  type: "touchStart" | "touchMove" | "touchEnd",
+  x: number,
+  y: number,
+): Promise<void> {
+  await page.evaluate(
+    ({ t, px, py }: { t: string; px: number; py: number }) => {
+      const target = document.elementFromPoint(px, py) as HTMLElement | null;
+      if (!target) return;
+      const base = {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        pointerId: 1,
+        pointerType: "touch",
+        isPrimary: true,
+        clientX: px,
+        clientY: py,
+      };
+      if (t === "touchEnd") {
+        target.dispatchEvent(new PointerEvent("pointerup", { ...base, clientX: 0, clientY: 0 }));
+        return;
+      }
+      const name = t === "touchStart" ? "pointerdown" : "pointermove";
+      target.dispatchEvent(new PointerEvent(name, base));
+    },
+    { t: type, px: Math.round(x), py: Math.round(y) },
+  );
 }
 
 /** The pill's rendered left edge, from its inline transform. */
