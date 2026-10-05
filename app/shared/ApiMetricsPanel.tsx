@@ -59,6 +59,44 @@ interface Group {
 }
 
 /**
+ * Is this group being CALLED purely to measure it?
+ *
+ * The distinction the reader needs: a provider can be switched on, doing real
+ * work, and still not be trusted with the app's output. OpenRouter is exactly
+ * that case tonight — one request per night, logged, and the answer discarded.
+ * Labelling that "Påslaget" would imply its output reaches the news feed. It
+ * does not, and the panel must not suggest it does.
+ *
+ * Detection is by SERVICE NAME rather than by a flag on the wire: this is a
+ * property of how the pipeline is configured, not of any single call, and the
+ * grouping layer has no access to pipeline configuration.
+ */
+const MEASURING_ONLY = new Set(["openrouter"]);
+
+function isMeasuring(g: Group): boolean {
+  return g.calls > 0 && g.members.some((m) => MEASURING_ONLY.has(m.service));
+}
+
+/**
+ * Why a group is not switched on, in plain Swedish.
+ *
+ * The reason is already recorded on the call (`noteSkippedCall` stores it in
+ * `error`), so this translates the known reasons rather than inventing them.
+ * An unrecognised reason falls back to the raw text, because showing a slightly
+ * technical string beats showing nothing.
+ */
+function skipReason(g: Group): string {
+  const raw = g.members
+    .flatMap((m) => m.skipReasons ?? [])
+    .find((r) => r.length > 0);
+  if (!raw) return "";
+  if (/not wired|gated/i.test(raw)) return "Inte inkopplad — väntar på granskning";
+  if (/no key/i.test(raw)) return "Ingen API-nyckel satt";
+  if (/not attempted/i.test(raw)) return "Ingen nyckel tillagd i nattjobbet";
+  return raw;
+}
+
+/**
  * A labelled value inside a source card.
  *
  * The label is always rendered. A bare number is meaningless without knowing
@@ -328,16 +366,29 @@ export function ApiMetricsPanel() {
                       </span>
                     )}
                   </span>
-                  {/* "ej körd" was wrong Swedish for a source that is not
-                      switched on — it reads like a car that was not driven.
-                      An unwired API is AV, and deliberately neutral grey rather
-                      than red: it is a configuration state, not a fault. */}
+                  {/* Three genuinely different states, and the distinction
+                      matters to the reader:
+                        - N fel      = it ran and something went wrong
+                        - Mäter      = running, but its answer is DISCARDED
+                        - Ej påslaget= not switched on at all
+                      Collapsing "measuring" into "switched on" would imply its
+                      output reaches the app. It does not. */}
                   {g.failures > 0 ? (
                     <span className="mpill mbad">{g.failures} fel</span>
+                  ) : isMeasuring(g) ? (
+                    <span className="mpill mmeas" title="Svar används inte i appen">
+                      Mäter
+                    </span>
                   ) : g.skipped > 0 ? (
                     <span className="mpill moff">Ej påslaget</span>
                   ) : (
                     <span className="mpill mok">Påslaget</span>
+                  )}
+                  {/* WHY it is not on. A grey pill with no reason is a question
+                      the reader has to guess at; the reason is already in the
+                      recorded call, so show it rather than hiding it. */}
+                  {g.skipped > 0 && skipReason(g) && (
+                    <span className="msub skipwhy">{skipReason(g)}</span>
                   )}
                 </div>
 

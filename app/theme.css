@@ -2714,6 +2714,23 @@ details.disc .disc-body {
   background: var(--danger-dim);
 }
 
+/* "Mäter" = being called on purpose, but its answer is DISCARDED. This is a
+   distinct third state and must not look like "Påslaget": amber, because the
+   honest reading is "switched on, deliberately not trusted with the output yet".
+   Green here would tell the reader their news comes from this provider. */
+.mpill.mmeas {
+  color: #e0a33e;
+  border-color: rgba(224, 163, 62, 0.45);
+  background: rgba(224, 163, 62, 0.12);
+}
+
+/* The reason a source is not switched on. Sits under the row title rather than
+   inside the pill, so the pill stays a compact status word on a phone. */
+.msub.skipwhy {
+  color: var(--text-3);
+  font-style: italic;
+}
+
 .minfo {
   display: inline-flex;
   align-items: center;
