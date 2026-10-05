@@ -44,8 +44,19 @@ jobs:
           # leak, not a false positive.
           ! grep -rE "OPENROUTER_API_KEY|sk-or-v1-[A-Za-z0-9]{20,}" dist/ public/data/ 2>/dev/null
 
+      # WHY THIS MUST NOT BE JUST `chromium`
+      #
+      # playwright.config.ts declares TWO projects: chromium and webkit. Until
+      # now this step installed only chromium, so every webkit test failed with
+      # "Executable doesn't exist at .../webkit-2359/pw_run.sh". That is an
+      # ENVIRONMENT failure, not a test failure — the webkit assertions were
+      # never even executed, so nothing about the app was actually proven.
+      #
+      # WebKit is the engine closest to real iOS Safari, and this app's riskiest
+      # feature is the touch-driven nav indicator. Skipping it would leave the
+      # iPhone path unverified on every single run.
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: E2E + accessibility tests
         run: npm run test:e2e
