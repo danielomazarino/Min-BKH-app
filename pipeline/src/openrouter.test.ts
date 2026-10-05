@@ -59,6 +59,51 @@ describe("openrouter measurement path", () => {
     expect(p.model).toMatch(/:free$/);
   });
 
+  it("uses the LOWERCASE json-schema dialect OpenRouter can compile", () => {
+    // REGRESSION, found by the first real nightly run (37251529017):
+    //   HTTP 400  grammar does not compile: xgrammar StructuralTag
+    //             compilation failed
+    //
+    // Gemini's RawSchema uses UPPERCASE type names ("OBJECT", "ARRAY",
+    // "STRING"). xgrammar — the constrained-decoding engine behind
+    // response_format: json_schema — does not accept that dialect, so the
+    // request was rejected BEFORE reaching the model. This looked like a
+    // provider outage and was not one.
+    //
+    // A walk of the schema catches any future re-introduction, at any depth.
+    const schema = (buildOpenRouterRequestPayload([ARTICLE]).response_format as {
+      json_schema: { schema: unknown };
+    }).json_schema.schema;
+
+    const offenders: string[] = [];
+    const walk = (node: unknown, path: string) => {
+      if (Array.isArray(node)) {
+        node.forEach((n, i) => walk(n, `${path}[${i}]`));
+        return;
+      }
+      if (!node || typeof node !== "object") return;
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        if (k === "type" && typeof v === "string" && v !== v.toLowerCase()) {
+          offenders.push(`${path}.type = "${v}"`);
+        }
+        walk(v, `${path}.${k}`);
+      }
+    };
+    walk(schema, "schema");
+    expect(offenders, "uppercase type names are not valid JSON Schema").toEqual([]);
+  });
+
+  it("still describes the same shape gemini requires", () => {
+    // The dialect may differ; the CONTRACT may not. If these ever stop
+    // matching, a provider comparison stops meaning anything.
+    const schema = (buildOpenRouterRequestPayload([ARTICLE]).response_format as {
+      json_schema: { schema: Record<string, unknown> };
+    }).json_schema.schema;
+    const props = schema.properties as Record<string, unknown>;
+    expect(Object.keys(props).sort()).toEqual(["events", "verdicts"]);
+    expect(schema.required).toEqual(["verdicts", "events"]);
+  });
+
   it("does not call the API when no key is present", async () => {
     delete process.env.OPENROUTER_API_KEY;
     const fetchSpy = vi.spyOn(globalThis, "fetch");

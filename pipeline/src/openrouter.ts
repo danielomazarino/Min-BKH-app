@@ -24,7 +24,7 @@ import {
   parseGeminiResponse,
   truncateSummary,
   SYSTEM_INSTRUCTION,
-  RawSchema,
+  RawSchemaJson,
   type GeminiArticleInput,
   type GeminiResult,
 } from "./gemini";
@@ -94,7 +94,16 @@ Endast artiklar med scope "men" ska ingå i events.`,
     temperature: 0.1,
     response_format: {
       type: "json_schema",
-      json_schema: { name: "news_events", strict: true, schema: RawSchema },
+      // RawSchemaJson, NOT RawSchema. Gemini's uppercase dialect
+      // ("OBJECT"/"ARRAY"/"STRING") is rejected by xgrammar, the
+      // constrained-decoding engine behind json_schema. Sending it produced,
+      // on the first real nightly run (37251529017):
+      //   HTTP 400  grammar does not compile: xgrammar StructuralTag
+      //             compilation failed
+      // The request never reached the model — it failed while compiling the
+      // grammar, so this was a request-construction bug, not a provider
+      // outage. The contract is identical; only the spelling differs.
+      json_schema: { name: "news_events", strict: true, schema: RawSchemaJson },
     },
   };
 }

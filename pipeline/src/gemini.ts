@@ -124,6 +124,63 @@ export const RawSchema = {
   required: ["verdicts", "events"],
 } as const;
 
+/**
+ * THE SAME SCHEMA IN PLAIN JSON SCHEMA — lowercase type names.
+ *
+ * WHY THIS EXISTS, AND WHY IT IS NOT REDUNDANT
+ * `RawSchema` above uses Gemini's UPPERCASE dialect ("OBJECT", "ARRAY",
+ * "STRING"). That is correct for Gemini's `responseSchema` and is what the
+ * working semantic evaluation used.
+ *
+ * Passing `RawSchema` straight to OpenRouter produced:
+ *   HTTP 400  grammar does not compile: xgrammar StructuralTag
+ *             compilation failed
+ * because xgrammar — the constrained-decoding engine behind
+ * `response_format: json_schema` — does not accept the uppercase dialect.
+ * The request never reached the model; it was rejected while compiling the
+ * grammar.
+ *
+ * So the two providers need the same CONTRACT in different DIALECTS. The
+ * contract is defined once, here, and each provider gets the spelling it can
+ * actually compile. Before this, the contract was duplicated by hand in
+ * `openrouterSemanticEval.ts` and drifted — and a silent drift between
+ * providers is exactly how a comparison becomes meaningless.
+ */
+export const RawSchemaJson = {
+  type: "object",
+  properties: {
+    verdicts: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          articleId: { type: "string" },
+          scope: { type: "string", enum: ["men", "women", "youth", "club", "unknown"] },
+          confidence: { type: "string", enum: ["high", "medium", "low"] },
+          reason: { type: "string" },
+        },
+        required: ["articleId", "scope", "confidence", "reason"],
+        additionalProperties: false,
+      },
+    },
+    events: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          summary: { type: "string" },
+          articleIds: { type: "array", items: { type: "string" } },
+        },
+        required: ["title", "summary", "articleIds"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["verdicts", "events"],
+  additionalProperties: false,
+} as const;
+
 /** Exported for the same reason as RawSchema — see the note there. */
 export const SYSTEM_INSTRUCTION = `Du redigerar nyhetsflödet för en PWA om BK HÄCKENS HERRLAG.
 
