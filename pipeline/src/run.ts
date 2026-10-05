@@ -46,7 +46,7 @@ import { matchesSquadPlayer, resolveCanonicalId } from "./playerIdentity";
 import { buildLedger, computeSeasonDiscipline, type CardEvent } from "./discipline";
 import { classifyRelevance, type KnownPersons } from "./newsRelevance";
 import { getRule } from "./rules";
-import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall } from "./apiMetrics";
+import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall, noteSourceArticles } from "./apiMetrics";
 import { synthesizeWithOpenRouter } from "./openrouter";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
@@ -125,12 +125,29 @@ const RSS_SOURCES = [
 
 const STATUS: Record<string, SourceStatus> = {};
 
+/**
+ * Per-source article counts for THIS run, keyed by publisher.
+ *
+ * Populated once the ingest has run and read by `freshness()`. Kept module
+ * level rather than threaded through because `freshness()` is called from the
+ * app-data assembly far from the ingest code, and an explicit parameter would
+ * have to be carried through three call sites for no benefit.
+ */
+const SOURCE_COUNTS: Record<string, { fetched: number; kept: number; dropped: number }> = {};
+
 function generatedAt(): string {
   return new Date().toISOString();
 }
 
 function freshness(): Freshness {
-  return { generatedAt: generatedAt(), sourceStatus: { ...STATUS } };
+  return {
+    generatedAt: generatedAt(),
+    sourceStatus: { ...STATUS },
+    // Omitted entirely when empty, so an older pipeline run that does not
+    // populate it does not write `"sourceCounts": {}` and imply that every
+    // source genuinely found nothing. Absent means "not measured".
+    ...(Object.keys(SOURCE_COUNTS).length > 0 ? { sourceCounts: { ...SOURCE_COUNTS } } : {}),
+  };
 }
 
 // ---------- news ----------
@@ -414,11 +431,36 @@ async function main() {
   const menExcludedUrls = prefiltered
     .filter((n) => !candidates.some((c) => c.url === n.url))
     .map((n) => n.url);
-  for (const line of formatSourceBreakdown(
-    buildSourceBreakdown(news, new Set(candidates.map((c) => c.url)), dropped, menExcludedUrls),
-  )) {
+  const sourceBreakdown = buildSourceBreakdown(
+    news,
+    new Set(candidates.map((c) => c.url)),
+    dropped,
+    menExcludedUrls,
+  );
+  for (const line of formatSourceBreakdown(sourceBreakdown)) {
     console.log(line);
   }
+
+  // Per-source news counts, persisted so the app can SHOW them.
+  //
+  // These numbers existed only in the nightly's console output, which is
+  // invisible to a supporter and gone by morning. The diagnostics panel could
+  // say a feed was "ok" but never how many articles it contributed — so a
+  // source that quietly returned 40 articles, and one that returned none, were
+  // indistinguishable in the app. This is B-006's lesson applied to the UI
+  // rather than the log.
+  const sourceCounts: Record<string, { fetched: number; kept: number; dropped: number }> = {};
+  for (const row of sourceBreakdown) {
+    sourceCounts[row.publisher] = {
+      fetched: row.fetched,
+      kept: row.kept,
+      dropped: row.dropped,
+    };
+  }
+  for (const [k, v] of Object.entries(sourceCounts)) SOURCE_COUNTS[k] = v;
+  // Same numbers, into the metrics history, so the app can chart them over
+  // time. One recorder call; the copy in SOURCE_COUNTS feeds app.json.
+  noteSourceArticles(sourceCounts);
 
   // Server-side article text (the browser never fetches article bodies).
   const texts = await fetchArticleTexts(candidates.map((c) => c.url));
@@ -603,6 +645,14 @@ async function main() {
           `${s.totalDurationMs}ms total  ${s.maxDurationMs}ms max  ` +
           `${s.responseBytes}B out  cost ${s.costCredits}` +
           (s.costReported === 0 ? " (unreported)" : ""),
+      );
+    }
+    const sc = metrics.latestRun?.sourceArticles;
+    if (sc) {
+      const kept = Object.values(sc).reduce((n, v) => n + v.kept, 0);
+      const fetched = Object.values(sc).reduce((n, v) => n + v.fetched, 0);
+      console.log(
+        `   source articles: ${kept} kept of ${fetched} fetched across ${Object.keys(sc).length} publishers`,
       );
     }
   }

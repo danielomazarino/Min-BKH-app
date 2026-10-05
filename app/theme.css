@@ -2734,6 +2734,12 @@ details.disc .disc-body {
 .minfo {
   display: inline-flex;
   align-items: center;
+  /* Wrap, so the explanation can take its OWN line. Without this the body is a
+     flex item beside the button and a long paragraph is crushed into the
+     remaining few pixels of the row — which is exactly what happens now that
+     the body carries a full description rather than a short label. */
+  flex-wrap: wrap;
+  max-width: 100%;
   margin-left: 3px;
   vertical-align: middle;
 }
@@ -2760,7 +2766,9 @@ details.disc .disc-body {
 /* Static, not a floating tooltip: it must survive a narrow column and stay
    readable rather than escaping into the rest of the card. */
 .minfo-body {
-  display: block;
+  /* Full width of the wrap context, so a paragraph gets a real line box
+     instead of the few pixels left beside the button. */
+  flex: 1 0 100%;
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 5px;
@@ -2784,4 +2792,135 @@ details.disc .disc-body {
   .mstatcell.wide {
     grid-column: auto;
   }
+}
+
+/* ---- Per-source article counts over time ------------------------------- */
+
+/* Horizontal scroll rather than wrapping. Eight publishers plus a date column
+   cannot fit 390px legibly, and turning each cell into its own card destroys
+   the row/column correspondence that makes a table readable at all. The
+   container is focusable (tabIndex on the element in the component) so it can
+   be scrolled from a keyboard, not only by dragging with a finger. */
+.ctablewrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+/* A visible focus ring matters more here than usual: this element has no
+   visible boundary of its own until it is focused. */
+.ctablewrap:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ctable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  line-height: 1.3;
+  /* The numbers are the content and must not be wrapped mid-number. */
+  font-variant-numeric: tabular-nums;
+}
+.ctable th,
+.ctable td {
+  padding: 6px 8px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--hairline);
+}
+.ctable thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-weight: 500;
+  font-size: 10px;
+}
+/* The row header is a NAME, so it reads from the left while the numbers read
+   from the right. Mixing the two alignments is what makes wide tables hard to
+   scan, and this table is only readable because the split is explicit. */
+.ctable th[scope="row"] {
+  position: sticky;
+  left: 0;
+  text-align: left;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 500;
+}
+.ctable tbody tr:last-child th[scope="row"],
+.ctable tbody tr:last-child td {
+  border-bottom: none;
+}
+/* "Measured and found nothing" is a real, bad result and is shown as one. */
+.ctable td.czero {
+  color: var(--text-3);
+}
+/* "Never measured" is NOT zero. It must not read as a number. */
+.ctable td.cunmeasured {
+  color: var(--text-3);
+  opacity: 0.6;
+}
+/* The fetched total, dimmed: context for the kept number, not a second
+   headline. Kept on the same line so a cell stays one comparable unit. */
+.cfetched {
+  color: var(--text-3);
+  opacity: 0.75;
+}
+
+/* Visible to a screen reader only. Used for table captions where a visible
+   heading would duplicate the one already on screen. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Per-publisher counts under the rolled-up feed row ------------------ */
+
+/* Grouping the eight feeds into one row is only honest if the detail is one
+   tap away, so each publisher gets its own line with its own count. A bare
+   list, not a nested table: at this width a two-column layout is all that
+   fits, and a table would imply a header row that adds nothing here. */
+.feedcounts {
+  list-style: none;
+  margin: var(--s3) 0 0;
+  padding: var(--s2) 0 0;
+  border-top: 1px solid var(--hairline);
+}
+.feedcounts li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 3px 0;
+  font-size: var(--t-meta);
+}
+.feedcounts .fc-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+/* The count sits on the right so the numbers line up and can be compared down
+   the column, which is the whole reason for showing them one per line. */
+.feedcounts .fc-num {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+/* Contributed nothing. Still shown at full strength — a source answering with
+   nothing IS the finding, and dimming it would make the row recede from a
+   report whose entire purpose is to make that visible. */
+.feedcounts li.fc-zero .fc-num {
+  color: var(--text-2);
+}
+.feedcounts li.fc-ok .fc-num {
+  color: var(--text);
 }

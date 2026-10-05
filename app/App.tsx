@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { HashRouter, Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
 import { Settings as SettingsIcon } from "lucide-react";
-import { ApiMetricsPanel } from "./shared/ApiMetricsPanel";
+import { ApiMetricsPanel, Info } from "./shared/ApiMetricsPanel";
+import { sourcePurpose } from "./shared/sourcePurpose";
 import Brief from "./pages/Brief";
 import News from "./pages/News";
 import Matches from "./pages/Matches";
@@ -230,16 +231,41 @@ function SettingsPanel({ state }: { state: AppDataState }) {
 
       <section>
         <div className="mod-label">Nyhetskällor</div>
+        <p className="small dim" data-testid="news-sources-note">
+          Antalet visar hur många artiklar källan faktiskt bidrog med i den
+          senaste körningen, av de som kom in. <strong>OK</strong> betyder bara
+          att källan svarade — inte att den hittade något om Häcken. Klicka på
+          <strong> i</strong> bredvid en källa för att läsa vad den gör.
+        </p>
         <div data-testid="news-sources">
           {data ? (
             Object.entries(data.freshness.sourceStatus)
               .filter(([k]) => k.startsWith("rss:"))
-              .map(([k, v]) => (
-                <div className="srcrow" key={k}>
-                  <span className="nm">{k.replace("rss:", "")}</span>
-                  <span className="rl">{v === "ok" ? "OK" : v === "failed" ? "FEL" : "HOPPAR ÖVER"}</span>
-                </div>
-              ))
+              .map(([k, v]) => {
+                const name = k.replace("rss:", "");
+                const purpose = sourcePurpose(name);
+                const c = data.freshness.sourceCounts?.[name];
+                return (
+                  <div className="srcrow srcrow-explained" key={k}>
+                    <span className="nm">
+                      {name}
+                      <Info
+                        label={`${purpose.what} Om något går sönder: ${purpose.ifBroken}`}
+                      />
+                      <span className="msub">
+                        {c === undefined
+                          ? "Artikelantal ej mätt"
+                          : c.fetched === 0
+                            ? "Inga artiklar kom in"
+                            : `${c.kept} av ${c.fetched} artiklar behölls`}
+                      </span>
+                    </span>
+                    <span className="rl">
+                      {v === "ok" ? "OK" : v === "failed" ? "FEL" : "HOPPAR ÖVER"}
+                    </span>
+                  </div>
+                );
+              })
           ) : (
             <p className="small dim">—</p>
           )}

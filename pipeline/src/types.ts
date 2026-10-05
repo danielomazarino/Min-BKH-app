@@ -18,9 +18,31 @@ export interface Provenance {
   confidence?: number;
 }
 
+/** How many articles one publisher contributed, and what happened to the rest. */
+export interface SourceCount {
+  /** Articles the feed returned. */
+  fetched: number;
+  /** Articles that survived filtering and were considered for the news list. */
+  kept: number;
+  /** Articles discarded, with the reason recorded in the nightly log. */
+  dropped: number;
+}
+
 export interface Freshness {
   generatedAt: string;
   sourceStatus: Record<string, SourceStatus>;
+  /**
+   * Per-publisher article counts for this run, keyed by publisher name.
+   *
+   * OPTIONAL, and that matters: it is absent when a pipeline run did not
+   * measure them. An absent map means "not measured"; an empty map would claim
+   * every source found nothing, which is a different and wrong statement.
+   *
+   * Without this, a feed that quietly started returning zero articles was
+   * indistinguishable from a healthy one — `sourceStatus` says "ok" either
+   * way. That ambiguity is what B-006 was about.
+   */
+  sourceCounts?: Record<string, SourceCount>;
 }
 
 /** Provenance metadata for the current football dataset. */

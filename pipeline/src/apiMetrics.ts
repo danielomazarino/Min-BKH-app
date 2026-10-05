@@ -119,6 +119,20 @@ export interface ServiceAggregate {
   meteredCalls: number;
 }
 
+/**
+ * How many articles one publisher contributed in a single run.
+ *
+ * Distinct from `calls` in `ServiceAggregate`, which counts REQUESTS. A feed
+ * that returned 39 articles still cost exactly one request. Both numbers matter
+ * and they answer different questions: "is the source reachable" (calls) and
+ * "is it producing anything" (kept).
+ */
+export interface SourceArticles {
+  fetched: number;
+  kept: number;
+  dropped: number;
+}
+
 /** One pipeline run. */
 export interface RunRecord {
   runAt: string;
@@ -127,6 +141,15 @@ export interface RunRecord {
   failures: number;
   costCredits: number;
   services: ServiceAggregate[];
+  /**
+   * Per-publisher article counts for this run. Present on `latestRun` and on
+   * each entry in `history`, which is what makes the over-time table possible.
+   *
+   * OPTIONAL: absent on runs from before this was measured. That absence is
+   * meaningful and must not be rendered as "0 articles" — it means the run
+   * predates the measurement, not that the source was silent.
+   */
+  sourceArticles?: Record<string, SourceArticles>;
 }
 
 /**
@@ -193,6 +216,7 @@ const MAX_LATEST_CALLS = 25;
 const MAX_BUDGET_ROWS = 14;
 
 const calls: ApiCallRecord[] = [];
+const sourceArticles: Record<string, SourceArticles> = {};
 let runStartedAt = Date.now();
 
 /** Strip query string and fragment: a key must never reach this file. */
@@ -207,7 +231,36 @@ export function safeUrl(raw: string): string {
 
 export function beginRun(): void {
   calls.length = 0;
+  // Cleared per run so yesterday's publishers cannot leak into tonight's counts
+  // if tonight's ingest fails before reporting anything.
+  for (const k of Object.keys(sourceArticles)) delete sourceArticles[k];
   runStartedAt = Date.now();
+}
+
+/**
+ * Record how many articles each publisher contributed in THIS run.
+ *
+ * Separate from `calls`, which counts requests. A feed that returned 39
+ * articles still cost one request, so "reachable" and "producing" are
+ * different questions and need different numbers.
+ *
+ * Called once per run, after the ingest. Absent means the run predates this
+ * measurement, which the panel must show as "not measured" rather than 0.
+ */
+export function noteSourceArticles(counts: Record<string, SourceArticles>): void {
+  for (const [publisher, v] of Object.entries(counts)) {
+    // `Math.round(NaN)` is NaN, and `Math.max(0, NaN)` is also NaN — so a bad
+    // number would survive as `NaN` here and serialise to `null` in the file,
+    // which the app would then have to guess about. Non-finite and negative
+    // values mean the ingest is wrong, not that the source was silent.
+    const safe = (n: number): number =>
+      Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
+    sourceArticles[publisher] = {
+      fetched: safe(v.fetched),
+      kept: safe(v.kept),
+      dropped: safe(v.dropped),
+    };
+  }
 }
 
 /**
@@ -418,6 +471,9 @@ function summarise(list: ApiCallRecord[], startedAt: number): RunRecord {
     failures: list.filter((c) => !c.ok && c.attempts > 0).length,
     costCredits: list.reduce((n, c) => n + (c.costCredits ?? 0), 0),
     services: aggregate(list),
+    // Only attached when ingest actually reported. An empty object would read
+    // as "every source found nothing", which is a different and wrong claim.
+    ...(Object.keys(sourceArticles).length > 0 ? { sourceArticles: { ...sourceArticles } } : {}),
   };
 }
 

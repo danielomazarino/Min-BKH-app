@@ -18,4 +18,5 @@ export type {
   MeteredBudget,
   RunRecord,
   ServiceAggregate,
+  SourceArticles,
 } from "../../pipeline/src/apiMetrics";

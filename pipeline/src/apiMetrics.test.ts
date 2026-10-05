@@ -5,6 +5,7 @@ import {
   noteCost,
   noteLlmCall,
   noteSkippedCall,
+  noteSourceArticles,
   quotaLimitFor,
   readMetrics,
   recordedCalls,
@@ -249,6 +250,64 @@ describe("buildMetrics", () => {
     const m = buildMetrics(null);
     expect(m.latestCallsTotal).toBe(0);
     expect(m.latestCalls.length).toBeLessThanOrEqual(25);
+  });
+});
+
+describe("noteSourceArticles", () => {
+  it("attaches per-publisher counts to the run record", () => {
+    noteSourceArticles({ "BK Häcken": { fetched: 20, kept: 3, dropped: 17 } });
+    const m = buildMetrics(null);
+    expect(m.latestRun!.sourceArticles!["BK Häcken"]).toEqual({
+      fetched: 20,
+      kept: 3,
+      dropped: 17,
+    });
+  });
+
+  it("keeps publisher counts separate from request counts", () => {
+    // 39 articles from one feed is still ONE request. Collapsing the two would
+    // either inflate the quota view or lose the article numbers entirely.
+    noteSourceArticles({ "Sportbladet": { fetched: 39, kept: 0, dropped: 39 } });
+    const m = buildMetrics(null);
+    expect(m.latestRun!.sourceArticles!["Sportbladet"].fetched).toBe(39);
+    expect(m.latestRun!.calls).toBe(0);
+    expect(m.totals.meteredRequests).toBe(0);
+  });
+
+  it("omits the field entirely when nothing was reported", () => {
+    // The panel must show "not measured", not "0 articles". An empty object
+    // would read as "every source found nothing", which is a false claim.
+    const m = buildMetrics(null);
+    expect(m.latestRun!.sourceArticles).toBeUndefined();
+    expect("sourceArticles" in m.latestRun!).toBe(false);
+  });
+
+  it("carries counts into history so they can be shown over time", () => {
+    noteSourceArticles({ "BK Häcken": { fetched: 20, kept: 3, dropped: 17 } });
+    const first = buildMetrics(null);
+    beginRun();
+    noteSourceArticles({ "BK Häcken": { fetched: 18, kept: 5, dropped: 13 } });
+    const second = buildMetrics(first);
+    expect(second.history).toHaveLength(1);
+    expect(second.history[0].sourceArticles!["BK Häcken"].kept).toBe(3);
+    expect(second.latestRun!.sourceArticles!["BK Häcken"].kept).toBe(5);
+  });
+
+  it("does not leak yesterday's publishers into today's counts", () => {
+    // If ingest fails before reporting, a stale map would present yesterday's
+    // numbers as tonight's. beginRun() must clear it.
+    noteSourceArticles({ "Göteborgs-Posten": { fetched: 13, kept: 0, dropped: 13 } });
+    beginRun();
+    noteSourceArticles({ "BK Häcken": { fetched: 20, kept: 3, dropped: 17 } });
+    const m = buildMetrics(null);
+    expect(m.latestRun!.sourceArticles!["Göteborgs-Posten"]).toBeUndefined();
+    expect(Object.keys(m.latestRun!.sourceArticles!)).toEqual(["BK Häcken"]);
+  });
+
+  it("rejects nonsense rather than writing it into the log", () => {
+    noteSourceArticles({ Weird: { fetched: -5, kept: Number.NaN, dropped: 2 } });
+    const m = buildMetrics(null);
+    expect(m.latestRun!.sourceArticles!.Weird).toEqual({ fetched: 0, kept: 0, dropped: 2 });
   });
 });
 

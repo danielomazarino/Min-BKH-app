@@ -27,7 +27,8 @@
  */
 import { useEffect, useId, useState } from "react";
 import { loadApiMetrics, type MetricsState } from "../data";
-import type { ApiMetrics, ServiceAggregate } from "./types";
+import type { ApiMetrics, RunRecord, ServiceAggregate, SourceArticles } from "./types";
+import { sourcePurpose } from "./sourcePurpose";
 
 /**
  * Collapse the per-service rows into GROUPS.
@@ -136,7 +137,7 @@ const sum = (rows: ServiceAggregate[], pick: (s: ServiceAggregate) => number) =>
  * This is a real <button> that toggles visible text, so it works with a tap
  * and is announced by a screen reader via aria-expanded.
  */
-function Info({ label }: { label: string }) {
+export function Info({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   return (
@@ -197,6 +198,32 @@ export function groupServices(services: ServiceAggregate[]): Group[] {
   }
 
   return groups.sort((a, b) => b.totalDurationMs - a.totalDurationMs);
+}
+
+/**
+ * Article counts for one publisher, or undefined when not measured.
+ *
+ * `undefined` is a real, distinct state and MUST stay distinct from zero. A
+ * run from before this was measured has no entry; rendering that as "0
+ * artiklar" would claim the source was silent when in fact nobody asked.
+ */
+function countFor(
+  counts: Record<string, SourceArticles> | undefined,
+  name: string,
+): SourceArticles | undefined {
+  return counts?.[name];
+}
+
+/**
+ * Count label with the honesty rule baked in.
+ *
+ * "0 av 39" is a genuinely bad result and must be shown as one — that is the
+ * whole reason this panel exists. "Not measured" must never become "0".
+ */
+function countLabel(c: SourceArticles | undefined): string {
+  if (!c) return "Ej mätt";
+  if (c.fetched === 0) return "Inga artiklar";
+  return `${c.kept} av ${c.fetched} behölls`;
 }
 
 const kb = (bytes: number): string =>
@@ -352,11 +379,43 @@ export function ApiMetricsPanel() {
               name and status on the first line and labelled values below, so
               nothing is ever ambiguous about which column it belongs to. */}
           <div className="mtable" data-testid="metrics-services">
-            {groupServices(run.services).map((g) => (
+            {groupServices(run.services).map((g) => {
+              const purpose = sourcePurpose(g.key);
+              /* Feeds report counts per PUBLISHER, so the rolled-up row has to
+                 sum its members. A non-feed service has no article count at
+                 all, and must be shown "Ej mätt" rather than a zero.
+                 Summing skips members with no entry, which is why a run from
+                 before this was measured reads as unmeasured, not as zero. */
+              const memberCounts = g.members
+                .map((mm) => countFor(run.sourceArticles, mm.service.replace("rss:", "")))
+                .filter((c): c is SourceArticles => c !== undefined);
+              const totals =
+                memberCounts.length > 0
+                  ? memberCounts.reduce(
+                      (a, c) => ({
+                        fetched: a.fetched + c.fetched,
+                        kept: a.kept + c.kept,
+                        dropped: a.dropped + c.dropped,
+                      }),
+                      { fetched: 0, kept: 0, dropped: 0 },
+                    )
+                  : undefined;
+              // Which of this group's publishers actually contributed anything.
+              // "OK" on a source row means it ANSWERED, not that it
+              // contributed. Six of eight feeds answered and gave nothing,
+              // which is the entire reason these numbers are now visible.
+              const contributing = memberCounts.filter((c) => c.kept > 0).length;
+              return (
               <div className="metsrow" key={g.key} role="group" aria-label={g.label}>
                 <div className="mname">
                   <span>
                     {g.label}
+                    {/* WHAT THIS SOURCE DOES. The hostname tells you nothing about
+                        the app; this tells a supporter what they would lose.
+                        Two sentences, joined with a real space rather than a
+                        newline: the explanation renders inside a <span>, where
+                        a newline is collapsed to a single space anyway. */}
+                    <Info label={`${purpose.what} Om något går sönder: ${purpose.ifBroken}`} />
                     {/* Publisher names under a grouped row, so grouping hides
                         nothing — it only stops eight identical rows from
                         burying the two services that do the work. */}
@@ -366,13 +425,14 @@ export function ApiMetricsPanel() {
                       </span>
                     )}
                   </span>
-                  {/* Three genuinely different states, and the distinction
-                      matters to the reader:
-                        - N fel      = it ran and something went wrong
-                        - Mäter      = running, but its answer is DISCARDED
-                        - Ej påslaget= not switched on at all
-                      Collapsing "measuring" into "switched on" would imply its
-                      output reaches the app. It does not. */}
+                  {/* THREE GENUINELY DIFFERENT STATES, and the distinction is the
+                      point of this panel:
+                        - N fel       = it ran and something went wrong
+                        - Mäter       = running, but its answer is DISCARDED
+                        - Ej påslaget = not switched on at all
+                      Collapsing "measuring" into "switched on" would imply the
+                      output reaches supporters. It does not, and it must not be
+                      allowed to by accident. */}
                   {g.failures > 0 ? (
                     <span className="mpill mbad">{g.failures} fel</span>
                   ) : isMeasuring(g) ? (
@@ -419,9 +479,58 @@ export function ApiMetricsPanel() {
                   >
                     {kb(g.requestBytes)} in · {kb(g.responseBytes)} ut
                   </Cell>
+                  {/* THE COUNT THAT MATTERS MOST. "Anrop: 1" and "Status: OK" can
+                      both be true for a feed that returned forty articles and
+                      contributed none — and that is precisely what happened to
+                      six of the eight feeds in one night. This cell is the only
+                      one that answers "did this source actually produce
+                      anything". */}
+                  <Cell
+                    label="Nyheter"
+                    wide
+                    info={
+                      totals
+                        ? `Antal artiklar som faktiskt kom in, av de ${totals.fetched} som hämtades. “${contributing} av ${memberCounts.length} källor” betyder att ${contributing === 1 ? "en källa" : `${contributing} källor`} faktiskt bidrog med något — att resten svarade men utan relevanta artiklar.`
+                        : "Antal artiklar som faktiskt kom in. Källan har ingen artikelmätning — den är inte en nyhetskälla, eller körningen är äldre än mätningen."
+                    }
+                  >
+                    {countLabel(totals)}
+                    {totals && g.key === "rss" && (
+                      <span className="msub">
+                        {contributing} av {memberCounts.length} källor bidrog
+                      </span>
+                    )}
+                  </Cell>
                 </div>
+
+                {/* PER-PUBLISHER COUNTS. The rolled-up row above answers "did
+                    the feeds work". This answers "WHICH feed is the problem",
+                    which is the question that actually has to be acted on —
+                    a total of 6 kept across eight feeds cannot tell you that
+                    six of them contributed nothing. Grouping hides nothing only
+                    if the detail is reachable from here. */}
+                {g.key === "rss" && memberCounts.length > 0 && (
+                  <ul className="feedcounts" data-testid="feed-counts">
+                    {g.members.map((mm) => {
+                      const name = mm.service.replace("rss:", "");
+                      const c = countFor(run.sourceArticles, name);
+                      return (
+                        <li key={mm.service} className={c?.kept ? "fc-ok" : "fc-zero"}>
+                          <span className="fc-name">
+                            {name}
+                            <Info
+                              label={`${sourcePurpose(name).what} Om något går sönder: ${sourcePurpose(name).ifBroken}`}
+                            />
+                          </span>
+                          <span className="fc-num">{countLabel(c)}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {m.budget.length > 0 && (
@@ -475,6 +584,109 @@ export function ApiMetricsPanel() {
           </div>
         </>
       )}
+
+      <SourceCountHistory history={m.history} latest={run} />
     </div>
+  );
+}
+
+/**
+ * Per-source article counts across runs.
+ *
+ * WHY A TABLE, NOT A CHART
+ *   The question this answers is "which feed has gone quiet", and the answer
+ *   is a pattern of numbers over eight rows. A sparkline hides the exact
+ *   values, and an exact value is what a maintainer needs to compare one
+ *   publisher against another. It also has to work on a 390px phone, where a
+ *   chart library is a liability.
+ *
+ * WHY "EJ MÄTT" IS A REAL CELL VALUE
+ *   Runs from before this measurement existed have no entry. Printing 0 there
+ *   would claim those feeds were silent on those nights, which is an invented
+ *   fact. An empty string with a dash is the honest rendering, and the table
+ *   is only offered once there is at least one measured run to draw from.
+ */
+function SourceCountHistory({
+  history,
+  latest,
+}: {
+  history: RunRecord[];
+  latest: RunRecord | null;
+}) {
+  // newest first. `latestRun` is the current run and is not in `history`.
+  const runs = [...(latest ? [latest] : []), ...history]
+    .slice()
+    .reverse()
+    .filter((r) => r.runAt);
+  const measured = runs.filter((r) => r.sourceArticles);
+  if (measured.length === 0) return null;
+
+  // Union of publishers across all measured runs, so a publisher that
+  // disappears from one night's feed still gets its own row.
+  const publishers = [
+    ...new Set(measured.flatMap((r) => Object.keys(r.sourceArticles ?? {}))),
+  ].sort((a, b) => a.localeCompare(b, "sv"));
+
+  return (
+    <>
+      <div className="mod-label">Artiklar per källa, natt för natt</div>
+      <p className="small dim" data-testid="count-history-note">
+        Antal artiklar som faktiskt tagits med i appen. En källa som står på 0
+        har svarat men inte bidragit med något — det är inte samma sak som en
+        källa som inte svarat alls. “—” betyder att den natten mättes inte
+        ännu.
+      </p>
+      {/* HORIZONTALLY SCROLLABLE, deliberately. Eight publishers plus a date
+          column cannot fit 390px legibly, and wrapping a table into a card per
+          cell destroys the row-to-column correspondence that makes a table
+          readable. Scrolling keeps the table a table. The scroll container is
+          keyboard-focusable so it is reachable without a mouse. */}
+      <div className="ctablewrap" tabIndex={0} data-testid="metrics-count-history">
+        <table className="ctable">
+          <caption className="visually-hidden">
+            Antal artiklar som behölls per nyhetskälla för varje nattlig körning.
+            Tomma celler betyder att körningen före mätningen startade.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Källa</th>
+              {runs.map((r) => (
+                <th scope="col" key={r.runAt}>
+                  {time(r.runAt)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {publishers.map((p) => (
+              <tr key={p}>
+                <th scope="row">{p}</th>
+                {runs.map((r) => {
+                  const c = r.sourceArticles?.[p];
+                  return (
+                    <td
+                      key={r.runAt}
+                      className={c === undefined ? "cunmeasured" : c.kept === 0 ? "czero" : undefined}
+                    >
+                      {c === undefined ? "—" : c.kept}
+                      {c !== undefined && c.fetched > 0 && (
+                        <span className="cfetched"> / {c.fetched}</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="small dim">
+        Efter snedstrecket står hur många artiklar källan levererade totalt den
+        natten. 3 av 39 betyder att tre av trettionio artiklar handlade om
+        Häcken. <strong>0 av 39</strong> betyder att källan svarade med
+        trettionio artiklar, men ingen av dem handlade om Häcken — källan
+        fungerar, den levererar bara inget till appen just nu.
+      </p>
+    </>
   );
 }
