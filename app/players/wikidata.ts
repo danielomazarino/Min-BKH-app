@@ -55,6 +55,19 @@ const INSTANCE_OF = "P31";
 const SEX = "P21";
 const IMAGE = "P18";
 const HEIGHT = "P2048";
+/** Preferred position ("försvarare", "anfallare" …), on the player entity. */
+const POSITION = "P413";
+/**
+ * P54 statement qualifiers — the per-stint period and totals. VERIFIED
+ * 2026-10-05 against Q518833 and Q16633101: `wbgetentities` with
+ * `props=claims` returns qualifiers on every statement that carries them, so
+ * the career timeline costs ZERO extra requests. Measured coverage on real
+ * Häcken players: 10/10 Bjärsmyr stints have dates, 9/10 have apps and goals.
+ */
+const START_TIME = "P580";
+const END_TIME = "P582";
+const MATCHES_PLAYED = "P1350";
+const GOALS_SCORED = "P1351";
 
 /** Q5 human, Q6581097 male, Q6581072 female — verified 2026-09-26. */
 const A_PERSON = "Q5";
@@ -75,6 +88,34 @@ export type SearchState =
  * is genuinely uneven and a missing statement is not a null answer — it is the
  * absence of a claim, and the UI must say so rather than substitute a guess.
  */
+/**
+ * One club period, from a P54 statement and its qualifiers.
+ *
+ * Every field except the team is optional because Wikidata's coverage is
+ * uneven, and a missing year is NOT the same as an ongoing stint — the UI
+ * must render the gap, never infer "still there" from its absence.
+ */
+export interface CareerStint {
+  /** Resolved display label, or the raw Q-ID when no label resolved. */
+  team: string;
+  teamQid: string;
+  /** Year only. Undefined means Wikidata does not record it. */
+  startYear?: string;
+  endYear?: string;
+  apps?: number;
+  goals?: number;
+}
+
+/** A national-team period. Caps (P1350) rather than club apps. */
+export interface NationalTeamStint {
+  team: string;
+  teamQid: string;
+  startYear?: string;
+  endYear?: string;
+  caps?: number;
+  goals?: number;
+}
+
 export interface PlayerCandidate {
   /** Wikidata Q-ID. The ONLY stable identity we use. */
   qid: string;
@@ -87,6 +128,12 @@ export interface PlayerCandidate {
   dateOfDeath?: string;
   citizenship: string[];
   clubs: string[];
+  /** Club career from P54 + qualifiers, newest first. */
+  career: CareerStint[];
+  /** National-team periods, separated from clubs by the team's own class. */
+  nationalTeams: NationalTeamStint[];
+  /** Preferred position (P413), resolved to a label when one resolved. */
+  position?: string;
   /** True only when BK Häcken is a verified P54 club claim. */
   hackenClub: boolean;
   hackenTeam: "men" | "women" | null;
@@ -200,6 +247,37 @@ interface EntityClaim {
   rank?: string;
 }
 
+/** A qualifier entry has the same shape as a mainsnak. */
+interface Snak {
+  datavalue?: { value?: unknown };
+}
+
+/** The first qualifier of the given property, or undefined. */
+function qualifierSnak(claim: EntityClaim | undefined, prop: string): Snak | undefined {
+  const list = claim?.qualifiers?.[prop];
+  return Array.isArray(list) && list.length > 0 ? (list[0] as Snak) : undefined;
+}
+
+/** A qualifier time value reduced to a plausible year, or undefined. */
+function stintYear(snak: Snak | undefined): string | undefined {
+  const v = snak?.datavalue?.value as TimeValue | undefined;
+  const m = typeof v?.time === "string" ? /^[+-](\d{4})/.exec(v.time) : null;
+  if (!m) return undefined;
+  const year = Number(m[1]);
+  // Same plausibility window as parseWikidataTime: anything outside it is a
+  // mis-modelled value, and showing it would be worse than showing nothing.
+  return year >= 1850 && year <= 2100 ? m[1] : undefined;
+}
+
+/** A qualifier quantity, guarded against nonsense magnitudes. */
+function stintNumber(snak: Snak | undefined, max: number): number | undefined {
+  const v = snak?.datavalue?.value as { amount?: string } | undefined;
+  if (!v || typeof v.amount !== "string") return undefined;
+  const n = Number(v.amount.replace("+", ""));
+  if (!Number.isFinite(n) || n < 0 || n > max) return undefined;
+  return n;
+}
+
 interface Entity {
   id: string;
   labels?: Record<string, { language?: string; value?: string }>;
@@ -263,6 +341,71 @@ function parseQuantity(claim: EntityClaim | undefined): number | null {
   if (!v || typeof v.amount !== "string") return null;
   const n = Number(v.amount.replace("+", ""));
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * A Commons image URL from a P18 filename.
+ *
+ * P18 stores a FILENAME ("Bjarsmyr at Panathinaikos.jpg"), not a URL —
+ * verified live 2026-10-05. `Special:FilePath` resolves it and the redirect
+ * lands on upload.wikimedia.org (measured: HTTP 200, image/jpeg). The width
+ * parameter asks Commons for a thumbnail, because a supporter's phone has no
+ * use for a 4000px original. An <img> tag needs no CORS permission, so this
+ * works from the browser exactly like any other image.
+ */
+export function commonsImageUrl(filename: string, width = 480): string {
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=${width}`;
+}
+
+/**
+ * Team classes that mean "national team", not club.
+ *
+ * VERIFIED 2026-10-05 against real entities: clubs carry P31 Q476028
+ * (association football club), national teams carry Q6979593 (national
+ * association football team) or Q135408445 (the men's subclass). A club can
+ * ALSO carry "men's association football team" (Q103229495, IFK Göteborg),
+ * so that value must never be treated as national.
+ */
+const NATIONAL_TEAM_CLASSES = new Set(["Q6979593", "Q135408445"]);
+/**
+ * Label fallback for teams whose class is missing. "Landslag" is the Swedish
+ * word for national team — but it is ALWAYS a compound in real labels
+ * ("Sveriges U21-herrlandslag i fotboll", "damlandslag"), so a word-boundary
+ * regex (`\blandslag\b`) matches NOTHING. Measured against the real labels on
+ * Q518833's P54 statements. Deliberately narrow otherwise: a club whose name
+ * merely contains "national" (e.g. National Bank Egypt SC) must not be
+ * misfiled, and no Swedish club name contains "landslag".
+ */
+const NATIONAL_TEAM_LABEL = /landslag/i;
+
+/** Everything resolveLabels learned in one pass, reused across retries. */
+export interface LabelIndex {
+  labels: Map<string, string>;
+  /** P31 class Q-IDs per fetched entity, for the club/national split. */
+  classes: Map<string, string[]>;
+}
+
+/** Q-IDs whose entity is a national team rather than a club. */
+export function deriveNationalTeams(index: LabelIndex): Set<string> {
+  const out = new Set<string>();
+  for (const [qid, p31s] of index.classes) {
+    if (p31s.some((c) => NATIONAL_TEAM_CLASSES.has(c))) out.add(qid);
+  }
+  for (const [qid, label] of index.labels) {
+    if (NATIONAL_TEAM_LABEL.test(label)) out.add(qid);
+  }
+  return out;
+}
+
+/** Drop exact duplicates, keeping first-seen order. */
+function dedupeStints<T>(stints: readonly T[], key: (s: T) => string): T[] {
+  const seen = new Set<string>();
+  return stints.filter((s) => {
+    const k = key(s);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }
 
 /**
@@ -338,7 +481,10 @@ export function isNameEntity(entity: Entity): boolean {
 const PREFERRED_LANGUAGES = ["sv", "en"] as const;
 
 /** Build a display candidate from a hydrated entity. */
-export function toCandidate(entity: Entity, opts: { query: string; labels: Map<string, string> }): PlayerCandidate {
+export function toCandidate(
+  entity: Entity,
+  opts: { query: string; labels: Map<string, string>; classes?: Map<string, string[]> },
+): PlayerCandidate {
   const name = pickLabel(entity, PREFERRED_LANGUAGES) ?? entity.id;
   const claims = entity.claims ?? {};
 
@@ -347,6 +493,8 @@ export function toCandidate(entity: Entity, opts: { query: string; labels: Map<s
   const dob = parseWikidataTime(firstClaim(claims[DATE_OF_BIRTH]));
   const dod = parseWikidataTime(firstClaim(claims[DATE_OF_DEATH]));
   const height = parseHeightCm(firstClaim(claims[HEIGHT]));
+  const positionQid = idValue(firstClaim(claims[POSITION]));
+  const position = positionQid ? opts.labels.get(positionQid) ?? positionQid : undefined;
 
   const genderRaw = genders[0];
   const gender = genderRaw === MALE ? "male" : genderRaw === FEMALE ? "female" : genderRaw ? "other" : undefined;
@@ -370,6 +518,38 @@ export function toCandidate(entity: Entity, opts: { query: string; labels: Map<s
     (claims[CITIZENSHIP] ? allIdValues(claims[CITIZENSHIP]) : []).map((q) => opts.labels.get(q) ?? q),
   );
 
+  // ---- career timeline, from P54 qualifiers ----------------------------
+  //
+  // The club/national split needs each team's P31 class, which lives on the
+  // TEAM entity, not the player. `opts.classes` carries what resolveLabels
+  // fetched; a team we never fetched is classified by its label, and a team
+  // with neither is treated as a club — the conservative default, because a
+  // misfiled club stint is a visible oddity while a misfiled cap is a
+  // fabricated international career.
+  const national = deriveNationalTeams({ labels: opts.labels, classes: opts.classes ?? new Map() });
+  const clubStints: CareerStint[] = [];
+  const nationalStints: NationalTeamStint[] = [];
+  for (const claim of claims[MEMBER_OF_SPORTS_TEAM] ?? []) {
+    const teamQid = idValue(claim);
+    if (!teamQid) continue;
+    const team = opts.labels.get(teamQid) ?? teamQid;
+    const startYear = stintYear(qualifierSnak(claim, START_TIME));
+    const endYear = stintYear(qualifierSnak(claim, END_TIME));
+    const apps = stintNumber(qualifierSnak(claim, MATCHES_PLAYED), 2000);
+    const goals = stintNumber(qualifierSnak(claim, GOALS_SCORED), 500);
+    if (national.has(teamQid)) {
+      nationalStints.push({ team, teamQid, startYear, endYear, caps: apps, goals });
+    } else {
+      clubStints.push({ team, teamQid, startYear, endYear, apps, goals });
+    }
+  }
+  // Newest first: an unsorted list read like a random dump, and the most
+  // recent club is the one a supporter is most likely checking.
+  const byStartDesc = (a: { startYear?: string }, b: { startYear?: string }) =>
+    (b.startYear ?? "0000").localeCompare(a.startYear ?? "0000");
+  const career = dedupeStints(clubStints.sort(byStartDesc), (s) => `${s.teamQid}|${s.startYear ?? ""}|${s.endYear ?? ""}`);
+  const nationalTeams = dedupeStints(nationalStints.sort(byStartDesc), (s) => `${s.teamQid}|${s.startYear ?? ""}|${s.endYear ?? ""}`);
+
   return {
     qid: entity.id,
     name,
@@ -379,6 +559,9 @@ export function toCandidate(entity: Entity, opts: { query: string; labels: Map<s
     dateOfDeath: dod?.iso,
     citizenship: citizenshipLabels,
     clubs: clubLabels,
+    career,
+    nationalTeams,
+    position,
     hackenClub: clubs.includes(HACKEN_MEN_QID),
     hackenTeam: clubs.includes(HACKEN_MEN_QID) ? "men" : clubs.includes(HACKEN_WOMEN_QID) ? "women" : null,
     gender,
@@ -486,12 +669,18 @@ export async function searchPlayersOnline(
     for (const e of list) {
       for (const q of allIdValues(e.claims?.[CITIZENSHIP])) set.add(q);
       for (const q of allIdValues(e.claims?.[MEMBER_OF_SPORTS_TEAM])) set.add(q);
+      // The position (P413) label lives on a separate entity too. Missing it
+      // was caught by e2e, not by unit tests: the sheet rendered the raw
+      // "Q280658" where "anfallare" belongs, because nothing above ever asked
+      // for that entity's label.
+      for (const q of allIdValues(e.claims?.[POSITION])) set.add(q);
     }
     return set;
   }
 
   const indexEntities = indexQids.map((id) => entities[id]).filter((e): e is Entity => !!e);
-  let labels = await resolveLabels(collectLabelQids(indexEntities), deps);
+  let index = await resolveLabels(collectLabelQids(indexEntities), deps);
+  let labels = index.labels;
 
   const people = indexQids
     .map((id) => entities[id])
@@ -530,7 +719,8 @@ export async function searchPlayersOnline(
       discarded = 0;
       // The fallback path hydrates its own entities, so their club and country
       // labels were never collected above. Resolve them now, still in one call.
-      labels = await resolveLabels(collectLabelQids(viaSurname), deps, labels);
+      index = await resolveLabels(collectLabelQids(viaSurname), deps, index);
+      labels = index.labels;
     }
   }
 
@@ -540,7 +730,7 @@ export async function searchPlayersOnline(
     return { status: "not-found", query };
   }
 
-  const candidates = chosen.map((e) => toCandidate(e, { query, labels }));
+  const candidates = chosen.map((e) => toCandidate(e, { query, labels, classes: index.classes }));
   return { status: "results", query, candidates, discarded };
 }
 
@@ -585,10 +775,10 @@ async function peopleBySurname(surnameQids: readonly string[], deps: SearchDeps)
 async function resolveLabels(
   qids: ReadonlySet<string>,
   deps: SearchDeps,
-  seed?: Map<string, string>,
-): Promise<Map<string, string>> {
-  const out = new Map<string, string>(seed ?? []);
-  const ids = [...qids].filter((q) => !out.has(q));
+  seed?: LabelIndex,
+): Promise<LabelIndex> {
+  const out: LabelIndex = { labels: new Map(seed?.labels ?? []), classes: new Map(seed?.classes ?? []) };
+  const ids = [...qids].filter((q) => !out.labels.has(q));
   if (ids.length === 0) return out;
 
   for (let i = 0; i < ids.length; i += 50) {
@@ -603,7 +793,10 @@ async function resolveLabels(
       const json = (await res.json()) as { entities?: Record<string, Entity> };
       for (const [id, e] of Object.entries(json.entities ?? {})) {
         const label = pickLabel(e, PREFERRED_LANGUAGES);
-        if (label) out.set(id, label);
+        if (label) out.labels.set(id, label);
+        // P31 classes ride along on the SAME response — the club/national
+        // split needs them and asking again would double the request count.
+        out.classes.set(id, allIdValues(e.claims?.[INSTANCE_OF]));
       }
     } catch {
       return out;

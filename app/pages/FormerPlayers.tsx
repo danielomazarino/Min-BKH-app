@@ -36,6 +36,7 @@ import {
   searchPlayersOnline,
   readCache,
   writeCache,
+  commonsImageUrl,
   type PlayerCandidate,
   type SearchState,
 } from "../players/wikidata";
@@ -164,6 +165,8 @@ export default function FormerPlayers() {
             dateOfBirth: f.dateOfBirth ?? undefined,
             dateOfDeath: f.dateOfDeath ?? undefined,
             citizenship: f.citizenship ? [f.citizenship] : [],
+            career: [],
+            nationalTeams: [],
             gender: undefined,
             heightCm: undefined,
             clubs: [],
@@ -518,12 +521,25 @@ function PlayerSheet({
           </p>
         )}
 
+        {/* ---- 0. photo — only when the source actually has one ---- */}
+        {c.imageUrl && (
+          <img
+            src={commonsImageUrl(c.imageUrl)}
+            alt={c.name}
+            loading="lazy"
+            decoding="async"
+            className="player-photo"
+            data-testid="player-photo"
+          />
+        )}
+
         {/* ---- 1. identity ---- */}
         <div>
           <div className="mod-label">Uppgifter</div>
           <div className="kv">
             <Stat v={c.dateOfBirth ?? null} l="Född" isText />
             <Stat v={c.heightCm ?? null} l="Längd cm" />
+            <Stat v={c.position ?? null} l="Position" isText />
             <Stat v={c.gender === "male" ? "M" : c.gender === "female" ? "K" : null} l="Kön" isText />
             <Stat v={c.citizenship[0] ?? null} l="Nationalitet" isText />
           </div>
@@ -533,6 +549,59 @@ function PlayerSheet({
             </p>
           )}
         </div>
+
+        {/* ---- 2. career, per stint, with the same honesty ---- */}
+        <div>
+          <div className="mod-label">Karriär</div>
+          {c.career.length > 0 ? (
+            <ul className="career" data-testid="career">
+              {c.career.map((s) => (
+                <li key={`${s.teamQid}-${s.startYear ?? "?"}-${s.endYear ?? "?"}`} data-testid="career-stint">
+                  <span className="years">
+                    {s.startYear ?? "????"}–{s.endYear ?? "????"}
+                  </span>
+                  <span className="team">{s.team}</span>
+                  {(s.apps !== undefined || s.goals !== undefined) && (
+                    <span className="nums">
+                      {s.apps !== undefined ? `${s.apps} M` : ""}
+                      {s.apps !== undefined && s.goals !== undefined ? " · " : ""}
+                      {s.goals !== undefined ? `${s.goals} Mål` : ""}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="small dim" style={{ margin: 0 }} data-testid="no-career">
+              Inga klubbperioder är registrerade i Wikidata. Det betyder inte att karriären saknas — bara att
+              uppgiften saknas.
+            </p>
+          )}
+        </div>
+
+        {/* ---- 3. national teams, kept apart from clubs ---- */}
+        {c.nationalTeams.length > 0 && (
+          <div>
+            <div className="mod-label">Landslag</div>
+            <ul className="career" data-testid="national-teams">
+              {c.nationalTeams.map((s) => (
+                <li key={`${s.teamQid}-${s.startYear ?? "?"}-${s.endYear ?? "?"}`} data-testid="national-stint">
+                  <span className="years">
+                    {s.startYear ?? "????"}–{s.endYear ?? "????"}
+                  </span>
+                  <span className="team">{s.team}</span>
+                  {(s.caps !== undefined || s.goals !== undefined) && (
+                    <span className="nums">
+                      {s.caps !== undefined ? `${s.caps} L` : ""}
+                      {s.caps !== undefined && s.goals !== undefined ? " · " : ""}
+                      {s.goals !== undefined ? `${s.goals} Mål` : ""}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* ---- 2. Häcken link ---- */}
         <div>

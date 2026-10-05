@@ -132,6 +132,12 @@ treat it as suspect and re-check with `git log`.
 > visible to anyone, not only to whoever reads the nightly log. See
 > **B-006** for the details.
 
+> **Also new:** the player sheet now shows a photo, a dated career timeline and
+> national-team caps for any player Wikidata records them for — read from
+> claims the app already fetches, at zero extra requests. The OpenRouter route
+> for this was evaluated and deliberately rejected; see **"Player enrichment —
+> why not the AI"** below.
+
 **1. A player who has left the club still appears in the "watch out for cards" list.**
 The fix is written, tested and deployed, but the app's data is only rewritten by
 the overnight job. Until that job runs tonight, supporters will see a stale
@@ -356,6 +362,62 @@ any "recent" or "upcoming" window.
 **The fix.** Both fixture dates are now derived from the clock at call time
 (±3 hours), so the relationship under test — one match in the future, one in the
 past — holds whenever the suite runs. No production code was touched.
+
+---
+
+## Player enrichment — why not the AI
+
+**Status:** SHIPPED 2026-10-05 · **Affects:** the player detail sheet (Spelare)
+
+**The request.** "Build the functionality to increase the information about
+players that we have been discussing early on but never built. Use the thought
+that we can use the OpenRouter API to fetch more information."
+
+**What was actually built.** The player sheet now shows, whenever Wikidata
+records it: a **photo** (P18, as a width-limited Commons thumbnail), the
+**position** (P413, as a Swedish label), a **dated career timeline** (every P54
+club period with years, appearances and goals from the statement's own
+qualifiers, newest first), and **national-team caps** listed apart from clubs.
+
+**Why not OpenRouter.** The idea was evaluated seriously, then rejected on
+measured facts — not on principle:
+
+1. **The data already exists in a request we already make.** `wbgetentities`
+   with `props=claims` returns P54 qualifiers on every statement that carries
+   them. Measured on real Häcken players: 10/10 of Bjärsmyr's stints carry
+   dates, 9/10 carry apps and goals. The enrichment costs **zero extra network
+   requests** and zero LLM calls.
+2. **OpenRouter's web search is not free.** The `:free:online` suffix routes
+   through Exa at **$0.007 per request** — a cost the free tier does not waive.
+   The nightly measurement run is one request per night precisely because the
+   budget is finite; per-player research on every sheet open would be a
+   different order of spend.
+3. **A generated answer cannot be audited the way a claim can.** This app's
+   rule is that every fact is traceable to a source. A structured Wikidata
+   claim IS the source. An LLM summary of a career would be a second-hand
+   account of the same data, with a failure mode (plausible fabrication) this
+   project has spent weeks designing against — see **B-004**.
+4. **The free-model pool is unreliable at the moment of use.** Measured: 2 of 3
+   nightly attempts hit upstream 429s. A sheet that sometimes enriches and
+   sometimes doesn't is worse than one that always shows what the source
+   actually records.
+
+**Where OpenRouter still makes sense.** News-event grouping (B-008), where the
+input is unstructured article text that no structured source covers, and where
+one request per night is the whole budget. The boundary is: **structured data
+from its source; unstructured text to the model.**
+
+**The two bugs the tests caught before release.** Both are the reason the
+verification discipline exists:
+
+- The position label was never requested: `collectLabelQids` collected
+  citizenship and club Q-IDs but not P413's, so the sheet rendered the raw
+  string "Q280658" where "anfallare" belongs. **Caught by e2e, not by unit
+  tests** — the unit fixture supplied the label directly, hiding the gap.
+- The national-team label fallback used `\blandslag\b`, which matches nothing:
+  Swedish compounds the word ("herr**landslag**", "dam**landslag**"), so no
+  real label contains it as a standalone word. Caught by a unit test written
+  against a real label.
 
 ---
 
@@ -1156,19 +1218,35 @@ exists, the honest absence is the correct product behaviour.
 
 ### Former-player details · photos, transfers, statistics
 
-**Status:** OPEN, conditional on data availability
+**Status:** PARTIALLY CLOSED 2026-10-05 — photos, career timeline and national
+teams now ship; transfers, contract and "where are they now" remain open
 
-**What happens today.** Former players show name, position, seasons at the club
-and where they are now. Photos, transfers, career detail, appearances, goals and
-season statistics are absent.
+**What happens today.** The player sheet now shows, when Wikidata records it:
 
-**Why it is not simply a task.** Each field needs a source that is both
-available and trustworthy. Where a reliable source does not exist, the field
-stays empty rather than being approximated — the same principle as match
-statistics above.
+- **Photo** — from the P18 image claim, served as a width-limited Commons
+  thumbnail, never the 4000px original.
+- **Position** — P413, resolved to a Swedish label ("anfallare").
+- **Career timeline** — every P54 club period with start/end years, apps and
+  goals from the statement's own qualifiers. Newest first. An open-ended stint
+  renders as "2016–????" — never inferred to be "still there".
+- **National teams** — separated from clubs by the team's own P31 class, with
+  caps rather than club apps.
 
-**Acceptance:** each field appears only when it comes from a citable source, with
-the source recorded so any claim can be checked.
+**Why this and not the AI-research route.** The same facts were already sitting
+in the response the app already fetches: `wbgetentities` returns P54 qualifiers
+on every statement that carries them. Measured on real players: 10/10 of
+Bjärsmyr's stints have dates, 9/10 have apps and goals. The enrichment costs
+**zero extra network requests** and cannot hallucinate, because every number is
+read from a structured claim, not generated. The OpenRouter route was evaluated
+and deliberately rejected for this feature — see the section below.
+
+**What is still open.** Transfers, contract status and "where are they now".
+Wikidata does not model these, and the honest absence remains the correct
+behaviour until a citable source exists.
+
+**Acceptance (met for the shipped fields):** each field appears only when it
+comes from a citable source — the Wikidata Q-ID is linked in the sheet, and
+every value is traceable to a specific claim on that entity.
 
 ---
 

@@ -7,6 +7,8 @@ import {
   isNameEntity,
   toCandidate,
   searchPlayersOnline,
+  commonsImageUrl,
+  deriveNationalTeams,
 
   type SearchState,
 } from "./wikidata";
@@ -139,6 +141,230 @@ describe("entity classification", () => {
       claims: { P106: [{ rank: "deprecated", mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } }] },
     };
     expect(isFootballer(deprecated as never)).toBe(true);
+  });
+});
+
+describe("commonsImageUrl", () => {
+  // P18 stores a FILENAME, not a URL — verified live 2026-10-05 against
+  // Q518833, whose P18 value is "Bjarsmyr at Panathinaikos.jpg".
+  it("turns a P18 filename into a Commons FilePath URL", () => {
+    expect(commonsImageUrl("Bjarsmyr at Panathinaikos.jpg")).toBe(
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Bjarsmyr%20at%20Panathinaikos.jpg?width=480",
+    );
+  });
+
+  it("encodes characters that would break the URL", () => {
+    // Real Commons filenames contain spaces and apostrophes. encodeURIComponent
+    // leaves apostrophes as-is (they are legal in a URL path), which Commons
+    // accepts; spaces must be encoded.
+    const u = commonsImageUrl("O'Brien's goal.jpg");
+    expect(u).toContain("O'Brien's%20goal.jpg");
+  });
+
+  it("honours a requested thumbnail width", () => {
+    expect(commonsImageUrl("x.jpg", 120)).toContain("width=120");
+  });
+});
+
+describe("deriveNationalTeams", () => {
+  // Real P31 values, verified 2026-10-05: clubs carry Q476028, national teams
+  // Q6979593 / Q135408445. IFK Göteborg ALSO carries Q103229495 (men's team)
+  // — that value must never be treated as national.
+  it("classifies by P31 class, not by name", () => {
+    const index = {
+      labels: new Map([
+        ["Q201567", "IFK Göteborg"],
+        ["Q2255267", "Sveriges U21-herrlandslag i fotboll"],
+      ]),
+      classes: new Map([
+        ["Q201567", ["Q476028", "Q103229495"]],
+        ["Q2255267", ["Q6979593"]],
+      ]),
+    };
+    const national = deriveNationalTeams(index);
+    expect(national.has("Q2255267")).toBe(true);
+    expect(national.has("Q201567")).toBe(false);
+  });
+
+  it("falls back to the label when the class is missing", () => {
+    // Some team entities have no P31 at all (measured: Q208265). "Landslag"
+    // in the label is the Swedish word for national team.
+    const index = {
+      labels: new Map([["Q999", "Sveriges herrlandslag i fotboll"]]),
+      classes: new Map(),
+    };
+    expect(deriveNationalTeams(index).has("Q999")).toBe(true);
+  });
+
+  it("never misfiles a club whose name merely contains 'national'", () => {
+    const index = {
+      labels: new Map([["Q888", "National Bank Egypt SC"]]),
+      classes: new Map([["Q888", ["Q476028"]]]),
+    };
+    expect(deriveNationalTeams(index).has("Q888")).toBe(false);
+  });
+});
+
+describe("toCandidate — career timeline", () => {
+  /**
+   * Real qualifier shapes captured from the live API 2026-10-05 (Q518833,
+   * Q16633101). P580/P582 are years, P1350 apps, P1351 goals.
+   */
+  const BJARSMYR_CLUBS = [
+    {
+      mainsnak: { datavalue: { value: { id: "Q935299" } } },
+      qualifiers: {
+        P580: [{ datavalue: { value: { time: "+2002-01-01T00:00:00Z", precision: 9 } } }],
+        P582: [{ datavalue: { value: { time: "+2004-01-01T00:00:00Z", precision: 9 } } }],
+        P1350: [{ datavalue: { value: { amount: "+37" } } }],
+        P1351: [{ datavalue: { value: { amount: "+0" } } }],
+      },
+    },
+    {
+      mainsnak: { datavalue: { value: { id: "Q201567" } } },
+      qualifiers: {
+        P580: [{ datavalue: { value: { time: "+2005-01-01T00:00:00Z", precision: 9 } } }],
+        P582: [{ datavalue: { value: { time: "+2009-01-01T00:00:00Z", precision: 9 } } }],
+        P1350: [{ datavalue: { value: { amount: "+104" } } }],
+        P1351: [{ datavalue: { value: { amount: "+3" } } }],
+      },
+    },
+    // An ongoing stint: end time absent. Must render as "????", never as
+    // "still there" inferred from the gap.
+    {
+      mainsnak: { datavalue: { value: { id: "Q186785" } } },
+      qualifiers: {
+        P580: [{ datavalue: { value: { time: "+2012-01-01T00:00:00Z", precision: 9 } } }],
+      },
+    },
+    // A national team — separated by the team's P31 class.
+    {
+      mainsnak: { datavalue: { value: { id: "Q2255267" } } },
+      qualifiers: {
+        P580: [{ datavalue: { value: { time: "+2005-01-01T00:00:00Z", precision: 9 } } }],
+        P582: [{ datavalue: { value: { time: "+2009-01-01T00:00:00Z", precision: 9 } } }],
+        P1350: [{ datavalue: { value: { amount: "+31" } } }],
+      },
+    },
+  ];
+
+  const LABELS = new Map([
+    ["Q935299", "Husqvarna FF"],
+    ["Q201567", "IFK Göteborg"],
+    ["Q186785", "Rosenborg BK"],
+    ["Q2255267", "Sveriges U21-herrlandslag i fotboll"],
+  ]);
+  const CLASSES = new Map([
+    ["Q935299", ["Q476028"]],
+    ["Q201567", ["Q476028"]],
+    ["Q186785", ["Q476028"]],
+    ["Q2255267", ["Q6979593"]],
+  ]);
+
+  function candidate() {
+    const entity = {
+      id: "Q518833",
+      labels: { sv: { value: "Mattias Bjärsmyr" } },
+      claims: { P54: BJARSMYR_CLUBS },
+    };
+    return toCandidate(entity as never, { query: "Bjärsmyr", labels: LABELS, classes: CLASSES });
+  }
+
+  it("builds a dated club timeline from P54 qualifiers", () => {
+    const c = candidate();
+    expect(c.career).toHaveLength(3);
+    expect(c.career[0]).toMatchObject({ team: "Rosenborg BK", startYear: "2012", endYear: undefined });
+    expect(c.career[1]).toMatchObject({ team: "IFK Göteborg", startYear: "2005", endYear: "2009", apps: 104, goals: 3 });
+    expect(c.career[2]).toMatchObject({ team: "Husqvarna FF", startYear: "2002", endYear: "2004", apps: 37, goals: 0 });
+  });
+
+  it("sorts newest first, so the current club leads", () => {
+    expect(candidate().career[0].team).toBe("Rosenborg BK");
+  });
+
+  it("keeps an open-ended stint open rather than inventing an end year", () => {
+    const open = candidate().career.find((s) => s.team === "Rosenborg BK");
+    expect(open?.endYear).toBeUndefined();
+  });
+
+  it("separates national teams from clubs by the team's own class", () => {
+    const c = candidate();
+    expect(c.nationalTeams).toHaveLength(1);
+    expect(c.nationalTeams[0]).toMatchObject({ team: "Sveriges U21-herrlandslag i fotboll", caps: 31 });
+    expect(c.career.some((s) => s.team.includes("landslag"))).toBe(false);
+  });
+
+  it("reads P413 as the position label", () => {
+    const entity = {
+      id: "Q1",
+      labels: { sv: { value: "X" } },
+      claims: { P413: [{ mainsnak: { datavalue: { value: { id: "Q280658" } } } }] },
+    };
+    const c = toCandidate(entity as never, {
+      query: "x",
+      labels: new Map([["Q280658", "anfallare"]]),
+    });
+    expect(c.position).toBe("anfallare");
+  });
+
+  it("falls back to the raw Q-ID when a position label never resolved", () => {
+    const entity = {
+      id: "Q1",
+      labels: { sv: { value: "X" } },
+      claims: { P413: [{ mainsnak: { datavalue: { value: { id: "Q280658" } } } }] },
+    };
+    const c = toCandidate(entity as never, { query: "x", labels: new Map() });
+    expect(c.position).toBe("Q280658");
+  });
+
+  it("rejects an implausible apps/goals value rather than printing it", () => {
+    const entity = {
+      id: "Q1",
+      labels: { sv: { value: "X" } },
+      claims: {
+        P54: [
+          {
+            mainsnak: { datavalue: { value: { id: "Q2" } } },
+            qualifiers: {
+              P1350: [{ datavalue: { value: { amount: "+99999" } } }],
+              P1351: [{ datavalue: { value: { amount: "-5" } } }],
+            },
+          },
+        ],
+      },
+    };
+    const c = toCandidate(entity as never, { query: "x", labels: new Map([["Q2", "Klubb"]]) });
+    expect(c.career[0].apps).toBeUndefined();
+    expect(c.career[0].goals).toBeUndefined();
+  });
+
+  it("dedupes identical stints (Wikidata records several per stint)", () => {
+    const entity = {
+      id: "Q1",
+      labels: { sv: { value: "X" } },
+      claims: {
+        P54: [BJARSMYR_CLUBS[0], BJARSMYR_CLUBS[0]],
+      },
+    };
+    const c = toCandidate(entity as never, { query: "x", labels: LABELS, classes: CLASSES });
+    expect(c.career).toHaveLength(1);
+  });
+
+  it("treats an unclassified team as a club, never as a national team", () => {
+    // The conservative default: a misfiled club stint is a visible oddity,
+    // a misfiled cap is a fabricated international career.
+    const entity = {
+      id: "Q1",
+      labels: { sv: { value: "X" } },
+      claims: { P54: [{ mainsnak: { datavalue: { value: { id: "Q777" } } } }] },
+    };
+    const c = toCandidate(entity as never, {
+      query: "x",
+      labels: new Map([["Q777", "Mystery Team"]]),
+      classes: new Map(),
+    });
+    expect(c.career).toHaveLength(1);
+    expect(c.nationalTeams).toHaveLength(0);
   });
 });
 

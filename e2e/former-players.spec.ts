@@ -39,6 +39,8 @@ type Mode = "ok" | "empty" | "rate-limited" | "error" | "single";
 /** Realistic Wikidata JSON, captured from the live API. */
 const ENTITIES: Record<string, unknown> = {
   // Alexander Jeremejeff — P54 DOES include BK Häcken (Q639723).
+  // Career qualifiers use the real shapes captured from the live API
+  // 2026-10-05 (Q16633101): P580/P582 years, P1350 apps, P1351 goals.
   Q16633101: {
     id: "Q16633101",
     labels: { sv: { value: "Alexander Jeremejeff" } },
@@ -49,13 +51,29 @@ const ENTITIES: Record<string, unknown> = {
       P106: [{ mainsnak: { datavalue: { value: { id: "Q937857" } } } }],
       P569: [{ mainsnak: { datavalue: { value: { time: "+1993-10-12T00:00:00Z", precision: 11 } } } }],
       P27: [{ mainsnak: { datavalue: { value: { id: "Q34" } } } }],
+      P413: [{ mainsnak: { datavalue: { value: { id: "Q280658" } } } }],
+      P18: [{ mainsnak: { datavalue: { value: "Alexander Jeremejeff.jpg", type: "string" } } }],
       P54: [
-        { mainsnak: { datavalue: { value: { id: "Q639723" } } } },
-        { mainsnak: { datavalue: { value: { id: "Q204881" } } } },
+        {
+          mainsnak: { datavalue: { value: { id: "Q639723" } } },
+          qualifiers: {
+            P580: [{ datavalue: { value: { time: "+2014-01-01T00:00:00Z", precision: 9 } } }],
+            P582: [{ datavalue: { value: { time: "+2016-01-01T00:00:00Z", precision: 9 } } }],
+            P1350: [{ datavalue: { value: { amount: "+37" } } }],
+            P1351: [{ datavalue: { value: { amount: "+11" } } }],
+          },
+        },
+        {
+          mainsnak: { datavalue: { value: { id: "Q204881" } } },
+          qualifiers: {
+            P580: [{ datavalue: { value: { time: "+2016-01-01T00:00:00Z", precision: 9 } } }],
+          },
+        },
       ],
     },
   },
-  // Mattias Bjärsmyr — ten P54 clubs, and BK Häcken is NOT one of them.
+  // Mattias Bjärsmyr — BK Häcken is NOT among his teams. Includes a national
+  // team (Q2255267, P31 Q6979593) to exercise the club/national split.
   Q518833: {
     id: "Q518833",
     labels: { sv: { value: "Mattias Bjärsmyr" } },
@@ -65,13 +83,30 @@ const ENTITIES: Record<string, unknown> = {
       P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
       P106: [{ mainsnak: { datavalue: { value: { id: "Q937857" } } } }],
       P569: [{ mainsnak: { datavalue: { value: { time: "+1986-01-03T00:00:00Z", precision: 11 } } } }],
-      P54: [{ mainsnak: { datavalue: { value: { id: "Q186785" } } } }],
+      P54: [
+        {
+          mainsnak: { datavalue: { value: { id: "Q186785" } } },
+          qualifiers: {
+            P580: [{ datavalue: { value: { time: "+2012-01-01T00:00:00Z", precision: 9 } } }],
+          },
+        },
+        {
+          mainsnak: { datavalue: { value: { id: "Q2255267" } } },
+          qualifiers: {
+            P580: [{ datavalue: { value: { time: "+2005-01-01T00:00:00Z", precision: 9 } } }],
+            P582: [{ datavalue: { value: { time: "+2009-01-01T00:00:00Z", precision: 9 } } }],
+            P1350: [{ datavalue: { value: { amount: "+31" } } }],
+          },
+        },
+      ],
     },
   },
   Q34: { id: "Q34", labels: { sv: { value: "Sverige" } } },
   Q639723: { id: "Q639723", labels: { sv: { value: "BK Häcken" } } },
   Q204881: { id: "Q204881", labels: { sv: { value: "Malmö FF" } } },
   Q186785: { id: "Q186785", labels: { sv: { value: "Rosenborg BK" } } },
+  Q280658: { id: "Q280658", labels: { sv: { value: "anfallare" } } },
+  Q2255267: { id: "Q2255267", labels: { sv: { value: "Sveriges U21-herrlandslag i fotboll" } } },
 
   /**
    * Mats Hedén, b. 1976 — the ACCEPTANCE CASE from the field.
@@ -430,6 +465,62 @@ test.describe("Spelare (footballer search)", () => {
     await searchForHit(page, "Jeremejeff");
     await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
     await expect(page.getByTestId("sheet").getByTestId("hacken-yes")).toBeVisible();
+  });
+
+  test("the sheet shows a dated career timeline from P54 qualifiers", async ({ page }) => {
+    await searchForHit(page, "Jeremejeff");
+    await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
+    const sheet = page.getByTestId("sheet");
+    const stints = sheet.getByTestId("career-stint");
+    await expect(stints).toHaveCount(2);
+    // Newest first: Malmö (2016–) leads, Häcken (2014–2016) follows.
+    await expect(stints.first()).toContainText("2016");
+    await expect(stints.nth(1)).toContainText("BK Häcken");
+    await expect(stints.nth(1)).toContainText("2014");
+    // Apps and goals come from P1350/P1351 — real numbers, not invented.
+    await expect(stints.nth(1)).toContainText("37");
+    await expect(stints.nth(1)).toContainText("11");
+  });
+
+  test("an open-ended stint stays open rather than inventing an end year", async ({ page }) => {
+    await searchForHit(page, "Jeremejeff");
+    await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
+    const first = page.getByTestId("sheet").getByTestId("career-stint").first();
+    await expect(first).toContainText("–????");
+  });
+
+  test("national teams are listed apart from clubs", async ({ page }) => {
+    await searchForHit(page, "Bjärsmyr");
+    await page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" }).locator("button.open").click();
+    const sheet = page.getByTestId("sheet");
+    await expect(sheet.getByTestId("national-teams")).toBeVisible();
+    await expect(sheet.getByTestId("national-stint").first()).toContainText("Sveriges U21-herrlandslag");
+    // The national team must NOT appear in the club career list.
+    const career = sheet.getByTestId("career");
+    await expect(career).not.toContainText("landslag");
+  });
+
+  test("a player with no recorded career says so without denying one", async ({ page }) => {
+    await searchForHit(page, "hedén");
+    await page.getByTestId("former-player").filter({ hasText: "Mats Hedén" }).locator("button.open").click();
+    await expect(page.getByTestId("sheet").getByTestId("no-career")).toBeVisible();
+    await expect(page.getByTestId("sheet").getByTestId("no-career")).toContainText("betyder inte");
+  });
+
+  test("the sheet shows the position when Wikidata records one", async ({ page }) => {
+    await searchForHit(page, "Jeremejeff");
+    await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
+    await expect(page.getByTestId("sheet")).toContainText("anfallare");
+  });
+
+  test("a P18 image renders as a Commons thumbnail", async ({ page }) => {
+    await searchForHit(page, "Jeremejeff");
+    await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
+    const img = page.getByTestId("sheet").getByTestId("player-photo");
+    await expect(img).toBeVisible();
+    const src = await img.getAttribute("src");
+    expect(src).toContain("commons.wikimedia.org/wiki/Special:FilePath/");
+    expect(src).toContain("width=");
   });
 
   test("favourites persist across a reload, keyed by Q-ID", async ({ page }) => {
