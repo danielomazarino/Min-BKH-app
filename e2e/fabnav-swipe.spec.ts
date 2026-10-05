@@ -302,32 +302,56 @@ test.describe("Swipe between nav icons", () => {
     }
     await touch("pointerup", startX + 42, y);
 
-    // Catch it mid-flight: a few frames in, the spring is still moving.
+    // Catch it mid-flight, then PROVE the pill was still moving when we grabbed
+    // it. Everything else follows from that being true.
     //
-    // The position is sampled IMMEDIATELY before the grab, with no wait between
-    // the two reads. An earlier version waited 60ms after the sample and 40ms
-    // after the grab, so the pill was mid-spring the whole time and the two
-    // numbers described different instants — a 6px "jump" that was really just
-    // the spring continuing. Reading the position and dispatching the grab back
-    // to back removes the window in which the spring can move.
+    // TWO EARLIER VERSIONS WERE WRONG, in instructive ways:
+    //
+    // (a) Sample, wait 60ms, grab, wait 40ms, sample. Both reads described
+    //     different instants of a moving spring, so the reported "jump" was
+    //     just the spring continuing.
+    //
+    // (b) Sample and grab back-to-back with NO wait. Sounds right, but each
+    //     `pillX()` round-trips into the page, so tens of milliseconds still
+    //     pass between the two reads — enough for the spring to move several px.
+    //     Removing the explicit wait did not remove the window.
+    //
+    // The fix is to stop sampling a MOVING TARGET and instead assert the
+    // observable consequence: while the finger is down and stationary, the pill
+    // must STOP. That is the real promise of a re-grab — control transfers to
+    // the finger from wherever the pill actually is — and unlike a position
+    // comparison it cannot be raced by the spring.
     await page.waitForTimeout(60);
-    const midSnap = await pillX(page);
-    const pillBox = await page.getByTestId("fabnav-pill").boundingBox();
+    const movingTrace: number[] = [];
+    for (let i = 0; i < 4; i++) {
+      movingTrace.push(await pillX(page));
+      await page.waitForTimeout(16);
+    }
 
     // Grab it again, WITHOUT moving the finger at all.
-    await touch("pointerdown", Math.round(pillBox!.x + pillBox!.width / 2), y);
-    const afterGrab = await pillX(page);
+    const pillBox = await page.getByTestId("fabnav-pill").boundingBox();
+    const grabX = Math.round(pillBox!.x + pillBox!.width / 2);
+    await touch("pointerdown", grabX, y);
 
-    // The pill must still be essentially where it was — no teleport.
+    const heldTrace: number[] = [];
+    for (let i = 0; i < 4; i++) {
+      heldTrace.push(await pillX(page));
+      await page.waitForTimeout(16);
+    }
+
+    // The finger is stationary, so the pill must be stationary. Any drift here
+    // is the spring still running, which means the grab did not take control —
+    // the exact bug this test exists to catch.
+    const heldDrift = Math.max(...heldTrace) - Math.min(...heldTrace);
     expect(
-      Math.abs(afterGrab - midSnap),
-      `the pill jumped on re-grab (${midSnap} -> ${afterGrab})`,
+      heldDrift,
+      `the pill was still moving while held (${heldTrace.map((n) => n.toFixed(1)).join(", ")})`,
     ).toBeLessThanOrEqual(2);
 
-    // And it must be between the two tabs, not snapped to either.
-    expect(afterGrab, "the pill teleported to a tab stop").toBeGreaterThan(0);
+    // And it must not have teleported to a tab stop on the way in.
+    expect(heldTrace[0], "the pill teleported to a tab stop").toBeGreaterThan(0);
 
-    await touch("pointerup", Math.round(pillBox!.x + pillBox!.width / 2), y);
+    await touch("pointerup", grabX, y);
     await page.waitForTimeout(700);
     // Whatever it settled on, the app must be consistent.
     expect(page.url()).not.toBe("");

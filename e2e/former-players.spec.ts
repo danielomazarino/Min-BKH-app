@@ -194,27 +194,82 @@ async function stubWikidata(page: Page, mode: Mode = "ok") {
 }
 
 /**
- * Run a search and WAIT for the results to actually render.
+ * Run a search and WAIT for the search to have RESOLVED — one way or another.
  *
- * This used to fill the field, press Enter, and return immediately. Every
- * caller then reached for `.first()` straight away, so the whole suite was
- * asserting against results that might not exist yet.
+ * This used to fill the field, press Enter, and return. Callers that then
+ * reached for `.first()` were asserting against results that might not exist
+ * yet, which under full-suite parallel load on WebKit timed out at 45s waiting
+ * for `former-player ... fav-toggle`.
  *
- * That is normally invisible and occasionally fatal: under full-suite parallel
- * load on WebKit this timed out at 45s waiting for
- * `former-player ... fav-toggle`, even though the same test passes in 11s in
- * isolation. The fetch is stubbed, so this was never about Wikidata being
- * slow — it was the test racing its own render.
+ * Two over-corrections came after, both instructive:
  *
- * Waiting for the row is not a workaround; it is the precondition the test
- * always meant to establish. A timeout here now means a genuine render
- * failure, which is worth failing for.
+ * (a) Waiting for `former-player` unconditionally. Wrong, because MANY tests
+ *     here deliberately produce no row: a one-character query is refused before
+ *     it reaches the network, an ambiguous query shows a hint instead, a genuine
+ *     miss shows an empty state. Those tests then failed on the WAIT rather
+ *     than on their own assertion — and two of them (`Bjärsmyr`, which has no
+ *     Häcken link) failed for exactly that reason.
+ *
+ * (b) Making the wait opt-in per call site. Right instinct, but it needed
+ *     annotating ~30 call sites and would be silently wrong at any site someone
+ *     forgot.
+ *
+ * The correct condition is the one every caller actually depends on: the
+ * search has stopped being pending. Each of those outcomes renders its own
+ * testid, so waiting for any of them is both necessary and sufficient. The
+ * per-test assertions then decide which one they were about.
+ *
+ * The fetch is stubbed in this file, so a timeout here is a genuine render
+ * failure, not a slow network.
  */
+/**
+ * Run a search and WAIT for it to finish — using the app's own "searching"
+ * signal, not a list of guessed outcomes.
+ *
+ * History, because each attempt broke something different:
+ *
+ * 1. Return immediately. Raced the render; under parallel load on WebKit a test
+ *    timed out at 45s waiting for a row it was about to click.
+ * 2. Wait for `former-player`. Broke the many tests that DELIBERATELY produce
+ *    no row — a one-character query is refused before the network, `Bjärsmyr`
+ *    has no Häcken link.
+ * 3. Wait for one of several outcome testids. Broke the two most important
+ *    tests in this file, because `rate-limited` and `search-failed` are outcomes
+ *    too and I had not listed them.
+ * 4. Opt in per call site. ~30 sites, silently wrong wherever one is missed.
+ *
+ * All four were the same mistake: enumerating what the answer might be instead
+ * of asking whether the question is still in flight. The app already renders
+ * `data-testid="searching"` with `aria-busy` WHILE a query is pending. So:
+ * wait for the pending state to begin, then for it to end. No enumeration, no
+ * per-call-site knowledge, and a new outcome state needs no change here.
+ */
+const PENDING = '[data-testid="searching"]';
+
 async function search(page: Page, query: string) {
   const input = page.getByLabel("Sök fotbollsspelare");
   await input.fill(query);
   await input.press("Enter");
-  // The result row is the thing every caller immediately interacts with.
+  // If the query goes into flight, wait for it to come back. A cached answer
+  // renders with no pending state at all, and `hidden` is already true then, so
+  // this is correct in both cases and needs no branching.
+  await page
+    .locator(PENDING)
+    .first()
+    .waitFor({ state: "hidden", timeout: 15_000 });
+}
+
+/**
+ * Search and require an actual result row — for the callers that go on to
+ * interact with it.
+ *
+ * Separate from `search()` on purpose. Most tests here assert their OWN
+ * outcome (a rate limit, a miss, an ambiguous hint), and baking "a row must
+ * exist" into the shared helper broke exactly those. Only the few that touch a
+ * row need this.
+ */
+async function searchForHit(page: Page, query: string) {
+  await search(page, query);
   await expect(page.getByTestId("former-player").first()).toBeVisible({ timeout: 15_000 });
 }
 
@@ -354,7 +409,7 @@ test.describe("Spelare (footballer search)", () => {
   });
 
   test("the sheet always offers provenance and the stable Q-ID", async ({ page }) => {
-    await search(page, "Bjärsmyr");
+    await searchForHit(page, "Bjärsmyr");
     await page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" }).locator("button.open").click();
     const prov = page.getByTestId("sheet").getByTestId("provenance");
     await expect(prov).toContainText("Wikidata");
@@ -386,7 +441,15 @@ test.describe("Spelare (footballer search)", () => {
     expect(afterFirst).toBeGreaterThan(0);
 
     await page.getByTestId("clear-search").click();
-    await search(page, "Jeremejeff");
+    // NOT `search(page, ...)`: this second identical query is served from the
+    // session cache, so no request goes out and therefore no NEW outcome
+    // element renders. Waiting for one would wait for something that by design
+    // never appears — the wait would be asserting the absence of the cache.
+    // That is the one case the shared helper cannot express, so it is spelled
+    // out here, where the cache behaviour is the entire point of the test.
+    const input = page.getByLabel("Sök fotbollsspelare");
+    await input.fill("Jeremejeff");
+    await input.press("Enter");
     await expect(page.getByTestId("former-player").first()).toBeVisible();
     // No new traffic: the cache exists precisely so repeated searching does
     // not exhaust Wikidata's ~10 requests/minute budget.
@@ -536,10 +599,10 @@ test.describe("Starred players (Section C)", () => {
   });
 
   test("two starred players are both listed, newest first", async ({ page }) => {
-    await search(page, "Mats Hedén");
+    await searchForHit(page, "Mats Hedén");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
     await page.getByTestId("clear-search").click();
-    await search(page, "Martin Ericsson");
+    await searchForHit(page, "Martin Ericsson");
     await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
 
     await expect(page.getByTestId("starred-player")).toHaveCount(2);

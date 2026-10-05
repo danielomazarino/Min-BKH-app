@@ -37,7 +37,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **438 unit tests passing, 0 failing** (20 files) — re-run 2026-10-05, includes a new safety suite for the OpenRouter measurement stage. End-to-end suite runs on **both** Chromium and WebKit; see the CI section below for why it had not been testing WebKit at all until now |
+| Tests | **440 unit tests passing, 0 failing** (20 files) — re-run 2026-10-05, including a 13-test safety suite for the OpenRouter measurement stage. End-to-end suite runs on **both** Chromium and WebKit; see the CI section below for why it had not been testing WebKit at all until now |
 | Data last generated | **2026-10-04 05:10 UTC** — served bytes verified to match the data commit (`1fe721c…`) |
 | Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). **Measured over 35 probe runs to 2026-10-04: reachable ~48% of the time, but the chat probe that resembles real work succeeded 0/15 — never once.** Still disabled in the nightly (the key is deliberately not injected). B-004 unvalidated. |
 | OpenRouter | **Transport VERIFIED WORKING 2026-10-04.** Key added; ping **1/1 = 200**, chat probe **1/1 = 200** on the payload Gemini failed **0/15** on. Free model, **cost 0 credits**, key reports **1000 req/day**. **Quality still unvalidated** — see **B-008** |
@@ -412,14 +412,44 @@ provider. It does not.
 
 ### What is still NOT proven
 
-- That the nightly call succeeds. Three attempts have ever been made: **1
-  succeeded** (21 seconds, 23,636 bytes), **2 were refused** by the shared pool
-  with HTTP 429. That is 1 in 3, which is not good enough to ship.
+- **Whether the nightly call succeeds.** See the table above: the first two
+  attempts were refused by the shared pool. A later attempt reached the
+  provider and was then refused for the same reason. This is exactly the
+  unreliability the nightly exists to measure.
 - That its output is right on real news. The fixture evaluation passed all five
   checks; nightly real news is a different and harder test, and this is the run
   that will tell us.
 - Cost. `0` in the log means *the provider reported it free*; blank means *nobody
   told us*. Those two are never conflated.
+
+### The first night already earned its cost
+
+On its very first run the measurement found a bug that three manual evaluations
+had missed:
+
+```
+OpenRouter HTTP 400: grammar does not compile: xgrammar StructuralTag
+compilation failed
+```
+
+The cause was ours, not OpenRouter's. We were sending Gemini's schema, which
+uses **uppercase** JSON-Schema type names (`"OBJECT"`, `"ARRAY"`). That is
+correct for Gemini. But xgrammar — the engine behind OpenRouter's
+`response_format: json_schema` — does not accept that dialect, and rejected the
+request **before it ever reached the model**.
+
+The reason three manual tests missed it: the working evaluation had its own
+hand-written *lowercase* copy of the same schema. The contract had been
+duplicated, and the copies had already drifted. Duplicated contracts between two
+providers being compared is precisely how a comparison stops meaning anything.
+
+So the contract now lives in one place, in two dialects, and a test walks the
+OpenRouter schema and fails on any uppercase type name at any depth. After the
+fix the same request returned **HTTP 429 rate-limited upstream** — a completely
+different failure, and proof that it now passes validation and reaches the
+provider.
+
+**A measurement run that finds a bug on night one has already paid for itself.**
 
 ---
 
@@ -493,6 +523,45 @@ A green WebKit run is evidence about **our logic**, not about iOS. Synthetic
 events never touch WebKit's native gesture arbitration — the layer that decides
 scroll-versus-drag and raises the link callout on a real phone. Only a real
 iPhone verifies the gesture itself. That remains open.
+
+### The recurring lesson: a wait that asserts instead of waits
+
+Two of the flakes above were "fixed" three times each, and the first two
+attempts at each were **worse than the symptom**. That is worth recording,
+because it is easy to repeat.
+
+The honest bug in both cases was real — a test sampling a moving target, and a
+test racing a render. Both tempt you to add a wait. But a wait has three
+failure modes, not one:
+
+| | Problem | Example |
+|---|---|---|
+| too short | still races | the original flakes |
+| **too strict** | now asserts a duration the test has no business knowing | "sheet stopped within 120ms" — failed on **all four** viewports, because the animation is simply longer than that |
+| too narrow | waits for the wrong state | waiting for a result row in tests that *deliberately* produce none — broke two previously-passing tests |
+
+The fix that worked in both cases was the same idea: **stop guessing, and ask
+the thing that already knows.**
+
+- The sheet runs a named CSS animation, `sheet-in`, so the test now waits for
+  its `animationend`. No constant, no polling, and it cannot be wrong on a slow
+  machine.
+- The search page renders `data-testid="searching"` with `aria-busy` **while a
+  query is in flight**, so the test waits for *that* to clear.
+
+Both of my earlier attempts at the search wait tried to enumerate what the
+answer might be — a hit, an empty state, a too-short query, an ambiguous one, a
+rate limit, a transport failure. Each time I missed one and broke a different
+test, including the two most important in the file. **Enumerating outcomes is
+the wrong shape of question.** Asking "is this still pending?" has no such
+failure mode.
+
+A `waitForTimeout(N)` in a test is an admission of not knowing when the app is
+ready. It is sometimes fine. It should never be load-bearing.
+
+**And the process lesson:** I ran the full gate locally before pushing, and
+still shipped red twice — because I had only tested the specs I touched. The
+whole suite is the gate.
 
 ---
 

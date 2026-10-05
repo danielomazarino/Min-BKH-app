@@ -262,39 +262,45 @@ test.describe("Layout", () => {
       await page.getByTestId("open-settings").click();
       await expect(page.getByTestId("settings-sheet")).toBeVisible();
 
-      // WAIT FOR THE SHEET TO SETTLE, DO NOT GUESS A SLEEP.
+      // WAIT FOR THE SHEET-IN ANIMATION TO FINISH — via the animation itself.
       //
-      // A fixed `waitForTimeout(500)` is a race: under parallel load on a
-      // loaded machine the sheet-in animation had not finished, so the sheet was
-      // measured mid-flight and reported a 642px overlap at 1024px. The same
-      // test passes in isolation on both engines, which is the signature of a
-      // timing problem rather than a CSS one — and a real overlap would fail
-      // every time, not intermittently.
+      // THREE attempts, and the first two made things worse:
       //
-      // Polling for REST is the honest wait. An earlier attempt compared two
-      // reads 120ms apart and demanded they be identical, which failed on
-      // every viewport because the sheet-in animation is simply longer than
-      // 120ms — a stricter test, not a truer one. Polling until two consecutive
-      // reads agree waits for the animation to finish without asserting a
-      // duration the test has no business knowing.
-      const bottomOf = () =>
-        page.evaluate(() => {
-          const sheet = document.querySelector('[data-testid="settings-sheet"]');
-          if (!sheet) return null;
-          return Math.round(sheet.getBoundingClientRect().bottom);
-        });
-
-      await expect
-        .poll(
-          async () => {
-            const a = await bottomOf();
-            await page.waitForTimeout(150);
-            const b = await bottomOf();
-            return a === b ? b : -1;
-          },
-          { timeout: 10_000, message: "the sheet never came to rest" },
-        )
-        .not.toBe(-1);
+      // (a) `waitForTimeout(500)`. A race. Under full-suite parallel load the
+      //     animation had not finished, so the sheet was measured mid-flight and
+      //     reported a 642px overlap. Intermittent, which is the signature of
+      //     timing rather than CSS.
+      //
+      // (b) Two reads 120ms apart, required to be identical. Failed on ALL FOUR
+      //     viewports — the sheet-in animation is simply longer than 120ms, so
+      //     this was a STRICTER test, not a truer one. "Wait for rest" is not
+      //     "verify rest happened within N ms".
+      //
+      // (c) Polling for two consecutive matching reads. Correct in principle, but
+      //     two reads 150ms apart can agree mid-animation on a slow machine and
+      //     still hand back a moving target. It failed intermittently at 390px.
+      //
+      // What is actually true is that the sheet runs a named CSS animation,
+      // `sheet-in`. The browser knows when it ends, so ask it. This is exact,
+      // has no guessed constant in it, and cannot be wrong on a slow machine.
+      const animated = await page
+        .getByTestId("settings-sheet")
+        .evaluate(
+          (el) =>
+            new Promise<boolean>((resolve) => {
+              // Already finished: reduced-motion, or a very fast frame.
+              if (!el.getAnimations().some((a) => a.playState === "running")) {
+                resolve(true);
+                return;
+              }
+              el.addEventListener(
+                "animationend",
+                (e) => resolve((e as AnimationEvent).target === el),
+                { once: true },
+              );
+            }),
+        );
+      expect(animated, "the sheet-in animation never reported completion").toBe(true);
 
       const geo = await page.evaluate(() => {
         const sheet = document.querySelector('[data-testid="settings-sheet"]')!;
