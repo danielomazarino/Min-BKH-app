@@ -193,10 +193,29 @@ async function stubWikidata(page: Page, mode: Mode = "ok") {
   );
 }
 
+/**
+ * Run a search and WAIT for the results to actually render.
+ *
+ * This used to fill the field, press Enter, and return immediately. Every
+ * caller then reached for `.first()` straight away, so the whole suite was
+ * asserting against results that might not exist yet.
+ *
+ * That is normally invisible and occasionally fatal: under full-suite parallel
+ * load on WebKit this timed out at 45s waiting for
+ * `former-player ... fav-toggle`, even though the same test passes in 11s in
+ * isolation. The fetch is stubbed, so this was never about Wikidata being
+ * slow — it was the test racing its own render.
+ *
+ * Waiting for the row is not a workaround; it is the precondition the test
+ * always meant to establish. A timeout here now means a genuine render
+ * failure, which is worth failing for.
+ */
 async function search(page: Page, query: string) {
   const input = page.getByLabel("Sök fotbollsspelare");
   await input.fill(query);
   await input.press("Enter");
+  // The result row is the thing every caller immediately interacts with.
+  await expect(page.getByTestId("former-player").first()).toBeVisible({ timeout: 15_000 });
 }
 
 test.beforeEach(async ({ page }) => {

@@ -173,7 +173,6 @@ test.describe("Swipe between nav icons", () => {
     // (renderedStops/tabSpacing): one authority for the numbers, read from the
     // running app, so a layout change cannot quietly invalidate the gesture.
     const spacing = await tabPitch(page);
-    const step = Math.max(8, Math.round(spacing / 5));
     const travel = spacing + 20; // 20px clears the dead zone, per the app's own helper
     const steps = 4;
 
