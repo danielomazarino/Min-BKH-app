@@ -419,6 +419,14 @@ verification discipline exists:
   real label contains it as a standalone word. Caught by a unit test written
   against a real label.
 
+**The third bug only live verification caught.** With "Landslag" having its own
+section, the old "Klubbar" list still showed national teams as clubs —
+"Husqvarna FF · Sveriges U17-herrlandslag i fotboll · …" read as a
+contradiction. The sheet's club list is now derived from the career timeline,
+so the two views cannot disagree. No unit or e2e test asserted the club list's
+content against a player with national teams; the check was made by reading the
+deployed sheet. Committed as `4ea134a`.
+
 ---
 
 ## OpenRouter now runs every night — measuring only, changing nothing
