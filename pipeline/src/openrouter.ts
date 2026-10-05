@@ -19,7 +19,7 @@
  *   metrics recorder keep it out of the log.
  */
 
-import { trackedFetch, noteLlmCall } from "./apiMetrics";
+import { trackedFetch, noteCost, noteLlmCall } from "./apiMetrics";
 import {
   parseGeminiResponse,
   truncateSummary,
@@ -164,17 +164,24 @@ export async function synthesizeWithOpenRouter(
   const started = Date.now();
 
   try {
-    const res = await trackedFetch("openrouter", ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-        "HTTP-Referer": "https://danielomazarino.github.io/Min-BKH-app/",
-        "X-Title": "Min BKH-app",
+    const res = await trackedFetch(
+      "openrouter",
+      ENDPOINT,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+          "HTTP-Referer": "https://danielomazarino.github.io/Min-BKH-app/",
+          "X-Title": "Min BKH-app",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
       },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
+      // metered:true so the request is charged against the daily quota.
+      // Without it a real, billable call would be recorded but never counted.
+      { metered: true },
+    );
 
     if (!res.ok) {
       const body = await res.text();
@@ -187,18 +194,21 @@ export async function synthesizeWithOpenRouter(
       usage?: { total_cost?: number; cost?: number; prompt_tokens?: number; completion_tokens?: number };
     };
     const text = json.choices?.[0]?.message?.content ?? "";
-    const durationMs = Date.now() - started;
     const usedModel = json.model ?? model;
 
+    // ONE record per request. `trackedFetch` above already recorded the call,
+    // with real status, duration and byte counts. Calling `noteLlmCall` as
+    // well produced a SECOND record for the same HTTP request, which is why
+    // the first live run reported "2 calls" for a stage hard-capped at one
+    // request, and charged two quota for one send.
+    //
+    // Cost is attached to that existing record via `noteCost` rather than by
+    // pushing another entry. 0 means the provider REPORTED it free; null means
+    // nobody told us. They are never conflated.
+    const reportedCost = typeof json.usage?.total_cost === "number" ? json.usage.total_cost : null;
+    noteCost("openrouter", reportedCost);
+
     if (!text.trim()) {
-      noteLlmCall("openrouter", {
-        model: usedModel,
-        status: 200,
-        ok: false,
-        durationMs,
-        responseBytes: 0,
-        cost: json.usage?.total_cost ?? null,
-      });
       return {
         ok: false,
         error: "OpenRouter returned an empty response",
@@ -232,18 +242,8 @@ export async function synthesizeWithOpenRouter(
     // Cost semantics matter here: 0 means the provider REPORTED the call as
     // free; null means it did not report a figure. They must never be conflated,
     // because "we spent nothing" and "we do not know what this cost" lead to
-    // opposite decisions about whether to keep running it.
-    const cost = typeof json.usage?.total_cost === "number" ? json.usage.total_cost : null;
-
-    noteLlmCall("openrouter", {
-      model: usedModel,
-      status: 200,
-      ok: parseError === undefined,
-      durationMs,
-      responseBytes: text.length,
-      cost,
-    });
-
+    // opposite decisions about whether to keep running it. It is attached to
+    // this request's trackedFetch record via noteCost, above.
     if (parseError || !answer) {
       return {
         ok: false,
@@ -258,18 +258,25 @@ export async function synthesizeWithOpenRouter(
 
     return { ok: true, calls: 1, model: usedModel, answer, unknownIds, rejectedCount: 0 };
   } catch (e) {
+    // A failed request has already left its own trackedFetch record carrying
+    // the real status (429/5xx) and the network-level timing. Pushing a second
+    // entry here is exactly what made the first live run report two calls for a
+    // stage hard-capped at one, and charge two quota for one send.
     const status = e instanceof OpenRouterHttpError ? e.status : 0;
     const msg = e instanceof Error ? e.message : String(e);
-    noteLlmCall("openrouter", {
-      model,
-      status,
-      ok: false,
-      durationMs: Date.now() - started,
-      responseBytes: 0,
-      // A failed call reported no cost figure. null, never 0: claiming a failed
-      // call was free would hide that we simply do not know.
-      cost: null,
-    });
+    if (status === 0) {
+      // The request never produced an HTTP response (DNS, TLS, abort). Only in
+      // that case is there no trackedFetch record to carry the failure, so this
+      // is the one situation that genuinely needs to be recorded by hand.
+      noteLlmCall("openrouter", {
+        model,
+        status: 0,
+        ok: false,
+        durationMs: Date.now() - started,
+        responseBytes: null,
+        cost: null,
+      });
+    }
     return { ok: false, error: msg, calls: 1, answer: null, unknownIds: [], rejectedCount: 0 };
   }
 }

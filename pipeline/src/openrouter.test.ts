@@ -209,6 +209,37 @@ describe("openrouter measurement path", () => {
     expect(call?.costCredits).toBeNull();
   });
 
+  it("records EXACTLY ONE call per request, never two", async () => {
+    // REGRESSION, found by reading the deployed log on 2026-10-05. The nightly
+    // logged "ok ... calls=1" while the metrics row read `calls=2`, and the
+    // quota was charged 2 for one send.
+    //
+    // CAUSE: `trackedFetch` already records the HTTP request (real status,
+    // duration, byte counts). Calling `noteLlmCall` afterwards pushed a SECOND
+    // record for the same request. The stage is hard-capped at one upstream
+    // request, so "2" was arithmetically impossible — which is what made it
+    // obviously a bookkeeping fault rather than a provider problem.
+    //
+    // The invariant is the point: one send, one record.
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(VALID_BODY));
+    await synthesizeWithOpenRouter([ARTICLE]);
+    const calls = buildMetrics(null).latestCalls.filter((c) => c.service === "openrouter");
+    expect(calls).toHaveLength(1);
+    const m = buildMetrics(null);
+    expect(m.latestRun?.services.find((s) => s.service === "openrouter")?.calls).toBe(1);
+    expect(m.totals.meteredRequests).toBe(1);
+  });
+
+  it("records exactly one call even when the provider rate-limits us", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse({ error: { message: "rate-limited", code: 429 } }, 429),
+    );
+    await synthesizeWithOpenRouter([ARTICLE]);
+    const calls = buildMetrics(null).latestCalls.filter((c) => c.service === "openrouter");
+    expect(calls).toHaveLength(1);
+    expect(buildMetrics(null).totals.meteredRequests).toBe(1);
+  });
+
   it("charges exactly one metered request against the daily quota", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(VALID_BODY));
     await synthesizeWithOpenRouter([ARTICLE]);
