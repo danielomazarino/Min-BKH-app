@@ -108,8 +108,13 @@ describe("URL construction", () => {
     expect(new URL(buildEntitiesUrl(["Q1", "Q2"])).searchParams.get("ids")).toBe("Q1|Q2");
   });
 
-  it("asks for the claims and aliases the hydration actually reads", () => {
-    expect(new URL(buildEntitiesUrl(["Q1"])).searchParams.get("props")).toBe("labels|descriptions|claims|aliases");
+  it("asks for the claims, aliases and sitelinks the hydration actually reads", () => {
+    // `sitelinks` rides along on the same response: it is the map of Wikipedia
+    // articles about this exact entity, which the narrative layer needs.
+    // Asking for it separately would double the request count.
+    expect(new URL(buildEntitiesUrl(["Q1"])).searchParams.get("props")).toBe(
+      "labels|descriptions|claims|aliases|sitelinks",
+    );
   });
 });
 

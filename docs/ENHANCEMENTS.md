@@ -1226,35 +1226,56 @@ exists, the honest absence is the correct product behaviour.
 
 ### Former-player details · photos, transfers, statistics
 
-**Status:** PARTIALLY CLOSED 2026-10-05 — photos, career timeline and national
-teams now ship; transfers, contract and "where are they now" remain open
+**Status:** LARGELY CLOSED 2026-10-06 — Wikipedia narrative added, the five
+device-reported UX defects fixed; transfers/contract remain open
 
-**What happens today.** The player sheet now shows, when Wikidata records it:
+**What happens today.** The player sheet shows, when the sources record it:
 
-- **Photo** — from the P18 image claim, served as a width-limited Commons
-  thumbnail, never the 4000px original.
-- **Position** — P413, resolved to a Swedish label ("anfallare").
-- **Career timeline** — every P54 club period with start/end years, apps and
-  goals from the statement's own qualifiers. Newest first. An open-ended stint
-  renders as "2016–????" — never inferred to be "still there".
-- **National teams** — separated from clubs by the team's own P31 class, with
-  caps rather than club apps.
+- **Wikipedia narrative** — the lead paragraph of the Wikipedia article ABOUT
+  THIS EXACT ENTITY, found via the sitelinks Wikidata already returns and
+  verified by `wikibase_item`. This is the fix for "the data is lousy": the
+  article says what the player is doing NOW ("spelar för PAOK") and tells the
+  career story the structured claims never will. One request per open, cached
+  for the session; a null result is cached too.
+- **Photo** — full image, no crop (the first version cut heads off with
+  `object-fit: cover`).
+- **Position, career timeline, national teams** — as shipped 2026-10-05.
 
-**Why this and not the AI-research route.** The same facts were already sitting
-in the response the app already fetches: `wbgetentities` returns P54 qualifiers
-on every statement that carries them. Measured on real players: 10/10 of
-Bjärsmyr's stints have dates, 9/10 have apps and goals. The enrichment costs
-**zero extra network requests** and cannot hallucinate, because every number is
-read from a structured claim, not generated. The OpenRouter route was evaluated
-and deliberately rejected for this feature — see the section below.
+**The five device-reported UX defects, all fixed 2026-10-06:**
 
-**What is still open.** Transfers, contract status and "where are they now".
-Wikidata does not model these, and the honest absence remains the correct
-behaviour until a citable source exists.
+1. **Sheet covered the header** — a tall sheet slid under the translucent
+   banner, hiding its own title. The sheet is now bounded by the chrome on
+   BOTH sides (`--chrome-top` mirrors `--chrome-bottom`).
+2. **Images cropped** — `object-fit: cover` with a hard max-height cut the top
+   of portraits. Now shown in full.
+3. **Favorites were a dead end** — the snapshot stored only name and dates, so
+   opening a starred player showed an empty card and the user had to search
+   again. The FULL card is now stored, and opening a starred player triggers a
+   background refresh that replaces the card when fresh data arrives (old data
+   is kept if the refresh fails).
+4. **Results were invisible on a phone** — they rendered below the favourites
+   list, under the on-screen keyboard. Results are now a dropdown attached to
+   the search box, in the band the keyboard never covers.
+5. **Exact spelling was required** — search was submit-only. Now it fires
+   400ms after typing stops (Wikidata's index is prefix-based, so "jere"
+   finds Jeremejeff), with the session cache absorbing repeats.
+
+**The identity trap worth remembering.** A Wikipedia title match is NOT an
+identity match: "Mats Hedén" on sv.wikipedia is a MUSICIAN (Q5795456); our
+footballer is Q103846058. Every summary is checked against `wikibase_item` and
+a mismatch is discarded — showing a musician's biography beside a footballer's
+stats is exactly the confident-wrong-answer this app refuses to ship.
+
+**Why not the AI-research route.** Evaluated and rejected (2026-10-05): the
+Wikipedia route is free, CORS-open, and auditable. See "Player enrichment —
+why not the AI" below.
+
+**What is still open.** Transfers and contract status. Neither Wikipedia's
+summary nor Wikidata models them reliably; the honest absence remains.
 
 **Acceptance (met for the shipped fields):** each field appears only when it
-comes from a citable source — the Wikidata Q-ID is linked in the sheet, and
-every value is traceable to a specific claim on that entity.
+comes from a citable source — the Wikidata Q-ID and the Wikipedia article are
+both linked in the sheet.
 
 ---
 

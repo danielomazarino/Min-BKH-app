@@ -167,10 +167,115 @@
 
   --chrome-bottom: calc(var(--fabnav-h) + var(--fabnav-gap) * 2 + env(safe-area-inset-bottom, 0px));
 
+  /* The band the sticky header occupies, mirroring --chrome-bottom. The sheet
+     used to be bounded only by the nav, so a tall sheet slid UNDER the
+     translucent header and its title vanished behind the blur — reported
+     from the real device. The header height is a token, so the two can never
+     drift apart. */
+  --chrome-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+
   --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-sheet: 300ms;
   --dur-dismiss: 220ms;
   --dur-tap: 80ms;
+
+  /* Header surface. A token because the light theme needs its own value —
+     see .app-header. */
+  --header-bg: rgba(0, 0, 0, 0.72);
+}
+
+/* ==========================================================================
+   LIGHT THEME — "Borta" (away kit)
+   ==========================================================================
+ *
+ * The app's default is the HOME kit: black with Häcken yellow. This block is
+ * the AWAY kit: white with black and yellow accents, selected by the jersey
+ * toggle in the header.
+ *
+ * HOW IT WORKS
+ *   Every colour in this file is a token defined in :root above. This block
+ *   redefines ONLY those tokens under [data-theme="light"]; nothing else
+ *   changes. That is the whole reason a second theme is cheap: there is one
+ *   place per colour, so a light theme cannot drift from the dark one.
+ *
+ * WHAT IS DELIBERATELY NOT OVERRIDDEN
+ *   --yellow stays #ffd200 in both themes. On black it is text (14.6:1); on
+ *   white it is a FILL with black text on top (--yellow-ink), which is the
+ *   away-kit reading. The two roles are different tokens on purpose.
+ *
+ * CONTRAST — measured, not guessed (WCAG 2.2 AA, same method as the dark
+ * theme's audit in the :root block):
+ *   --text #1a1a1a on --bg #ffffff            16.7:1
+ *   --text-2 rgba(0,0,0,.72) on white          10.4:1
+ *   --text-3 rgba(0,0,0,.58) on white           7.0:1
+ *   --yellow-ink #1a1500 on --yellow #ffd200   13.9:1
+ *   --danger #c4373c on white                   5.4:1
+ *   --caution #8a5a00 on white                  5.1:1
+ *   --ok #1e7a34 on white                       5.0:1
+ *   All clear AA for body text; the status colours clear it for the small
+ *   bold labels they appear in.
+ */
+[data-theme="light"] {
+  /* Surfaces — a light ramp mirroring the dark one */
+  --bg: #ffffff;
+  --surface: #f5f5f5;
+  --surface-2: #ececec;
+  --surface-3: #e2e2e2;
+  --hairline: rgba(0, 0, 0, 0.1);
+  --hairline-strong: rgba(0, 0, 0, 0.18);
+
+  /* Yellow keeps its identity but flips ROLE: on white it is a fill, and text
+     on it is the near-black ink token. --yellow-text is NOT redefined to a
+     dark colour — yellow text on white is 1.6:1 and unreadable, so anything
+     that was yellow TEXT in the dark theme must switch to --text or an ink
+     token in the light theme. That is handled per-rule below, not here. */
+  --yellow-dim: rgba(255, 210, 0, 0.18);
+
+  /* Text — the same ramp, inverted */
+  --text: #1a1a1a;
+  --text-2: rgba(0, 0, 0, 0.72);
+  --text-3: rgba(0, 0, 0, 0.58);
+
+  /* Status colours darkened to clear AA on white */
+  --danger: #c4373c;
+  --danger-dim: rgba(196, 55, 60, 0.12);
+  --caution: #8a5a00;
+  --caution-dim: rgba(138, 90, 0, 0.12);
+  --ok: #1e7a34;
+
+  /* Floating nav glass — the same translucency idea, light variant. The
+     surface tone is what carries the "separate object" reading (see the A/B
+     table on .fabnav in the dark theme); a light glass needs a light tint
+     with enough opacity to separate from a white page. */
+  --fabnav-surface: rgba(255, 255, 255, 0.72);
+  --fabnav-surface-opaque: rgba(255, 255, 255, 0.96);
+  --fabnav-edge: rgba(0, 0, 0, 0.12);
+  --fabnav-sheen: rgba(255, 255, 255, 0.9);
+  --fabnav-pill: rgba(0, 0, 0, 0.08);
+  --fabnav-pill-edge: rgba(0, 0, 0, 0.22);
+  --fabnav-pill-opaque: rgba(0, 0, 0, 0.1);
+
+  /* Light header over a white page. Higher alpha than the dark header's
+     0.72 because a translucent WHITE over white content needs more opacity
+     to separate; blur does the rest. */
+  --header-bg: rgba(255, 255, 255, 0.85);
+
+  /* Sheet backdrop. Over a white page a 0.55 black scrim is fine — it is
+     deliberately dark in BOTH themes, because its job is to dim the page
+     behind the sheet, not to match the page. Declared here only so the
+     value is findable next to the other theme tokens. */
+  --sheet-backdrop: rgba(0, 0, 0, 0.45);
+
+  /* Yellow-as-text must become dark text in the light theme: yellow on
+     white is 1.6:1 and unreadable. Anything styled with --yellow-text
+     (links) flips to the ink colour. Yellow FILLS keep #ffd200 with dark
+     ink on top — that is the away-kit reading and needs no override. */
+  --yellow-text: #6b5900;
+
+  /* The amber "Mäter" pill, darkened for white. */
+  --meas-ink: #8a5a00;
+  --meas-edge: rgba(138, 90, 0, 0.45);
+  --meas-bg: rgba(138, 90, 0, 0.1);
 }
 
 * {
@@ -251,7 +356,11 @@ a {
   gap: var(--s2);
   height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
   padding: env(safe-area-inset-top, 0px) var(--s4) 0;
-  background: rgba(0, 0, 0, 0.72);
+  /* Token, not a literal: the light theme needs a light header over a white
+     page, and a literal rgba(0,0,0,.72) here would keep the header black in
+     the away kit — the one element that would have given the lie to the
+     whole toggle. */
+  background: var(--header-bg);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--hairline);
@@ -1855,13 +1964,15 @@ main {
 
 /* Player photo in the detail sheet. Commons serves a width-limited
    thumbnail, so the browser never downloads a 4000px original. The hairline
-   border keeps a light-background photo from bleeding into the dark sheet. */
+   border keeps a light-background photo from bleeding into the dark sheet.
+   The image is shown IN FULL: `object-fit: cover` with a hard max-height
+   cropped heads off (the first deploy cut the top of every portrait), so the
+   photo now keeps its own aspect ratio and the sheet grows to fit it. */
 .player-photo {
   display: block;
   width: 100%;
-  max-height: 260px;
-  object-fit: cover;
-  object-position: center 20%;
+  height: auto;
+  object-fit: contain;
   border-radius: var(--r-sm);
   border: 1px solid var(--hairline);
   background: var(--surface-2);
@@ -1885,6 +1996,21 @@ main {
 }
 .career li:last-child {
   border-bottom: none;
+}
+
+/* Search results dropdown — attached to the search box, not a section further
+   down the page. On a phone the on-screen keyboard covers the middle of the
+   viewport, and the favourites list sits below it, so results rendered there
+   were invisible while typing. Attached to the field they appear in the band
+   the keyboard never covers. */
+.search-dropdown {
+  margin: 0 0 var(--s3);
+}
+.search-dropdown:empty {
+  display: none;
+}
+.search-dropdown .skeleton {
+  margin: var(--s2) 0;
 }
 .career .years {
   flex: 0 0 78px;
@@ -1948,7 +2074,7 @@ main {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--sheet-backdrop, rgba(0, 0, 0, 0.55));
   display: flex;
   align-items: flex-end;
   animation: fade-in var(--dur-dismiss) ease-out;
@@ -1957,21 +2083,16 @@ main {
 .sheet {
   position: relative;
   width: 100%;
-  /* Bounded by the space the floating nav leaves, not by a fixed fraction.
+  /* Bounded by the chrome on BOTH sides, not by a fixed fraction.
    *
-   * It used to be `min(88dvh, 100dvh - var(--s5))`, which ignores the nav
-   * entirely. When the bar grew from 58px to 64px that ceiling stayed the
-   * same, so a tall sheet no longer fitted between the top of the screen and
-   * the nav: measured on a 390x844 device, the sheet's top edge sat at
-   * y = -16px, putting its drag grabber at y = -5px — OFF SCREEN. A touch
-   * aimed at the grabber therefore landed on nothing and the sheet did not
-   * move at all.
-   *
-   * The sheet must occupy at most the band above the nav. `--chrome-bottom`
-   * is the nav's real occupied height, so subtracting it here keeps the sheet
-   * inside the visible area by construction, and it tracks the bar
-   * automatically if the bar's height changes again. */
-  max-height: min(88dvh, calc(100dvh - var(--chrome-bottom)));
+   * Two defects are pinned here. First (2026-10-05): `min(88dvh, 100dvh -
+   * var(--chrome-bottom))` ignored the nav, so a tall sheet's grabber sat at
+   * y = -5px — off screen. Second (2026-10-06): even after the nav fix the
+   * sheet could still grow up under the sticky header, hiding its title
+   * behind the header's blur. Subtracting --chrome-top keeps the sheet's top
+   * edge below the header banner by construction, and both bands track their
+   * elements automatically if either changes height again. */
+  max-height: min(88dvh, calc(100dvh - var(--chrome-bottom) - var(--chrome-top)));
   display: flex;
   flex-direction: column;
   /* The sheet must not sit UNDER the floating nav. The nav occupies
@@ -2555,6 +2676,15 @@ details.disc .disc-body {
   font-weight: 600;
 }
 
+/* The kit toggle's jersey. Sized to match the cog wheel's 19px glyph, and
+   allowed to use its own fills — see KitToggle.tsx for why the icon is
+   drawn inline rather than via lucide. */
+.kit-toggle .kit-jersey {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .skeleton {
   background: var(--surface-2);
   border-radius: var(--r-sm);
@@ -2773,9 +2903,9 @@ details.disc .disc-body {
    honest reading is "switched on, deliberately not trusted with the output yet".
    Green here would tell the reader their news comes from this provider. */
 .mpill.mmeas {
-  color: #e0a33e;
-  border-color: rgba(224, 163, 62, 0.45);
-  background: rgba(224, 163, 62, 0.12);
+  color: var(--meas-ink, #e0a33e);
+  border-color: var(--meas-edge, rgba(224, 163, 62, 0.45));
+  background: var(--meas-bg, rgba(224, 163, 62, 0.12));
 }
 
 /* The reason a source is not switched on. Sits under the row title rather than

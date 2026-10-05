@@ -26,11 +26,16 @@
  * requests/minute, and a search-as-you-type box would exhaust that in three
  * seconds of normal typing.
  */
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, Star, X, AlertTriangle, RefreshCw } from "lucide-react";
 import { Sheet } from "../shared/Sheet";
-import { loadFavorites, toggleFavorite, type StarredPlayer } from "../data";
+import {
+  loadFavorites,
+  toggleFavorite,
+  updateFavoriteSnapshot,
+  type StarredPlayer,
+} from "../data";
 import { idFromSearch } from "../shared/nav";
 import {
   searchPlayersOnline,
@@ -40,11 +45,24 @@ import {
   type PlayerCandidate,
   type SearchState,
 } from "../players/wikidata";
+import {
+  fetchWikipediaSummary,
+  readWikiCache,
+  writeWikiCache,
+  type WikipediaSummary,
+} from "../players/wikipedia";
 import { fmtDay } from "../shared/format";
 
 const RECENT_KEY = "minbkh.recentSearches";
 const MAX_RECENT = 6;
 const MIN_QUERY = 2;
+/**
+ * Debounce for type-ahead. Wikidata allows ~10 requests/minute; a normal
+ * name typed at speed produces 2-3 fires with a 400ms settle, and the session
+ * cache absorbs the repeats. The old submit-only rule made the user spell
+ * every foreign name exactly right — the complaint that drove this change.
+ */
+const TYPEAHEAD_MS = 400;
 
 function loadRecent(): string[] {
   try {
@@ -119,6 +137,26 @@ export default function FormerPlayers() {
   };
 
   /**
+   * Type-ahead: search fires 400ms after the user stops typing.
+   *
+   * Wikidata's index is prefix-based, so "jere" already finds Jeremejeff —
+   * the user no longer has to spell a foreign name exactly right. The debounce
+   * keeps the request count inside the rate limit (2-3 fires per name, cache
+   * absorbs repeats), and the timer is cancelled on every keystroke so a fast
+   * typist never fires per character.
+   */
+  useEffect(() => {
+    const q = draft.trim();
+    if (q.length < MIN_QUERY) {
+      // A too-short draft clears any pending fire immediately.
+      setState({ status: "idle" });
+      return;
+    }
+    const t = setTimeout(() => void runSearch(q), TYPEAHEAD_MS);
+    return () => clearTimeout(t);
+  }, [draft, runSearch]);
+
+  /**
    * Star/unstar. The whole snapshot is saved, not just the id, so the
    * starred list can be rendered later without re-searching. No Häcken
    * connection is required — see the note on `toggleFavorite`.
@@ -132,6 +170,10 @@ export default function FormerPlayers() {
         dateOfDeath: c.dateOfDeath,
         citizenship: c.citizenship[0] ?? null,
         hackenTeam: c.hackenTeam ?? null,
+        // The FULL card is stored, so a starred player opens with everything
+        // instead of the name-and-dates stub that made starring useless.
+        snapshot: c,
+        snapshotAt: Date.now(),
       }),
     );
 
@@ -157,6 +199,11 @@ export default function FormerPlayers() {
       ? (() => {
           const f = favorites.find((x) => x.qid === openQid);
           if (!f) return null;
+          // The stored FULL snapshot, when there is one, IS the card — the
+          // user saw exactly this data when they starred or last opened him.
+          if (f.snapshot) return { ...f.snapshot, fromSnapshot: true };
+          // Legacy entries (pre-snapshot) still resolve to the name-and-dates
+          // stub rather than nothing.
           return {
             qid: f.qid,
             name: f.name,
@@ -167,6 +214,7 @@ export default function FormerPlayers() {
             citizenship: f.citizenship ? [f.citizenship] : [],
             career: [],
             nationalTeams: [],
+            sitelinks: {},
             gender: undefined,
             heightCm: undefined,
             clubs: [],
@@ -186,6 +234,41 @@ export default function FormerPlayers() {
   // A deep link to a player that is neither in the results nor starred must
   // say so rather than silently doing nothing.
   const selectedMissing = !!openQid && !open;
+
+  /**
+   * AUTO-REFRESH on open. When a starred player is opened from his stored
+   * snapshot, a fresh lookup runs in the background and replaces the card
+   * when it arrives — the user sees the saved card instantly, then current
+   * data. Old data is kept when the refresh fails, so a network error can
+   * never blank a card the user has already seen.
+   */
+  useEffect(() => {
+    if (!openQid) return;
+    const fromSnapshot = open?.fromSnapshot;
+    if (!fromSnapshot) return; // live results are already current
+    let cancelled = false;
+    void (async () => {
+      const result = await searchPlayersOnline(openQid, { fetch: window.fetch.bind(window) });
+      if (cancelled) return;
+      if (result.status === "results") {
+        const fresh = result.candidates.find((c) => c.qid === openQid);
+        if (fresh) {
+          setFavorites(updateFavoriteSnapshot(fresh.qid, fresh));
+          setState((prev) =>
+            prev.status === "results"
+              ? prev
+              : { status: "results", query: fresh.name, candidates: [fresh], discarded: 0 },
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // `open` is intentionally not a dependency: the effect must fire when the
+    // OPEN ID changes, not every time the card object is rebuilt.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openQid]);
 
   return (
     <div className="layer" data-testid="former-page">
@@ -227,6 +310,78 @@ export default function FormerPlayers() {
             </button>
           )}
         </form>
+      </div>
+
+      {/*
+       * SEARCH RESULTS AS A DROPDOWN, directly under the search box.
+       *
+       * They used to render as a section BELOW the favourites list, which on a
+       * phone meant the on-screen keyboard covered them: the user typed, the
+       * results appeared off-screen, and the feature looked broken. Attached
+       * to the field, they sit above the keyboard and above the favourites,
+       * visible the moment they arrive.
+       */}
+      <div className="search-dropdown" data-testid="search-dropdown">
+        {state.status === "searching" && (
+          <div className="skeleton" style={{ height: 64 }} aria-busy="true" aria-label="Söker" data-testid="searching" />
+        )}
+
+        {state.status === "results" && (
+          <section aria-label="Sökresultat" data-testid="results">
+            <h2 className="mod-label" id="res-h">
+              {candidates.length === 1 ? "1 träff" : `${candidates.length} träffar`}
+              {state.discarded > 0 && <span className="count"> · {state.discarded} andra ignorerades</span>}
+            </h2>
+            {candidates.length > 1 && (
+              <p className="small dim" style={{ margin: "0 0 8px" }} data-testid="ambiguous-hint">
+                Flera träffar. Välj den du letar efter.
+              </p>
+            )}
+            {candidates.map((c) => (
+              <CandidateCard
+                key={c.qid}
+                c={c}
+                fav={favIds.includes(c.qid)}
+                onOpen={() => openPlayer(c.qid)}
+                onFav={() => onToggleFav(c)}
+              />
+            ))}
+          </section>
+        )}
+
+        {state.status === "not-found" && (
+          <p className="empty" role="status" data-testid="no-results">
+            <strong>Ingen träff på ”{state.query}”</strong>
+            Kontrollera stavningen, eller prova bara efternamnet — eller ett smeknamn.
+          </p>
+        )}
+
+        {state.status === "rate-limited" && (
+          <div className="empty" role="status" data-testid="rate-limited">
+            <strong>Wikidata svarar för långsamt</strong>
+            Vi skickade för många förfrågningar. Sök igen om en stund
+            {state.retryAfterSeconds ? ` (ca ${state.retryAfterSeconds}s)` : ""}. Vi vet inte om ”{state.query}”
+            finns — vi har inte hunnit fråga.
+          </div>
+        )}
+
+        {state.status === "failed" && (
+          <div className="empty" role="status" data-testid="search-failed">
+            <strong>Kunde inte söka</strong>
+            {state.message}
+            <br />
+            <button
+              type="button"
+              className="news-row"
+              onClick={() => void runSearch(state.query)}
+              style={{ marginTop: 8 }}
+              data-testid="retry"
+            >
+              <RefreshCw aria-hidden style={{ width: 13, height: 13 }} />
+              <span className="head">Försök igen</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {favorites.length > 0 && (
@@ -293,68 +448,6 @@ export default function FormerPlayers() {
             spelare från hela världen, inte bara från Häcken.
           </p>
         </>
-      )}
-
-      {state.status === "searching" && (
-        <div className="skeleton" style={{ height: 120 }} aria-busy="true" aria-label="Söker" data-testid="searching" />
-      )}
-
-      {state.status === "results" && (
-        <section className="module" style={{ paddingTop: 4 }} aria-labelledby="res-h" data-testid="results">
-          <h2 className="mod-label" id="res-h">
-            {candidates.length === 1 ? "1 träff" : `${candidates.length} träffar`}
-            {state.discarded > 0 && <span className="count"> · {state.discarded} andra ignorerades</span>}
-          </h2>
-          {candidates.length > 1 && (
-            <p className="small dim" style={{ margin: "0 0 8px" }} data-testid="ambiguous-hint">
-              Flera träffar. Välj den du letar efter.
-            </p>
-          )}
-          {candidates.map((c) => (
-            <CandidateCard
-              key={c.qid}
-              c={c}
-              fav={favIds.includes(c.qid)}
-              onOpen={() => openPlayer(c.qid)}
-              onFav={() => onToggleFav(c)}
-            />
-          ))}
-        </section>
-      )}
-
-      {state.status === "not-found" && (
-        <p className="empty" role="status" data-testid="no-results">
-          <strong>Ingen träff på ”{state.query}”</strong>
-          Wikidata har ingen person med det namnet. Kontrollera stavningen, eller prova bara efternamnet — eller
-          sök på ett smeknamn.
-        </p>
-      )}
-
-      {state.status === "rate-limited" && (
-        <div className="empty" role="status" data-testid="rate-limited">
-          <strong>Wikidata svarar för långsamt</strong>
-          Vi skickade för många förfrågningar. Sök igen om en stund
-          {state.retryAfterSeconds ? ` (ca ${state.retryAfterSeconds}s)` : ""}. Vi vet inte om ”{state.query}”
-          finns — vi har inte hunnit fråga.
-        </div>
-      )}
-
-      {state.status === "failed" && (
-        <div className="empty" role="status" data-testid="search-failed">
-          <strong>Kunde inte söka</strong>
-          {state.message}
-          <br />
-          <button
-            type="button"
-            className="news-row"
-            onClick={() => void runSearch(state.query)}
-            style={{ marginTop: 8 }}
-            data-testid="retry"
-          >
-            <RefreshCw aria-hidden style={{ width: 13, height: 13 }} />
-            <span className="head">Försök igen</span>
-          </button>
-        </div>
       )}
 
       {selectedMissing && (
@@ -497,6 +590,38 @@ function PlayerSheet({
    * inconsistency, caught in live verification after deploy.
    */
   const clubNames = [...new Set(c.career.map((s) => s.team))];
+
+  /**
+   * Wikipedia narrative, fetched when the sheet opens.
+   *
+   * Wikidata's structured claims are honest but thin — apps/goals qualifiers
+   * are curated for maybe half the stints, and nothing says what the player
+   * is doing NOW. The Wikipedia article ABOUT THIS EXACT ENTITY (found via
+   * the sitelinks Wikidata already returned, verified by wikibase_item) has
+   * the narrative: current club, career story, context. One request per open,
+   * cached for the session; a null result is cached too, because "Wikipedia
+   * has nothing verified on this person" is a fact, not a failure.
+   */
+  const [wiki, setWiki] = useState<WikipediaSummary | null | undefined>(undefined);
+  useEffect(() => {
+    let cancelled = false;
+    setWiki(undefined);
+    const cached = readWikiCache(c.qid, Date.now());
+    if (cached !== undefined) {
+      setWiki(cached);
+      return;
+    }
+    void (async () => {
+      const summary = await fetchWikipediaSummary(c.qid, c.sitelinks, { fetch: window.fetch.bind(window) });
+      if (cancelled) return;
+      writeWikiCache(c.qid, summary, Date.now());
+      setWiki(summary);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [c.qid, c.sitelinks]);
+
   return (
     <Sheet
       title={c.name}
@@ -539,6 +664,21 @@ function PlayerSheet({
             className="player-photo"
             data-testid="player-photo"
           />
+        )}
+
+        {/* ---- Wikipedia narrative, when a verified article exists ---- */}
+        {wiki === undefined ? null : wiki === null ? null : (
+          <div>
+            <div className="mod-label">Wikipedia</div>
+            <p className="small" style={{ margin: "0 0 4px" }} data-testid="wiki-extract">
+              {wiki.extract}
+            </p>
+            <p className="small dim" style={{ margin: 0 }} data-testid="wiki-source">
+              <a className="link" href={wiki.pageUrl} target="_blank" rel="noopener noreferrer">
+                Läs hela artikeln ({wiki.lang === "sv" ? "svenska" : "engelska"} Wikipedia)
+              </a>
+            </p>
+          </div>
         )}
 
         {/* ---- 1. identity ---- */}

@@ -134,6 +134,8 @@ export interface PlayerCandidate {
   nationalTeams: NationalTeamStint[];
   /** Preferred position (P413), resolved to a label when one resolved. */
   position?: string;
+  /** Wikipedia articles about this exact entity, keyed `svwiki`, `enwiki`… */
+  sitelinks: Record<string, { title: string }>;
   /** True only when BK Häcken is a verified P54 club claim. */
   hackenClub: boolean;
   hackenTeam: "men" | "women" | null;
@@ -204,7 +206,10 @@ export function buildEntitiesUrl(qids: readonly string[]): string {
   const u = new URL(API);
   u.searchParams.set("action", "wbgetentities");
   u.searchParams.set("ids", qids.join("|"));
-  u.searchParams.set("props", "labels|descriptions|claims|aliases");
+  // `sitelinks` rides along on the same response: it is the map of Wikipedia
+  // articles ABOUT this exact entity, which the narrative layer (wikipedia.ts)
+  // needs. Asking for it separately would double the request count.
+  u.searchParams.set("props", "labels|descriptions|claims|aliases|sitelinks");
   u.searchParams.set("languages", "sv|en|de|fr|es|it|pt|nl|no|da|fi|pl");
   u.searchParams.set("format", "json");
   u.searchParams.set("origin", "*");
@@ -284,6 +289,8 @@ interface Entity {
   descriptions?: Record<string, { language?: string; value?: string }>;
   aliases?: Record<string, { language?: string; value?: string }[]>;
   claims?: Record<string, EntityClaim[]>;
+  /** Wikipedia articles about this exact entity, keyed `svwiki`, `enwiki`… */
+  sitelinks?: Record<string, { title: string }>;
 }
 
 /* ------------------------------------------------------------------ *
@@ -562,6 +569,7 @@ export function toCandidate(
     career,
     nationalTeams,
     position,
+    sitelinks: entity.sitelinks ?? {},
     hackenClub: clubs.includes(HACKEN_MEN_QID),
     hackenTeam: clubs.includes(HACKEN_MEN_QID) ? "men" : clubs.includes(HACKEN_WOMEN_QID) ? "women" : null,
     gender,

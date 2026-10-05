@@ -1,4 +1,5 @@
 import type { AppData, ApiMetrics } from "./shared/types";
+import type { PlayerCandidate } from "./players/wikidata";
 
 export type AppDataState =
   | { status: "loading" }
@@ -73,6 +74,16 @@ export type StarredPlayer = {
   hackenTeam?: "men" | "women" | null;
   /** ISO timestamp of when the user starred them, newest first. */
   starredAt: number;
+  /**
+   * The FULL card as it was when last seen, so a starred player opens with
+   * everything — career, photo, position — instead of the name-and-dates
+   * stub the first version stored. The first version made starring useless:
+   * the sheet opened empty and the user had to search again to see anything.
+   * Optional because older stored entries predate it.
+   */
+  snapshot?: PlayerCandidate;
+  /** When the snapshot was last refreshed from the live source. */
+  snapshotAt?: number;
 };
 
 /** Reads the stored list, tolerating both the old id-only shape and the new one. */
@@ -113,6 +124,21 @@ export function toggleFavorite(player: Omit<StarredPlayer, "starredAt">): Starre
   const next = cur.some((p) => p.qid === player.qid)
     ? cur.filter((p) => p.qid !== player.qid)
     : [{ ...player, starredAt: Date.now() }, ...cur];
+  saveFavorites(next);
+  return next.sort((a, b) => b.starredAt - a.starredAt);
+}
+
+/**
+ * Store or refresh a starred player's full card.
+ *
+ * Called when a player is opened: the card the user is LOOKING at is the
+ * card that gets saved, so the starred list is never staler than the last
+ * time the user actually saw the player. Old data is kept when the refresh
+ * fails — a failed lookup must never blank a card the user has already seen.
+ */
+export function updateFavoriteSnapshot(qid: string, snapshot: PlayerCandidate, now = Date.now()): StarredPlayer[] {
+  const cur = loadFavorites();
+  const next = cur.map((p) => (p.qid === qid ? { ...p, snapshot, snapshotAt: now } : p));
   saveFavorites(next);
   return next.sort((a, b) => b.starredAt - a.starredAt);
 }

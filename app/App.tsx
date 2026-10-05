@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes, useLocation, useNavigate, Link } from "react
 import { Settings as SettingsIcon } from "lucide-react";
 import { ApiMetricsPanel, Info } from "./shared/ApiMetricsPanel";
 import { sourcePurpose } from "./shared/sourcePurpose";
+import { KitToggle } from "./shared/KitToggle";
 import Brief from "./pages/Brief";
 import News from "./pages/News";
 import Matches from "./pages/Matches";
@@ -152,6 +153,9 @@ function AppShell({ state }: { state: AppDataState }) {
             {BUILD_ID}
           </span>
         </span>
+        {/* The kit toggle sits LEFT of the cog wheel, as requested. Both are
+            32px icon buttons, so the pair reads as one control group. */}
+        <KitToggle />
         <button
           type="button"
           className="icon-btn"
