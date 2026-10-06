@@ -217,6 +217,38 @@ export function buildEntitiesUrl(qids: readonly string[]): string {
 }
 
 /**
+ * Build a cirrus full-text search URL, filtered to footballers.
+ *
+ * WHY THIS EXISTS (all measured 2026-10-06):
+ * `wbsearchentities` is a PREFIX index ranked by popularity. For a common
+ * prefix the player is crowded out: "jere" returns Jerevan, Jeremy Irons and
+ * 48 others — Jeremejeff and his surname entity are BOTH absent from the top
+ * 50, so no fallback on those results can help. The player only appears from
+ * 6 characters ("jereme").
+ *
+ * The cirrus index with a wildcard and a footballer statement filter reaches
+ * deeper: "jere* haswbstatement:P106=Q937857" DOES contain him (position 86
+ * of 335), and "bjar* …" finds Bjärsmyr at position 16 — both from 4
+ * characters. It runs ONLY when the primary path found no people, so the
+ * common case still costs two requests.
+ *
+ * MEASURED LIMITATION, documented rather than hidden: a missing-letter typo
+ * ("jeremejev" for Jeremejeff) matches OTHER REAL PEOPLE (the Eremeevs) and
+ * is not recoverable by any Wikidata endpoint. Diacritic-stripped names
+ * ("tofting" for Tøfting) ARE handled by the primary path.
+ */
+export function buildCirrusSearchUrl(query: string, limit = 50): string {
+  const u = new URL(API);
+  u.searchParams.set("action", "query");
+  u.searchParams.set("list", "search");
+  u.searchParams.set("srsearch", `${query}* haswbstatement:${OCCUPATION}=${FOOTBALLER_QID}`);
+  u.searchParams.set("srlimit", String(limit));
+  u.searchParams.set("format", "json");
+  u.searchParams.set("origin", "*");
+  return u.toString();
+}
+
+/**
  * Build a `list=backlinks` URL.
  *
  * Used only by the surname fallback: given the surname entity, this returns
@@ -706,7 +738,42 @@ export async function searchPlayersOnline(
   let chosen = ranked.ordered.slice(0, MAX_CANDIDATES);
   let discarded = people.length - chosen.length;
 
-  // ---- 3. Surname fallback --------------------------------------------
+  if (chosen.length === 0) {
+    // ---- 4. Cirrus fallback ---------------------------------------------
+    //
+    // The prefix index crowded every person out (measured: "jere" returns 50
+    // hits, none of them Jeremejeff, and his surname entity is not there
+    // either — so the surname fallback below cannot fire). The cirrus index
+    // with a wildcard and a footballer filter reaches deeper: "jere*" finds
+    // him at position 86, "bjar*" finds Bjärsmyr at position 16.
+    //
+    // One extra request, only on this path. The top hits are hydrated with
+    // the SAME wbgetentities call shape, so the rest of the pipeline is
+    // unchanged.
+    const cirrusQids = await cirrusFootballerQids(query, deps);
+    if (cirrusQids.length > 0) {
+      let hydrated: Entity[] = [];
+      try {
+        const res = await deps.fetch(buildEntitiesUrl(cirrusQids), { headers: requestHeaders(), mode: "cors" });
+        if (res.ok) {
+          const json = (await res.json()) as { entities?: Record<string, Entity> };
+          hydrated = cirrusQids.map((id) => json.entities?.[id]).filter((e): e is Entity => !!e);
+        }
+      } catch {
+        // Fall through to the surname fallback; a failed bonus lookup must
+        // never break the search.
+      }
+      const cirrusPeople = hydrated.filter(isPerson).filter(isFootballer).filter((e) => !isNameEntity(e));
+      if (cirrusPeople.length > 0) {
+        chosen = cirrusPeople.slice(0, MAX_CANDIDATES);
+        discarded = 0;
+        index = await resolveLabels(collectLabelQids(chosen), deps, index);
+        labels = index.labels;
+      }
+    }
+  }
+
+  // ---- 5. Surname fallback --------------------------------------------
   //
   // MEASURED 2026-09-26: searching "Jeremejeff" returns exactly ONE index
   // hit — the surname entity Q47466482 — and no people. The player exists
@@ -740,6 +807,27 @@ export async function searchPlayersOnline(
 
   const candidates = chosen.map((e) => toCandidate(e, { query, labels, classes: index.classes }));
   return { status: "results", query, candidates, discarded };
+}
+
+/**
+ * Run the cirrus fallback and return the footballer Q-IDs it found, in
+ * cirrus rank order.
+ *
+ * Every failure path returns an empty list: this is a bonus lookup, and a
+ * failure must degrade to "no extra candidates", never to a broken search.
+ */
+async function cirrusFootballerQids(query: string, deps: SearchDeps): Promise<string[]> {
+  try {
+    const res = await deps.fetch(buildCirrusSearchUrl(query), { headers: requestHeaders(), mode: "cors" });
+    if (res.status === 429) return [];
+    if (!res.ok) return [];
+    const json = (await res.json()) as { query?: { search?: Array<{ title?: string }> } };
+    return (json.query?.search ?? [])
+      .map((r) => r.title)
+      .filter((t): t is string => typeof t === "string" && t.startsWith("Q"));
+  } catch {
+    return [];
+  }
 }
 
 /**

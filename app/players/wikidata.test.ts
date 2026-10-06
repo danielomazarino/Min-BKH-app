@@ -659,11 +659,16 @@ describe("searchPlayersOnline — the six honest states", () => {
     expect(state.candidates.map((c) => c.qid)).toEqual(["Q352241"]);
   });
 
-  it("sends exactly two requests for a player with no resolvable labels", async () => {
-    // A bare entity: one index call, one hydration call, and nothing to
-    // translate. This is the floor, and it is what pins "no request per
-    // keystroke" — the count cannot grow with the length of the query.
-    const bare = { id: "Q16633101", labels: { sv: { value: "Alexander Jeremejeff" } }, claims: {} };
+  it("sends exactly two requests when the primary path finds a label-free person", async () => {
+    // One index call, one hydration call, and nothing to translate. This is
+    // the floor, and it is what pins "no request per keystroke" — the count
+    // cannot grow with the length of the query. The cirrus fallback does not
+    // fire because the primary path found a person.
+    const bare = {
+      id: "Q16633101",
+      labels: { sv: { value: "Alexander Jeremejeff" } },
+      claims: { P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }] },
+    };
     const fetchMock = stubFetch((url) =>
       url.includes("wbsearchentities")
         ? indexResponse([{ id: "Q16633101", label: "Alexander Jeremejeff" }])
@@ -671,6 +676,61 @@ describe("searchPlayersOnline — the six honest states", () => {
     );
     await searchPlayersOnline("Jeremejeff", { fetch: fetchMock });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("adds exactly ONE fallback request when the primary path found no people", async () => {
+    // The crowded-out case costs one extra request, not a per-candidate
+    // storm: cirrus search, then the SAME single hydration call.
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("list=search")) return jsonResponse({ query: { search: [{ title: "Q16633101" }] } });
+      if (url.includes("wbsearchentities")) {
+        return indexResponse([{ id: "Q12303", label: "Jerez de la Frontera" }]);
+      }
+      return entitiesResponse({ Q16633101: JEREMEJEFF });
+    });
+    await searchPlayersOnline("jere", { fetch: fetchMock });
+    const urls = fetchMock.mock.calls.map((c) => String(c[0]));
+    expect(urls.filter((u) => u.includes("list=search"))).toHaveLength(1);
+  });
+
+  it("runs the cirrus fallback ONLY when the primary path found no people", async () => {
+    // The measured case: "jere" crowds Jeremejeff out of the prefix index
+    // entirely (50 hits, none of them him, and his surname entity is absent
+    // too — so the surname fallback cannot fire). The cirrus index with a
+    // wildcard and a footballer filter DOES contain him (position 86 of 335).
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("list=search")) {
+        // The cirrus response: he is there.
+        return jsonResponse({ query: { search: [{ title: "Q16633101" }] } });
+      }
+      if (url.includes("wbsearchentities")) {
+        // The primary path: crowded out — no people, only a place and a book.
+        return indexResponse([
+          { id: "Q12303", label: "Jerez de la Frontera" },
+          { id: "Q131590", label: "Jeremias bok" },
+        ]);
+      }
+      return entitiesResponse({ Q16633101: JEREMEJEFF });
+    });
+    const state = (await searchPlayersOnline("jere", { fetch: fetchMock })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    expect(state.status).toBe("results");
+    expect(state.candidates.map((c) => c.qid)).toContain("Q16633101");
+  });
+
+  it("does NOT spend the cirrus request when the primary path found people", async () => {
+    // The fallback is a bonus for the crowded-out case, never a per-search
+    // tax. A normal search must still cost exactly its two requests.
+    const fetchMock = stubFetch((url) =>
+      url.includes("wbsearchentities")
+        ? indexResponse([{ id: "Q16633101", label: "Alexander Jeremejeff" }])
+        : entitiesResponse({ Q16633101: JEREMEJEFF }),
+    );
+    await searchPlayersOnline("Jeremejeff", { fetch: fetchMock });
+    const urls = fetchMock.mock.calls.map((c) => String(c[0]));
+    expect(urls.some((u) => u.includes("list=search"))).toBe(false);
   });
 
   it("adds exactly ONE extra call to resolve country and club labels, not one per player", async () => {
