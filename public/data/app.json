@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-05T03:53:41.934Z",
+    "generatedAt": "2026-10-06T03:48:01.183Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -12,6 +12,48 @@
       "rss:Göteborgs-Posten": "ok",
       "sportomedia": "ok",
       "gemini": "failed"
+    },
+    "sourceCounts": {
+      "Göteborgs-Posten": {
+        "fetched": 43,
+        "kept": 0,
+        "dropped": 43
+      },
+      "Sportbladet": {
+        "fetched": 39,
+        "kept": 0,
+        "dropped": 39
+      },
+      "BK Häcken": {
+        "fetched": 20,
+        "kept": 3,
+        "dropped": 17
+      },
+      "Expressen": {
+        "fetched": 20,
+        "kept": 0,
+        "dropped": 20
+      },
+      "Fotbolltransfers": {
+        "fetched": 20,
+        "kept": 3,
+        "dropped": 17
+      },
+      "SVT Sport": {
+        "fetched": 20,
+        "kept": 0,
+        "dropped": 20
+      },
+      "Allsvenskan": {
+        "fetched": 10,
+        "kept": 0,
+        "dropped": 10
+      },
+      "Bollsvenskan": {
+        "fetched": 1,
+        "kept": 0,
+        "dropped": 1
+      }
     }
   },
   "footballSource": {
@@ -19,7 +61,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-05T03:53:04.430Z",
+    "retrievedAt": "2026-10-06T03:47:29.666Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
