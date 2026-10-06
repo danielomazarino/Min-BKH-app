@@ -713,9 +713,8 @@ test.describe("Starred players (Section C)", () => {
   test("with nothing starred there is an understandable empty state", async ({ page }) => {
     await expect(page.getByTestId("starred")).toHaveCount(0);
     await expect(page.getByTestId("no-stars-hint")).toBeVisible();
-    // It must say the Häcken link is not required, or the page contradicts
-    // its own architecture.
-    await expect(page.getByTestId("no-stars-hint")).toContainText("behöver inte ha spelat för Häcken");
+    // The hint must invite both actions: search online, and star the results.
+    await expect(page.getByTestId("no-stars-hint")).toContainText("stjärnmärk dina BK Häcken-val");
   });
 });
 

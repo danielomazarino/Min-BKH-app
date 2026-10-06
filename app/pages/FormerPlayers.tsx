@@ -419,9 +419,7 @@ export default function FormerPlayers() {
 
       {state.status === "idle" && favorites.length === 0 && recent.length === 0 && (
         <p className="empty" style={{ paddingTop: 20 }} data-testid="no-stars-hint">
-          <strong>Hittar du ingen du känner igen?</strong>
-          Sök på förnamn, efternamn eller ett smeknamn. Appen söker mot Wikidata, som har spelare från hela
-          världen — den behöver inte ha spelat för Häcken för att vara rätt person.
+          Sök spelarinformation online och stjärnmärk dina BK Häcken-val
         </p>
       )}
 
@@ -444,9 +442,7 @@ export default function FormerPlayers() {
           )}
 
           <p className="empty" style={{ paddingTop: 20 }} data-testid="idle-hint">
-            <strong>Vem minns du?</strong>
-            Skriv ett namn — förnamn, efternamn eller ett smeknamn. Sökningen går direkt mot Wikidata, som har
-            spelare från hela världen, inte bara från Häcken.
+            Sök spelarinformation online och stjärnmärk dina BK Häcken-val
           </p>
         </>
       )}
