@@ -1260,6 +1260,23 @@ device-reported UX defects fixed; transfers/contract remain open
    400ms after typing stops (Wikidata's index is prefix-based, so "jere"
    finds Jeremejeff), with the session cache absorbing repeats.
 
+**Search forgiveness, measured 2026-10-06.** The prefix index alone was not
+enough, so a cirrus full-text fallback (`query* haswbstatement:P106=Q937857`)
+fires whenever the primary path returns no footballers. What each strategy
+actually covers, all measured against the live API:
+
+- **Primary path** (`wbsearchentities`): full names, diacritic-stripped
+  ("tofting" → Tøfting, first hit), and multi-word partials ("Alexander Jere"
+  → direct hit).
+- **Cirrus fallback**: short single-token prefixes. "bjar" → Bjärsmyr
+  (position 16 of 50); "jere" → 8 real footballers (Doku, Frimpong, Recoba…)
+  where the primary path surfaced Jeremy Bentham, Corbyn and Irons.
+- **Measured limitation**: Jeremejeff himself sits at position 86 of 335 for
+  `jere*`, so he appears from "jereme" (6 chars, via the surname fallback)
+  but not from 4 chars. A missing-letter typo ("jeremejev") matches other
+  real people (the Eremeevs) and is unrecoverable from any Wikidata endpoint.
+  These are index limitations, not code gaps.
+
 **The identity trap worth remembering.** A Wikipedia title match is NOT an
 identity match: "Mats Hedén" on sv.wikipedia is a MUSICIAN (Q5795456); our
 footballer is Q103846058. Every summary is checked against `wikibase_item` and
