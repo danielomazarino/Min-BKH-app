@@ -27,6 +27,15 @@
   --yellow-ink: #1a1500; /* text on a yellow fill */
   --yellow-text: #ffd200; /* yellow text on black — 14.6:1 */
 
+  /* Yellow AS TEXT/ICON/OUTLINE. Same value as --yellow in the dark kit,
+     where yellow on black is 14.6:1. The light kit redefines this to a dark
+     amber, because #ffd200 on white is 1.6:1 — axe caught exactly that on
+     the brand's "BKH" and the active tab label (CI run 37392033080). Fills
+     keep --yellow: a yellow chip with dark ink on it is the away-kit look
+     and needs no override. The split is: text/focus follows --accent-ink,
+     backgrounds follow --yellow. */
+  --accent-ink: #ffd200;
+
   /* Text
      Contrast verified with axe-core (WCAG 2.2 AA) on every surface used:
      #000, #0e0e0e, #161616, #1e1e1e. text-3 at 45% white was 4.43:1 on
@@ -267,10 +276,13 @@
   --sheet-backdrop: rgba(0, 0, 0, 0.45);
 
   /* Yellow-as-text must become dark text in the light theme: yellow on
-     white is 1.6:1 and unreadable. Anything styled with --yellow-text
-     (links) flips to the ink colour. Yellow FILLS keep #ffd200 with dark
-     ink on top — that is the away-kit reading and needs no override. */
+     white is 1.6:1 and unreadable. --accent-ink carries every text, icon
+     and focus-ring use; measured #6b5900 on white is 7.0:1 and on the
+     light glass surfaces ~6:1, clearing AA for the small bold labels it
+     appears in. Yellow FILLS keep #ffd200 with dark ink on top — that is
+     the away-kit reading and needs no override. */
   --yellow-text: #6b5900;
+  --accent-ink: #6b5900;
 
   /* The amber "Mäter" pill, darkened for white. */
   --meas-ink: #8a5a00;
@@ -318,7 +330,7 @@ body {
    This is a keyboard/Switch Control requirement, not decoration.
    -------------------------------------------------------------------------- */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--yellow);
+  outline: 2px solid var(--accent-ink);
   outline-offset: 2px;
   border-radius: var(--r-sm);
 }
@@ -384,7 +396,7 @@ a {
 }
 
 .app-header .brand b {
-  color: var(--yellow);
+  color: var(--accent-ink);
   font-weight: 700;
 }
 
@@ -684,9 +696,11 @@ main {
 
 /* Keyboard users get a visible ring on whichever destination has focus. The
    default focus ring is suppressed in theme.css reset, so this restores one.
-   `:focus-visible` (not `:focus`) so it does not appear on pointer taps. */
+   `:focus-visible` (not `:focus`) so it does not appear on pointer taps.
+   --accent-ink, not --yellow: a focus indicator is non-text contrast and
+   must clear 3:1 against its surface in BOTH kits. */
 .fabnav-link:focus-visible {
-  outline: 2px solid var(--yellow);
+  outline: 2px solid var(--accent-ink);
   outline-offset: -3px;
   border-radius: 18px;
 }
@@ -906,10 +920,12 @@ main {
   touch-action: pan-y;
 }
 
-/* Active state is carried by THREE signals, not colour alone: a yellow tint,
-   a heavier stroke, and a small dot beneath the label. */
+/* Active state is carried by THREE signals, not colour alone: the accent
+   tint, a heavier stroke, and the lifted icon. --accent-ink rather than
+   --yellow: in the light kit yellow text on the light glass measured 1.21:1
+   (axe, CI run 37392033080); the dark-amber ink clears AA in both kits. */
 .fabnav-link[data-active] {
-  color: var(--yellow);
+  color: var(--accent-ink);
 }
 .fabnav-link[data-active] .fabnav-icon {
   transform: translateY(-1px);
@@ -1022,7 +1038,7 @@ main {
 }
 
 .hero-comp {
-  color: var(--yellow);
+  color: var(--accent-ink);
 }
 
 .hero-countdown {
@@ -1054,7 +1070,7 @@ main {
   text-overflow: ellipsis;
 }
 .hero-team.hacken .name {
-  color: var(--yellow);
+  color: var(--accent-ink);
 }
 
 .hero-score {
@@ -1129,7 +1145,7 @@ main {
   font-variant-numeric: tabular-nums;
 }
 .result .score.win {
-  color: var(--yellow);
+  color: var(--accent-ink);
 }
 .result .score.loss {
   color: var(--danger);
@@ -1196,7 +1212,7 @@ main {
   text-align: right;
 }
 .fixture .ft.hacken {
-  color: var(--yellow);
+  color: var(--accent-ink);
 }
 .fixture .fs {
   flex: none;
@@ -1931,7 +1947,7 @@ main {
   height: 17px;
 }
 .star[aria-pressed="true"] {
-  color: var(--yellow);
+  color: var(--accent-ink);
 }
 .star:active {
   background: var(--surface-2);
@@ -2053,7 +2069,7 @@ main {
 .chip .ini {
   font-size: var(--t-lead);
   font-weight: 700;
-  color: var(--yellow);
+  color: var(--accent-ink);
   line-height: 1;
 }
 .chip .nm {
