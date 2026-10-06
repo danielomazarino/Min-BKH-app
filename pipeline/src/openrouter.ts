@@ -20,6 +20,7 @@
  */
 
 import { trackedFetch, noteCost, noteLlmCall } from "./apiMetrics";
+import { resolveFreeModel } from "./openrouterModel";
 import {
   parseGeminiResponse,
   truncateSummary,
@@ -31,7 +32,12 @@ import {
 
 const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 
-/** Default provider model. `:free` = no credit cost, shared upstream pool. */
+/**
+ * Legacy default, kept only as a documented constant for tests and reference.
+ * It was DELISTED from OpenRouter's catalog by 2026-10-06 (every call 404'd
+ * while the key was healthy). Do NOT use it as a fallback — the live model is
+ * resolved dynamically via resolveFreeModel() from the current catalog.
+ */
 export const DEFAULT_OPENROUTER_MODEL = "qwen/qwen3.8-27b:free";
 
 const TIMEOUT_MS = 60_000;
@@ -60,7 +66,7 @@ class OpenRouterHttpError extends Error {
  * comparable: identical articles, identical instruction, identical output
  * contract, so any difference in the result is the provider's, not the harness's.
  */
-export function buildOpenRouterRequestPayload(articles: GeminiArticleInput[]) {
+export function buildOpenRouterRequestPayload(articles: GeminiArticleInput[], model?: string) {
   const articleBlocks = articles.map((a) =>
     [
       `<article id="${a.id}">`,
@@ -77,7 +83,7 @@ export function buildOpenRouterRequestPayload(articles: GeminiArticleInput[]) {
   );
 
   return {
-    model: process.env.OPENROUTER_MODEL ?? DEFAULT_OPENROUTER_MODEL,
+    model: model ?? process.env.OPENROUTER_MODEL ?? DEFAULT_OPENROUTER_MODEL,
     messages: [
       { role: "system", content: SYSTEM_INSTRUCTION },
       {
@@ -147,7 +153,6 @@ export interface OpenRouterOutcome {
 export async function synthesizeWithOpenRouter(
   articles: GeminiArticleInput[],
 ): Promise<OpenRouterOutcome> {
-  const model = process.env.OPENROUTER_MODEL ?? DEFAULT_OPENROUTER_MODEL;
   const key = process.env.OPENROUTER_API_KEY;
 
   if (!key) {
@@ -160,7 +165,25 @@ export async function synthesizeWithOpenRouter(
     return { ok: false, error: "call cap is zero", calls: 0, answer: null, unknownIds: [], rejectedCount: 0 };
   }
 
-  const payload = buildOpenRouterRequestPayload(articles);
+  // Resolve the model BEFORE the request. The catalog lookup is a public
+  // metadata call: no key, no quota, no generation request. A pinned model
+  // that has been delisted fails HERE, loudly, instead of as a silent 404
+  // that still counted against the daily allowance.
+  let model: string;
+  try {
+    model = (await resolveFreeModel(process.env.OPENROUTER_MODEL)).model;
+  } catch (e) {
+    return {
+      ok: false,
+      error: `model resolution failed: ${e instanceof Error ? e.message : String(e)}`,
+      calls: 0,
+      answer: null,
+      unknownIds: [],
+      rejectedCount: 0,
+    };
+  }
+
+  const payload = buildOpenRouterRequestPayload(articles, model);
   const started = Date.now();
 
   try {

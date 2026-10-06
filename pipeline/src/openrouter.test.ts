@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { synthesizeWithOpenRouter, buildOpenRouterRequestPayload } from "./openrouter";
+import { resolveFreeModel, PREFERRED_MODELS } from "./openrouterModel";
 import { beginRun, buildMetrics } from "./apiMetrics";
 import type { GeminiArticleInput } from "./gemini";
 
@@ -23,6 +24,27 @@ function jsonResponse(body: unknown, status = 200) {
   } as unknown as Response;
 }
 
+/**
+ * The synthesis path now makes TWO kinds of fetch: a public catalog lookup
+ * (GET /models, before the request) and the chat completion itself. A flat
+ * mockResolvedValue would feed the catalog JSON to the chat call and vice
+ * versa, so mocks must route by URL.
+ */
+const CATALOG_BODY = {
+  data: [
+    { id: "google/gemma-4-31b-it:free" },
+    { id: "nvidia/nemotron-3-super-120b-a12b:free" },
+  ],
+};
+
+function mockFetch(chat: unknown, chatStatus = 200) {
+  return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const url = String(input instanceof Request ? input.url : input);
+    if (url.includes("/models")) return jsonResponse(CATALOG_BODY) as unknown as Response;
+    return jsonResponse(chat, chatStatus) as unknown as Response;
+  });
+}
+
 const VALID_BODY = {
   choices: [
     {
@@ -36,7 +58,7 @@ const VALID_BODY = {
       },
     },
   ],
-  model: "qwen/qwen3.8-27b:free",
+  model: "google/gemma-4-31b-it:free",
   usage: { total_cost: 0 },
 };
 
@@ -115,7 +137,7 @@ describe("openrouter measurement path", () => {
   });
 
   it("reports a successful measured answer", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(VALID_BODY));
+    mockFetch(VALID_BODY);
     const r = await synthesizeWithOpenRouter([ARTICLE]);
     expect(r.ok).toBe(true);
     expect(r.calls).toBe(1);
@@ -123,33 +145,60 @@ describe("openrouter measurement path", () => {
     expect(r.unknownIds).toEqual([]);
   });
 
-  it("makes EXACTLY ONE request even when the provider rate-limits us", async () => {
+  it("resolves the model from the catalog and sends THAT model", async () => {
+    const spy = mockFetch(VALID_BODY);
+    const r = await synthesizeWithOpenRouter([ARTICLE]);
+    expect(r.ok).toBe(true);
+    expect(r.model).toBe("google/gemma-4-31b-it:free");
+    const body = JSON.parse((spy.mock.calls.find((c) => !String(c[0]).includes("/models"))?.[1] as RequestInit | undefined)?.body as string) as { model: string };
+    expect(body.model).toBe("google/gemma-4-31b-it:free");
+  });
+
+  it("fails BEFORE the request when the pinned model is delisted", async () => {
+    // The 2026-10-06 failure mode: qwen/qwen3.8-27b:free was delisted and
+    // every call 404'd. Resolution must convert that into a loud pre-request
+    // failure that spends ZERO quota.
+    process.env.OPENROUTER_MODEL = "qwen/qwen3.8-27b:free";
+    const spy = mockFetch(VALID_BODY);
+    const r = await synthesizeWithOpenRouter([ARTICLE]);
+    expect(r.ok).toBe(false);
+    expect(r.calls).toBe(0);
+    expect(r.error).toContain("delisted");
+    // Only the catalog lookup happened — no chat request was sent.
+    expect(spy.mock.calls.filter((c) => !String(c[0]).includes("/models"))).toHaveLength(0);
+  });
+
+  it("refuses a pin that is not a :free variant", async () => {
+    process.env.OPENROUTER_MODEL = "openai/gpt-4o";
+    const spy = mockFetch(VALID_BODY);
+    const r = await synthesizeWithOpenRouter([ARTICLE]);
+    expect(r.ok).toBe(false);
+    expect(r.calls).toBe(0);
+    expect(r.error).toContain(":free");
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("makes EXACTLY ONE chat request even when the provider rate-limits us", async () => {
     // The whole safety argument for an unattended nightly. A shared free pool
     // 429s often; if this retried, every night would spend quota for nothing.
-    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      jsonResponse({ error: { message: "rate-limited", code: 429 } }, 429),
-    );
+    const spy = mockFetch({ error: { message: "rate-limited", code: 429 } }, 429);
     const r = await synthesizeWithOpenRouter([ARTICLE]);
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy.mock.calls.filter((c) => !String(c[0]).includes("/models"))).toHaveLength(1);
     expect(r.ok).toBe(false);
     expect(r.calls).toBe(1);
     expect(r.error).toContain("429");
   });
 
   it("never retries a 5xx either", async () => {
-    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      jsonResponse({ error: "boom" }, 503),
-    );
+    const spy = mockFetch({ error: "boom" }, 503);
     await synthesizeWithOpenRouter([ARTICLE]);
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy.mock.calls.filter((c) => !String(c[0]).includes("/models"))).toHaveLength(1);
   });
 
   it("rejects an answer that fails our own validation", async () => {
     // A 200 with unusable content is NOT a success. This is the B-004 lesson:
     // HTTP 200 is not correctness.
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      jsonResponse({ choices: [{ message: { content: "sorry, I cannot help" } }] }),
-    );
+    mockFetch({ choices: [{ message: { content: "sorry, I cannot help" } }] });
     const r = await synthesizeWithOpenRouter([ARTICLE]);
     expect(r.ok).toBe(false);
     expect(r.answer).toBeNull();
@@ -173,7 +222,7 @@ describe("openrouter measurement path", () => {
       ],
       usage: { total_cost: 0 },
     };
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(body));
+    mockFetch(body);
     const r = await synthesizeWithOpenRouter([ARTICLE]);
     expect(r.unknownIds).toEqual(["MADE-UP"]);
   });
@@ -181,7 +230,7 @@ describe("openrouter measurement path", () => {
   it("records cost 0 as REPORTED-FREE, not as unknown", async () => {
     // 0 and null must never be conflated: "free" and "we do not know" imply
     // opposite decisions about whether to keep running this.
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(VALID_BODY));
+    mockFetch(VALID_BODY);
     await synthesizeWithOpenRouter([ARTICLE]);
     const run = buildMetrics(null).latestRun;
     const row = run?.services.find((s) => s.service === "openrouter");
@@ -196,7 +245,7 @@ describe("openrouter measurement path", () => {
     // `costCredits === null` here would be asserting a shape the aggregator
     // deliberately does not produce.
     const body = { ...VALID_BODY, usage: {} };
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(body));
+    mockFetch(body);
     await synthesizeWithOpenRouter([ARTICLE]);
     const m = buildMetrics(null);
     const row = m.latestRun?.services.find((s) => s.service === "openrouter");
@@ -221,7 +270,7 @@ describe("openrouter measurement path", () => {
     // obviously a bookkeeping fault rather than a provider problem.
     //
     // The invariant is the point: one send, one record.
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(VALID_BODY));
+    mockFetch(VALID_BODY);
     await synthesizeWithOpenRouter([ARTICLE]);
     const calls = buildMetrics(null).latestCalls.filter((c) => c.service === "openrouter");
     expect(calls).toHaveLength(1);
@@ -231,9 +280,7 @@ describe("openrouter measurement path", () => {
   });
 
   it("records exactly one call even when the provider rate-limits us", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      jsonResponse({ error: { message: "rate-limited", code: 429 } }, 429),
-    );
+    mockFetch({ error: { message: "rate-limited", code: 429 } }, 429);
     await synthesizeWithOpenRouter([ARTICLE]);
     const calls = buildMetrics(null).latestCalls.filter((c) => c.service === "openrouter");
     expect(calls).toHaveLength(1);
@@ -241,7 +288,7 @@ describe("openrouter measurement path", () => {
   });
 
   it("charges exactly one metered request against the daily quota", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(VALID_BODY));
+    mockFetch(VALID_BODY);
     await synthesizeWithOpenRouter([ARTICLE]);
     const m = buildMetrics(null);
     expect(m.totals.meteredRequests).toBe(1);
@@ -250,7 +297,7 @@ describe("openrouter measurement path", () => {
   });
 
   it("keeps the key out of the recorded metrics", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(VALID_BODY));
+    mockFetch(VALID_BODY);
     await synthesizeWithOpenRouter([ARTICLE]);
     const m = buildMetrics(null);
     const serialised = JSON.stringify(m);

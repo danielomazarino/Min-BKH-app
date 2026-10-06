@@ -101,12 +101,29 @@ jobs:
           REQUESTED: ${{ inputs.probe }}
           INPUT_MODEL: ${{ inputs.model }}
         run: |
-          # Default model. Chosen from GET /api/v1/models on 2026-10-04: of 466
-          # listed models, 17 carry the :free suffix. This one has a 262k
-          # context window and supports JSON output, which the news-grouping
-          # prompt needs. Override freely — it must always end in :free.
-          DEFAULT_MODEL="qwen/qwen3.8-27b:free"
-          MODEL="${INPUT_MODEL:-$DEFAULT_MODEL}"
+          # Model resolved DYNAMICALLY from the live free catalog. The old
+          # pinned default (qwen/qwen3.8-27b:free) was delisted by 2026-10-06
+          # and every probe 404'd while the key was healthy. Resolution is a
+          # public metadata call: no key, no quota, no generation request.
+          # Preference order lives in pipeline/src/openrouterModel.ts.
+          MODEL="${INPUT_MODEL:-$(curl -s https://openrouter.ai/api/v1/models | python3 -c '
+import json, sys
+PREFERRED = [
+    "google/gemma-4-31b-it:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "inclusionai/ling-3.0-flash-sante:free",
+]
+ids = sorted(m["id"] for m in json.load(sys.stdin)["data"] if m["id"].endswith(":free"))
+if not ids:
+    sys.exit("no :free models in catalog")
+for p in PREFERRED:
+    if p in ids:
+        print(p)
+        break
+else:
+    print(ids[0])
+')"}
 
           if [ -n "$REQUESTED" ]; then
             PROBE="$REQUESTED"

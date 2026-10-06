@@ -20,6 +20,9 @@ jobs:
       - name: One request, then report
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_MODEL: qwen/qwen3.8-27b:free
+          # Model resolved at run time by openrouterModel.ts (the old pinned
+          # qwen/qwen3.8-27b:free was delisted 2026-10-06). Set OPENROUTER_MODEL
+          # here to force a specific :free model — a delisted pin now fails
+          # BEFORE the request instead of burning it on a 404.
           EVAL_DUMP_RAW: "1"
         run: npm run --silent openrouter:eval

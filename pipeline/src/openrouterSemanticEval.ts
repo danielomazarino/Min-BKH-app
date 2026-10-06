@@ -41,6 +41,7 @@ import { fetchArticleTexts } from "./articleText";
 import { buildNewsEvents } from "./newsEvents";
 import { MAX_SUMMARY_CHARS, type GeminiArticleInput, type GeminiResult } from "./gemini";
 import { buildEventsFromGemini } from "./gemini";
+import { resolveFreeModel } from "./openrouterModel";
 import type { NewsEvent, NewsItem } from "./types";
 
 /**
@@ -77,7 +78,14 @@ const EXPECTED_DROPPED = ["t2", "t4"];
 /** These must be REJECTED by the semantic layer, not by the prefilter. */
 const MUST_BE_REJECTED = ["t7", "t8"];
 
-const MODEL = process.env.OPENROUTER_MODEL ?? "qwen/qwen3.8-27b:free";
+/**
+ * Model is resolved AT RUN TIME from the live free catalog (see
+ * openrouterModel.ts). The old pinned default, qwen/qwen3.8-27b:free, was
+ * delisted by 2026-10-06 and every call 404'd. An explicit OPENROUTER_MODEL
+ * pin still wins — but a pin naming a delisted model now fails BEFORE the
+ * request instead of burning it on a 404.
+ */
+let MODEL = "";
 const BASE = process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
 const ENDPOINT = `${BASE}/chat/completions`;
 
@@ -198,10 +206,19 @@ async function main() {
     console.error("RESULT: no-key — OPENROUTER_API_KEY is not set.");
     process.exit(2);
   }
-  if (!MODEL.endsWith(":free")) {
-    console.error(`RESULT: refusing — model "${MODEL}" is not a :free variant.`);
-    console.error("This evaluation is budgeted at zero cost; it must not spend credits.");
-    process.exit(2);
+
+  // Resolve the model FIRST — the catalog lookup costs nothing (public
+  // metadata, no key, no quota) and a bad pin must fail before any spend.
+  try {
+    const resolved = await resolveFreeModel(process.env.OPENROUTER_MODEL);
+    MODEL = resolved.model;
+    console.log(`model resolved  : ${MODEL}`);
+    console.log(`  reason        : ${resolved.reason}`);
+    console.log(`  free catalog  : ${resolved.freeCatalog.length} models`);
+  } catch (e) {
+    console.error(`RESULT: model-resolution-failed — ${e instanceof Error ? e.message : String(e)}`);
+    console.error("Spend: 0 requests. Fix OPENROUTER_MODEL or update PREFERRED_MODELS.");
+    process.exit(3);
   }
 
   hr("1. INPUT — deterministic collection + prefilter");
