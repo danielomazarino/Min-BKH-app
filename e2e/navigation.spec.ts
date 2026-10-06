@@ -692,8 +692,16 @@ test.describe("Active state is the label, not a dot", () => {
       .first()
       .evaluate((el) => getComputedStyle(el).color);
     expect(color, "the active label must differ from the inactive ones").not.toBe(inactive);
-    // The yellow brand token, not merely "different".
-    expect(color).toBe("rgb(255, 210, 0)");
+    // The accent token, not merely "different". The literal used to be
+    // rgb(255,210,0) — the dark kit's yellow — but the kit toggle means the
+    // app now follows prefers-color-scheme, and these tests run under
+    // Playwright's default LIGHT scheme, so the away kit's dark amber
+    // (rgb(107,89,0)) is equally correct. Assert the two values the token
+    // can take, which is the actual contract.
+    expect(
+      ["rgb(255, 210, 0)", "rgb(107, 89, 0)"],
+      `the active label must use the accent token, got ${color}`,
+    ).toContain(color);
   });
 
   test("the label is not obscured by anything painted over it", async ({ page }) => {
