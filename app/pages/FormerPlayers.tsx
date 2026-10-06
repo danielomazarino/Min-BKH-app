@@ -786,11 +786,17 @@ function PlayerSheet({
 
   const heightCm = c.heightCm ?? infobox?.heightCm;
   const position = c.position ?? infobox?.position;
-  const careerIsInfobox = (infobox?.career.length ?? 0) > c.career.length;
+  // Career: the infobox wins when its list is at least as full. Ties go to
+  // the infobox deliberately — Wikidata's P54 end-year qualifiers are
+  // notoriously stale (Martin Ericsson Q602051: Wikidata says Häcken
+  // 2012–2012, the fan-maintained infobox says 2012–2016 with 109/24, and
+  // both lists have 7 rows). A tie broken toward Wikidata resurrected the
+  // exact "career cut off" defect this layer exists to fix.
+  const careerIsInfobox = (infobox?.career.length ?? 0) >= c.career.length && (infobox?.career.length ?? 0) > 0;
   const career: DisplayStint[] = careerIsInfobox
     ? (infobox?.career ?? []).map(fromInfobox)
     : c.career.map(fromWikidata);
-  const nationalIsInfobox = (infobox?.national.length ?? 0) > c.nationalTeams.length;
+  const nationalIsInfobox = (infobox?.national.length ?? 0) >= c.nationalTeams.length && (infobox?.national.length ?? 0) > 0;
   const nationalTeams: DisplayStint[] = nationalIsInfobox
     ? (infobox?.national ?? []).map(fromInfobox)
     : c.nationalTeams.map(fromWikidata);
