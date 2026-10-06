@@ -738,18 +738,23 @@ export async function searchPlayersOnline(
   let chosen = ranked.ordered.slice(0, MAX_CANDIDATES);
   let discarded = people.length - chosen.length;
 
-  if (chosen.length === 0) {
+  if (ranked.footballers.length === 0) {
     // ---- 4. Cirrus fallback ---------------------------------------------
     //
-    // The prefix index crowded every person out (measured: "jere" returns 50
-    // hits, none of them Jeremejeff, and his surname entity is not there
-    // either — so the surname fallback below cannot fire). The cirrus index
-    // with a wildcard and a footballer filter reaches deeper: "jere*" finds
-    // him at position 86, "bjar*" finds Bjärsmyr at position 16.
+    // Fires when the prefix index produced NO footballers — either it crowded
+    // every person out (measured: "jere" returns 50 hits, none of them
+    // Jeremejeff, and his surname entity is not there either — so the surname
+    // fallback below cannot fire) or it found people who are not players
+    // (measured live: "jere" surfaces Jeremy Bentham, Corbyn and Irons —
+    // people, but useless to a supporter looking for a striker). The cirrus
+    // index with a wildcard and a footballer filter reaches deeper: "jere*"
+    // finds him at position 86, "bjar*" finds Bjärsmyr at position 16.
     //
     // One extra request, only on this path. The top hits are hydrated with
     // the SAME wbgetentities call shape, so the rest of the pipeline is
-    // unchanged.
+    // unchanged. When cirrus finds footballers they lead the list and the
+    // primary people stay behind them; when it finds nothing the primary
+    // results stand (better than an empty page).
     const cirrusQids = await cirrusFootballerQids(query, deps);
     if (cirrusQids.length > 0) {
       let hydrated: Entity[] = [];
@@ -760,13 +765,15 @@ export async function searchPlayersOnline(
           hydrated = cirrusQids.map((id) => json.entities?.[id]).filter((e): e is Entity => !!e);
         }
       } catch {
-        // Fall through to the surname fallback; a failed bonus lookup must
-        // never break the search.
+        // Keep the primary results; a failed bonus lookup must never break
+        // the search.
       }
       const cirrusPeople = hydrated.filter(isPerson).filter(isFootballer).filter((e) => !isNameEntity(e));
       if (cirrusPeople.length > 0) {
-        chosen = cirrusPeople.slice(0, MAX_CANDIDATES);
-        discarded = 0;
+        const seen = new Set(cirrusPeople.map((e) => e.id));
+        const merged = [...cirrusPeople, ...ranked.ordered.filter((e) => !seen.has(e.id))];
+        chosen = merged.slice(0, MAX_CANDIDATES);
+        discarded = Math.max(0, people.length + cirrusPeople.length - chosen.length);
         index = await resolveLabels(collectLabelQids(chosen), deps, index);
         labels = index.labels;
       }

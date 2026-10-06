@@ -659,23 +659,25 @@ describe("searchPlayersOnline — the six honest states", () => {
     expect(state.candidates.map((c) => c.qid)).toEqual(["Q352241"]);
   });
 
-  it("sends exactly two requests when the primary path finds a label-free person", async () => {
-    // One index call, one hydration call, and nothing to translate. This is
-    // the floor, and it is what pins "no request per keystroke" — the count
-    // cannot grow with the length of the query. The cirrus fallback does not
-    // fire because the primary path found a person.
+  it("sends exactly three requests when the primary path finds a person with no footballer claim", async () => {
+    // One index call, one hydration call, one label call — plus the cirrus
+    // search, because the bare entity carries no P106 occupation, so the
+    // "no footballers" trigger fires. The count still cannot grow with the
+    // length of the query: no request per keystroke.
     const bare = {
       id: "Q16633101",
       labels: { sv: { value: "Alexander Jeremejeff" } },
       claims: { P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }] },
     };
-    const fetchMock = stubFetch((url) =>
-      url.includes("wbsearchentities")
-        ? indexResponse([{ id: "Q16633101", label: "Alexander Jeremejeff" }])
-        : entitiesResponse({ Q16633101: bare }),
-    );
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("list=search")) return jsonResponse({ query: { search: [] } });
+      if (url.includes("wbsearchentities")) {
+        return indexResponse([{ id: "Q16633101", label: "Alexander Jeremejeff" }]);
+      }
+      return entitiesResponse({ Q16633101: bare });
+    });
     await searchPlayersOnline("Jeremejeff", { fetch: fetchMock });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it("adds exactly ONE fallback request when the primary path found no people", async () => {
@@ -693,7 +695,7 @@ describe("searchPlayersOnline — the six honest states", () => {
     expect(urls.filter((u) => u.includes("list=search"))).toHaveLength(1);
   });
 
-  it("runs the cirrus fallback ONLY when the primary path found no people", async () => {
+  it("runs the cirrus fallback when the primary path found NO footballers", async () => {
     // The measured case: "jere" crowds Jeremejeff out of the prefix index
     // entirely (50 hits, none of them him, and his surname entity is absent
     // too — so the surname fallback cannot fire). The cirrus index with a
@@ -720,7 +722,35 @@ describe("searchPlayersOnline — the six honest states", () => {
     expect(state.candidates.map((c) => c.qid)).toContain("Q16633101");
   });
 
-  it("does NOT spend the cirrus request when the primary path found people", async () => {
+  it("runs the cirrus fallback when the primary path found people but NO footballers, and puts the footballer first", async () => {
+    // Measured live 2026-10-06: "jere" surfaces Jeremy Bentham, Corbyn and
+    // Irons — people, but useless to a supporter looking for a striker. The
+    // fallback must fire on "no footballers", not on "no people", and the
+    // cirrus footballer must lead the merged list.
+    const celebrity = {
+      id: "Q42",
+      labels: { en: { value: "Jeremy Bentham" } },
+      claims: { P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }] },
+    };
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("list=search")) {
+        return jsonResponse({ query: { search: [{ title: "Q16633101" }] } });
+      }
+      if (url.includes("wbsearchentities")) {
+        return indexResponse([{ id: "Q42", label: "Jeremy Bentham" }]);
+      }
+      return entitiesResponse({ Q42: celebrity, Q16633101: JEREMEJEFF });
+    });
+    const state = (await searchPlayersOnline("jere", { fetch: fetchMock })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    expect(state.status).toBe("results");
+    expect(state.candidates[0]?.qid).toBe("Q16633101");
+    expect(state.candidates.map((c) => c.qid)).toContain("Q42");
+  });
+
+  it("does NOT spend the cirrus request when the primary path found a footballer", async () => {
     // The fallback is a bonus for the crowded-out case, never a per-search
     // tax. A normal search must still cost exactly its two requests.
     const fetchMock = stubFetch((url) =>
