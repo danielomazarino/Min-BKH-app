@@ -716,6 +716,21 @@ test.describe("Starred players (Section C)", () => {
     // The hint must invite both actions: search online, and star the results.
     await expect(page.getByTestId("no-stars-hint")).toContainText("stjärnmärk dina BK Häcken-val");
   });
+
+  test("an open player card has a manual refresh control", async ({ page }) => {
+    await search(page, "Mats Hedén");
+    await page.getByTestId("former-player").first().getByTestId("fav-toggle").click();
+    await page.getByTestId("former-player").first().locator("button.open").click();
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    // The refresh button sits beside the star in the sheet header.
+    const refresh = page.getByTestId("sheet").getByTestId("refresh-player");
+    await expect(refresh).toBeVisible();
+    await expect(refresh).toHaveAttribute("aria-label", /Uppdatera uppgifter/);
+    // Clicking it must not blank the card and must return the button to idle.
+    await refresh.click();
+    await expect(page.getByTestId("sheet")).toBeVisible();
+    await expect(refresh).toBeEnabled({ timeout: 15000 });
+  });
 });
 
 /**

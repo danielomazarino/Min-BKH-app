@@ -41,6 +41,7 @@ import {
   searchPlayersOnline,
   readCache,
   writeCache,
+  clearCache,
   commonsImageUrl,
   type PlayerCandidate,
   type SearchState,
@@ -49,6 +50,7 @@ import {
   fetchWikipediaSummary,
   readWikiCache,
   writeWikiCache,
+  clearWikiCache,
   type WikipediaSummary,
 } from "../players/wikipedia";
 import { fmtDay } from "../shared/format";
@@ -271,6 +273,42 @@ export default function FormerPlayers() {
     // so there is no directive to silence — the comment is the record.)
   }, [openQid]);
 
+  /**
+   * MANUAL REFRESH. The auto-refresh above fires once — when the card comes
+   * from a snapshot — and after that the user had no way to pull fresh data
+   * at all: the search cache, the wiki cache and the stored snapshot all
+   * served what was already known (user, 2026-10-06: "no refresh possibility
+   * on favorite marked players"). This clears BOTH session caches for a
+   * forced re-lookup, updates the stored snapshot when it succeeds, and
+   * swaps the open card in place. Old data is kept on failure, exactly like
+   * the auto-refresh.
+   */
+  const [refreshingQid, setRefreshingQid] = useState<string | null>(null);
+  const refreshPlayer = async (qid: string) => {
+    if (refreshingQid) return; // a second click must not double-fire
+    setRefreshingQid(qid);
+    try {
+      clearCache();
+      clearWikiCache();
+      const result = await searchPlayersOnline(qid, { fetch: window.fetch.bind(window) });
+      if (result.status === "results") {
+        const fresh = result.candidates.find((c) => c.qid === qid);
+        if (fresh) {
+          setFavorites(updateFavoriteSnapshot(fresh.qid, fresh));
+          setState((prev) =>
+            prev.status === "results"
+              ? { ...prev, candidates: prev.candidates.some((c) => c.qid === qid) ? prev.candidates.map((c) => (c.qid === qid ? fresh : c)) : [fresh, ...prev.candidates] }
+              : { status: "results", query: fresh.name, candidates: [fresh], discarded: 0 },
+          );
+        }
+      }
+      // A failed or not-found refresh keeps everything as it was — the card
+      // the user is looking at stays, and the spinner just stops.
+    } finally {
+      setRefreshingQid(null);
+    }
+  };
+
   return (
     <div className="layer" data-testid="former-page">
       <div className="searchbar">
@@ -460,6 +498,8 @@ export default function FormerPlayers() {
           fav={favIds.includes(open.qid)}
           onFav={() => onToggleFav(open)}
           onClose={closePlayer}
+          onRefresh={refreshPlayer}
+          refreshing={refreshingQid === open.qid}
         />
       )}
     </div>
@@ -573,11 +613,15 @@ function PlayerSheet({
   fav,
   onFav,
   onClose,
+  onRefresh,
+  refreshing,
 }: {
   c: PlayerCandidate;
   fav: boolean;
   onFav: () => void;
   onClose: () => void;
+  onRefresh: (qid: string) => Promise<void>;
+  refreshing: boolean;
 }) {
   /**
    * The club list, derived from the career timeline rather than the raw
@@ -625,16 +669,28 @@ function PlayerSheet({
       subtitle={c.description ?? undefined}
       onClose={onClose}
       headExtra={
-        <button
-          type="button"
-          className="star"
-          onClick={onFav}
-          aria-label={fav ? `Sluta följa ${c.name}` : `Följ ${c.name}`}
-          aria-pressed={fav}
-          data-testid="fav-toggle"
-        >
-          <Star fill={fav ? "currentColor" : "none"} aria-hidden />
-        </button>
+        <>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => void onRefresh(c.qid)}
+            disabled={refreshing}
+            aria-label={refreshing ? `Uppdaterar ${c.name}` : `Uppdatera uppgifter om ${c.name}`}
+            data-testid="refresh-player"
+          >
+            <RefreshCw aria-hidden className={refreshing ? "spin" : undefined} />
+          </button>
+          <button
+            type="button"
+            className="star"
+            onClick={onFav}
+            aria-label={fav ? `Sluta följa ${c.name}` : `Följ ${c.name}`}
+            aria-pressed={fav}
+            data-testid="fav-toggle"
+          >
+            <Star fill={fav ? "currentColor" : "none"} aria-hidden />
+          </button>
+        </>
       }
     >
       <div className="stack-4">

@@ -530,6 +530,23 @@ a {
 .icon-btn:active {
   background: var(--surface-2);
 }
+.icon-btn:disabled {
+  /* A disabled refresh button must still look like a button, not vanish —
+     only the pointer cue changes. */
+  opacity: 0.6;
+}
+
+/* The refresh spinner. Rotates only while a refresh is in flight; the
+   reduced-motion block below collapses it, as it does every animation. */
+.icon-btn .spin,
+.icon-btn.spin {
+  animation: icon-spin 0.9s linear infinite;
+}
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* THE CENTRING RULE for the jersey between status text and cog.
  *
