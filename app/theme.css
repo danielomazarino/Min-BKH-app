@@ -296,11 +296,18 @@
   /* The yellow BANNER (hero, next-match strip) is a SOLID yellow card in the
      light kit — the shaded yellow-dim wash read as a dirty smear on white.
      Text on it uses the app's existing red for Häcken accents (the user's
-     explicit request), which measures 4.9:1 on #ffd200; body text on it is
+     explicit request), which measures 4.66:1 on #ffd200; body text on it is
      the near-black ink. The dark kit keeps its subtle wash and its amber
-     accent, because red-on-black reads as an error there. */
+     accent, because red-on-black reads as an error there.
+
+     The red is #a82e33, NOT the --danger #c4373c used elsewhere: measured
+     on the yellow card, #c4373c is 3.66:1 — axe caught it the moment the
+     banner went solid (a11y.spec on Hem). #a82e33 is the same hue darkened
+     until it cleared 4.5:1. It is a banner-specific token precisely so the
+     difference from --danger is visible in the code and not a silent
+     near-miss. */
   --banner-bg: #ffd200;
-  --banner-accent: #c4373c;
+  --banner-accent: #a82e33;
   --banner-ink: #1a1500;
   --banner-ink-2: rgba(26, 21, 0, 0.72);
 
