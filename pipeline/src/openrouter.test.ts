@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { synthesizeWithOpenRouter, buildOpenRouterRequestPayload } from "./openrouter";
-import { resolveFreeModel, PREFERRED_MODELS } from "./openrouterModel";
 import { beginRun, buildMetrics } from "./apiMetrics";
 import type { GeminiArticleInput } from "./gemini";
 
