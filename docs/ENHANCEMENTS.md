@@ -1283,6 +1283,56 @@ footballer is Q103846058. Every summary is checked against `wikibase_item` and
 a mismatch is discarded — showing a musician's biography beside a footballer's
 stats is exactly the confident-wrong-answer this app refuses to ship.
 
+**The infobox layer — the structured data Wikidata does not have
+(2026-10-07, `dedaa51` + `64e124c`).** The narrative layer fixed "what is the
+player doing now", but the structured fields stayed thin because Wikidata's
+claims are thin. Measured on the user's own examples:
+
+- Mats Hedén (Q103846058): P2048 (height), P413 (position) and P54 (career)
+  ALL ABSENT in Wikidata — the card showed three honest gaps. His English
+  Wikipedia infobox has all of it.
+- Bénie Traoré (Q106464198): P54 has one stint with NO year qualifiers —
+  "????–???? BK Häcken". The infobox has the whole career.
+- Martin Ericsson (Q602051): Wikidata's P582 says 2012 — the "career cut
+  off at 2012" the user reported. The infobox says 2012–2016.
+- Jeremy Agbonifo: height but no position, one unqualified stint. The
+  infobox has Ytter, vänsterfotad, and every loan.
+
+The fix reads the lead-section wikitext (`action=parse&prop=wikitext
+&section=0`, CORS-open, ~0.8s, one request per language, cached 30 min) and
+parses the infobox with a brace-AND-link-depth-aware walker — a pipe inside
+`{{...}}` or `[[a|b]]` is not a field separator (the `[[a|b]]` case broke
+Traoré and Hedén before it was caught by probes). National-team rows use the
+`{{hff|CIV|u=23}}` template, which raw wikitext leaves opaque; expanding the
+WHOLE infobox returns an HTML table (measured), so the templates are
+extracted, expanded in ONE batched `expandtemplates` request, and the team
+link substituted back.
+
+Identity is chained, never assumed: the infobox is fetched only for the
+sitelink title of an entity whose summary already passed the `wikibase_item`
+guard — the musician trap applies here too ("Mats Hedén" sv.wikipedia).
+
+**Merge rule and the tie that mattered (`64e124c`).** Wikidata and infobox
+data merge per field: height/position prefer Wikidata, career/national go to
+whichever list is fuller. The first version broke ties toward Wikidata — and
+Ericsson is exactly a tie: both lists have 7 rows, but Wikidata's says
+Häcken 2012–2012 while the infobox says 2012–2016 with 109/24. Ties now go
+to the infobox, with a provenance note ("Från Wikipedia — Wikidata saknar år
+och matcher för de här perioderna") whenever it wins.
+
+**Verified live on the deployed build (`64e124c.816c757`):** Hedén 182 cm /
+Defender / 2 stints; Traoré 172 cm / Ytter / Häcken 41·15 → Sheffield →
+Nantes (lån) → Basel 60·21 + 2 national teams; Ericsson 2012–2016 Häcken
+109·24 with the loan stint marked; Agbonifo 178 cm / Ytter / Vänsterfotad /
+5 stints with 3 loans. A manual refresh button (spinning while it works)
+clears all three caches and re-fetches — the escape hatch when a stale
+null-cache hides new data.
+
+**Search honesty, shipped with it.** The search indicator now names its
+stage ("Söker i spelarregistret …", "Söker djupare i registret …", "Hämtar
+spelaruppgifter …", "Hämtar klubb- och landsuppgifter …") so a 10-second
+cold search shows WHERE it is instead of looking frozen.
+
 **Why not the AI-research route.** Evaluated and rejected (2026-10-05): the
 Wikipedia route is free, CORS-open, and auditable. See "Player enrichment —
 why not the AI" below.
