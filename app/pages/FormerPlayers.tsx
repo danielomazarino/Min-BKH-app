@@ -266,8 +266,9 @@ export default function FormerPlayers() {
       cancelled = true;
     };
     // `open` is intentionally not a dependency: the effect must fire when the
-    // OPEN ID changes, not every time the card object is rebuilt.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // OPEN ID changes, not every time the card object is rebuilt. (This
+    // project's ESLint config does not register react-hooks/exhaustive-deps,
+    // so there is no directive to silence — the comment is the record.)
   }, [openQid]);
 
   return (
