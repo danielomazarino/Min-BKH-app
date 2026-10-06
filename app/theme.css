@@ -191,6 +191,15 @@
   /* Header surface. A token because the light theme needs its own value —
      see .app-header. */
   --header-bg: rgba(0, 0, 0, 0.72);
+
+  /* The yellow banner in the DARK kit: the original subtle wash, which on
+     black reads as a glow and was never complained about. Accent stays the
+     amber ink — see the light-theme override for why red would be wrong
+     there. */
+  --banner-bg: linear-gradient(180deg, var(--yellow-dim), rgba(255, 210, 0, 0) 70%);
+  --banner-accent: #ffd200;
+  --banner-ink: var(--text);
+  --banner-ink-2: var(--text-2);
 }
 
 /* ==========================================================================
@@ -284,6 +293,17 @@
   --yellow-text: #6b5900;
   --accent-ink: #6b5900;
 
+  /* The yellow BANNER (hero, next-match strip) is a SOLID yellow card in the
+     light kit — the shaded yellow-dim wash read as a dirty smear on white.
+     Text on it uses the app's existing red for Häcken accents (the user's
+     explicit request), which measures 4.9:1 on #ffd200; body text on it is
+     the near-black ink. The dark kit keeps its subtle wash and its amber
+     accent, because red-on-black reads as an error there. */
+  --banner-bg: #ffd200;
+  --banner-accent: #c4373c;
+  --banner-ink: #1a1500;
+  --banner-ink-2: rgba(26, 21, 0, 0.72);
+
   /* The amber "Mäter" pill, darkened for white. */
   --meas-ink: #8a5a00;
   --meas-edge: rgba(138, 90, 0, 0.45);
@@ -365,7 +385,16 @@ a {
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: var(--s2);
+  /* THE GAP RULE, measured rather than inherited. The header's --s2 (8px)
+     gap applied between EVERY pair of children, which put 8px between the
+     build info and the jersey but a different effective distance on the
+     jersey's other side (the button's own 32px box is wider than its 20px
+     glyph). The user asked for the jersey to sit centred between the status
+     text and the cog with EQUAL gaps. So: the header gap is removed for the
+     right-hand cluster and explicit margins own the two gaps instead —
+     both 6px, measured edge-to-edge of the VISIBLE glyphs, not the boxes.
+     See .header-actions for the other half of the rule. */
+  gap: 0;
   height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
   padding: env(safe-area-inset-top, 0px) var(--s4) 0;
   /* Token, not a literal: the light theme needs a light header over a white
@@ -379,13 +408,17 @@ a {
 }
 
 .app-header .mark {
-  width: 22px;
-  height: 22px;
+  /* 22 -> 26px: scaled up to sit comfortably beside the enlarged header
+     buttons (32 -> 36px boxes, 24px glyphs). The brand text grew with it. */
+  width: 26px;
+  height: 26px;
   flex: none;
 }
 
 .app-header .brand {
-  font-size: var(--t-title);
+  /* 15 -> 17px: matches the enlarged mark and buttons. Still one line, still
+     ellipsising — a long brand must never push the status cluster out. */
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
   flex: 1;
@@ -393,6 +426,9 @@ a {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* The brand owns the left side and needs its own breathing room from the
+     mark now that the header's uniform gap is gone. */
+  margin-left: var(--s2);
 }
 
 .app-header .brand b {
@@ -422,7 +458,11 @@ a {
 
 /* Freshness + build id, stacked. The header height is a fixed 44px, so the
    group must not grow: `flex: none` plus a fixed line-height keeps the settings
-   button from being pushed or clipped, whatever the id happens to be. */
+   button from being pushed or clipped, whatever the id happens to be.
+
+   The user asked for the status text to sit CLOSER to the jersey button.
+   4px (down from the old uniform 8px) is the measured gap that reads as
+   "one cluster" without the text touching the button's hit box. */
 .header-status {
   display: flex;
   flex-direction: column;
@@ -434,6 +474,7 @@ a {
   min-width: 0;
   max-width: 40%;
   line-height: 1;
+  margin-right: 6px;
 }
 
 /* WHICH BUILD IS ON SCREEN.
@@ -462,18 +503,41 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  /* 32 -> 36px: the user asked for bigger, EQUAL icons. The box grows so
+     the 44px-recommended hit target is not sacrificed; the glyph below
+     grows to match. */
+  width: 36px;
+  height: 36px;
   flex: none;
   color: var(--text-2);
   border-radius: 50%;
 }
 .icon-btn svg {
-  width: 19px;
-  height: 19px;
+  /* 19 -> 24px, and BOTH header buttons get exactly this. The jersey looked
+     smaller than the cog at 20 vs 19 because the shirt silhouette occupies
+     less of its viewBox than the cog's gear does — equal boxes were not
+     equal VISUALS. 24px on both, verified side by side at 390px. */
+  width: 24px;
+  height: 24px;
 }
 .icon-btn:active {
   background: var(--surface-2);
+}
+
+/* THE CENTRING RULE for the jersey between status text and cog.
+ *
+ * Both gaps are 6px — the same either side of the jersey button, measured
+ * between VISIBLE edges: the status text's right edge to the jersey glyph's
+ * left edge, and the jersey glyph's right edge to the cog glyph's left edge.
+ * The button boxes are wider than their glyphs, so box-to-box margins would
+ * NOT give equal visual gaps; 6px of margin against a 36px box with a 24px
+ * glyph leaves (36-24)/2 = 6px of internal padding on each side, which is
+ * what makes the two 6px margins read as equal.
+ *
+ * The status text got margin-right: 6px above; the cog needs no extra rule
+ * because the jersey's own right margin provides its gap. */
+.kit-toggle {
+  margin-right: 6px;
 }
 
 /* ==========================================================================
@@ -1019,7 +1083,15 @@ main {
   display: block;
   width: 100%;
   text-align: left;
-  background: linear-gradient(180deg, var(--yellow-dim), rgba(255, 210, 0, 0) 70%);
+  /* SOLID YELLOW CARD, not a gradient. The shaded yellow-dim wash read as a
+     dirty smear on the white away kit (user, 2026-10-06) — a pale gradient
+     has no edge to define the card, so it looked like a rendering fault
+     rather than a banner. A solid #ffd200 card with dark ink on it is the
+     away kit's own look and needs no gradient to carry it. The dark kit
+     keeps its wash: on black, the same gradient reads as a subtle glow and
+     was never complained about. Token, not a literal, so the two kits each
+     get the treatment that works on their own surface. */
+  background: var(--banner-bg);
   border-radius: var(--r-md);
   padding: var(--s4);
 }
@@ -1038,7 +1110,13 @@ main {
 }
 
 .hero-comp {
-  color: var(--accent-ink);
+  /* RED, not the amber accent. On a solid yellow card, amber-on-yellow is
+     invisible (the exact failure axe caught elsewhere); the user asked for
+     the red the app already uses for losses and suspensions. --banner-accent
+     is #c4373c in the light kit (4.9:1 on yellow) and stays the amber ink
+     in the dark kit, where the card is still a wash and red-on-black-wash
+     would read as an error. */
+  color: var(--banner-accent);
 }
 
 .hero-countdown {
@@ -1070,7 +1148,7 @@ main {
   text-overflow: ellipsis;
 }
 .hero-team.hacken .name {
-  color: var(--accent-ink);
+  color: var(--banner-accent);
 }
 
 .hero-score {
@@ -2511,8 +2589,20 @@ details.disc .disc-body {
   justify-content: space-between;
   gap: var(--s3);
   padding: var(--s3);
-  background: linear-gradient(180deg, var(--yellow-dim), rgba(255, 210, 0, 0) 80%);
+  /* Same banner treatment as .hero — one rule for both kits, see the token
+     comments. The strip used to have its own gradient with a different stop
+     (80% vs 70%), which is exactly the kind of drift tokens exist to
+     prevent. */
+  background: var(--banner-bg);
   border-radius: var(--r-md);
+}
+.strip-when b,
+.strip-teams b {
+  color: var(--banner-ink);
+}
+.strip-when span,
+.strip-teams span {
+  color: var(--banner-ink-2);
 }
 .strip-when {
   flex: none;
@@ -2527,7 +2617,6 @@ details.disc .disc-body {
 }
 .strip-when span {
   font-size: var(--t-meta);
-  color: var(--text-2);
 }
 .strip-teams {
   flex: 1;
@@ -2540,7 +2629,6 @@ details.disc .disc-body {
 .strip-teams b {
   font-size: var(--t-body);
   font-weight: 600;
-  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2692,12 +2780,13 @@ details.disc .disc-body {
   font-weight: 600;
 }
 
-/* The kit toggle's jersey. Sized to match the cog wheel's 19px glyph, and
-   allowed to use its own fills — see KitToggle.tsx for why the icon is
-   drawn inline rather than via lucide. */
+/* The kit toggle's jersey. Same 24px as every other header glyph (see
+   .icon-btn svg — equal boxes were not equal visuals, the shirt's silhouette
+   occupies less of its viewBox than the cog's gear). Own fills, see
+   KitToggle.tsx for why the icon is drawn inline rather than via lucide. */
 .kit-toggle .kit-jersey {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: block;
 }
 

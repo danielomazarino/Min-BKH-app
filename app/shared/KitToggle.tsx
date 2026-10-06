@@ -23,12 +23,21 @@
  *   of state purely to re-render itself. It reads the effective theme on
  *   mount so a system-preference follower starts on the right icon.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { effectiveTheme, setKitTheme, type KitTheme } from "./kitTheme";
+
+/** The shirt silhouette, shared by the fill, the stripe clip and the outline.
+ *  One constant so the three can never drift out of register. */
+const BODY =
+  "M8 3 L4 5.5 L2.5 10 L5.5 11 L5.5 20 L18.5 20 L18.5 11 L21.5 10 L20 5.5 L16 3 " +
+  "C15 4.6 13.6 5.4 12 5.4 C10.4 5.4 9 4.6 8 3 Z";
 
 export function KitToggle() {
   // The theme the app is IN right now. The icon shows the OTHER kit.
   const [theme, setTheme] = useState<KitTheme>(() => effectiveTheme());
+  // The clipPath needs an id, and two kit-toggles could theoretically exist
+  // in one document — useId guarantees they never share one.
+  const clipId = useId();
 
   // A system-preference change while the user has not chosen must move the
   // icon too, not just the colours — otherwise the icon lies about what a
@@ -62,18 +71,37 @@ export function KitToggle() {
       {/* The jersey of the kit you would switch TO. Drawn inline rather than
           via lucide's Shirt so the fill colours can be the actual kit colours
           — lucide icons are stroke-only and cannot show a white shirt with
-          black sleeves. */}
+          black sleeves.
+
+          SUPPORTER STRIPES, clipped to the shirt so they never spill past the
+          silhouette. The away shirt carries one yellow and one black stripe
+          (Häcken's away colours on white); the home shirt carries two yellow
+          stripes on black. Same geometry both ways, only the colours swap —
+          which is what makes the pair read as two kits of one club. */}
       <svg viewBox="0 0 24 24" aria-hidden="true" className="kit-jersey">
+        <clipPath id={clipId}>
+          <path d={BODY} />
+        </clipPath>
         {next === "away" ? (
-          /* AWAY jersey: white body, black sleeves, yellow collar trim. */
+          /* AWAY jersey: white body, one yellow + one black stripe. */
           <>
-            <path d="M8 3 L4 5.5 L2.5 10 L5.5 11 L5.5 20 L18.5 20 L18.5 11 L21.5 10 L20 5.5 L16 3 C15 4.6 13.6 5.4 12 5.4 C10.4 5.4 9 4.6 8 3 Z" fill="#ffffff" stroke="#1a1a1a" strokeWidth="1.2" strokeLinejoin="round" />
+            <path d={BODY} fill="#ffffff" />
+            <g clipPath={`url(#${clipId})`}>
+              <rect x="9.4" y="0" width="2" height="24" fill="#ffd200" />
+              <rect x="12.6" y="0" width="2" height="24" fill="#1a1a1a" />
+            </g>
+            <path d={BODY} fill="none" stroke="#1a1a1a" strokeWidth="1.2" strokeLinejoin="round" />
             <path d="M8 3 C9 4.6 10.4 5.4 12 5.4 C13.6 5.4 15 4.6 16 3" fill="none" stroke="#ffd200" strokeWidth="1.4" strokeLinecap="round" />
           </>
         ) : (
-          /* HOME jersey: black body, yellow sleeves trim. */
+          /* HOME jersey: black body, two yellow stripes. */
           <>
-            <path d="M8 3 L4 5.5 L2.5 10 L5.5 11 L5.5 20 L18.5 20 L18.5 11 L21.5 10 L20 5.5 L16 3 C15 4.6 13.6 5.4 12 5.4 C10.4 5.4 9 4.6 8 3 Z" fill="#1a1a1a" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+            <path d={BODY} fill="#1a1a1a" />
+            <g clipPath={`url(#${clipId})`}>
+              <rect x="9.4" y="0" width="2" height="24" fill="#ffd200" />
+              <rect x="12.6" y="0" width="2" height="24" fill="#ffd200" />
+            </g>
+            <path d={BODY} fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
             <path d="M8 3 C9 4.6 10.4 5.4 12 5.4 C13.6 5.4 15 4.6 16 3" fill="none" stroke="#ffd200" strokeWidth="1.4" strokeLinecap="round" />
           </>
         )}
