@@ -45,6 +45,9 @@ import {
   commonsImageUrl,
   type PlayerCandidate,
   type SearchState,
+  type SearchPhase,
+  type CareerStint,
+  type NationalTeamStint,
 } from "../players/wikidata";
 import {
   fetchWikipediaSummary,
@@ -53,6 +56,14 @@ import {
   clearWikiCache,
   type WikipediaSummary,
 } from "../players/wikipedia";
+import {
+  fetchInfobox,
+  readInfoboxCache,
+  writeInfoboxCache,
+  clearInfoboxCache,
+  type InfoboxData,
+  type InfoboxStint,
+} from "../players/infobox";
 import { fmtDay } from "../shared/format";
 
 const RECENT_KEY = "minbkh.recentSearches";
@@ -94,6 +105,22 @@ export default function FormerPlayers() {
   const [recent, setRecent] = useState<string[]>(() => loadRecent());
   const [state, setState] = useState<SearchState>({ status: "idle" });
   /**
+   * The current stage of the running search, for the progress indicator.
+   * Null when no search is in flight. The chain is genuinely multi-step and
+   * can take ~10 s on a cold cache; naming the step is what makes that read
+   * as work-in-progress rather than a hang (user, 2026-10-06).
+   */
+  const [searchPhase, setSearchPhase] = useState<SearchPhase | null>(null);
+  /** Swedish label for the current search stage. */
+  const searchPhaseLabel: string = searchPhase === null
+    ? "Söker …"
+    : {
+        index: "Söker i spelarregistret …",
+        cirrus: "Söker djupare i registret …",
+        hydrate: "Hämtar spelaruppgifter …",
+        labels: "Hämtar klubb- och landsuppgifter …",
+      }[searchPhase];
+  /**
    * The id of the newest submitted search. A slow response belonging to an
    * older query must never overwrite a newer one — without this, a slow
    * "Bjarsmy" can land after a fast "Frölund" and show the wrong player.
@@ -126,9 +153,18 @@ export default function FormerPlayers() {
     }
 
     setState({ status: "searching", query });
-    const result = await searchPlayersOnline(query, { fetch: window.fetch.bind(window) });
+    const result = await searchPlayersOnline(query, {
+      fetch: window.fetch.bind(window),
+      // The chain is genuinely multi-step (index → cirrus → hydration →
+      // labels, measured up to ~10 s on a cold cache). Naming the step is
+      // the difference between "the app is thinking" and "the app hung".
+      onPhase: (p) => {
+        if (id === latestId.current) setSearchPhase(p);
+      },
+    });
     if (id !== latestId.current) return; // superseded
     writeCache(query, result, Date.now());
+    setSearchPhase(null);
     setState(result);
   }, []);
 
@@ -290,6 +326,7 @@ export default function FormerPlayers() {
     try {
       clearCache();
       clearWikiCache();
+      clearInfoboxCache();
       const result = await searchPlayersOnline(qid, { fetch: window.fetch.bind(window) });
       if (result.status === "results") {
         const fresh = result.candidates.find((c) => c.qid === qid);
@@ -362,7 +399,16 @@ export default function FormerPlayers() {
        */}
       <div className="search-dropdown" data-testid="search-dropdown">
         {state.status === "searching" && (
-          <div className="skeleton" style={{ height: 64 }} aria-busy="true" aria-label="Söker" data-testid="searching" />
+          /* A searching indicator that says WHAT is happening, not just a
+             grey box. The user's verdict on the bare skeleton: "the worst
+             implementation of this kind of search I have seen" — a silent
+             rectangle for up to 10 s reads as a hang. The staged chain
+             (index → cirrus → hydration → labels) is genuinely multi-step,
+             so the indicator names the step. */
+          <div className="searching" role="status" aria-live="polite" data-testid="searching">
+            <RefreshCw aria-hidden className="spin" />
+            <span>{searchPhaseLabel}</span>
+          </div>
         )}
 
         {state.status === "results" && (
@@ -429,10 +475,6 @@ export default function FormerPlayers() {
             Följda spelare
             <span className="count"> · {favorites.length}</span>
           </h2>
-          <p className="small dim" style={{ margin: "0 0 8px" }}>
-            Dina sparade spelare. De ligger kvar här även om du rensar sökningen, och påverkar inte om
-            uppgifterna om dem är kompletta.
-          </p>
           {favorites.map((f) => (
             <StarredRow
               key={f.qid}
@@ -663,6 +705,96 @@ function PlayerSheet({
     };
   }, [c.qid, c.sitelinks]);
 
+  /**
+   * The infobox layer — the structured fields Wikidata lacks.
+   *
+   * Measured on the user's own examples: Mats Hedén has NO height, position
+   * or career in Wikidata but a complete enwiki infobox; Bénie Traoré's
+   * Wikidata career is one unqualified stint while the infobox has every
+   * club with years and apps; Martin Ericsson's Wikidata end-year said 2012
+   * where the infobox says 2012–2016.
+   *
+   * IDENTITY CHAIN: this fetch runs only AFTER the summary layer has
+   * verified via wikibase_item that the article is about this exact entity,
+   * and it uses the SAME sitelink title. The parse endpoint does not carry
+   * wikibase_item, so this chaining is the identity proof — parsing the
+   * infobox of an unverified title would risk the musician-for-footballer
+   * swap the summary guard exists to prevent.
+   */
+  const [infobox, setInfobox] = useState<InfoboxData | null | undefined>(undefined);
+  useEffect(() => {
+    let cancelled = false;
+    setInfobox(undefined);
+    // The infobox is only asked for when the summary layer has a verified
+    // article — without that proof there is no identity guarantee.
+    if (!wiki) return;
+    const key = `${wiki.lang}:${c.qid}`;
+    const cached = readInfoboxCache(key, Date.now());
+    if (cached !== undefined) {
+      setInfobox(cached);
+      return;
+    }
+    void (async () => {
+      const title = c.sitelinks[`${wiki.lang}wiki`]?.title;
+      if (!title) {
+        setInfobox(null);
+        return;
+      }
+      const data = await fetchInfobox(wiki.lang, title, { fetch: window.fetch.bind(window) });
+      if (cancelled) return;
+      writeInfoboxCache(key, data, Date.now());
+      setInfobox(data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [wiki, c.qid, c.sitelinks]);
+
+  /**
+   * MERGE: Wikidata claims and infobox fields, infobox filling the gaps.
+   *
+   * Precedence is per-field, not per-source: Wikidata's height wins when it
+   * exists (it is the more curated source), the infobox fills when it does
+   * not. The career lists are NOT merged row-by-row — they model different
+   * things (Wikidata: qualified stints; infobox: the fan-maintained table
+   * with loans) — so the fuller list wins whole, and the card says which.
+   *
+   * Both stint shapes are normalized into one display shape here, so the
+   * render never has to branch on the source.
+   */
+  interface DisplayStint {
+    years: string;
+    team: string;
+    loan: boolean;
+    apps?: number;
+    goals?: number;
+  }
+  const fromWikidata = (s: CareerStint | NationalTeamStint): DisplayStint => ({
+    years: `${s.startYear ?? "????"}–${s.endYear ?? "????"}`,
+    team: s.team,
+    loan: false,
+    apps: (s as CareerStint).apps ?? (s as NationalTeamStint).caps,
+    goals: s.goals,
+  });
+  const fromInfobox = (s: InfoboxStint): DisplayStint => ({
+    years: s.years || "????",
+    team: s.team,
+    loan: s.loan,
+    apps: s.apps,
+    goals: s.goals,
+  });
+
+  const heightCm = c.heightCm ?? infobox?.heightCm;
+  const position = c.position ?? infobox?.position;
+  const careerIsInfobox = (infobox?.career.length ?? 0) > c.career.length;
+  const career: DisplayStint[] = careerIsInfobox
+    ? (infobox?.career ?? []).map(fromInfobox)
+    : c.career.map(fromWikidata);
+  const nationalIsInfobox = (infobox?.national.length ?? 0) > c.nationalTeams.length;
+  const nationalTeams: DisplayStint[] = nationalIsInfobox
+    ? (infobox?.national ?? []).map(fromInfobox)
+    : c.nationalTeams.map(fromWikidata);
+
   return (
     <Sheet
       title={c.name}
@@ -739,11 +871,21 @@ function PlayerSheet({
           <div className="mod-label">Uppgifter</div>
           <div className="kv">
             <Stat v={c.dateOfBirth ?? null} l="Född" isText />
-            <Stat v={c.heightCm ?? null} l="Längd cm" />
-            <Stat v={c.position ?? null} l="Position" isText />
+            <Stat v={heightCm ?? null} l="Längd cm" />
+            <Stat v={position ?? null} l="Position" isText />
             <Stat v={c.gender === "male" ? "M" : c.gender === "female" ? "K" : null} l="Kön" isText />
             <Stat v={c.citizenship[0] ?? null} l="Nationalitet" isText />
           </div>
+          {infobox?.foot && (
+            <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-foot">
+              Ben: {infobox.foot}.
+            </p>
+          )}
+          {infobox?.currentClub && (
+            <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-current-club">
+              Nuvarande klubb: {infobox.currentClub}.
+            </p>
+          )}
           {c.dateOfDeath && (
             <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="died">
               Avled {fmtDay(c.dateOfDeath)}.
@@ -754,24 +896,32 @@ function PlayerSheet({
         {/* ---- 2. career, per stint, with the same honesty ---- */}
         <div>
           <div className="mod-label">Karriär</div>
-          {c.career.length > 0 ? (
-            <ul className="career" data-testid="career">
-              {c.career.map((s) => (
-                <li key={`${s.teamQid}-${s.startYear ?? "?"}-${s.endYear ?? "?"}`} data-testid="career-stint">
-                  <span className="years">
-                    {s.startYear ?? "????"}–{s.endYear ?? "????"}
-                  </span>
-                  <span className="team">{s.team}</span>
-                  {(s.apps !== undefined || s.goals !== undefined) && (
-                    <span className="nums">
-                      {s.apps !== undefined ? `${s.apps} M` : ""}
-                      {s.apps !== undefined && s.goals !== undefined ? " · " : ""}
-                      {s.goals !== undefined ? `${s.goals} Mål` : ""}
+          {career.length > 0 ? (
+            <>
+              {careerIsInfobox && (
+                <p className="small dim" style={{ margin: "0 0 6px" }} data-testid="career-source">
+                  Från Wikipedia — Wikidata saknar år och matcher för de här perioderna.
+                </p>
+              )}
+              <ul className="career" data-testid="career">
+                {career.map((s, idx) => (
+                  <li key={`${s.team}-${s.years}-${idx}`} data-testid="career-stint">
+                    <span className="years">{s.years}</span>
+                    <span className="team">
+                      {s.team}
+                      {s.loan ? " (lån)" : ""}
                     </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+                    {(s.apps !== undefined || s.goals !== undefined) && (
+                      <span className="nums">
+                        {s.apps !== undefined ? `${s.apps} M` : ""}
+                        {s.apps !== undefined && s.goals !== undefined ? " · " : ""}
+                        {s.goals !== undefined ? `${s.goals} Mål` : ""}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </>
           ) : (
             <p className="small dim" style={{ margin: 0 }} data-testid="no-career">
               Inga klubbperioder är registrerade i Wikidata. Det betyder inte att karriären saknas — bara att
@@ -781,20 +931,18 @@ function PlayerSheet({
         </div>
 
         {/* ---- 3. national teams, kept apart from clubs ---- */}
-        {c.nationalTeams.length > 0 && (
+        {nationalTeams.length > 0 && (
           <div>
             <div className="mod-label">Landslag</div>
             <ul className="career" data-testid="national-teams">
-              {c.nationalTeams.map((s) => (
-                <li key={`${s.teamQid}-${s.startYear ?? "?"}-${s.endYear ?? "?"}`} data-testid="national-stint">
-                  <span className="years">
-                    {s.startYear ?? "????"}–{s.endYear ?? "????"}
-                  </span>
+              {nationalTeams.map((s, idx) => (
+                <li key={`${s.team}-${s.years}-${idx}`} data-testid="national-stint">
+                  <span className="years">{s.years}</span>
                   <span className="team">{s.team}</span>
-                  {(s.caps !== undefined || s.goals !== undefined) && (
+                  {(s.apps !== undefined || s.goals !== undefined) && (
                     <span className="nums">
-                      {s.caps !== undefined ? `${s.caps} L` : ""}
-                      {s.caps !== undefined && s.goals !== undefined ? " · " : ""}
+                      {s.apps !== undefined ? `${s.apps} L` : ""}
+                      {s.apps !== undefined && s.goals !== undefined ? " · " : ""}
                       {s.goals !== undefined ? `${s.goals} Mål` : ""}
                     </span>
                   )}

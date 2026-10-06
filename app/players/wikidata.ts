@@ -626,7 +626,22 @@ export interface SearchDeps {
   fetch: FetchLike;
   /** Injected so tests are hermetic. */
   now?: () => number;
+  /**
+   * Progress callback, fired at each stage of the chain. The UI uses it to
+   * tell the user WHAT is happening during the multi-second search instead
+   * of showing a silent box — the user's verdict on the silent version was
+   * that it read as a hang. Optional: tests and callers that do not care
+   * simply omit it.
+   */
+  onPhase?: (phase: SearchPhase) => void;
 }
+
+/** The stages a search walks through, in order. */
+export type SearchPhase =
+  | "index" // prefix lookup
+  | "cirrus" // full-text fallback for short prefixes
+  | "hydrate" // entity hydration
+  | "labels"; // club/country label resolution
 
 /**
  * Run a complete search: index lookup, then hydration of the top hits.
@@ -641,8 +656,10 @@ export async function searchPlayersOnline(
 ): Promise<SearchState> {
   const query = rawQuery.trim();
   if (query.length < 2) return { status: "idle" };
+  const phase = deps.onPhase ?? (() => {});
 
   // ---- 1. Index search -------------------------------------------------
+  phase("index");
   let indexRes: Response;
   try {
     indexRes = await deps.fetch(buildSearchUrl(query), { headers: requestHeaders(), mode: "cors" });
@@ -679,6 +696,7 @@ export async function searchPlayersOnline(
   if (indexQids.length === 0) return { status: "not-found", query };
 
   // ---- 2. Hydration ---------------------------------------------------
+  phase("hydrate");
   let entRes: Response;
   try {
     entRes = await deps.fetch(buildEntitiesUrl(indexQids), { headers: requestHeaders(), mode: "cors" });
@@ -719,6 +737,7 @@ export async function searchPlayersOnline(
   }
 
   const indexEntities = indexQids.map((id) => entities[id]).filter((e): e is Entity => !!e);
+  phase("labels");
   let index = await resolveLabels(collectLabelQids(indexEntities), deps);
   let labels = index.labels;
 
@@ -755,7 +774,7 @@ export async function searchPlayersOnline(
     // unchanged. When cirrus finds footballers they lead the list and the
     // primary people stay behind them; when it finds nothing the primary
     // results stand (better than an empty page).
-    const cirrusQids = await cirrusFootballerQids(query, deps);
+    const cirrusQids = await cirrusFootballerQids(query, deps, phase);
     if (cirrusQids.length > 0) {
       let hydrated: Entity[] = [];
       try {
@@ -774,6 +793,7 @@ export async function searchPlayersOnline(
         const merged = [...cirrusPeople, ...ranked.ordered.filter((e) => !seen.has(e.id))];
         chosen = merged.slice(0, MAX_CANDIDATES);
         discarded = Math.max(0, people.length + cirrusPeople.length - chosen.length);
+        phase("labels");
         index = await resolveLabels(collectLabelQids(chosen), deps, index);
         labels = index.labels;
       }
@@ -801,6 +821,7 @@ export async function searchPlayersOnline(
       discarded = 0;
       // The fallback path hydrates its own entities, so their club and country
       // labels were never collected above. Resolve them now, still in one call.
+      phase("labels");
       index = await resolveLabels(collectLabelQids(viaSurname), deps, index);
       labels = index.labels;
     }
@@ -823,8 +844,9 @@ export async function searchPlayersOnline(
  * Every failure path returns an empty list: this is a bonus lookup, and a
  * failure must degrade to "no extra candidates", never to a broken search.
  */
-async function cirrusFootballerQids(query: string, deps: SearchDeps): Promise<string[]> {
+async function cirrusFootballerQids(query: string, deps: SearchDeps, phase?: (p: SearchPhase) => void): Promise<string[]> {
   try {
+    phase?.("cirrus");
     const res = await deps.fetch(buildCirrusSearchUrl(query), { headers: requestHeaders(), mode: "cors" });
     if (res.status === 429) return [];
     if (!res.ok) return [];

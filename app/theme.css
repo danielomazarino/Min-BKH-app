@@ -2130,6 +2130,25 @@ main {
 .search-dropdown .skeleton {
   margin: var(--s2) 0;
 }
+
+/* The searching indicator: spinner + the stage being worked on. Replaces the
+   bare grey skeleton the user called "the worst implementation of this kind
+   of search" — a silent rectangle for up to 10 s reads as a hang, while a
+   named stage reads as work in progress. */
+.searching {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--t-small);
+}
+.searching .spin {
+  animation: icon-spin 0.9s linear infinite;
+  flex: none;
+}
 .career .years {
   flex: 0 0 78px;
   font-variant-numeric: tabular-nums;
