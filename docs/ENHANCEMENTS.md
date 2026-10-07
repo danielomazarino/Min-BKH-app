@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-10-05 (03:20 CEST / 01:20 UTC)
+## Current state — 2026-10-07 (03:30 CEST / 01:30 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -37,11 +37,10 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **440 unit tests passing** (20 files) and **367 end-to-end tests passing across Chromium AND WebKit** — both suites verified green 2026-10-05, and CI run `37264656883` concluded **success** on the deployed commit `808866f`. End-to-end runs on two engines only since WebKit was installed; before that it had never executed (see the CI section below) |
-| Data last generated | **2026-10-04 05:10 UTC** — served bytes verified to match the data commit (`1fe721c…`) |
-| Gemini | **Free tier, hard cap 20 requests/UTC day** (measured from a 429 body, 2026-10-01). **Measured over 35 probe runs to 2026-10-04: reachable ~48% of the time, but the chat probe that resembles real work succeeded 0/15 — never once.** Still disabled in the nightly (the key is deliberately not injected). B-004 unvalidated. |
-| OpenRouter | **Transport VERIFIED WORKING 2026-10-04.** Key added; ping **1/1 = 200**, chat probe **1/1 = 200** on the payload Gemini failed **0/15** on. Free model, **cost 0 credits**, key reports **1000 req/day**. **Quality still unvalidated** — see **B-008** |
-| OpenRouter | **Runs every night now, MEASUREMENT ONLY — its answer is discarded and never reaches the app.** Transport verified: 3 attempts ever, **1 succeeded** (21s, 23,636 B), 2 refused by the shared free pool (HTTP 429) while only 4/1000 of *our* budget was used. Fixed fixture evaluation passed all 5 checks. **Real-news reliability at 03:30 is exactly what the nightly run is now measuring** — see the OpenRouter section below |
+| Tests | **505 unit tests passing** (25 files, verified locally 2026-10-07). E2E: **CI green on the deployed commit `26acdeb`** (run `37545277460`, Chromium + WebKit). A local run the same night: **410 passed, 1 failed, 7 skipped** — the failure was `[webkit] former-players › an open player card has a manual refresh control`, on the same commit CI passed. Not diagnosed; treat as a suspected local flake until reproduced, **not** as verified-green locally |
+| Data last generated | **2026-10-06 03:48 UTC** — nightly run `37410604070` succeeded; served build `26acdeb.7c0aad1` matches `HEAD` |
+| Gemini | **Disabled in the nightly** (key not injected). Free tier measured: reachable ~48%, real-work probe 0/15. B-004 unvalidated |
+| OpenRouter | **Measurement-only nightly, still never reaches the app.** The pinned free model (`qwen/qwen3.8-27b:free`) was **DELISTED** by OpenRouter — the 2026-10-06 nightly got HTTP 404 while the key was healthy (0/1000 used). Fixed 2026-10-06: the model is now **resolved dynamically from the live free catalog** (`dd8bedb`); a delisted pin fails BEFORE the request instead of burning it. Verified live: resolver picks `google/gemma-4-31b-it:free`, but both verification requests got **HTTP 429 from the shared upstream pool** — the structural limit, unchanged. **All 16 current free models are single-provider** (measured from the endpoints API), so there is no routing resilience anywhere in the free catalog. See **B-008**, **B-012**, **B-013** |
 | Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement |
 
 ### The Gemini availability probe was STOPPED on 2026-10-04
@@ -138,11 +137,7 @@ treat it as suspect and re-check with `git log`.
 > for this was evaluated and deliberately rejected; see **"Player enrichment —
 > why not the AI"** below.
 
-**1. A player who has left the club still appears in the "watch out for cards" list.**
-The fix is written, tested and deployed, but the app's data is only rewritten by
-the overnight job. Until that job runs tonight, supporters will see a stale
-entry. This is **expected and self-correcting** — not a new bug. Do not "fix" it
-by hand-editing the data file; that would forge the very evidence we need.
+**1. ~~A player who has left the club still appears in the "watch out for cards" list.~~ RESOLVED — verified in production 2026-10-01.** See **E-005**.
 
 **2. News stories never combine sources.**
 Every one of the 6 current news cards is a **single link**. When BK Häcken beat
@@ -222,10 +217,144 @@ the heading and the row's own date carries it — so each day now shows its date
 
 ---
 
+## B-012 · The deterministic news filter drops real men's-team articles
+
+**Status:** OPEN — confirmed false negative measured 2026-10-07 · **Affects:** how complete the news feed is
+
+**What was measured.** The 2026-10-06 nightly kept **6 of 173** fetched articles
+(4 events served). The club feed is currently dominated by women's-team
+coverage (Champions League + Damallsvenskan), and most of those drops are
+correct — this app is men's-only by design. But item-checking the live
+`bkhacken.se/feed` against the classifier found at least one genuine men's
+article being dropped:
+
+> **"Inför biljettsläppet hemma mot IFK Göteborg"** — description: *"I dag
+> klockan 13.00 öppnar förturen till hemmaderbyt mot IFK Göteborg."*
+
+That is the men's Allsvenskan derby — the app's own next match. It was dropped
+because the keyword classifier has no men's signal in the text: no
+`allsvenskan`, no `herr`, no `matchtruppen`. "Hemmaderbyt mot IFK Göteborg" is
+semantic knowledge a keyword list does not have.
+
+**Related brittleness found in the same pass:** the keyword list has
+`allsvenskan` but not the adjective form `allsvenska` ("inför den allsvenska
+återstarten" survives only via a different path). Secondary feeds
+(Sportbladet 39 fetched / 0 kept, Expressen 20/0, SVT 20/0, GP 43/0) reported
+zero contribution — consistent with "nothing Häcken-related right now", but
+**not item-checked**; the same class of miss could be hiding there.
+
+**Why the classifier is conservative on purpose.** The strictness is what fixed
+the women's-news defect (B-004's production incident). Any widening must be
+asymmetric: add men's evidence, never weaken women's exclusion.
+
+**Candidate fix (deterministic, no provider dependency):**
+1. Add men's-opponent context: current Allsvenskan opponents (IFK Göteborg,
+   Mjällby, Norrköping…) as men's signals — but ONLY for the men's
+   competition context, since some opponents (Eskilstuna United, Vittsjö,
+   Norrköping) also field Damallsvenskan teams. Needs care: "Truppen mot
+   Eskilstuna United" is women's and must stay excluded.
+2. Add word forms: `allsvenska`, `derbyt`, `hemmaderbyt`.
+3. Item-check the four zero-contribution secondary feeds once, to bound the
+   real loss.
+4. Add regression tests: the IFK Göteborg ticket article must classify as
+   men's; the Eskilstuna trupp article must stay women's.
+
+**Acceptance:** the derby-preview class of article survives the filter; zero
+women's articles regress into the feed; both pinned by unit tests.
+
+**The deeper alternative** is the semantic layer (B-004/B-008) — which is
+exactly what keeps 429ing. Until a provider works, the deterministic fix above
+is the only path.
+
+---
+
+## B-013 · BYOK from a non-Google provider — the only free path to LLM reliability
+
+**Status:** OPEN — NEEDS DECISION + investigation · **Affects:** whether the
+semantic news layer (B-003/B-004) can ever be switched on without paying
+
+**Context, established 2026-10-06/07.** The OpenRouter free catalog is
+structurally unreliable for an unattended nightly: every `:free` model is
+served by **exactly one provider** (measured from the endpoints API — gemma →
+Google AI Studio, nemotron → Nvidia, inkling → Thinking Machines, etc.), and
+that provider's shared pool 429s under load regardless of which model is
+picked (measured on qwen/ModelRun and gemma/Google AI Studio). Model delisting
+adds a second failure mode (B-008). Our own allowance (1000/day) is untouched;
+the congestion is not ours.
+
+**Why BYOK-to-Google is NOT the answer.** It fixes congestion (private quota
+instead of the shared pool) but not the provider: it is the same Google free
+capacity that scored 0/15 on the real-work probe and 503'd for weeks. Same
+wall, private door.
+
+**The idea to investigate.** BYOK from a **different** provider — **Groq,
+Cerebras, or Mistral** all have free tiers and none of them is Google. Two
+integration routes exist:
+
+1. **BYOK through OpenRouter** (`is_byok: true`): add the provider key in
+   OpenRouter's integration settings. Requests still flow through OpenRouter
+   (same harness, same metrics, same schema contract) but consume the user's
+   private provider quota instead of the shared pool. The 429 body itself
+   suggests this: *"add your own key to accumulate your rate limits"*.
+2. **Direct provider API**: call Groq/Cerebras/Mistral directly from
+   `pipeline/src/`, bypassing OpenRouter. More code (a second provider client),
+   but no dependency on OpenRouter's catalog churn.
+
+**What the investigation must establish, in order:**
+1. **Free-tier shape of each candidate**: requests/day, tokens/day, context
+   window, whether JSON-schema output (`response_format`) is supported — the
+   news grouping needs the same strict schema contract Gemini/OpenRouter get.
+2. **Whether a Groq/Cerebras/Mistral key can be added as OpenRouter BYOK at
+   all**, and whether `:free` model pricing still applies on the BYOK path.
+3. **One-request probes** (same discipline as always: 0 or 1 requests, never
+   retried) against each candidate's endpoint with the real news payload.
+4. **Only then** the B-004 semantic evaluation on whichever provider answers.
+
+**Budget rule unchanged:** every probe states its maximum spend up front; a
+measurement never becomes a pipeline invocation.
+
+**Decision needed from the product owner before any of it:** is a third-party
+account (free) acceptable, or is the deterministic feed the permanent answer?
+The app is fully functional either way — this item only gates the news-quality
+upgrade (B-003 multi-source cards).
+
+---
+
 ## B-008 · Trying OpenRouter's free tier instead of Gemini
 
 **Status:** tooling committed · **transport VERIFIED WORKING** · **quality still
-unvalidated** · blocked on nothing
+unvalidated** · **model churn + shared-pool 429s now measured**
+
+### UPDATE 2026-10-06/07 — delisting, dynamic resolution, and the structural limit
+
+Three things happened after this section was written:
+
+1. **The pinned model was delisted.** `qwen/qwen3.8-27b:free` (chosen
+   2026-10-04) vanished from OpenRouter's catalog. The 2026-10-06 nightly got
+   **HTTP 404** — "This model is unavailable for free. The paid version is
+   available now" — while the key itself was healthy (`GET /api/v1/key`: 200,
+   0/1000 used). A pinned free model id is a liability: OpenRouter rotates the
+   `:free` catalog without notice.
+2. **Fixed by dynamic resolution** (`dd8bedb`, `dbe6d9e`, `27a29ff`). The model
+   is now resolved at run time from the live free catalog: explicit pin wins
+   (validated — a delisted pin fails BEFORE the request), else the first
+   preferred model still listed, else the alphabetically first free model.
+   Catalog lookup is public metadata: no key, no quota. Verified live: the
+   resolver picks `google/gemma-4-31b-it:free` and the request reaches a real
+   provider.
+3. **The structural limit was then confirmed on the new model.** Both
+   verification requests (probe + semantic eval, 2026-10-06 21:11 UTC) got
+   **HTTP 429 — `upstream_provider_shared_pool`, provider Google AI Studio** —
+   with our allowance untouched. And the endpoints API shows **all 16 current
+   free models are single-provider**: there is no routing resilience anywhere
+   in the free catalog. Picking a different model just swaps one shared pool
+   for another.
+
+**Net effect on this item:** transport and resolution work; reliability on the
+free catalog is structurally impossible for an unattended nightly. The paths
+forward are **B-013** (BYOK from a non-Google provider) or paid credits. The
+quality question (does the model group correctly?) remains **untested** — both
+attempts 429'd before the model answered.
 
 ### The result: OpenRouter works where Gemini did not
 
@@ -1035,9 +1164,12 @@ unattributable drops into an explicit `(unattributed)` bucket and any
 arithmetic remainder into `unaccounted`, so totals stay honest rather than
 silently vanishing.
 
-**Not yet verified in production.** The rendering above was checked against
-synthetic data only. It has not yet appeared in a real nightly log — the first
-opportunity is the 03:30 UTC run.
+**Verified in a real nightly (2026-10-06, run `37410604070`).** The log printed
+the full per-source breakdown with the `ZERO CONTRIBUTED` flag on six sources
+(Sportbladet 0/39, Expressen 0/20, SVT Sport 0/20, Göteborgs-Posten 0/43,
+Allsvenskan 0/10, Bollsvenskan 0/1) and the reconciled total: *8 sources, 173
+fetched, 6 kept, 167 dropped*. The arithmetic held in production, not only in
+synthetic tests.
 
 ### DONE 2026-09-30 — added the Fotbolltransfers club feed (`2ba0f78`)
 
@@ -1159,7 +1291,7 @@ its own outlet name, headline and link.
 
 ### E-005 · A departed player still shown as at risk of suspension
 
-**Status:** data effect pending · **Affects:** the "Kortläget" card list
+**Status:** DONE — verified in production 2026-10-01 · **Affects:** the "Kortläget" card list
 
 **What happens today.** Amor Layouni has left BK Häcken. The app still lists him
 under "players to keep an eye on", showing two cautions from earlier in the
@@ -1170,15 +1302,10 @@ simply wrong.
 **What it should be.** Retain his row and his two cautions, but mark him as no
 longer at the club rather than counting him among current players to watch.
 
-**Why it is not showing yet.** The code fix is written, tested (13 tests) and
-deployed. Data files are only rewritten by the overnight job, and last night's
-run used the code from *before* the fix. Tonight's run will use the corrected
-code.
-
-**How to confirm it worked:** after the ~03:45 UTC run, his status should read
-"departed" rather than "at risk", his caution count should still be 2, and the
-list should still contain the same number of people as before — no history
-removed. If a row disappears, that is a defect, not an improvement.
+**RESOLVED — verified in production 2026-10-01.** Served `app.json` shows
+Layouni `status: "departed"`, `departed: true`, with his history preserved
+(`warningCount: 2`, both `relevantWarnings` intact). 18 ledger entries,
+`cardMatchesInspected: 22`. No row disappeared — the acceptance condition held.
 
 ---
 
@@ -1377,7 +1504,11 @@ both linked in the sheet.
 - **Some former players show no photo.** Photos are sourced, not uploaded or
   guessed.
 - **News never combines sources today.** A known quality gap, tracked as **B-003**.
-- **One stale entry appears until tonight's run.** Tracked as **E-005**.
+- **The news feed is smaller than everything published about the club.** The
+  deterministic filter is deliberately conservative (women's coverage must not
+  leak in), and that conservatism drops some genuine men's articles too —
+  measured as **B-012**. The semantic layer that could fix both at once is
+  blocked on provider reliability (**B-008**, **B-013**).
 
 ---
 
@@ -1402,15 +1533,17 @@ both linked in the sheet.
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| **B-003** | OPEN | Live data is **6/6 single-source**. UI supports multi-source; the pipeline does not produce it. Depends on B-004 |
-| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. **Zero usable answers in 20+ live attempts.** Availability measured over 35 runs: ping **10/21 (48%)**, chat **0/15 (0%)**. Gemini is **reachable, not down** — but the real-work probe has never succeeded, and the two probes fired on **disjoint hours**, so shape and time-of-day are still confounded. Probe schedule **stopped 2026-10-04**; one-request runs still available by hand |
+| **B-003** | OPEN | Live data is **4/4 single-source** (2026-10-06 nightly). UI supports multi-source; the pipeline does not produce it. Depends on a working semantic layer: B-004, now gated on B-008/B-013 |
+| **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. **Zero usable answers in 20+ live attempts.** Gemini: ping 10/21 (48%), chat 0/15 (0%), schedule stopped 2026-10-04. OpenRouter transport works but the free catalog is structurally 429-prone (see **B-008**). **Now gated on B-013 (BYOK) or paid credits** — no free path has ever produced a semantic verdict |
 | **E-005** | **DONE — verified in production 2026-10-01** | Served `app.json` shows Layouni `status: "departed"`, `departed: true`, with history preserved (`warningCount: 2`, both `relevantWarnings` intact). 18 ledger entries, `cardMatchesInspected: 22` |
 | **N-001a** | OPEN | `MatchDetail.playerStats` declared, never populated. No inferred stats, ever |
 | **N-001b** | OPEN | Needs physical iPhone 13 verification. **Automation cannot close this** |
-| **B-006** | OPEN — cause **measured** | News is 9 days stale, but **the prefilter is innocent**: of 66 drops, 65 are general football it correctly rejects. Feeds carry ~23 Häcken items at most, and the nightly samples them **once at 03:30 UTC**. Fix = fetch more often, not filter differently |
-| **B-006 diagnostics** | **DONE** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason now in the nightly log, with a `ZERO CONTRIBUTED` flag. +7 tests, 349→356. **Not yet seen in a real run** |
-| **B-008** | **OPEN — transport PROVEN, quality UNVALIDATED** | **OpenRouter free tier works where Gemini did not.** Same chat payload: Gemini **0/15**, OpenRouter **1/1 (200)**, 5/5 items parsed, **0 credits**, 1000 req/day. So Gemini's failure was **provider-specific, not a property of the task**. Still not a quality verdict — B-004's false-merge risk is untested. See below |
+| **B-006** | OPEN — cause **measured**, fix **not implemented** | The prefilter is innocent (65 of 66 drops are general football it correctly rejects). The constraint is *when* we look: the nightly samples the feeds **once at 03:30 UTC**. Fix = fetch more often, not filter differently. Diagnostics are DONE and verified in a real run; the cadence fix is not started |
+| **B-006 diagnostics** | **DONE — seen in a real run** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason in the nightly log with a `ZERO CONTRIBUTED` flag, **and observed working in the 2026-10-06 nightly** (six sources flagged ZERO CONTRIBUTED). The same counts are visible in the app since `c3c71ca` |
+| **B-008** | **OPEN — transport PROVEN, quality UNVALIDATED, model churn hit** | OpenRouter free tier worked where Gemini did not (same payload: Gemini **0/15**, OpenRouter **1/1**). Since then: the pinned model was **delisted** (404s), fixed by dynamic catalog resolution (`dd8bedb`); verification requests got **429 from the shared upstream pool**; **all 16 free models are single-provider** — no routing resilience exists. Quality on real news: still untested |
 | **B-009** | **DONE** | A unit test hardcoded a fixture date and asked the code to compare it to the real clock. At 15:00 UTC on 2026-10-04 the fixture silently became historical and the test began failing on its own — **with no code change**. Because CI and deploy both run the suite, it was **blocking every deploy**. Dates now derive from the clock at call time; no production code touched. Suite is **396/396 green** |
+| **B-012** | **OPEN — false negative measured** | The deterministic news filter drops real men's-team articles: the IFK Göteborg derby preview was confirmed dropped 2026-10-07 (keyword classifier has no men's signal in its text). Most drops are correct (women's coverage); the loss is the men's edge cases. Deterministic fix proposed; no provider dependency. See the B-012 section |
+| **B-013** | **OPEN — NEEDS DECISION** | BYOK from a non-Google provider (Groq/Cerebras/Mistral) is the only free path to LLM reliability: every OpenRouter `:free` model is single-provider and its shared pool 429s. BYOK-to-Google explicitly rejected — same provider that scored 0/15. Investigation plan written; needs a product decision first. See the B-013 section |
 | **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |
 | E-006 – E-009 | DONE | Superseded by the Wikidata search redesign |
@@ -1902,12 +2035,19 @@ semantically wrong merges.
 ## Still open, in priority order
 
 1. **B-006 fetch cadence** — cause measured, fix not implemented. This is the
-   actual reason news is 9 days stale. Everything else is secondary.
-2. **B-004 live validation** — blocked on Gemini. Zero semantic verdicts ever
-   obtained.
-3. **E-005 data effect** — code deployed; needs one nightly to land.
-4. **fotbollskanalen.se** — needs scraping, not a feed. Deliberately not started.
-5. **N-001a** match stats, **N-001b** iPhone search — open, N-001b needs hardware.
+   actual reason news goes stale between nightlies. Everything else is secondary.
+2. **B-012 classifier false negatives** — confirmed 2026-10-07 (derby preview
+   dropped). Deterministic fix proposed; independent of any provider.
+3. **B-004 live validation** — blocked on a working provider. Zero semantic
+   verdicts ever obtained. Now gated on **B-013** (BYOK) or paid credits, since
+   the OpenRouter free catalog is structurally 429-prone (B-008).
+4. **B-013 decision** — BYOK from a non-Google provider vs. deterministic feed
+   as the permanent answer. Needs a product decision, then the investigation
+   plan written in the B-013 section.
+5. **fotbollskanalen.se** — needs scraping, not a feed. Deliberately not started.
+6. **N-001a** match stats, **N-001b** iPhone search — open, N-001b needs hardware.
+7. **N-001c** — Liquid Glass touch behaviour verified only in Chromium +
+   synthetic WebKit; needs a real thumb before any future change there.
 
 ## Do not redo these
 
