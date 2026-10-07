@@ -686,39 +686,46 @@ export async function searchPlayersOnline(
   }
 
   const hits = (indexJson.search ?? []).filter((h) => typeof h?.id === "string" && h.id.startsWith("Q"));
-  if (hits.length === 0) return { status: "not-found", query };
+  // An empty index is NOT the end of the search. The prefix index misses
+  // misspellings that the cirrus full-text index resolves — measured
+  // 2026-10-07: "Adam Lundkvist" (the squad's spelling) returns ZERO index
+  // hits, but cirrus finds the footballer Q18196418. Returning "not-found"
+  // here would skip the very fallback that exists to rescue this case, so an
+  // empty index falls through to the cirrus and surname fallbacks below with
+  // no entities to hydrate.
 
   // Cheap pre-filter on the index payload: it carries a description, which is
   // enough to discard obvious non-people without spending a second request on
   // entities we will throw away. This is an OPTIMISATION ONLY — correctness
   // never depends on it, and a hit we keep is still verified after hydration.
   const indexQids = hits.map((h) => h.id).slice(0, INDEX_LIMIT);
-  if (indexQids.length === 0) return { status: "not-found", query };
 
   // ---- 2. Hydration ---------------------------------------------------
-  phase("hydrate");
-  let entRes: Response;
-  try {
-    entRes = await deps.fetch(buildEntitiesUrl(indexQids), { headers: requestHeaders(), mode: "cors" });
-  } catch (e) {
-    return { status: "failed", query, message: describeTransportError(e) };
-  }
+  let entities: Record<string, Entity> = {};
+  if (indexQids.length > 0) {
+    phase("hydrate");
+    let entRes: Response;
+    try {
+      entRes = await deps.fetch(buildEntitiesUrl(indexQids), { headers: requestHeaders(), mode: "cors" });
+    } catch (e) {
+      return { status: "failed", query, message: describeTransportError(e) };
+    }
 
-  if (entRes.status === 429) {
-    return { status: "rate-limited", query, retryAfterSeconds: retryAfter(entRes) };
-  }
-  if (!entRes.ok) {
-    return { status: "failed", query, message: `Wikidata svarade med ${entRes.status}.` };
-  }
+    if (entRes.status === 429) {
+      return { status: "rate-limited", query, retryAfterSeconds: retryAfter(entRes) };
+    }
+    if (!entRes.ok) {
+      return { status: "failed", query, message: `Wikidata svarade med ${entRes.status}.` };
+    }
 
-  let entJson: { entities?: Record<string, Entity> };
-  try {
-    entJson = (await entRes.json()) as { entities?: Record<string, Entity> };
-  } catch {
-    return { status: "failed", query, message: "Kunde inte tolka svaret från Wikidata." };
+    let entJson: { entities?: Record<string, Entity> };
+    try {
+      entJson = (await entRes.json()) as { entities?: Record<string, Entity> };
+    } catch {
+      return { status: "failed", query, message: "Kunde inte tolka svaret från Wikidata." };
+    }
+    entities = entJson.entities ?? {};
   }
-
-  const entities = entJson.entities ?? {};
 
   // Collect the entities we might display, so their country and club labels
   // are resolved in ONE extra call regardless of which path produced them.

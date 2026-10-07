@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   fetchWikipediaSummary,
+  candidateLangs,
   readWikiCache,
   writeWikiCache,
   clearWikiCache,
@@ -114,6 +115,42 @@ describe("fetchWikipediaSummary", () => {
     });
     await fetchWikipediaSummary(FOOTBALLER_QID, { svwiki: { title: "Mattias Bjärsmyr" } }, deps);
     expect(seen).toContain("Mattias_Bj%C3%A4rsmyr");
+  });
+
+  it("falls through to a home-country language when sv and en have no article", async () => {
+    // MEASURED 2026-10-07: Brice Wembangomo has no sv article and a Norwegian
+    // one. Stopping at sv/en lost his narrative entirely.
+    const deps = stubFetch((url) => {
+      if (url.includes("no.wikipedia.org")) {
+        return jsonResponse(summaryShape({ wikibase_item: FOOTBALLER_QID, extract: "Norsk fotballspiller." }));
+      }
+      throw new Error("unexpected request: " + url);
+    });
+    const s = await fetchWikipediaSummary(FOOTBALLER_QID, { nowiki: { title: "Brice Wembangomo" } }, deps);
+    expect(s?.lang).toBe("no");
+    expect(s?.extract).toContain("Norsk");
+  });
+});
+
+describe("candidateLangs", () => {
+  it("puts sv and en first, then home-country languages the entity has", () => {
+    const langs = candidateLangs({ svwiki: { title: "X" }, nowiki: { title: "Y" }, dewiki: { title: "Z" } });
+    expect(langs[0]).toBe("sv");
+    expect(langs[1]).toBe("en");
+    expect(langs).toContain("no");
+    expect(langs).toContain("de");
+  });
+
+  it("never invents a language the entity has no sitelink for", () => {
+    const langs = candidateLangs({ svwiki: { title: "X" } });
+    expect(langs).toEqual(["sv", "en"]);
+  });
+
+  it("caps the number of languages tried", () => {
+    const sitelinks = Object.fromEntries(
+      ["sv", "en", "nb", "da", "de", "fr", "es", "it"].map((l) => [`${l}wiki`, { title: "X" }]),
+    );
+    expect(candidateLangs(sitelinks).length).toBeLessThanOrEqual(4);
   });
 });
 

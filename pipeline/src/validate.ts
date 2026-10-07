@@ -191,6 +191,37 @@ const AppData = z.object({
     )
     .optional(),
   cardMatchesInspected: z.number().optional(),
+  squadEnrichment: z
+    .record(
+      z.object({
+        playerId: z.string(),
+        queryName: z.string(),
+        qid: z.string(),
+        name: z.string(),
+        pageUrl: z.string(),
+        career: z.array(
+          z.object({
+            years: z.string(),
+            team: z.string(),
+            loan: z.boolean(),
+            apps: z.number().optional(),
+            goals: z.number().optional(),
+          }),
+        ),
+        nationalTeams: z.array(
+          z.object({
+            years: z.string(),
+            team: z.string(),
+            loan: z.boolean(),
+            apps: z.number().optional(),
+            goals: z.number().optional(),
+          }),
+        ),
+        usedInfobox: z.boolean(),
+        candidate: z.object({ qid: z.string(), name: z.string() }).passthrough(),
+      }),
+    )
+    .optional(),
 });
 
 function validate(file: string, schema: z.ZodTypeAny): boolean {

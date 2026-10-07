@@ -14,6 +14,8 @@ import NotFound from "./pages/NotFound";
 import { loadAppData, type AppDataState } from "./data";
 import { FloatingTabBar } from "./shared/FloatingTabBar";
 import { Sheet } from "./shared/Sheet";
+import { UpdateBanner } from "./shared/UpdateBanner";
+import { useAppUpdate, type AppUpdate } from "./shared/useAppUpdate";
 import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
@@ -69,6 +71,7 @@ function AppShell({ state }: { state: AppDataState }) {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const [from, setFrom] = useState<string | null>(null);
+  const update = useAppUpdate();
 
   const settingsOpen = pathname === SETTINGS_PATH;
   const active = destinationFor(settingsOpen && from ? from : pathname);
@@ -183,9 +186,11 @@ function AppShell({ state }: { state: AppDataState }) {
 
       <FloatingTabBar active={active} onSelect={(d) => go(d.path)} />
 
+      <UpdateBanner show={update.needRefresh} onUpdate={update.applyUpdate} onDismiss={update.dismiss} />
+
       {settingsOpen && (
         <Sheet title="Data & källor" onClose={closeSettings} testId="settings-sheet">
-          <SettingsPanel state={state} />
+          <SettingsPanel state={state} update={update} />
         </Sheet>
       )}
     </>
@@ -202,7 +207,7 @@ function AppShell({ state }: { state: AppDataState }) {
  * the counts), one technical block (only what the list does not already
  * say). Shorter texts throughout.
  */
-function SettingsPanel({ state }: { state: AppDataState }) {
+function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpdate }) {
   const data = state.status === "ready" ? state.data : null;
   const unavailable = data?.currentDataUnavailable;
   const source = data?.footballSource;
@@ -210,6 +215,15 @@ function SettingsPanel({ state }: { state: AppDataState }) {
   const audit = data?.freshness.articleAudit;
   const { search } = useLocation();
   const auditOpen = idFromSearch(search) === "artiklar";
+  const [checking, setChecking] = useState(false);
+  const [checked, setChecked] = useState<"none" | "found">("none");
+
+  const onCheck = async () => {
+    setChecking(true);
+    const found = await update.checkNow();
+    setChecking(false);
+    setChecked(found ? "found" : "none");
+  };
 
   return (
     <div className="stack-4">
@@ -235,6 +249,27 @@ function SettingsPanel({ state }: { state: AppDataState }) {
             Aktuell herrtrupp: {squadCount} spelare. Spelarhistorik söks live mot Wikidata.
           </p>
         )}
+        <div className="update-check">
+          <button
+            type="button"
+            className="btn-quiet"
+            onClick={onCheck}
+            disabled={checking}
+            data-testid="check-update"
+          >
+            {checking ? "Söker…" : "Sök efter uppdatering"}
+          </button>
+          {checked === "none" && !checking && (
+            <span className="small dim" data-testid="update-none">
+              Du har senaste versionen.
+            </span>
+          )}
+          {checked === "found" && (
+            <button type="button" className="btn-quiet" onClick={update.applyUpdate} data-testid="update-apply">
+              Ny version finns — uppdatera
+            </button>
+          )}
+        </div>
       </section>
 
       <section>

@@ -120,3 +120,80 @@ test.describe("Current and former players stay separate", () => {
     await expect(page.getByTestId("squad-page")).not.toContainText("Frölund");
   });
 });
+
+/**
+ * The squad card must render its Wikidata/Wikipedia layers from the pipeline's
+ * pre-resolved enrichment, with NO live search. The pipeline resolves the
+ * squad once per nightly; the card is the consumer. Mocked here so the test is
+ * deterministic and does not depend on a live Wikidata call.
+ */
+test.describe("Squad card uses pre-resolved enrichment", () => {
+  const ENRICHED = {
+    freshness: { generatedAt: new Date().toISOString(), sourceStatus: { sportomedia: "ok" } },
+    news: [],
+    newsEvents: [],
+    squadStats: [
+      {
+        playerId: "fogis:1",
+        playerName: "Etrit Berisha",
+        positionGroup: "goalkeepers",
+        matchesPlayed: 7,
+        matchesStarted: 7,
+        goals: 0,
+        assists: 0,
+        yellowCards: 1,
+        redCards: 0,
+        competition: "Allsvenskan",
+      },
+    ],
+    disciplineRule: { rule: "3 varningar", ruleSource: "SvFF", ruleSourceUrl: "https://x", threshold: 3, suspensionMatches: 1 },
+    squadEnrichment: {
+      "fogis:1": {
+        playerId: "fogis:1",
+        queryName: "Etrit Berisha",
+        qid: "Q1523030",
+        name: "Etrit Berisha",
+        description: "albansk fotbollsspelare",
+        citizenship: ["Albanien"],
+        pageUrl: "https://www.wikidata.org/wiki/Q1523030",
+        career: [
+          { years: "2025–", team: "BK Häcken", loan: false, apps: 7, goals: 0 },
+          { years: "2008–2013", team: "Kalmar FF", loan: false, apps: 90, goals: 3 },
+        ],
+        nationalTeams: [{ years: "2012–", team: "Albanien", loan: false, apps: 80, goals: 0 }],
+        usedInfobox: true,
+        wiki: { lang: "sv", extract: "Etrit Berisha är en albansk målvakt.", pageUrl: "https://sv.wikipedia.org/wiki/Etrit_Berisha" },
+        candidate: {
+          qid: "Q1523030",
+          name: "Etrit Berisha",
+          alsoKnownAs: [],
+          citizenship: ["Albanien"],
+          clubs: [],
+          career: [],
+          nationalTeams: [],
+          sitelinks: { svwiki: { title: "Etrit Berisha" } },
+          hackenClub: true,
+          hackenTeam: "men",
+          pageUrl: "https://www.wikidata.org/wiki/Q1523030",
+          matchScore: 100,
+        },
+      },
+    },
+  };
+
+  test("renders the pre-resolved career with no live search", async ({ page }) => {
+    await page.route("**/data/app.json", (route) => route.fulfill({ json: ENRICHED }));
+    // The file-level beforeEach already navigated, so a hash-only goto would
+    // NOT re-fetch app.json. A full reload is required for the mock to apply.
+    await page.reload();
+    await page.getByTestId("squad-player").first().click();
+    await expect(page.getByTestId("squad-facts")).toBeAttached();
+    // The career comes straight from the enrichment — Häcken at the top.
+    const career = page.getByTestId("career");
+    await expect(career).toBeVisible();
+    await expect(career).toContainText("BK Häcken");
+    await expect(career).toContainText("Kalmar FF");
+    // The narrative is present too.
+    await expect(page.getByTestId("wiki-extract")).toContainText("albansk målvakt");
+  });
+});

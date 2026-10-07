@@ -79,3 +79,26 @@ test.describe("Article audit", () => {
     await expect(page.getByTestId("audit-unavailable")).toBeVisible();
   });
 });
+
+/**
+ * The manual update check. A stale service worker is the "I don't see your
+ * change" report the user explicitly does not want to be called about, so the
+ * settings sheet offers a way to force a check instead of waiting for the
+ * hourly poll.
+ */
+test.describe("Manual update check", () => {
+  test("the settings sheet offers a check and reports the result", async ({ page }) => {
+    await page.route("**/data/app.json", (route) => route.fulfill({ json: appData(false) }));
+    await page.goto("/#/installningar");
+    const btn = page.getByTestId("check-update");
+    await expect(btn).toBeVisible();
+    await btn.click();
+    // The check is async (and raced against an 8s timeout), so wait for it to
+    // settle rather than reading the DOM mid-check. Either "you have the
+    // latest" or an update button must appear — never a silent no-op.
+    await expect(btn).toBeEnabled({ timeout: 15_000 });
+    const none = await page.getByTestId("update-none").count();
+    const apply = await page.getByTestId("update-apply").count();
+    expect(none + apply).toBeGreaterThan(0);
+  });
+});

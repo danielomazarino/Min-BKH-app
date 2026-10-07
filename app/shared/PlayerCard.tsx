@@ -30,11 +30,10 @@ import {
   searchPlayersOnline,
   commonsImageUrl,
   type PlayerCandidate,
-  type CareerStint,
-  type NationalTeamStint,
 } from "../players/wikidata";
 import {
   fetchWikipediaSummary,
+  candidateLangs,
   readWikiCache,
   writeWikiCache,
   type WikipediaSummary,
@@ -44,8 +43,67 @@ import {
   readInfoboxCache,
   writeInfoboxCache,
   type InfoboxData,
-  type InfoboxStint,
 } from "../players/infobox";
+import { mergeCareerStints } from "../players/careerMerge";
+import { translateText, readTranslationCache, writeTranslationCache } from "../players/translate";
+import type { SquadEnrichment } from "../../pipeline/src/squadEnrichment";
+
+/** Swedish names for the Wikipedia languages we may show, for provenance. */
+const LANG_NAME: Record<string, string> = {
+  sv: "svenska",
+  en: "engelska",
+  nb: "norska",
+  nn: "nynorska",
+  no: "norska",
+  da: "danska",
+  fi: "finska",
+  is: "isländska",
+  de: "tyska",
+  fr: "franska",
+  es: "spanska",
+  it: "italienska",
+  pt: "portugisiska",
+  nl: "nederländska",
+  pl: "polska",
+  tr: "turkiska",
+  ru: "ryska",
+  uk: "ukrainska",
+  hr: "kroatiska",
+  sr: "serbiska",
+  bs: "bosniska",
+  sl: "slovenska",
+  mk: "makedonska",
+  bg: "bulgariska",
+  cs: "tjeckiska",
+  sk: "slovakiska",
+  hu: "ungerska",
+  ro: "rumänska",
+  el: "grekiska",
+  sq: "albanska",
+  ar: "arabiska",
+  fa: "persiska",
+  he: "hebreiska",
+  ka: "georgiska",
+  hy: "armeniska",
+  az: "azerbajdzjanska",
+  kk: "kazakiska",
+  uz: "uzbekiska",
+  ja: "japanska",
+  ko: "koreanska",
+  zh: "kinesiska",
+  id: "indonesiska",
+  ms: "malajiska",
+  vi: "vietnamesiska",
+  th: "thailändska",
+  ca: "katalanska",
+  gl: "galiciska",
+  eu: "baskiska",
+  et: "estniska",
+  lv: "lettiska",
+  lt: "litauiska",
+  af: "afrikaans",
+  sw: "swahili",
+};
 
 /** Squad-only data the Wikidata layer never has. */
 export interface SquadFacts {
@@ -65,6 +123,7 @@ export interface SquadFacts {
 export function PlayerCard({
   name,
   candidate,
+  enrichment,
   squadFacts,
   onClose,
   headExtra,
@@ -73,6 +132,12 @@ export function PlayerCard({
   name: string;
   /** A full Wikidata candidate, when one is already known (search path). */
   candidate?: PlayerCandidate | null;
+  /**
+   * Pre-resolved enrichment from the pipeline (squad path). When present the
+   * card renders instantly with no live request — the whole point of
+   * resolving the squad once per nightly instead of per device.
+   */
+  enrichment?: SquadEnrichment | null;
   /** Squad-season facts, when the player is a current squad member. */
   squadFacts?: SquadFacts | null;
   onClose: () => void;
@@ -80,15 +145,23 @@ export function PlayerCard({
   headExtra?: React.ReactNode;
 }) {
   /**
-   * The Wikidata candidate. The search path passes one in; the squad path
-   * resolves it from the name, once, and keeps it for the sheet's lifetime.
+   * The Wikidata candidate. Priority: an explicit candidate (search path),
+   * then the pipeline's pre-resolved enrichment (squad path), then a live
+   * search by name as the fallback for a player the pipeline could not
+   * resolve.
    */
-  const [resolved, setResolved] = useState<PlayerCandidate | null | undefined>(
-    candidate === undefined ? undefined : candidate,
-  );
+  const [resolved, setResolved] = useState<PlayerCandidate | null | undefined>(() => {
+    if (candidate !== undefined) return candidate;
+    if (enrichment) return enrichment.candidate;
+    return undefined;
+  });
   useEffect(() => {
     if (candidate !== undefined) {
       setResolved(candidate);
+      return;
+    }
+    if (enrichment) {
+      setResolved(enrichment.candidate);
       return;
     }
     let cancelled = false;
@@ -109,29 +182,54 @@ export function PlayerCard({
     return () => {
       cancelled = true;
     };
-  }, [candidate, name]);
+  }, [candidate, enrichment, name]);
 
   const c = resolved;
-  return <PlayerCardInner name={name} c={c} squadFacts={squadFacts} onClose={onClose} headExtra={headExtra} />;
+  return (
+    <PlayerCardInner
+      name={name}
+      c={c}
+      enrichment={enrichment}
+      squadFacts={squadFacts}
+      onClose={onClose}
+      headExtra={headExtra}
+    />
+  );
 }
 
 function PlayerCardInner({
   name,
   c,
+  enrichment,
   squadFacts,
   onClose,
   headExtra,
 }: {
   name: string;
   c: PlayerCandidate | null | undefined;
+  enrichment?: SquadEnrichment | null;
   squadFacts?: SquadFacts | null;
   onClose: () => void;
   headExtra?: React.ReactNode;
 }) {
   // ---- Wikipedia narrative (only when a verified candidate exists) ----
+  //
+  // When the pipeline pre-resolved this player, the narrative is already in
+  // `enrichment.wiki` — no request, no spinner. The live path below is the
+  // fallback for a player the pipeline could not resolve.
   const [wiki, setWiki] = useState<WikipediaSummary | null | undefined>(undefined);
   useEffect(() => {
     if (!c) return;
+    if (enrichment?.wiki) {
+      setWiki({
+        lang: enrichment.wiki.lang,
+        extract: enrichment.wiki.extract,
+        imageUrl: enrichment.wiki.imageUrl,
+        pageUrl: enrichment.wiki.pageUrl,
+        wikibaseItem: c.qid,
+      });
+      return;
+    }
     let cancelled = false;
     setWiki(undefined);
     const cached = readWikiCache(c.qid, Date.now());
@@ -151,9 +249,20 @@ function PlayerCardInner({
   }, [c?.qid, c?.sitelinks]);
 
   // ---- infobox layer (chained on the summary's identity guard) ----
+  //
+  // Tries the preferred languages FIRST, then the player's home-country
+  // languages, and keeps the first infobox that yields data. Measured
+  // 2026-10-07: Brice Wembangomo has NO sv infobox but a full Norwegian one
+  // (seven clubs with years and apps), so stopping at sv/en lost his career.
   const [infobox, setInfobox] = useState<InfoboxData | null | undefined>(undefined);
   useEffect(() => {
     if (!c) return;
+    // The pipeline already merged the infobox into `enrichment.career`, so
+    // there is nothing to fetch — the merge section below uses it directly.
+    if (enrichment) {
+      setInfobox(null);
+      return;
+    }
     let cancelled = false;
     setInfobox(undefined);
     if (!wiki) return;
@@ -164,56 +273,84 @@ function PlayerCardInner({
       return;
     }
     void (async () => {
-      const title = c.sitelinks[`${wiki.lang}wiki`]?.title;
-      if (!title) {
-        setInfobox(null);
-        return;
+      const langs = candidateLangs(c.sitelinks);
+      for (const lang of langs) {
+        const title = c.sitelinks[`${lang}wiki`]?.title;
+        if (!title) continue;
+        const data = await fetchInfobox(lang, title, { fetch: window.fetch.bind(window) });
+        if (cancelled) return;
+        if (data) {
+          writeInfoboxCache(key, data, Date.now());
+          setInfobox(data);
+          return;
+        }
       }
-      const data = await fetchInfobox(wiki.lang, title, { fetch: window.fetch.bind(window) });
-      if (cancelled) return;
-      writeInfoboxCache(key, data, Date.now());
-      setInfobox(data);
+      if (!cancelled) {
+        writeInfoboxCache(key, null, Date.now());
+        setInfobox(null);
+      }
     })();
     return () => {
       cancelled = true;
     };
   }, [wiki, c?.qid, c?.sitelinks]);
 
-  // ---- merge, exactly as the former-player card does ----
-  interface DisplayStint {
-    years: string;
-    team: string;
-    loan: boolean;
-    apps?: number;
-    goals?: number;
-  }
-  const fromWikidata = (s: CareerStint | NationalTeamStint): DisplayStint => ({
-    years: `${s.startYear ?? "????"}–${s.endYear ?? "????"}`,
-    team: s.team,
-    loan: false,
-    apps: (s as CareerStint).apps ?? (s as NationalTeamStint).caps,
-    goals: s.goals,
-  });
-  const fromInfobox = (s: InfoboxStint): DisplayStint => ({
-    years: s.years || "????",
-    team: s.team,
-    loan: s.loan,
-    apps: s.apps,
-    goals: s.goals,
-  });
+  // ---- translation of a non-Swedish narrative ----
+  //
+  // The app's audience reads Swedish. A Norwegian or German paragraph shown
+  // raw is not enrichment, so it is machine-translated and LABELLED as such.
+  // A failed translation falls back to the original text with a note — never
+  // a fabricated Swedish sentence.
+  const [translated, setTranslated] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!wiki || wiki.lang === "sv") {
+      setTranslated(undefined);
+      return;
+    }
+    // The pipeline already translated this narrative.
+    if (enrichment?.wiki?.translated) {
+      setTranslated(enrichment.wiki.translated);
+      return;
+    }
+    let cancelled = false;
+    setTranslated(undefined);
+    const cached = readTranslationCache(wiki.extract, wiki.lang, "sv", Date.now());
+    if (cached !== undefined) {
+      setTranslated(cached);
+      return;
+    }
+    void (async () => {
+      const out = await translateText(wiki.extract, wiki.lang, "sv", { fetch: window.fetch.bind(window) });
+      if (cancelled) return;
+      writeTranslationCache(wiki.extract, wiki.lang, "sv", out, Date.now());
+      setTranslated(out);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [wiki?.extract, wiki?.lang, enrichment?.wiki?.translated]);
 
-  const heightCm = c?.heightCm ?? infobox?.heightCm;
-  const position = c?.position ?? infobox?.position;
-  // Ties go to the infobox — Wikidata's P582 end-years are stale (Ericsson).
-  const careerIsInfobox = (infobox?.career.length ?? 0) >= (c?.career.length ?? 0) && (infobox?.career.length ?? 0) > 0;
-  const career: DisplayStint[] = careerIsInfobox
-    ? (infobox?.career ?? []).map(fromInfobox)
-    : (c?.career ?? []).map(fromWikidata);
-  const nationalIsInfobox =
-    (infobox?.national.length ?? 0) >= (c?.nationalTeams.length ?? 0) && (infobox?.national.length ?? 0) > 0;
-  const nationalTeams: DisplayStint[] = nationalIsInfobox
-    ? (infobox?.national ?? []).map(fromInfobox)
-    : (c?.nationalTeams ?? []).map(fromWikidata);
+  // ---- merge: the UNION of both sources, never a choice ----
+  //
+  // Picking one source silently dropped real clubs (measured 2026-10-07):
+  // Berisha's Häcken stint is unqualified in Wikidata but dated in the
+  // infobox, and the old "more rows wins" rule chose Wikidata and lost it.
+  // The union keeps every club either source knows, preferring the infobox's
+  // row when both describe the same club (its years are the current ones).
+  //
+  // When the pipeline pre-resolved the player, the union is ALREADY in
+  // `enrichment.career` — use it directly rather than re-merging.
+  const heightCm = c?.heightCm ?? infobox?.heightCm ?? enrichment?.heightCm;
+  const position = c?.position ?? infobox?.position ?? enrichment?.position;
+  const careerMerge = enrichment
+    ? { stints: enrichment.career, usedInfobox: enrichment.usedInfobox }
+    : mergeCareerStints(c?.career ?? [], infobox?.career ?? []);
+  const career = careerMerge.stints;
+  const careerIsInfobox = careerMerge.usedInfobox;
+  const nationalMerge = enrichment
+    ? { stints: enrichment.nationalTeams }
+    : mergeCareerStints(c?.nationalTeams ?? [], infobox?.national ?? []);
+  const nationalTeams = nationalMerge.stints;
 
   return (
     <Sheet
@@ -256,15 +393,35 @@ function PlayerCardInner({
               </div>
             )}
 
+            {/* ---- no Wikidata/Wikipedia match: say so, never render silently ---- */}
+            {c === null && (
+              <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="no-wiki-data">
+                Ingen data hittades i Wikidata eller Wikipedia för det här namnet.
+                {squadFacts ? " Säsongssiffrorna ovan kommer från den egna truppdatan." : ""}
+              </p>
+            )}
+            {c === undefined && (
+              <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="wiki-loading">
+                Söker i Wikidata och Wikipedia…
+              </p>
+            )}
+
             {/* ---- Wikipedia narrative, when a verified article exists ---- */}
             {wiki ? (
               <div>
                 <p className="small" style={{ margin: "0 0 4px" }} data-testid="wiki-extract">
-                  {wiki.extract}
+                  {translated ?? wiki.extract}
                 </p>
+                {wiki.lang !== "sv" && (
+                  <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="wiki-translation-note">
+                    {translated
+                      ? `Maskinöversatt från ${LANG_NAME[wiki.lang] ?? wiki.lang}.`
+                      : `Texten är på ${LANG_NAME[wiki.lang] ?? wiki.lang} — översättning kunde inte hämtas.`}
+                  </p>
+                )}
                 <p className="small dim" style={{ margin: 0 }} data-testid="wiki-source">
                   <a className="link" href={wiki.pageUrl} target="_blank" rel="noopener noreferrer">
-                    Läs hela artikeln ({wiki.lang === "sv" ? "svenska" : "engelska"} Wikipedia)
+                    Läs hela artikeln ({LANG_NAME[wiki.lang] ?? wiki.lang} Wikipedia)
                   </a>
                 </p>
               </div>
@@ -317,7 +474,7 @@ function PlayerCardInner({
               <>
                 {careerIsInfobox && (
                   <p className="small dim" style={{ margin: "0 0 6px" }} data-testid="career-source">
-                    Från Wikipedia — Wikidata saknar år och matcher för de här perioderna.
+                    År och matcher kommer från Wikipedia där Wikidata saknar dem.
                   </p>
                 )}
                 <ul className="career" data-testid="career">

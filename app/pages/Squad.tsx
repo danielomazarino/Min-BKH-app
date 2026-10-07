@@ -15,6 +15,7 @@ import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AppDataState } from "../data";
 import type { PlayerDiscipline, SeasonPlayerStat } from "../../pipeline/src/types";
+import type { SquadEnrichment } from "../../pipeline/src/squadEnrichment";
 import { PlayerCard } from "../shared/PlayerCard";
 import {
   cstatFor,
@@ -125,6 +126,7 @@ export default function Squad({ state }: { state: AppDataState }) {
         <SquadPlayerCard
           p={open}
           card={card.get(open.playerId)}
+          enrichment={data?.squadEnrichment?.[open.playerId] ?? null}
           threshold={threshold}
           onClose={() => navigate("/trupp")}
         />
@@ -199,11 +201,13 @@ const POSITION_SHORT: Record<string, string> = {
 function SquadPlayerCard({
   p,
   card,
+  enrichment,
   threshold,
   onClose,
 }: {
   p: SeasonPlayerStat;
   card?: PlayerDiscipline;
+  enrichment?: SquadEnrichment | null;
   threshold: number;
   onClose: () => void;
 }) {
@@ -211,6 +215,7 @@ function SquadPlayerCard({
   return (
     <PlayerCard
       name={p.playerName}
+      enrichment={enrichment}
       squadFacts={{
         positionLabel: POSITION_LABEL_LONG[p.positionGroup],
         competition: p.competition,

@@ -182,9 +182,34 @@ function tidy(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Expand the club/team templates that carry a NAME, before the generic
+ * template stripper removes them.
+ *
+ * WHY (measured 2026-10-07): the Norwegian `Infoboks lagspiller` writes every
+ * club as `{{Fk|Sarpsborg 08}}` and every national team as `{{F|Norge}}`.
+ * `stripTemplates` deletes `{{...}}` wholesale, so those rows cleaned to an
+ * EMPTY string and Brice Wembangomo's seven-club career vanished. The payload
+ * is the data; only the braces are decoration.
+ *
+ * Innermost-first, because `{{Lån|{{Fk|Kvik Halden}}}}` nests. `{{Lån|X}}`
+ * becomes `→ X` so `readStint` still sees the loan arrow.
+ */
+function expandClubTemplates(text: string): string {
+  let out = text;
+  for (let i = 0; i < 5; i += 1) {
+    const next = out
+      .replace(/\{\{\s*Fk\s*\|([^{}|]+)\}\}/gi, "$1")
+      .replace(/\{\{\s*F\s*\|([^{}|]+)\}\}/gi, "$1");
+    if (next === out) break;
+    out = next;
+  }
+  return out.replace(/\{\{\s*Lån\s*\|([^{}]*)\}\}/gi, "→ $1");
+}
+
 /** The full cleaning pipeline for a single-line value. */
 function cleanValue(text: string): string {
-  return tidy(stripTags(stripRefs(stripTemplates(stripLinks(text)))));
+  return tidy(stripTags(stripRefs(stripTemplates(stripLinks(expandClubTemplates(text))))));
 }
 
 /**
@@ -192,7 +217,7 @@ function cleanValue(text: string): string {
  * uses for years / clubs / apps. "2021–2023<br/>2023–2024" → two rows.
  */
 function splitRows(text: string): string[] {
-  return stripRefs(text)
+  return stripRefs(expandClubTemplates(text))
     .split(/<br\s*\/?>/i)
     .map((row) => tidy(stripTags(row)))
     .filter((row) => row.length > 0);
@@ -218,8 +243,10 @@ function splitRows(text: string): string[] {
 export function parseInfoboxFields(wikitext: string): Map<string, string> {
   const fields = new Map<string, string>();
 
-  // Find the infobox start. Both languages use {{Infobox ...}}.
-  const start = wikitext.search(/\{\{\s*Infobox/i);
+  // Find the infobox start. sv/en use {{Infobox ...}}; Norwegian and Danish
+  // use {{Infoboks ...}}. Matching only "Infobox" silently returned an empty
+  // field map for every Norwegian article (measured 2026-10-07).
+  const start = wikitext.search(/\{\{\s*(?:Infobox|Infoboks)\b/i);
   if (start === -1) return fields;
 
   // Walk from the opening braces, tracking depth, to the matching close.
@@ -313,9 +340,27 @@ export function parseInfoboxFields(wikitext: string): Map<string, string> {
  * Field readers
  * ------------------------------------------------------------------ */
 
-/** Height: sv writes "178 cm", en writes "1.82 m" (sometimes "1.82m"). */
+/**
+ * The first present field among several names.
+ *
+ * WHY: the same infobox field is spelled differently per language. Norwegian
+ * `Infoboks lagspiller` uses `år1`/`klubb1`/`kamper1`/`mål1`; Danish uses
+ * `år1`/`klub1`/`kampe1`/`mål1`; English uses `years1`/`clubs1`/`caps1`/
+ * `goals1`. Reading only the English names silently produced an EMPTY career
+ * for Brice Wembangomo (measured 2026-10-07) even though his nowiki infobox
+ * lists seven clubs with years and apps.
+ */
+function firstField(fields: Map<string, string>, names: readonly string[]): string | undefined {
+  for (const n of names) {
+    const v = fields.get(n);
+    if (v !== undefined && v.trim().length > 0) return v;
+  }
+  return undefined;
+}
+
+/** Height: sv "178 cm", en "1.82 m" (sometimes "1.82m"). */
 function readHeight(fields: Map<string, string>): number | undefined {
-  const sv = fields.get("längd") ?? fields.get("langd");
+  const sv = firstField(fields, ["längd", "langd", "høyde", "hoyde", "højde", "hojde"]);
   if (sv) {
     const m = /(\d{3})\s*cm/.exec(cleanValue(sv));
     if (m) {
@@ -339,7 +384,7 @@ function readHeight(fields: Map<string, string>): number | undefined {
 /** Position: sv "position", en "position". Multi-position values are kept
  *  whole ("Forward, winger") — trimming them would invent a preference. */
 function readPosition(fields: Map<string, string>): string | undefined {
-  const raw = fields.get("position");
+  const raw = firstField(fields, ["position", "posisjon"]);
   if (!raw) return undefined;
   const v = cleanValue(raw);
   return v.length > 0 ? v : undefined;
@@ -347,15 +392,15 @@ function readPosition(fields: Map<string, string>): string | undefined {
 
 /** Preferred foot: sv "lateralitet" ("Vänsterfotad"). en has no field. */
 function readFoot(fields: Map<string, string>): string | undefined {
-  const raw = fields.get("lateralitet");
+  const raw = firstField(fields, ["lateralitet", "fot"]);
   if (!raw) return undefined;
   const v = cleanValue(raw);
   return v.length > 0 ? v : undefined;
 }
 
-/** Current club: sv "nuvarandeklubb", en "currentclub". */
+/** Current club: sv "nuvarandeklubb", en "currentclub", nb "nvklubb". */
 function readCurrentClub(fields: Map<string, string>): string | undefined {
-  const raw = fields.get("nuvarandeklubb") ?? fields.get("currentclub");
+  const raw = firstField(fields, ["nuvarandeklubb", "currentclub", "nvklubb", "nåværendeklubb"]);
   if (!raw) return undefined;
   const v = cleanValue(raw);
   return v.length > 0 ? v : undefined;
@@ -364,10 +409,15 @@ function readCurrentClub(fields: Map<string, string>): string | undefined {
 /**
  * One career row: "→ {{flaggbild|Frankrike}} [[RC Lens|Lens]] (lån)".
  * The arrow marks a loan; the "(lån)"/"(loan)" suffix confirms it.
+ *
+ * The row is expanded first: the numbered (en/nb/da) branches pass the RAW
+ * field value, which writes loans as `{{Lån|{{Fk|Kvik Halden}}}}` — without
+ * expansion the arrow never appears and the loan is silently lost.
  */
 function readStint(row: string): InfoboxStint | null {
-  const loan = row.includes("→") || /\((lån|loan)\)/i.test(row);
-  const cleaned = cleanValue(row.replace(/→/g, "").replace(/\((lån|loan)\)/gi, ""));
+  const expanded = expandClubTemplates(row);
+  const loan = expanded.includes("→") || /\((lån|loan)\)/i.test(expanded);
+  const cleaned = cleanValue(expanded.replace(/→/g, "").replace(/\((lån|loan)\)/gi, ""));
   if (!cleaned) return null;
   return { years: "", team: cleaned, loan };
 }
@@ -411,16 +461,17 @@ function readCareer(fields: Map<string, string>): InfoboxStint[] {
   }
 
   // EN numbered shape: years1, clubs1, caps1, goals1, years2, ...
+  // Norwegian/Danish numbered shape: år1, klubb1/klub1, kamper1/kampe1, mål1.
   const stints: InfoboxStint[] = [];
   for (let n = 1; n <= 20; n += 1) {
-    const years = fields.get(`years${n}`);
-    const clubs = fields.get(`clubs${n}`);
+    const years = firstField(fields, [`years${n}`, `år${n}`, `aar${n}`]);
+    const clubs = firstField(fields, [`clubs${n}`, `klubb${n}`, `klub${n}`]);
     if (!clubs) continue;
     const stint = readStint(clubs);
     if (!stint) continue;
     stint.years = cleanValue(years ?? "");
-    const caps = fields.get(`caps${n}`);
-    const goals = fields.get(`goals${n}`);
+    const caps = firstField(fields, [`caps${n}`, `kamper${n}`, `kampe${n}`]);
+    const goals = firstField(fields, [`goals${n}`, `mål${n}`, `maal${n}`]);
     if (caps && /^\d+$/.test(cleanValue(caps))) stint.apps = Number(cleanValue(caps));
     if (goals && /^\d+$/.test(cleanValue(goals))) stint.goals = Number(cleanValue(goals));
     stints.push(stint);
@@ -486,14 +537,14 @@ function readNational(fields: Map<string, string>): InfoboxStint[] {
   }
   const stints: InfoboxStint[] = [];
   for (let n = 1; n <= 10; n += 1) {
-    const years = fields.get(`nationalyears${n}`);
-    const team = fields.get(`nationalteam${n}`);
+    const years = firstField(fields, [`nationalyears${n}`, `landslagår${n}`, `landslagaar${n}`]);
+    const team = firstField(fields, [`nationalteam${n}`, `landslag${n}`]);
     if (!team) continue;
     const stint = readStint(team);
     if (!stint) continue;
     stint.years = cleanValue(years ?? "");
-    const caps = fields.get(`nationalcaps${n}`);
-    const goals = fields.get(`nationalgoals${n}`);
+    const caps = firstField(fields, [`nationalcaps${n}`, `landslagkamper${n}`]);
+    const goals = firstField(fields, [`nationalgoals${n}`, `landslagmål${n}`, `landslagmaal${n}`]);
     if (caps && /^\d+$/.test(cleanValue(caps))) stint.apps = Number(cleanValue(caps));
     if (goals && /^\d+$/.test(cleanValue(goals))) stint.goals = Number(cleanValue(goals));
     stints.push(stint);

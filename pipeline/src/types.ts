@@ -1,5 +1,7 @@
 /** Shared data models for Min BKH. Used by both the data pipeline and the app. */
 
+import type { SquadEnrichment } from "./squadEnrichment";
+
 export type Competition = "allsvenskan" | "svenska-cupen" | "europa" | "other";
 
 export type NewsCategory = "men" | "women" | "youth" | "club" | "unknown";
@@ -360,6 +362,14 @@ export interface AppData {
   newsEvents: NewsEvent[];
   /** Current-season squad statistics (SportoMedia). */
   squadStats?: SeasonPlayerStat[];
+  /**
+   * Pre-resolved Wikidata/Wikipedia enrichment for the squad, keyed by
+   * canonical player id. Resolved ONCE per nightly so the Trupp cards open
+   * with data already present instead of each device searching live.
+   * A player the pipeline could not resolve is simply absent — the app falls
+   * back to its own search for that player.
+   */
+  squadEnrichment?: Record<string, SquadEnrichment>;
   /** Season-level disciplinary ledger (chronological, rule-applied). */
   discipline?: PlayerDiscipline[];
   /** Number of finished matches whose card events were inspected. */

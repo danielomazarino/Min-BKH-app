@@ -52,6 +52,7 @@ import { classifyRelevance, type KnownPersons } from "./newsRelevance";
 import { getRule } from "./rules";
 import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall, noteSourceArticles } from "./apiMetrics";
 import { synthesizeWithOpenRouter } from "./openrouter";
+import { enrichSquad } from "./squadEnrichment";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
@@ -626,6 +627,16 @@ async function main() {
     }),
   ).slice(0, 40);
 
+  // Resolve every squad player to Wikidata/Wikipedia ONCE, here, so the Trupp
+  // cards open with data already present instead of each device searching
+  // live. Per-player failure is tolerated: an unresolved player is simply
+  // absent and the app falls back to its own search for that one.
+  console.log("Enriching squad from Wikidata/Wikipedia…");
+  const squadEnrichment = await enrichSquad(foot.squadStats, {
+    fetch,
+    log: (m) => console.log(m),
+  });
+
   const appData: AppData = {
     freshness: freshness(),
     footballSource: foot.source ?? undefined,
@@ -644,6 +655,7 @@ async function main() {
     news: relevantNews,
     newsEvents,
     squadStats: foot.squadStats,
+    squadEnrichment,
     ...(foot.unavailableReason
       ? { currentDataUnavailable: { reason: foot.unavailableReason, checkedAt: generatedAt() } }
       : {}),
@@ -724,6 +736,13 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
     news: next.news.length ? next.news : prev.news,
     newsEvents: next.newsEvents.length ? next.newsEvents : (prev.newsEvents ?? []),
     squadStats: next.squadStats?.length ? next.squadStats : prev.squadStats,
+    // Enrichment is keyed by player id, so a partial result must MERGE with
+    // the previous map rather than replace it — a player Wikidata failed to
+    // resolve tonight keeps last night's data instead of vanishing.
+    squadEnrichment:
+      next.squadEnrichment && Object.keys(next.squadEnrichment).length
+        ? { ...(prev.squadEnrichment ?? {}), ...next.squadEnrichment }
+        : prev.squadEnrichment,
     disciplineRule: next.disciplineRule ?? prev.disciplineRule,
     currentDataUnavailable: next.currentDataUnavailable ?? prev.currentDataUnavailable,
   };

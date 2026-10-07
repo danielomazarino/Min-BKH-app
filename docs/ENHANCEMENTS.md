@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-10-07 (22:45 CEST / 20:45 UTC)
+## Current state — 2026-10-08 (01:30 CEST / 23:30 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -37,12 +37,14 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **523 unit tests passing** (24 files, verified locally 2026-10-07). E2E: squad spec 20/20 green on the player-card refactor; former-players + a11y re-run in progress at time of writing |
+| Tests | **558 unit tests passing** (28 files, verified locally 2026-10-08). E2E: squad 11/11, article-audit 5/5 green on chromium |
 | Data last generated | **2026-10-07 03:48 UTC** — nightly run succeeded; served build `73222f0.c05b88d` matches `HEAD` |
 | Settings | **REBUILT 2026-10-07 (`73222f0`, deployed)** — one page, no duplicated counts. New **article audit** subpage: every fetched headline per source, marked with the pipeline's verdict ("Häcken herr" / "Ej herrlag" / drop reason), each linking to the original article. OpenRouter failures now show WHY (shared-pool diagnosis, status-code meanings) under the "N fel" pill. **Audit data appears after the 2026-10-08 03:30 nightly** — until then the link is correctly absent |
+| Player cards | **REBUILT 2026-10-08** — the squad is now enriched ONCE per nightly (`squadEnrichment` in `app.json`), so Trupp cards open with career, photo and narrative already present. Career is the **union** of Wikidata and the Wikipedia infobox (was: pick one, which dropped real clubs). Home-country Wikipedia is tried (Norwegian for Wembangomo). Non-Swedish narratives are machine-translated and labelled. See **E-020** |
+| Updates | **NEW 2026-10-08** — an update banner appears when a new version is waiting, plus a manual "Sök efter uppdatering" in settings. Fixes the "I don't see your change" report caused by a stale service worker. See **E-021** |
 | Gemini | **Disabled in the nightly** (key not injected). Free tier measured: reachable ~48%, real-work probe 0/15. B-004 unvalidated |
 | OpenRouter | **Measurement-only nightly, still never reaches the app.** The pinned free model (`qwen/qwen3.8-27b:free`) was **DELISTED** by OpenRouter — the 2026-10-06 nightly got HTTP 404 while the key was healthy (0/1000 used). Fixed 2026-10-06: the model is now **resolved dynamically from the live free catalog** (`dd8bedb`); a delisted pin fails BEFORE the request instead of burning it. Verified live: resolver picks `google/gemma-4-31b-it:free`, but both verification requests got **HTTP 429 from the shared upstream pool** — the structural limit, unchanged. **All 16 current free models are single-provider** (measured from the endpoints API), so there is no routing resilience anywhere in the free catalog. See **B-008**, **B-012**, **B-013** |
-| Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement |
+| Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement AND the squad enrichment |
 
 ### The Gemini availability probe was STOPPED on 2026-10-04
 
@@ -297,6 +299,98 @@ sheet is now the shared card); `Squad.tsx` wires `squadFacts` through. Tests
 all green locally: unit 523/523, squad e2e 20/20, former-players + a11y e2e
 110/110. **Not yet committed, not deployed** — the served build `73222f0`
 does NOT contain this change.
+
+---
+
+## E-020 · Squad cards get real data — resolved once, in the pipeline
+
+**Status:** DONE — code complete, tests green, pending deploy · **Affects:** the Trupp player cards
+
+**What was wrong (user, 2026-10-07).** Three separate defects, all reported by
+the user against real players:
+
+1. **"no Häcken records for Etrit Berisha"** — the card PICKED one career
+   source instead of merging them. `careerIsInfobox = infobox.length >=
+   wikidata.length` chose Wikidata (10 rows) over the infobox (9 rows), and
+   Wikidata's Häcken stint has NO year qualifiers, so it rendered
+   "????–???? BK Häcken" sorted to the bottom. The infobox had "2025– BK
+   Häcken" the whole time.
+2. **"Adam Lundqvist didn't get any data"** — the squad spells him
+   **"Adam Lundkvist"** (k); Wikidata has **"Adam Lundqvist"** (q). The prefix
+   index returns ZERO hits for the k-spelling, and the code returned
+   `not-found` BEFORE the cirrus full-text fallback that *does* find him
+   (verified live). An early return skipped the very rescue that exists.
+3. **"Brice Wembangomo has stats on Norwegian Wikipedia"** — the app only
+   tried sv/en. His nowiki infobox carries his whole career (7 clubs with
+   years and apps); sv has no infobox at all.
+
+**What was built.**
+
+- **`app/players/careerMerge.ts`** — the career is now the **union** of
+  Wikidata and the infobox, matched by a normalized club key (so "BK Häcken"
+  and "Häcken", "Atalanta BC" and "Atalanta", "Albaniens herrlandslag i
+  fotboll" and "Albanien" collapse to one row). Deduped by (club, years), so
+  two genuine spells at one club both survive.
+- **`app/players/wikipedia.ts`** — `candidateLangs()` tries sv, en, then the
+  player's home-country languages from the entity's own sitelinks (capped at
+  4). The identity guard still applies to every language.
+- **`app/players/infobox.ts`** — reads the Norwegian/Danish `Infoboks
+  lagspiller` shape (`år`/`klubb`/`kamper`/`mål`) and expands the `{{Fk|…}}`
+  club templates that were previously stripped to nothing.
+- **`app/players/translate.ts`** — machine translation (MyMemory, CORS-open,
+  verified) of a non-Swedish narrative, LABELLED as machine output. A failed
+  translation shows the original with a note, never a fabricated sentence.
+- **`pipeline/src/squadEnrichment.ts`** — resolves the whole squad ONCE per
+  nightly and stores it in `app.json` as `squadEnrichment`, keyed by player id.
+  Bounded concurrency (2) with a 12s batch delay to respect Wikidata's ~10
+  req/min limit. Per-player failure is tolerated: an unresolved player is
+  absent and the app falls back to its own live search for that one.
+- **`PlayerCard.tsx`** — consumes the pre-resolved enrichment, so a Trupp card
+  opens with career, photo and narrative already present, no spinner. A
+  "no data found" message is now shown explicitly when Wikidata has nothing
+  (previously the card rendered silently).
+
+**Verified live 2026-10-08** (real Wikidata/Wikipedia, not fixtures):
+
+| Player | Before | After |
+| --- | --- | --- |
+| Etrit Berisha | Häcken missing / "????–????" | 9 clean rows, `2025– BK Häcken` at top, no duplicates |
+| Brice Wembangomo | 1 stale Wikidata stint | 7 clubs from the Norwegian infobox, incl. `2025– Häcken` |
+| Adam Lundkvist | "no data" | resolves to Q18196418 via cirrus, 5 dated clubs |
+
+**Payload cost.** The stored candidate is trimmed (sitelinks reduced to the
+languages the card would try) — measured 5.5 KB → 2.3 KB per player, ~62 KB
+for the 27-player squad.
+
+---
+
+## E-021 · The app now tells you when a new version is ready
+
+**Status:** DONE — code complete, tests green, pending deploy · **Affects:** the whole app
+
+**What was wrong (user, 2026-10-07).** "I don't see the changed Data & källor
+on GitHub Pages even if you wrote E-018 DONE." The change WAS deployed — the
+served bundle contained the new strings — but the user's browser was running a
+**stale service worker**. `registerType: "autoUpdate"` precaches the bundle, so
+a new deploy can sit invisible until the cache is cleared. This is the exact
+"I don't see your change" report the user does not want to be called about.
+
+**What was built.**
+
+- **`app/shared/useAppUpdate.ts`** — registers the service worker and reacts to
+  a waiting update. Polls hourly and on tab-visible; a manual `checkNow()` is
+  raced against an 8s timeout so a stalled network can never freeze the button.
+- **`app/shared/UpdateBanner.tsx`** — a small, dismissible banner above the tab
+  bar: "En ny version finns" with a one-tap **Uppdatera**. Non-blocking, so it
+  never interrupts a supporter mid-read.
+- **Settings → "Sök efter uppdatering"** — a manual check that reports either
+  "Du har senaste versionen" or an update button.
+- `main.tsx` no longer registers the SW separately (the hook owns it), so there
+  is exactly one registration.
+
+**Why a banner and not a forced reload.** A forced reload can drop a supporter
+into a blank screen on a slow connection. The banner lets them choose, and it
+returns on the next check because a stale app is the thing to avoid.
 
 ---
 
@@ -1627,7 +1721,9 @@ both linked in the sheet.
 | **B-009** | **DONE** | A unit test hardcoded a fixture date and asked the code to compare it to the real clock. At 15:00 UTC on 2026-10-04 the fixture silently became historical and the test began failing on its own — **with no code change**. Because CI and deploy both run the suite, it was **blocking every deploy**. Dates now derive from the clock at call time; no production code touched. Suite is **396/396 green** |
 | **B-012** | **OPEN — false negative measured** | The deterministic news filter drops real men's-team articles: the IFK Göteborg derby preview was confirmed dropped 2026-10-07 (keyword classifier has no men's signal in its text). Most drops are correct (women's coverage); the loss is the men's edge cases. Deterministic fix proposed; no provider dependency. The new article audit (E-018) makes wrong drops visible by eye from 2026-10-08. See the B-012 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
-| **E-019** | **IN PROGRESS — code complete, tests green, NOT committed** | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
+| **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
+| **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |
+| **E-021** | **DONE — code complete, tests green, pending deploy** | Update banner + manual "Sök efter uppdatering" in settings. Fixes the stale-service-worker "I don't see your change" report. See the E-021 section |
 | **B-013** | **OPEN — NEEDS DECISION** | BYOK from a non-Google provider (Groq/Cerebras/Mistral) is the only free path to LLM reliability: every OpenRouter `:free` model is single-provider and its shared pool 429s. BYOK-to-Google explicitly rejected — same provider that scored 0/15. Investigation plan written; needs a product decision first. See the B-013 section |
 | **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |

@@ -620,12 +620,47 @@ describe("searchPlayersOnline — the six honest states", () => {
     expect((await searchPlayersOnline("Jeremejeff", { fetch: fetchMock })).status).toBe("failed");
   });
 
-  it("returns not-found only when the index genuinely returned nothing", async () => {
-    const fetchMock = stubFetch(() => indexResponse([]));
+  it("returns not-found when the index AND the cirrus fallback both find nothing", async () => {
+    // An empty index no longer short-circuits: it falls through to the cirrus
+    // full-text fallback, which is the only thing that rescues a misspelling
+    // (measured 2026-10-07: "Adam Lundkvist" returns zero index hits but
+    // cirrus finds the footballer). So the cost is index + cirrus, and only
+    // then not-found.
+    const fetchMock = stubFetch((url) =>
+      url.includes("list=search") ? jsonResponse({ query: { search: [] } }) : indexResponse([]),
+    );
     const state = await searchPlayersOnline("Zzzz nonexistent", { fetch: fetchMock });
     expect(state.status).toBe("not-found");
-    // Only one request: there was nothing to hydrate.
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const urls = fetchMock.mock.calls.map((c) => String(c[0]));
+    expect(urls.some((u) => u.includes("list=search"))).toBe(true);
+  });
+
+  it("rescues a misspelled name via the cirrus fallback (Adam Lundkvist → Q18196418)", async () => {
+    // MEASURED 2026-10-07: the squad spells him "Adam Lundkvist" (k) but
+    // Wikidata has "Adam Lundqvist" (q). wbsearchentities returns ZERO hits
+    // for the k-spelling; cirrus full-text finds the footballer. Before the
+    // fix, the empty index returned not-found and skipped cirrus entirely.
+    const LUNDQVIST = {
+      id: "Q18196418",
+      labels: { sv: { value: "Adam Lundqvist" } },
+      descriptions: { sv: { value: "svensk fotbollsspelare" } },
+      claims: {
+        P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+        P106: [{ mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } }],
+        P54: [{ mainsnak: { datavalue: { value: { id: "Q639723" } } } }],
+      },
+    };
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("list=search")) return jsonResponse({ query: { search: [{ title: "Q18196418" }] } });
+      if (url.includes("wbsearchentities")) return indexResponse([]); // the k-spelling misses
+      return entitiesResponse({ Q18196418: LUNDQVIST });
+    });
+    const state = (await searchPlayersOnline("Adam Lundkvist", { fetch: fetchMock })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    expect(state.status).toBe("results");
+    expect(state.candidates[0]?.qid).toBe("Q18196418");
   });
 
   it("returns not-found when every hit was filtered out as a non-person", async () => {

@@ -1052,6 +1052,111 @@ main {
 }
 
 /* ==========================================================================
+   Update banner — a new version is ready, one tap to apply.
+   Sits ABOVE the floating tab bar so it never covers navigation, and is
+   dismissible so it is never nagging. See useAppUpdate.ts for why this exists
+   (a stale service worker is the "I don't see your change" report).
+   ========================================================================== */
+
+.update-banner {
+  position: fixed;
+  left: calc(50% - min(var(--fabnav-w), 100%) / 2);
+  width: min(var(--fabnav-w), calc(100% - var(--fabnav-gap) * 2));
+  /* One gap above the bar, plus the bar's own height and its bottom gap. */
+  bottom: calc(var(--fabnav-gap) * 2 + var(--fabnav-h) + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 8px 10px 8px 14px;
+  background: var(--fabnav-surface);
+  -webkit-backdrop-filter: var(--fabnav-blur);
+  backdrop-filter: var(--fabnav-blur);
+  border: 1px solid var(--fabnav-edge);
+  border-radius: var(--r-md);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+  animation: update-banner-in var(--dur-tap) ease;
+}
+@keyframes update-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.update-banner-text {
+  flex: 1;
+  font-size: var(--t-body);
+  color: var(--text);
+}
+.update-banner-btn {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  background: var(--yellow);
+  color: var(--yellow-ink);
+  font-size: var(--t-body);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.update-banner-btn:active {
+  transform: scale(0.97);
+}
+.update-banner-dismiss {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+.update-banner-dismiss:focus-visible,
+.update-banner-btn:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+/* Manual update check in the settings sheet. */
+.update-check {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s3);
+  flex-wrap: wrap;
+}
+.btn-quiet {
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--text);
+  border: 1px solid var(--hairline-strong);
+  font-size: var(--t-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-quiet:active {
+  transform: scale(0.98);
+}
+.btn-quiet:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.btn-quiet:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
    Modules — the unit of the brief. No borders, no fills; whitespace divides.
    ========================================================================== */
 

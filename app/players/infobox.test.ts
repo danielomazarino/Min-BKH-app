@@ -178,3 +178,44 @@ describe("fetchInfobox — the user's four examples", () => {
     expect(data).toBeNull();
   });
 });
+
+/**
+ * The Norwegian/Danish infobox shape. REAL wikitext, captured live
+ * 2026-10-07 from Brice Wembangomo's nowiki article — the user's own example
+ * ("has stats on Norwegian Wikipedia"). It uses `Infoboks lagspiller` and
+ * numbered `år`/`klubb`/`kamper`/`mål` fields, and writes every club as a
+ * `{{Fk|...}}` template. Reading only the English field names returned an
+ * EMPTY career for him.
+ */
+const WEMBANGOMO_NO = `{{Infoboks lagspiller
+| nvklubb = {{Fk|Häcken}}
+| draktnummer = 5
+| ungdomsår1 ={{0}}{{0}}{{0}}{{0}}–2012| ungdomsklubb1 = [[Sarpsborg Fotballklubb|Sarpsborg]]
+| ungdomsår2 =2013–2014| ungdomsklubb2 = {{Fk|Sarpsborg 08}}
+| år1 =2014–2016| klubb1 ={{Fk|Sarpsborg 08}}| kamper1 = 1| mål1 = 0
+| år2 =2015| klubb2 ={{Lån|{{Fk|Kvik Halden}}}}| kamper2 = 26| mål2 = 6
+| år3 =2016| klubb3 ={{Lån|{{Fk|Fredrikstad}}}}| kamper3 = 9| mål3 = 0
+| år4 =2017–2018| klubb4 ={{Fk|Jerv}}| kamper4 = 58| mål4 = 1
+| år5 =2019–2021| klubb5 ={{Fk|Sandefjord}}| kamper5 = 59| mål5 = 0
+| år6 =2022–2025| klubb6 ={{Fk|Bodø/Glimt}}| kamper6 = 67| mål6 = 3
+| år7 =2025–| klubb7 ={{Fk|Häcken}}| kamper7 = 0| mål7 = 0
+| landslagår1 =2023–| landslag1 ={{F|Norge}}| landslagkamper1 = 1| landslagmål1 = 0
+}}
+'''Brice Wembangomo''' (født 1996) er en norsk-kongolesisk fotballspiller.`;
+
+describe("fetchInfobox — Norwegian/Danish infobox shape", () => {
+  it("parses the numbered år/klubb/kamper/mål fields and the {{Fk}} club templates", async () => {
+    const fetchMock = (async () => jsonResponse({ parse: { wikitext: { "*": WEMBANGOMO_NO } } })) as typeof fetch;
+    const data = await fetchInfobox("no", "Brice Wembangomo", { fetch: fetchMock });
+    expect(data).not.toBeNull();
+    expect(data?.career).toHaveLength(7);
+    expect(data?.career[0]).toMatchObject({ years: "2014–2016", team: "Sarpsborg 08", apps: 1, goals: 0 });
+    // The loan arrow survives the {{Lån|...}} template.
+    expect(data?.career[1]).toMatchObject({ years: "2015", team: "Kvik Halden", loan: true, apps: 26, goals: 6 });
+    // The current club, from nvklubb.
+    expect(data?.currentClub).toBe("Häcken");
+    // The national team, from landslag1/{{F|Norge}}.
+    expect(data?.national).toHaveLength(1);
+    expect(data?.national[0]).toMatchObject({ years: "2023–", team: "Norge", apps: 1 });
+  });
+});
