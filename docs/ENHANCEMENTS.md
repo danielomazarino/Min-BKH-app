@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-10-07 (03:30 CEST / 01:30 UTC)
+## Current state — 2026-10-07 (22:45 CEST / 20:45 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -37,8 +37,9 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **505 unit tests passing** (25 files, verified locally 2026-10-07). E2E: **CI green on the deployed commit `26acdeb`** (run `37545277460`, Chromium + WebKit). A local run the same night: **410 passed, 1 failed, 7 skipped** — the failure was `[webkit] former-players › an open player card has a manual refresh control`, on the same commit CI passed. Not diagnosed; treat as a suspected local flake until reproduced, **not** as verified-green locally |
-| Data last generated | **2026-10-06 03:48 UTC** — nightly run `37410604070` succeeded; served build `26acdeb.7c0aad1` matches `HEAD` |
+| Tests | **523 unit tests passing** (24 files, verified locally 2026-10-07). E2E: squad spec 20/20 green on the player-card refactor; former-players + a11y re-run in progress at time of writing |
+| Data last generated | **2026-10-07 03:48 UTC** — nightly run succeeded; served build `73222f0.c05b88d` matches `HEAD` |
+| Settings | **REBUILT 2026-10-07 (`73222f0`, deployed)** — one page, no duplicated counts. New **article audit** subpage: every fetched headline per source, marked with the pipeline's verdict ("Häcken herr" / "Ej herrlag" / drop reason), each linking to the original article. OpenRouter failures now show WHY (shared-pool diagnosis, status-code meanings) under the "N fel" pill. **Audit data appears after the 2026-10-08 03:30 nightly** — until then the link is correctly absent |
 | Gemini | **Disabled in the nightly** (key not injected). Free tier measured: reachable ~48%, real-work probe 0/15. B-004 unvalidated |
 | OpenRouter | **Measurement-only nightly, still never reaches the app.** The pinned free model (`qwen/qwen3.8-27b:free`) was **DELISTED** by OpenRouter — the 2026-10-06 nightly got HTTP 404 while the key was healthy (0/1000 used). Fixed 2026-10-06: the model is now **resolved dynamically from the live free catalog** (`dd8bedb`); a delisted pin fails BEFORE the request instead of burning it. Verified live: resolver picks `google/gemma-4-31b-it:free`, but both verification requests got **HTTP 429 from the shared upstream pool** — the structural limit, unchanged. **All 16 current free models are single-provider** (measured from the endpoints API), so there is no routing resilience anywhere in the free catalog. See **B-008**, **B-012**, **B-013** |
 | Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement |
@@ -214,6 +215,88 @@ two different casings. Measured over 60 days: it happened on **47 of them**.
 supporter how current something is, which a bare date does not. Older days drop
 the heading and the row's own date carries it — so each day now shows its date
 **once**, never zero.
+
+---
+
+## E-018 · Data & källor rebuilt as one page, with an article audit
+
+**Status:** DONE — deployed 2026-10-07 (`73222f0`, build `73222f0.c05b88d`) · **Affects:** the settings sheet behind the cog wheel
+
+**What was wrong.** The settings sheet had a supporter-facing source list AND a
+"Teknisk information och proveniens" disclosure that repeated the same article
+counts with slightly different labels. The counts also said only HOW MANY
+articles a source contributed — never WHICH, so a wrong filter verdict (B-012)
+could only be found by writing probe scripts. And when OpenRouter failed, the
+panel showed a bare "1 fel" with no way to tell OUR quota from the shared pool.
+
+**What shipped.**
+
+1. **One page.** The duplicated counts are gone; texts shortened throughout;
+   freshness and squad facts merged into one "Data" section.
+2. **Article audit** — the headlines behind the counts. A link ("Granska alla N
+   hämtade artiklar →") opens a subpage listing EVERY article the feeds
+   delivered, grouped per source, newest first. Each headline links to the
+   original article and carries the pipeline's verdict as a pill:
+   - **Häcken herr** (green) — survived both the prefilter and the men's filter
+   - **Ej herrlag** (amber) — passed the prefilter, removed as not men's-team
+   - the prefilter drop reason verbatim ("För gammal", "Reklam", "Ingen
+     Häcken-koppling", …)
+   A summary line states how many were considered relevant ("2 av 5 bedömdes
+   som Häcken herr"), and filter buttons narrow the list to either group.
+3. **Error detail.** OpenRouter failures now show WHY under the "N fel" pill:
+   the error body's diagnosis ("Delad gratis-pool hos Google AI Studio är
+   upptagen — inte vår kvot"), fixed meanings per status code (402 = billing,
+   404 = delisted model, 5xx = routing failure), and OpenRouter's remedy hint.
+
+**How the audit data flows.** `buildArticleAudit()` in `ingestDiagnostics.ts`
+(a pure function, same file as the per-source counts for the same reason —
+`run.ts` executes the pipeline at module scope) derives the verdicts from the
+SAME inputs as the counts, so the two can never disagree. The result ships in
+`app.json` as `freshness.articleAudit`, capped at 250 entries.
+
+**Honest timing note.** The audit link and error details appear only after the
+**2026-10-08 03:30 UTC nightly** runs with the new pipeline. Until then the
+live site shows the new one-page layout WITHOUT the audit link — correct
+behaviour (no audit data exists yet), verified.
+
+**Tests:** 523 unit (was 505) — `noteErrorDetail`/`errorReasons` (5),
+`describeOpenRouterError` (6), `buildArticleAudit` (7) — plus 4 new e2e in
+`articleAudit.spec.ts` pinning the link, the verdicts, the filter and the
+no-data notice. `sourceCounts.spec.ts` updated for the shortened count label
+("N av M behölls").
+
+---
+
+## E-019 · One shared player card for squad AND former players
+
+**Status:** IN PROGRESS — code complete, tests green locally, NOT yet committed/deployed · **Affects:** the Trupp and Spelare player sheets
+
+**What was wrong.** The redesigned player card (photo top-right, facts left,
+records below) shipped for the Spelare search, but Trupp still opened its own
+minimal sheet with only season numbers. Two different cards for the same kind
+of question.
+
+**What was built.** `app/shared/PlayerCard.tsx` — ONE card component that both
+pages use:
+
+- **Spelare (search path)** passes a full Wikidata `candidate`, as before.
+- **Trupp (squad path)** passes the player's NAME plus `squadFacts` (position
+  group, season stats, kortläge) — data only the squad has, shown in the top
+  area. The card resolves the Wikidata candidate from the name once per open;
+  if nothing trustworthy is found, the card still renders with the squad data
+  alone and the wiki layers stay absent, exactly like a former player with no
+  sitelinks.
+- A name match is a HINT, not an identity proof: the lookup requires a person
+  AND a footballer, and the card shows the Wikidata description beside the
+  title so a wrong namesake is visible at a glance. The squad block is labelled
+  with the squad name, the wiki block with the Wikidata name — stats are never
+  merged into the wrong person silently.
+
+**State at documentation time.** `FormerPlayers.tsx` shrank by ~300 lines (its
+sheet is now the shared card); `Squad.tsx` wires `squadFacts` through. Tests
+all green locally: unit 523/523, squad e2e 20/20, former-players + a11y e2e
+110/110. **Not yet committed, not deployed** — the served build `73222f0`
+does NOT contain this change.
 
 ---
 
@@ -1542,7 +1625,9 @@ both linked in the sheet.
 | **B-006 diagnostics** | **DONE — seen in a real run** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason in the nightly log with a `ZERO CONTRIBUTED` flag, **and observed working in the 2026-10-06 nightly** (six sources flagged ZERO CONTRIBUTED). The same counts are visible in the app since `c3c71ca` |
 | **B-008** | **OPEN — transport PROVEN, quality UNVALIDATED, model churn hit** | OpenRouter free tier worked where Gemini did not (same payload: Gemini **0/15**, OpenRouter **1/1**). Since then: the pinned model was **delisted** (404s), fixed by dynamic catalog resolution (`dd8bedb`); verification requests got **429 from the shared upstream pool**; **all 16 free models are single-provider** — no routing resilience exists. Quality on real news: still untested |
 | **B-009** | **DONE** | A unit test hardcoded a fixture date and asked the code to compare it to the real clock. At 15:00 UTC on 2026-10-04 the fixture silently became historical and the test began failing on its own — **with no code change**. Because CI and deploy both run the suite, it was **blocking every deploy**. Dates now derive from the clock at call time; no production code touched. Suite is **396/396 green** |
-| **B-012** | **OPEN — false negative measured** | The deterministic news filter drops real men's-team articles: the IFK Göteborg derby preview was confirmed dropped 2026-10-07 (keyword classifier has no men's signal in its text). Most drops are correct (women's coverage); the loss is the men's edge cases. Deterministic fix proposed; no provider dependency. See the B-012 section |
+| **B-012** | **OPEN — false negative measured** | The deterministic news filter drops real men's-team articles: the IFK Göteborg derby preview was confirmed dropped 2026-10-07 (keyword classifier has no men's signal in its text). Most drops are correct (women's coverage); the loss is the men's edge cases. Deterministic fix proposed; no provider dependency. The new article audit (E-018) makes wrong drops visible by eye from 2026-10-08. See the B-012 section |
+| **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
+| **E-019** | **IN PROGRESS — code complete, tests green, NOT committed** | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **B-013** | **OPEN — NEEDS DECISION** | BYOK from a non-Google provider (Groq/Cerebras/Mistral) is the only free path to LLM reliability: every OpenRouter `:free` model is single-provider and its shared pool 429s. BYOK-to-Google explicitly rejected — same provider that scored 0/15. Investigation plan written; needs a product decision first. See the B-013 section |
 | **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |
