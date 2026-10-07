@@ -70,8 +70,12 @@ test.describe("Current squad is visible", () => {
     if ((await page.getByTestId("squad-player").count()) === 0) test.skip(true, "no squad data");
     await page.getByTestId("squad-player").first().click();
     await expect(page.getByTestId("sheet")).toBeVisible();
-    await expect(page.getByTestId("squad-stats")).toBeVisible();
-    for (const label of ["Matcher", "Start", "Mål", "Assist", "Gult", "Rött"]) {
+    // REWRITTEN 2026-10-07: the sheet is now the SHARED player card, and the
+    // squad facts render under `squad-facts` (the old minimal sheet used
+    // `squad-stats`). "Start" is no longer a tile — the card shows the
+    // supporter-facing five (Matcher, Mål, Assist, Gult, Rött).
+    await expect(page.getByTestId("squad-facts")).toBeVisible();
+    for (const label of ["Matcher", "Mål", "Assist", "Gult", "Rött"]) {
       await expect(page.getByTestId("sheet")).toContainText(label);
     }
   });
