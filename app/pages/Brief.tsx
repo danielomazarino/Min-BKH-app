@@ -148,9 +148,6 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
                 ))}
               </div>
             ))}
-            <Link className="mod-label mod-link" to="/matcher" data-testid="discipline-more">
-              Alla matcher och kort <ChevronRight aria-hidden />
-            </Link>
           </div>
         )}
       </section>
@@ -160,7 +157,10 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
         <section className="module" aria-labelledby="table-h">
           <h2 className="mod-label" id="table-h">
             Tabellen
-            <Link className="mod-more" to="/matcher">
+            {/* ?section=tabellen: the tester's report (2026-10-07) was that the
+                link landed on Matcher but the table stayed below the fold.
+                Matches reads this param and scrolls the table into view. */}
+            <Link className="mod-more" to="/matcher?section=tabellen">
               Hela tabellen <ChevronRight aria-hidden />
             </Link>
           </h2>

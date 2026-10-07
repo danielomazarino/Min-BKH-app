@@ -1376,7 +1376,10 @@ main {
   display: flex;
   align-items: flex-start;
   gap: var(--s3);
-  padding: var(--s2) 0;
+  /* CONDENSED (user, 2026-10-07): the lists were one padded row per player
+     with a divider each; tighter padding and a smaller meter fit the whole
+     kortläge in roughly half the vertical space without losing any row. */
+  padding: 5px 0;
 }
 /* Section L: the row is a real button so the player can be opened. The
    reset matters — a <button> brings UA padding/background/border that would
@@ -1390,7 +1393,7 @@ main {
   border-radius: 0;
   color: inherit;
   font: inherit;
-  padding: var(--s2) 0;
+  padding: 5px 0;
   cursor: pointer;
 }
 .cstat-tap:active {
@@ -1405,7 +1408,7 @@ main {
   display: flex;
   align-items: baseline;
   gap: 3px;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-2);
@@ -1418,10 +1421,10 @@ main {
 }
 .cstat .mark {
   flex: none;
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 .cstat .mark.suspended {
   background: var(--danger);
@@ -1442,7 +1445,7 @@ main {
    the name and the state run together on one line. */
 .cstat .who {
   display: block;
-  font-size: var(--t-title);
+  font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -1466,10 +1469,10 @@ main {
   display: flex;
   align-items: center;
   gap: 3px;
-  margin-top: 6px;
+  margin-top: 3px;
 }
 .meter .notch {
-  width: 14px;
+  width: 12px;
   height: 3px;
   border-radius: 2px;
   background: var(--hairline-strong);

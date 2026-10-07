@@ -11,12 +11,21 @@
  * so the browser/iOS back gesture closes the detail rather than leaving the
  * page.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AppDataState } from "../data";
 import type { MatchRef } from "../../pipeline/src/types";
 import { MatchSheet } from "../shared/MatchSheet";
-import { competitionLabel, daysUntil, fmtDateTime, fmtDay, RESULT_WORD, resultOf, scoreFor } from "../shared/format";
+import {
+  competitionLabel,
+  daysUntil,
+  fmtDateTime,
+  fmtDay,
+  matchTeams,
+  RESULT_WORD,
+  resultOf,
+  scoreForHomeAway,
+} from "../shared/format";
 import { idFromSearch } from "../shared/nav";
 
 export default function Matches({ state }: { state: AppDataState }) {
@@ -53,6 +62,23 @@ export default function Matches({ state }: { state: AppDataState }) {
   const openId = idFromSearch(search);
   const openMatch = openId && detailId != null && String(detailId) === openId ? detail : null;
   const closeMatch = () => navigate("/matcher");
+
+  // ?section=tabellen — Brief's "Hela tabellen" link. The table sits below
+  // the match lists, so without an explicit scroll the reader landed on the
+  // page top and had to hunt for it (tester report, 2026-10-07). The ref is
+  // scrolled once data is ready; the param is then dropped from the URL so a
+  // manual reload does not yank the reader down again.
+  const tableRef = useRef<HTMLElement | null>(null);
+  const wantsTable = new URLSearchParams(search).get("section") === "tabellen";
+  useEffect(() => {
+    if (!wantsTable || state.status !== "ready") return;
+    if (data.table.length === 0) return;
+    tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    navigate("/matcher", { replace: true });
+    // Runs once per arrival with the param; the navigate above removes it.
+    // (This project's ESLint config does not register react-hooks rules, so
+    // there is no directive to silence — the comment is the record.)
+  }, [wantsTable, state.status, data.table.length]);
 
   return (
     <>
@@ -93,7 +119,7 @@ export default function Matches({ state }: { state: AppDataState }) {
         </div>
 
         {data.table.length > 0 && (
-          <section className="module" aria-labelledby="table-h" data-testid="league-table">
+          <section className="module" aria-labelledby="table-h" data-testid="league-table" ref={tableRef}>
             <h2 className="mod-label" id="table-h">
               Tabellen
             </h2>
@@ -127,7 +153,11 @@ export default function Matches({ state }: { state: AppDataState }) {
 
 function NextMatchStrip({ next }: { next: MatchRef }) {
   const days = daysUntil(next.date);
-  const isHome = next.homeAway === "home";
+  // Swedish presentation rule: HOME team first, then the away team — for
+  // played and coming games alike (user, 2026-10-07). The data is stored in
+  // provider order; matchTeams() renders the fixture order and
+  // scoreForHomeAway() the score in that same order.
+  const teams = matchTeams(next);
   return (
     <section className="module" data-testid="matcher-next">
       <h2 className="mod-label">Nästa match</h2>
@@ -135,13 +165,13 @@ function NextMatchStrip({ next }: { next: MatchRef }) {
         <span className="strip-when">
           <b>{days != null ? (days === 0 ? "Idag" : days === 1 ? "Imorgon" : `Om ${days} dagar`) : "—"}</b>
           <span>
-            {fmtDay(next.date)} · {isHome ? "Hemma" : "Borta"}
+            {fmtDay(next.date)} · {next.homeAway === "home" ? "Hemma" : "Borta"}
           </span>
         </span>
         <span className="strip-teams">
           <span className="dim">{competitionLabel(next.competition)}</span>
           <b>
-            {isHome ? "Häcken" : next.opponent} – {isHome ? next.opponent : "Häcken"}
+            {teams.left} – {teams.right}
           </b>
         </span>
       </div>
@@ -150,7 +180,13 @@ function NextMatchStrip({ next }: { next: MatchRef }) {
 }
 
 function MatchRow({ m, onOpen }: { m: MatchRef; onOpen?: () => void }) {
-  const score = scoreFor(m);
+  // Swedish presentation rule (user, 2026-10-07): HOME team first, then the
+  // away team, with the score in that same order — for played and coming
+  // games alike. This is the same fix Brief's result row already had; the
+  // archive rows still rendered Häcken-first, which read "5–0 Häcken –
+  // Kalmar" for an away win and silently reversed the numbers.
+  const teams = matchTeams(m);
+  const score = scoreForHomeAway(m);
   const res = resultOf(m);
   const isHome = m.homeAway === "home";
   const cls = res ?? "";
@@ -158,7 +194,9 @@ function MatchRow({ m, onOpen }: { m: MatchRef; onOpen?: () => void }) {
     <>
       <span className="score">{score ?? "–"}</span>
       <span className="body">
-        <span className="opponent">{m.opponent}</span>
+        <span className="opponent">
+          {teams.left} – {teams.right}
+        </span>
         <span className="meta">
           {fmtDateTime(m.date)} · {competitionLabel(m.competition)}
         </span>
@@ -174,7 +212,9 @@ function MatchRow({ m, onOpen }: { m: MatchRef; onOpen?: () => void }) {
     </>
   );
 
-  const label = `${isHome ? "Hemma" : "Borta"} mot ${m.opponent}, ${score ?? "inget resultat"} ${fmtDay(m.date)}${
+  const label = `${isHome ? "Hemma" : "Borta"}: ${teams.left} mot ${teams.right}, ${
+    score ?? "inget resultat"
+  } ${fmtDay(m.date)}${
     res ? `, ${res === "w" ? "seger" : res === "d" ? "oavgjort" : "förlust"}` : ""
   }`;
 

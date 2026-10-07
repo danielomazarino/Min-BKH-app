@@ -28,8 +28,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Star, X, AlertTriangle, RefreshCw } from "lucide-react";
-import { Sheet } from "../shared/Sheet";
+import { Search, Star, X, RefreshCw } from "lucide-react";
+import { PlayerCard } from "../shared/PlayerCard";
 import {
   loadFavorites,
   toggleFavorite,
@@ -42,29 +42,16 @@ import {
   readCache,
   writeCache,
   clearCache,
-  commonsImageUrl,
   type PlayerCandidate,
   type SearchState,
   type SearchPhase,
-  type CareerStint,
-  type NationalTeamStint,
 } from "../players/wikidata";
 import {
-  fetchWikipediaSummary,
-  readWikiCache,
-  writeWikiCache,
   clearWikiCache,
-  type WikipediaSummary,
 } from "../players/wikipedia";
 import {
-  fetchInfobox,
-  readInfoboxCache,
-  writeInfoboxCache,
   clearInfoboxCache,
-  type InfoboxData,
-  type InfoboxStint,
 } from "../players/infobox";
-import { fmtDay } from "../shared/format";
 
 const RECENT_KEY = "minbkh.recentSearches";
 const MAX_RECENT = 6;
@@ -658,6 +645,13 @@ function CandidateCard({
  * answer is worse than an admitted gap, and this page is where a supporter
  * is most likely to trust us.
  */
+/**
+ * Player detail — now a thin wrapper around the SHARED card
+ * (`shared/PlayerCard.tsx`), which also serves the current squad from Trupp.
+ * The card layout, the Wikipedia/infobox layers and the merge rules live
+ * there; this wrapper only supplies the search-path candidate and the
+ * star/refresh header controls.
+ */
 function PlayerSheet({
   c,
   fav,
@@ -673,138 +667,10 @@ function PlayerSheet({
   onRefresh: (qid: string) => Promise<void>;
   refreshing: boolean;
 }) {
-  /**
-   * The club list, derived from the career timeline rather than the raw
-   * `clubs` array. The raw array includes national teams (they are P54
-   * statements too), which read as clubs once "Landslag" has its own section
-   * — "Husqvarna FF · Sveriges U17-herrlandslag" was the visible
-   * inconsistency, caught in live verification after deploy.
-   *
-   * REMOVED from the card (user, 2026-10-07): the career list already shows
-   * every club, so a separate "Klubbar" paragraph repeated the same names.
-   * The Häcken link lives on the search row and the starred row (the HÄCKEN
-   * tag), where it is actually useful for recognition.
-   */
-  const [wiki, setWiki] = useState<WikipediaSummary | null | undefined>(undefined);
-  useEffect(() => {
-    let cancelled = false;
-    setWiki(undefined);
-    const cached = readWikiCache(c.qid, Date.now());
-    if (cached !== undefined) {
-      setWiki(cached);
-      return;
-    }
-    void (async () => {
-      const summary = await fetchWikipediaSummary(c.qid, c.sitelinks, { fetch: window.fetch.bind(window) });
-      if (cancelled) return;
-      writeWikiCache(c.qid, summary, Date.now());
-      setWiki(summary);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [c.qid, c.sitelinks]);
-
-  /**
-   * The infobox layer — the structured fields Wikidata lacks.
-   *
-   * Measured on the user's own examples: Mats Hedén has NO height, position
-   * or career in Wikidata but a complete enwiki infobox; Bénie Traoré's
-   * Wikidata career is one unqualified stint while the infobox has every
-   * club with years and apps; Martin Ericsson's Wikidata end-year said 2012
-   * where the infobox says 2012–2016.
-   *
-   * IDENTITY CHAIN: this fetch runs only AFTER the summary layer has
-   * verified via wikibase_item that the article is about this exact entity,
-   * and it uses the SAME sitelink title. The parse endpoint does not carry
-   * wikibase_item, so this chaining is the identity proof — parsing the
-   * infobox of an unverified title would risk the musician-for-footballer
-   * swap the summary guard exists to prevent.
-   */
-  const [infobox, setInfobox] = useState<InfoboxData | null | undefined>(undefined);
-  useEffect(() => {
-    let cancelled = false;
-    setInfobox(undefined);
-    // The infobox is only asked for when the summary layer has a verified
-    // article — without that proof there is no identity guarantee.
-    if (!wiki) return;
-    const key = `${wiki.lang}:${c.qid}`;
-    const cached = readInfoboxCache(key, Date.now());
-    if (cached !== undefined) {
-      setInfobox(cached);
-      return;
-    }
-    void (async () => {
-      const title = c.sitelinks[`${wiki.lang}wiki`]?.title;
-      if (!title) {
-        setInfobox(null);
-        return;
-      }
-      const data = await fetchInfobox(wiki.lang, title, { fetch: window.fetch.bind(window) });
-      if (cancelled) return;
-      writeInfoboxCache(key, data, Date.now());
-      setInfobox(data);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [wiki, c.qid, c.sitelinks]);
-
-  /**
-   * MERGE: Wikidata claims and infobox fields, infobox filling the gaps.
-   *
-   * Precedence is per-field, not per-source: Wikidata's height wins when it
-   * exists (it is the more curated source), the infobox fills when it does
-   * not. The career lists are NOT merged row-by-row — they model different
-   * things (Wikidata: qualified stints; infobox: the fan-maintained table
-   * with loans) — so the fuller list wins whole, and the card says which.
-   *
-   * Both stint shapes are normalized into one display shape here, so the
-   * render never has to branch on the source.
-   */
-  interface DisplayStint {
-    years: string;
-    team: string;
-    loan: boolean;
-    apps?: number;
-    goals?: number;
-  }
-  const fromWikidata = (s: CareerStint | NationalTeamStint): DisplayStint => ({
-    years: `${s.startYear ?? "????"}–${s.endYear ?? "????"}`,
-    team: s.team,
-    loan: false,
-    apps: (s as CareerStint).apps ?? (s as NationalTeamStint).caps,
-    goals: s.goals,
-  });
-  const fromInfobox = (s: InfoboxStint): DisplayStint => ({
-    years: s.years || "????",
-    team: s.team,
-    loan: s.loan,
-    apps: s.apps,
-    goals: s.goals,
-  });
-
-  const heightCm = c.heightCm ?? infobox?.heightCm;
-  const position = c.position ?? infobox?.position;
-  // Career: the infobox wins when its list is at least as full. Ties go to
-  // the infobox deliberately — Wikidata's P54 end-year qualifiers are
-  // notoriously stale (Martin Ericsson Q602051: Wikidata says Häcken
-  // 2012–2012, the fan-maintained infobox says 2012–2016 with 109/24, and
-  // both lists have 7 rows). A tie broken toward Wikidata resurrected the
-  // exact "career cut off" defect this layer exists to fix.
-  const careerIsInfobox = (infobox?.career.length ?? 0) >= c.career.length && (infobox?.career.length ?? 0) > 0;
-  const career: DisplayStint[] = careerIsInfobox
-    ? (infobox?.career ?? []).map(fromInfobox)
-    : c.career.map(fromWikidata);
-  const nationalIsInfobox = (infobox?.national.length ?? 0) >= c.nationalTeams.length && (infobox?.national.length ?? 0) > 0;
-  const nationalTeams: DisplayStint[] = nationalIsInfobox
-    ? (infobox?.national ?? []).map(fromInfobox)
-    : c.nationalTeams.map(fromWikidata);
-
   return (
-    <Sheet
-      title={c.name}
-      subtitle={c.description ?? undefined}
+    <PlayerCard
+      name={c.name}
+      candidate={c}
       onClose={onClose}
       headExtra={
         <>
@@ -830,171 +696,6 @@ function PlayerSheet({
           </button>
         </>
       }
-    >
-      <div className="stack-4">
-        {c.fromSnapshot && (
-          <p className="small dim" style={{ margin: 0 }} data-testid="from-snapshot">
-            <AlertTriangle aria-hidden style={{ width: 12, height: 12, verticalAlign: "-1px" }} /> Det här visas från
-            din sparade stjärna, inte från en ny sökning. Sök igen på namnet för att hämta aktuella uppgifter.
-          </p>
-        )}
-
-        {c.alsoKnownAs.length > 0 && (
-          <p className="small muted" style={{ margin: 0 }} data-testid="aka">
-            Sökbar även som: {c.alsoKnownAs.join(", ")}
-          </p>
-        )}
-
-        {/*
-         * LAYOUT (user, 2026-10-07): photo SMALL at the TOP RIGHT, general
-         * information to the LEFT of it, club and national-team records BELOW.
-         * The photo used to be a full-width banner that pushed every fact a
-         * screen down; a supporter opening the card wants the facts first and
-         * the face beside them.
-         */}
-        <div className="player-head">
-          <div className="player-head-facts">
-            {/* ---- Wikipedia narrative, when a verified article exists ---- */}
-            {wiki ? (
-              <div>
-                <p className="small" style={{ margin: "0 0 4px" }} data-testid="wiki-extract">
-                  {wiki.extract}
-                </p>
-                <p className="small dim" style={{ margin: 0 }} data-testid="wiki-source">
-                  <a className="link" href={wiki.pageUrl} target="_blank" rel="noopener noreferrer">
-                    Läs hela artikeln ({wiki.lang === "sv" ? "svenska" : "engelska"} Wikipedia)
-                  </a>
-                </p>
-              </div>
-            ) : null}
-
-            {/* ---- general information ---- */}
-            <div>
-              <div className="kv">
-                <Stat v={c.dateOfBirth ?? null} l="Född" isText />
-                <Stat v={heightCm ?? null} l="Längd cm" />
-                <Stat v={position ?? null} l="Position" isText />
-                <Stat v={c.citizenship[0] ?? null} l="Nationalitet" isText />
-              </div>
-              {infobox?.foot && (
-                <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-foot">
-                  Ben: {infobox.foot}.
-                </p>
-              )}
-              {infobox?.currentClub && (
-                <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-current-club">
-                  Nuvarande klubb: {infobox.currentClub}.
-                </p>
-              )}
-              {c.dateOfDeath && (
-                <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="died">
-                  Avled {fmtDay(c.dateOfDeath)}.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* ---- 0. photo — small, top right, only when the source has one ---- */}
-          {c.imageUrl && (
-            <img
-              src={commonsImageUrl(c.imageUrl)}
-              alt={c.name}
-              loading="lazy"
-              decoding="async"
-              className="player-photo"
-              data-testid="player-photo"
-            />
-          )}
-        </div>
-
-        {/* ---- career, per stint, with the same honesty ---- */}
-        <div>
-          <div className="mod-label">Karriär</div>
-          {career.length > 0 ? (
-            <>
-              {careerIsInfobox && (
-                <p className="small dim" style={{ margin: "0 0 6px" }} data-testid="career-source">
-                  Från Wikipedia — Wikidata saknar år och matcher för de här perioderna.
-                </p>
-              )}
-              <ul className="career" data-testid="career">
-                {career.map((s, idx) => (
-                  <li key={`${s.team}-${s.years}-${idx}`} data-testid="career-stint">
-                    <span className="years">{s.years}</span>
-                    <span className="team">
-                      {s.team}
-                      {s.loan ? " (lån)" : ""}
-                    </span>
-                    {(s.apps !== undefined || s.goals !== undefined) && (
-                      <span className="nums">
-                        {s.apps !== undefined ? `${s.apps} M` : ""}
-                        {s.apps !== undefined && s.goals !== undefined ? " · " : ""}
-                        {s.goals !== undefined ? `${s.goals} Mål` : ""}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <p className="small dim" style={{ margin: 0 }} data-testid="no-career">
-              Inga klubbperioder är registrerade i Wikidata. Det betyder inte att karriären saknas — bara att
-              uppgiften saknas.
-            </p>
-          )}
-        </div>
-
-        {/* ---- national teams, kept apart from clubs ---- */}
-        {nationalTeams.length > 0 && (
-          <div>
-            <div className="mod-label">Landslag</div>
-            <ul className="career" data-testid="national-teams">
-              {nationalTeams.map((s, idx) => (
-                <li key={`${s.team}-${s.years}-${idx}`} data-testid="national-stint">
-                  <span className="years">{s.years}</span>
-                  <span className="team">{s.team}</span>
-                  {(s.apps !== undefined || s.goals !== undefined) && (
-                    <span className="nums">
-                      {s.apps !== undefined ? `${s.apps} L` : ""}
-                      {s.apps !== undefined && s.goals !== undefined ? " · " : ""}
-                      {s.goals !== undefined ? `${s.goals} Mål` : ""}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* ---- provenance ---- */}
-        <div>
-          <div className="mod-label">Källa</div>
-          <p className="small dim prov" style={{ margin: 0 }} data-testid="provenance">
-            Uppgifterna kommer från Wikidata och Wikipedia och kan vara ofullständiga.{" "}
-            <a className="link" href={c.pageUrl} target="_blank" rel="noopener noreferrer">
-              Öppna Wikidata-posten ({c.qid})
-            </a>
-          </p>
-        </div>
-      </div>
-    </Sheet>
-  );
-}
-
-/**
- * One value in the identity grid. `.kv .k .v` is sized and weighted for
- * NUMBERS (19px bold, tabular figures), so a text value like "Sverige" would
- * either overflow the tile or shout louder than the numbers it sits beside.
- * `isText` drops it to a size that fits, because a country name is not more
- * important than a birth date.
- */
-function Stat({ v, l, isText }: { v: number | string | null; l: string; isText?: boolean }) {
-  return (
-    <div className="k">
-      <div className="v" style={isText && typeof v === "string" ? { fontSize: 14, fontWeight: 600 } : undefined}>
-        {v ?? "–"}
-      </div>
-      <div className="l">{l}</div>
-    </div>
+    />
   );
 }

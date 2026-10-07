@@ -34,22 +34,20 @@ const BLACK = "#000000";
 const YELLOW = "#ffd200";
 
 /**
- * One plant stalk: a dense column of stacked leaf rows narrowing to a tip,
- * like the drawing's hop/wheat plants. Each row is a pair of pointed leaves
- * meeting at the stalk; rows overlap so the plant reads as one leafy mass,
- * not a stick with blobs.
+ * One plant stalk: a dense column of stacked leaf rows narrowing to a tip.
+ * The user asked for MORE stalks that OVERLAP, so the stalks are drawn wider
+ * and closer together than in the first attempt — neighbouring foliage
+ * interlocks, reading as one hedge rather than four separate trees.
  */
 const stalk = (x, base, h, w) => {
-  // A leaf row: two pointed leaves rising from the stalk at height yy,
-  // each reaching out to ww. Pointed (q curves), not round.
   const row = (yy, ww) =>
     `<path d="M${x} ${yy} q${-ww * 0.5} ${-h * 0.05} ${-ww} ${h * 0.1} q${ww * 0.45} ${h * 0.05} ${ww} ${-h * 0.1} Z" fill="${YELLOW}"/>` +
     `<path d="M${x} ${yy} q${ww * 0.5} ${-h * 0.05} ${ww} ${h * 0.1} q${-ww * 0.45} ${h * 0.05} ${-ww} ${-h * 0.1} Z" fill="${YELLOW}"/>`;
-  const rows = 5;
-  let out = `<rect x="${x - w * 0.07}" y="${base - h * 0.34}" width="${w * 0.14}" height="${h * 0.34}" fill="${YELLOW}"/>`;
+  const rows = 6;
+  let out = `<rect x="${x - w * 0.07}" y="${base - h * 0.3}" width="${w * 0.14}" height="${h * 0.3}" fill="${YELLOW}"/>`;
   for (let i = 0; i < rows; i += 1) {
-    const f = i / (rows - 1); // 0 bottom .. 1 top
-    out += row(base - h * (0.3 + f * 0.52), w * (0.5 - f * 0.24));
+    const f = i / (rows - 1);
+    out += row(base - h * (0.26 + f * 0.56), w * (0.62 - f * 0.28));
   }
   out += `<path d="M${x} ${base - h} l${w * 0.13} ${h * 0.14} l${-w * 0.13} ${h * 0.05} l${-w * 0.13} ${-h * 0.14} Z" fill="${YELLOW}"/>`;
   return out;
@@ -58,47 +56,72 @@ const stalk = (x, base, h, w) => {
 /**
  * Shared art, drawn in a 512 box. `s` scales the whole composition about
  * the centre: 1 = full bleed, <1 = inset for the maskable safe area.
+ *
+ * ENHANCED (user, 2026-10-07): a more detailed crane (lattice tower, jib
+ * with tie lines, counter-jib, trolley and a real hook), a football that
+ * actually reads as one (pentagon + curved seams) and sits ON the ground
+ * line, the BKH wordmark centred in the open space between crane and ball,
+ * and seven overlapping hedge stalks.
  */
 const art = (s) => {
   const t = (v) => 256 + (v - 256) * s; // transform about centre
   const k = (v) => v * s; // scale a length
-  const ground = t(436); // the ground bar's top edge
+  const ground = t(438); // the ground bar's top edge
+  const towerX = t(118);
+  const jibTipX = t(436);
+  const jibY = t(96);
   return `
-  <!-- ground bar: the line the plants stand on, as in the drawing -->
-  <rect x="${t(56)}" y="${ground}" width="${k(400)}" height="${k(14)}" fill="${YELLOW}"/>
+  <!-- ground bar: the line everything stands on -->
+  <rect x="${t(48)}" y="${ground}" width="${k(416)}" height="${k(14)}" fill="${YELLOW}"/>
 
-  <!-- plants: five stalks across the bottom, as in the drawing -->
+  <!-- hedge: seven stalks, wide enough to overlap into one hedge -->
   <g>
-    ${stalk(t(96), ground, k(120), k(52))}
-    ${stalk(t(160), ground, k(132), k(56))}
-    ${stalk(t(224), ground, k(120), k(52))}
-    ${stalk(t(288), ground, k(132), k(56))}
-    ${stalk(t(352), ground, k(120), k(52))}
+    ${stalk(t(84), ground, k(104), k(58))}
+    ${stalk(t(128), ground, k(122), k(64))}
+    ${stalk(t(174), ground, k(108), k(60))}
+    ${stalk(t(220), ground, k(128), k(66))}
+    ${stalk(t(266), ground, k(110), k(60))}
+    ${stalk(t(312), ground, k(124), k(64))}
+    ${stalk(t(356), ground, k(104), k(58))}
   </g>
 
-  <!-- crane: tower left, jib reaching up-right, tie, hook hanging from the
-       jib tip. One stroke group so the hook never detaches at small sizes. -->
+  <!-- crane: lattice tower, slewing unit, jib with tie lines, counter-jib,
+       trolley cable and hook. Built from strokes so it stays crisp small. -->
   <g stroke="${YELLOW}" fill="none" stroke-linecap="round">
-    <path d="M${t(120)} ${ground} L${t(120)} ${t(118)}" stroke-width="${k(22)}"/>
-    <path d="M${t(88)} ${t(118)} L${t(152)} ${t(118)}" stroke-width="${k(14)}"/>
-    <path d="M${t(120)} ${t(118)} L${t(430)} ${t(86)}" stroke-width="${k(16)}"/>
-    <path d="M${t(430)} ${t(86)} L${t(430)} ${t(148)}" stroke-width="${k(10)}"/>
+    <!-- tower: two rails + zigzag lattice -->
+    <path d="M${towerX - k(13)} ${ground} L${towerX - k(9)} ${jibY}" stroke-width="${k(7)}"/>
+    <path d="M${towerX + k(13)} ${ground} L${towerX + k(9)} ${jibY}" stroke-width="${k(7)}"/>
+    <path d="M${towerX - k(12)} ${t(400)} L${towerX + k(12)} ${t(372)} M${towerX + k(12)} ${t(372)} L${towerX - k(12)} ${t(344)} M${towerX - k(12)} ${t(344)} L${towerX + k(12)} ${t(316)} M${towerX + k(12)} ${t(316)} L${towerX - k(12)} ${t(288)} M${towerX - k(12)} ${t(288)} L${towerX + k(12)} ${t(260)} M${towerX + k(12)} ${t(260)} L${towerX - k(12)} ${t(232)} M${towerX - k(12)} ${t(232)} L${towerX + k(12)} ${t(204)} M${towerX + k(12)} ${t(204)} L${towerX - k(12)} ${t(176)} M${towerX - k(12)} ${t(176)} L${towerX + k(12)} ${t(148)}" stroke-width="${k(5)}"/>
+    <!-- slewing unit -->
+    <path d="M${towerX - k(20)} ${jibY} L${towerX + k(20)} ${jibY}" stroke-width="${k(12)}"/>
+    <!-- jib (long, to the right) and counter-jib (short, left) -->
+    <path d="M${towerX} ${jibY} L${jibTipX} ${jibY + k(10)}" stroke-width="${k(9)}"/>
+    <path d="M${towerX} ${jibY} L${towerX - k(52)} ${jibY + k(14)}" stroke-width="${k(8)}"/>
+    <!-- jib under-bracing -->
+    <path d="M${towerX + k(60)} ${jibY + k(2)} L${towerX + k(80)} ${jibY + k(26)} M${towerX + k(80)} ${jibY + k(26)} L${towerX + k(160)} ${jibY + k(6)} M${towerX + k(160)} ${jibY + k(6)} L${towerX + k(180)} ${jibY + k(28)} M${towerX + k(180)} ${jibY + k(28)} L${towerX + k(250)} ${jibY + k(9)}" stroke-width="${k(4)}"/>
+    <!-- tie lines from an apex mast down to both jibs -->
+    <path d="M${towerX} ${jibY - k(34)} L${jibTipX} ${jibY + k(10)} M${towerX} ${jibY - k(34)} L${towerX - k(52)} ${jibY + k(14)} M${towerX} ${jibY - k(34)} L${towerX} ${jibY}" stroke-width="${k(5)}"/>
+    <!-- trolley cable down from the jib tip -->
+    <path d="M${jibTipX} ${jibY + k(10)} L${jibTipX} ${t(150)}" stroke-width="${k(6)}"/>
   </g>
-  <!-- the hook: cable ending in an open hook, as drawn -->
-  <path d="M${t(430)} ${t(150)} a${k(14)} ${k(14)} 0 1 1 ${k(2)} ${k(26)} a${k(16)} ${k(16)} 0 1 0 ${k(-2)} ${k(-26)}"
-        fill="none" stroke="${YELLOW}" stroke-width="${k(11)}" stroke-linecap="round"/>
+  <!-- the hook: an open crane hook on the cable -->
+  <path d="M${jibTipX} ${t(150)} a${k(11)} ${k(11)} 0 1 1 ${k(1)} ${k(20)} a${k(13)} ${k(13)} 0 1 0 ${k(-1)} ${k(-20)}"
+        fill="none" stroke="${YELLOW}" stroke-width="${k(9)}" stroke-linecap="round"/>
+  <!-- counterweight on the counter-jib -->
+  <rect x="${towerX - k(58)}" y="${jibY + k(14)}" width="${k(26)}" height="${k(20)}" fill="${YELLOW}"/>
 
-  <!-- BKH wordmark: the heaviest element in the drawing, kept that way -->
-  <text x="${t(268)}" y="${t(300)}" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif"
-        font-weight="900" font-size="${k(96)}" letter-spacing="${k(2)}" fill="${YELLOW}">BKH</text>
+  <!-- BKH wordmark: centred in the open space between the crane tower and
+       the football, above the hedge — the composition's visual centre. -->
+  <text x="${t(268)}" y="${t(286)}" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif"
+        font-weight="900" font-size="${k(88)}" letter-spacing="${k(2)}" fill="${YELLOW}">BKH</text>
 
-  <!-- football: filled disc with a cut pentagon, bottom right, overlapping
-       the ground bar exactly as in the drawing -->
-  <g transform="translate(${t(392)} ${t(392)})">
-    <circle r="${k(74)}" fill="${YELLOW}"/>
-    <path d="M0 -30 L29 -9 L18 25 L-18 25 L-29 -9 Z" fill="${BLACK}"/>
-    <path d="M0 -74 L0 -30 M29 -9 L58 -23 M18 25 L36 55 M-18 25 L-36 55 M-29 -9 L-58 -23"
-          stroke="${BLACK}" stroke-width="${k(7)}" fill="none"/>
+  <!-- football: ON the ground line (its bottom touches the bar), a real
+       ball — centre pentagon, five curved seams to the edge. -->
+  <g transform="translate(${t(404)} ${t(438 - 62)})">
+    <circle r="${k(62)}" fill="${YELLOW}"/>
+    <path d="M0 -25 L24 -8 L15 21 L-15 21 L-24 -8 Z" fill="${BLACK}"/>
+    <path d="M0 -62 L0 -25 M24 -8 L59 -19 M15 21 L37 51 M-15 21 L-37 51 M-24 -8 L-59 -19"
+          stroke="${BLACK}" stroke-width="${k(6)}" fill="none"/>
   </g>`;
 };
 

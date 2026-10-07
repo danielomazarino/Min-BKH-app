@@ -15,7 +15,7 @@ import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AppDataState } from "../data";
 import type { PlayerDiscipline, SeasonPlayerStat } from "../../pipeline/src/types";
-import { Sheet } from "../shared/Sheet";
+import { PlayerCard } from "../shared/PlayerCard";
 import {
   cstatFor,
   currentSquadDiscipline,
@@ -122,7 +122,7 @@ export default function Squad({ state }: { state: AppDataState }) {
       )}
 
       {open && (
-        <SquadPlayerSheet
+        <SquadPlayerCard
           p={open}
           card={card.get(open.playerId)}
           threshold={threshold}
@@ -186,12 +186,17 @@ const POSITION_SHORT: Record<string, string> = {
 };
 
 /**
- * Current-player detail. Deliberately honest: it shows what the pipeline
- * knows (season totals, card situation) and does not claim a contract, a club
- * history or a transfer status, because none of that exists for current
- * players in the data.
+ * Current-player detail — now the SHARED card (user, 2026-10-07: "use the new
+ * player card for the current squad too").
+ *
+ * The squad-unique data (season totals, kortläge) is passed as `squadFacts`
+ * and renders in the card's TOP area, ahead of the Wikidata/Wikipedia layers.
+ * The Wikidata side is resolved from the player's NAME — squad ids are fogis
+ * ids, not Q-IDs — and when Wikidata has nothing trustworthy the card still
+ * renders with the squad facts alone. The old minimal sheet showed only six
+ * numbers; this shows the same numbers PLUS everything the search card shows.
  */
-function SquadPlayerSheet({
+function SquadPlayerCard({
   p,
   card,
   threshold,
@@ -204,34 +209,21 @@ function SquadPlayerSheet({
 }) {
   const cs = card ? cstatFor(card, threshold) : null;
   return (
-    <Sheet title={p.playerName} subtitle={POSITION_LABEL_LONG[p.positionGroup]} onClose={onClose}>
-      <div className="stack-4">
-        <div>
-          <div className="mod-label">Säsong {p.competition ?? ""}</div>
-          <div className="kv" data-testid="squad-stats">
-            <Stat v={p.matchesPlayed} l="Matcher" />
-            <Stat v={p.matchesStarted} l="Start" />
-            <Stat v={p.goals} l="Mål" />
-            <Stat v={p.assists} l="Assist" />
-            <Stat v={p.yellowCards} l="Gult" />
-            <Stat v={p.redCards} l="Rött" />
-          </div>
-        </div>
-
-        <div>
-          <div className="mod-label">Kortläge</div>
-          {cs ? (
-            <p className={`small ${cs.severity === "suspended" ? "danger-text" : ""}`} data-testid="squad-card-status">
-              {cs.state} · {card!.warningCount} varningar denna säsong
-            </p>
-          ) : (
-            <p className="small dim" data-testid="squad-card-none">
-              Ingen kortdata registrerad i säsongens ledger.
-            </p>
-          )}
-        </div>
-      </div>
-    </Sheet>
+    <PlayerCard
+      name={p.playerName}
+      squadFacts={{
+        positionLabel: POSITION_LABEL_LONG[p.positionGroup],
+        competition: p.competition,
+        matchesPlayed: p.matchesPlayed,
+        matchesStarted: p.matchesStarted,
+        goals: p.goals,
+        assists: p.assists,
+        yellowCards: p.yellowCards,
+        redCards: p.redCards,
+        cardState: cs ? `${cs.state} · ${card!.warningCount} varningar denna säsong` : null,
+      }}
+      onClose={onClose}
+    />
   );
 }
 
@@ -241,12 +233,3 @@ const POSITION_LABEL_LONG: Record<string, string> = {
   midfields: "Mittfältare",
   forwards: "Anfallare",
 };
-
-function Stat({ v, l }: { v: number | null; l: string }) {
-  return (
-    <div className="k">
-      <div className="v">{v ?? "–"}</div>
-      <div className="l">{l}</div>
-    </div>
-  );
-}
