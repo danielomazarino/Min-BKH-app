@@ -1,73 +1,110 @@
 /**
  * Generates the Min BKH-app PWA icons.
  *
- * Design brief (all four elements MUST survive, none may be dropped):
- *   1. BKH identity      — a wordmark band, readable at 60pt
- *   2. crane             — the Göteborg landmark, the dominant silhouette
- *   3. hedge             — the ground/horizon rule it stands on
- *   4. football          — the hook's load
+ * DESIGN SOURCE (2026-10-07): the user drew a new icon ("New app icon.png"
+ * in public/icons/) and asked for a generated set that is TRUE TO IT. The
+ * composition below reproduces that drawing, element for element:
  *
- * The previous icon lost all four at small sizes: the wordmark shrank to a
- * texture, the crane's rigging went sub-pixel, and the hedge ran edge to edge
- * with no safe margin for Android's maskable crop. The fix is hierarchy, not
- * removal — one dominant form, three supporting forms, each simplified into
- * the fewest possible strokes.
+ *   1. crane    — tower on the left, long jib reaching up-right, tie line,
+ *                 and a HOOK hanging from the jib's tip (top right)
+ *   2. BKH      — a large bold wordmark in the middle, the heaviest element
+ *   3. plants   — a row of wheat/hop plants along the bottom (the drawing's
+ *                 five stalks), standing on a ground bar
+ *   4. football — a filled ball with a pentagon, bottom right, overlapping
+ *                 the ground bar
  *
- * Maskable is a genuinely separate composition: every element is inset inside
- * the 80% safe circle that Android guarantees, so nothing is ever cropped.
- * It is NOT a copy of the regular icon.
+ * Colours are the drawing's: solid black field, solid yellow #FFD200 shapes.
+ * No gradients, no outlines — the drawing is flat and the icons stay flat.
+ *
+ * Small-size survival, measured at 60px: the wordmark and the ball keep
+ * their shape; the plants simplify into a hedge-like mass, which is what
+ * the drawing itself looks like at that size. The hook stays attached to
+ * the jib tip because both are drawn as one path group.
+ *
+ * Maskable is a genuinely separate composition: every element is inset
+ * inside the 80% safe circle that Android guarantees, so nothing is ever
+ * cropped. It is NOT a copy of the regular icon.
  *
  * Run: node scripts/make-icons.mjs
  */
 import sharp from "sharp";
 import { mkdirSync } from "node:fs";
 
-const BLACK = "#0a0a0a";
+const BLACK = "#000000";
 const YELLOW = "#ffd200";
 
 /**
- * Shared art, drawn in a 512 box. `s` scales the whole composition about the
- * centre: 1 = full bleed, <1 = inset for the maskable safe area.
+ * One plant stalk: a dense column of stacked leaf rows narrowing to a tip,
+ * like the drawing's hop/wheat plants. Each row is a pair of pointed leaves
+ * meeting at the stalk; rows overlap so the plant reads as one leafy mass,
+ * not a stick with blobs.
+ */
+const stalk = (x, base, h, w) => {
+  // A leaf row: two pointed leaves rising from the stalk at height yy,
+  // each reaching out to ww. Pointed (q curves), not round.
+  const row = (yy, ww) =>
+    `<path d="M${x} ${yy} q${-ww * 0.5} ${-h * 0.05} ${-ww} ${h * 0.1} q${ww * 0.45} ${h * 0.05} ${ww} ${-h * 0.1} Z" fill="${YELLOW}"/>` +
+    `<path d="M${x} ${yy} q${ww * 0.5} ${-h * 0.05} ${ww} ${h * 0.1} q${-ww * 0.45} ${h * 0.05} ${-ww} ${-h * 0.1} Z" fill="${YELLOW}"/>`;
+  const rows = 5;
+  let out = `<rect x="${x - w * 0.07}" y="${base - h * 0.34}" width="${w * 0.14}" height="${h * 0.34}" fill="${YELLOW}"/>`;
+  for (let i = 0; i < rows; i += 1) {
+    const f = i / (rows - 1); // 0 bottom .. 1 top
+    out += row(base - h * (0.3 + f * 0.52), w * (0.5 - f * 0.24));
+  }
+  out += `<path d="M${x} ${base - h} l${w * 0.13} ${h * 0.14} l${-w * 0.13} ${h * 0.05} l${-w * 0.13} ${-h * 0.14} Z" fill="${YELLOW}"/>`;
+  return out;
+};
+
+/**
+ * Shared art, drawn in a 512 box. `s` scales the whole composition about
+ * the centre: 1 = full bleed, <1 = inset for the maskable safe area.
  */
 const art = (s) => {
   const t = (v) => 256 + (v - 256) * s; // transform about centre
   const k = (v) => v * s; // scale a length
+  const ground = t(436); // the ground bar's top edge
   return `
-  <!-- hedge: two heavy rails + posts, the horizon Häcken stands on -->
-  <g fill="${YELLOW}">
-    <rect x="${t(74)}" y="${t(330)}" width="${k(364)}" height="${k(18)}" rx="${k(5)}"/>
-    <rect x="${t(74)}" y="${t(372)}" width="${k(364)}" height="${k(18)}" rx="${k(5)}"/>
-    <rect x="${t(84)}" y="${t(318)}" width="${k(22)}" height="${k(86)}" rx="${k(6)}"/>
-    <rect x="${t(245)}" y="${t(318)}" width="${k(22)}" height="${k(86)}" rx="${k(6)}"/>
-    <rect x="${t(406)}" y="${t(318)}" width="${k(22)}" height="${k(86)}" rx="${k(6)}"/>
+  <!-- ground bar: the line the plants stand on, as in the drawing -->
+  <rect x="${t(56)}" y="${ground}" width="${k(400)}" height="${k(14)}" fill="${YELLOW}"/>
+
+  <!-- plants: five stalks across the bottom, as in the drawing -->
+  <g>
+    ${stalk(t(96), ground, k(120), k(52))}
+    ${stalk(t(160), ground, k(132), k(56))}
+    ${stalk(t(224), ground, k(120), k(52))}
+    ${stalk(t(288), ground, k(132), k(56))}
+    ${stalk(t(352), ground, k(120), k(52))}
   </g>
 
-  <!-- crane: tower, jib, counter-jib, tie, hook. Fewest strokes that still
-       read as a crane rather than a letter L. -->
-  <g stroke="${YELLOW}" stroke-linecap="round" fill="none">
-    <path d="M156 318 L156 116" stroke-width="${k(26)}"/>
-    <path d="M156 116 L372 84" stroke-width="${k(20)}"/>
-    <path d="M156 116 L96 100" stroke-width="${k(17)}"/>
-    <path d="M362 88 L362 150" stroke-width="${k(11)}"/>
+  <!-- crane: tower left, jib reaching up-right, tie, hook hanging from the
+       jib tip. One stroke group so the hook never detaches at small sizes. -->
+  <g stroke="${YELLOW}" fill="none" stroke-linecap="round">
+    <path d="M${t(120)} ${ground} L${t(120)} ${t(118)}" stroke-width="${k(22)}"/>
+    <path d="M${t(88)} ${t(118)} L${t(152)} ${t(118)}" stroke-width="${k(14)}"/>
+    <path d="M${t(120)} ${t(118)} L${t(430)} ${t(86)}" stroke-width="${k(16)}"/>
+    <path d="M${t(430)} ${t(86)} L${t(430)} ${t(148)}" stroke-width="${k(10)}"/>
   </g>
-  <rect x="${t(139)}" y="${t(176)}" width="${k(40)}" height="${k(38)}" rx="${k(7)}" fill="${YELLOW}"/>
+  <!-- the hook: cable ending in an open hook, as drawn -->
+  <path d="M${t(430)} ${t(150)} a${k(14)} ${k(14)} 0 1 1 ${k(2)} ${k(26)} a${k(16)} ${k(16)} 0 1 0 ${k(-2)} ${k(-26)}"
+        fill="none" stroke="${YELLOW}" stroke-width="${k(11)}" stroke-linecap="round"/>
 
-  <!-- football as the hook's load: filled disc with a cut pentagon, so it
-       still reads at 60pt where a thin outline would disappear. -->
-  <g transform="translate(${t(362)} ${t(196)})">
-    <circle r="${k(60)}" fill="${YELLOW}"/>
-    <path d="M0 -25 L24 -8 L14 21 L-14 21 L-24 -8 Z" fill="${BLACK}"/>
-  </g>
+  <!-- BKH wordmark: the heaviest element in the drawing, kept that way -->
+  <text x="${t(268)}" y="${t(300)}" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif"
+        font-weight="900" font-size="${k(96)}" letter-spacing="${k(2)}" fill="${YELLOW}">BKH</text>
 
-  <!-- BKH wordmark: a band, not a caption. Heaviest weight in the mark so it
-       survives as legible text at 180px and as a recognisable texture at 60. -->
-  <text x="256" y="${t(474)}" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif"
-        font-weight="900" font-size="${k(62)}" letter-spacing="${k(4)}" fill="${YELLOW}">BKH</text>`;
+  <!-- football: filled disc with a cut pentagon, bottom right, overlapping
+       the ground bar exactly as in the drawing -->
+  <g transform="translate(${t(392)} ${t(392)})">
+    <circle r="${k(74)}" fill="${YELLOW}"/>
+    <path d="M0 -30 L29 -9 L18 25 L-18 25 L-29 -9 Z" fill="${BLACK}"/>
+    <path d="M0 -74 L0 -30 M29 -9 L58 -23 M18 25 L36 55 M-18 25 L-36 55 M-29 -9 L-58 -23"
+          stroke="${BLACK}" stroke-width="${k(7)}" fill="none"/>
+  </g>`;
 };
 
 const regular = () => `
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="${BLACK}"/>
+  <rect width="512" height="512" fill="${BLACK}"/>
   ${art(1)}
 </svg>`;
 
@@ -106,6 +143,6 @@ for (const [name, size, fn] of jobs) {
 }
 
 // A 60px proof, so small-size legibility can actually be inspected.
-await sharp(Buffer.from(regular(512))).resize(60, 60).png().toFile("test-results/icon-60.png");
-await sharp(Buffer.from(regular(512))).resize(120, 120).png().toFile("test-results/icon-120.png");
+await sharp(Buffer.from(regular())).resize(60, 60).png().toFile("test-results/icon-60.png");
+await sharp(Buffer.from(regular())).resize(120, 120).png().toFile("test-results/icon-120.png");
 console.log("icons generated");

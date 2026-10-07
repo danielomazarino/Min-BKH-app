@@ -2083,17 +2083,41 @@ main {
 /* Player photo in the detail sheet. Commons serves a width-limited
    thumbnail, so the browser never downloads a 4000px original. The hairline
    border keeps a light-background photo from bleeding into the dark sheet.
-   The image is shown IN FULL: `object-fit: cover` with a hard max-height
-   cropped heads off (the first deploy cut the top of every portrait), so the
-   photo now keeps its own aspect ratio and the sheet grows to fit it. */
+
+   LAYOUT (user, 2026-10-07): the photo is SMALL and sits at the TOP RIGHT of
+   the card, beside the general information — it used to be a full-width
+   banner that pushed every fact a screen down. Fixed width, own aspect
+   ratio, never stretched. */
 .player-photo {
   display: block;
-  width: 100%;
+  flex: none;
+  width: 96px;
   height: auto;
   object-fit: contain;
   border-radius: var(--r-sm);
   border: 1px solid var(--hairline);
   background: var(--surface-2);
+}
+
+/* The head block: facts left, photo right. Wraps on very narrow screens so
+   the photo drops BELOW the facts rather than squeezing them. */
+.player-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+.player-head-facts {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 359px) {
+  .player-head {
+    flex-direction: column-reverse;
+  }
+  .player-photo {
+    width: 120px;
+  }
 }
 
 /* Career timeline: one row per stint. The year column is fixed-width and

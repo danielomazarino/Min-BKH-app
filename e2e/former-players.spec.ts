@@ -434,20 +434,28 @@ test.describe("Spelare (footballer search)", () => {
     await expect(page.getByTestId("sheet")).toHaveCount(0);
   });
 
-  test("the sheet states a missing Häcken link without denying one", async ({ page }) => {
+  // REWRITTEN 2026-10-07: the sheet no longer carries a "Häcken" block —
+  // the user asked for the Wikidata plumbing to go, and the HÄCKEN tag on
+  // the search row is where the link is actually useful for recognition.
+  // The honesty rule this test guards is unchanged: an unverified link is
+  // NOT shown as verified, here or anywhere on the card.
+  test("an unverified Häcken link is not shown as verified on the row or the sheet", async ({ page }) => {
     await searchForHit(page, "Bjärsmyr");
-    await page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" }).locator("button.open").click();
-    const sheet = page.getByTestId("sheet");
-    await expect(sheet.getByTestId("hacken-unknown")).toBeVisible();
-    // "Not recorded" must not read as "never played there".
-    await expect(sheet.getByTestId("hacken-unknown")).toContainText("betyder inte");
+    const row = page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" });
+    await row.locator("button.open").click();
+    // The row carries no HÄCKEN tag when the link is not recorded.
+    await expect(row).not.toContainText("HÄCKEN");
+    // And the sheet does not claim one either.
+    await expect(page.getByTestId("sheet")).not.toContainText("BK Häcken (herr)");
   });
 
+  // REWRITTEN 2026-10-07: the "Status" block was removed with the rest of
+  // the Wikidata plumbing. The rule it guarded — never infer active/retired
+  // from missing data — is asserted directly: no such word may appear.
   test("the sheet never invents a status", async ({ page }) => {
     await searchForHit(page, "Bjärsmyr");
     await page.getByTestId("former-player").filter({ hasText: "Bjärsmyr" }).locator("button.open").click();
     const sheet = page.getByTestId("sheet");
-    await expect(sheet.getByTestId("status-unknown")).toBeVisible();
     for (const word of ["Pensionerad", "Fri agent", "Utan klubb", "Aktiv i"]) {
       await expect(sheet).not.toContainText(word);
     }
@@ -461,10 +469,16 @@ test.describe("Spelare (footballer search)", () => {
     await expect(prov).toContainText("Q518833");
   });
 
+  // REWRITTEN 2026-10-07: the verified Häcken link is carried by the HÄCKEN
+  // tag on the search row (and the starred row), not by a sheet paragraph.
   test("a verified Häcken link is stated as verified", async ({ page }) => {
     await searchForHit(page, "Jeremejeff");
-    await page.getByTestId("former-player").filter({ hasText: "Jeremejeff" }).locator("button.open").click();
-    await expect(page.getByTestId("sheet").getByTestId("hacken-yes")).toBeVisible();
+    const row = page.getByTestId("former-player").filter({ hasText: "Jeremejeff" });
+    await expect(row).toContainText("HÄCKEN");
+    await row.locator("button.open").click();
+    // The sheet's career list names the club from P54 — the data, not a
+    // meta-statement about Wikidata.
+    await expect(page.getByTestId("sheet").getByTestId("career")).toContainText("BK Häcken");
   });
 
   test("the sheet shows a dated career timeline from P54 qualifiers", async ({ page }) => {
@@ -586,16 +600,17 @@ test.describe("Mats Hedén — findable and starable without a Häcken link", ()
     await expect(page.getByTestId("sheet")).toContainText("Mats Hedén");
   });
 
+  // REWRITTEN 2026-10-07: the "Häcken" block is gone from the sheet (see the
+  // note on the Bjärsmyr test). What must still hold: he is shown, starable,
+  // and nothing on the row or the sheet claims a verified Häcken link.
   test("the missing Häcken link is stated honestly, not hidden", async ({ page }) => {
     await searchForHit(page, "Mats Hedén");
+    const row = page.getByTestId("former-player").first();
     await page.getByTestId("former-player").first().getByRole("button", { name: /Visa uppgifter/ }).click();
     await expect(page.getByTestId("sheet")).toBeVisible();
-    // Says "not recorded", and explicitly that this does NOT mean he never
-    // played there.
-    await expect(page.getByTestId("hacken-unknown")).toBeVisible();
-    await expect(page.getByTestId("hacken-unknown")).toContainText("Det betyder inte att hen inte spelat där");
-    // And no status is invented.
-    await expect(page.getByTestId("status-unknown")).toBeVisible();
+    // No HÄCKEN tag on the row, no club claim in the sheet.
+    await expect(row).not.toContainText("HÄCKEN");
+    await expect(page.getByTestId("sheet")).not.toContainText("BK Häcken (herr)");
   });
 
   test("he can be starred even though the Häcken link is unverified", async ({ page }) => {

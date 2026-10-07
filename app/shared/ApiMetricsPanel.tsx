@@ -595,10 +595,19 @@ export function ApiMetricsPanel() {
  *
  * WHY A TABLE, NOT A CHART
  *   The question this answers is "which feed has gone quiet", and the answer
- *   is a pattern of numbers over eight rows. A sparkline hides the exact
- *   values, and an exact value is what a maintainer needs to compare one
- *   publisher against another. It also has to work on a 390px phone, where a
- *   chart library is a liability.
+ *   is a pattern of numbers over rows. A sparkline hides the exact values,
+ *   and an exact value is what a maintainer needs to compare one publisher
+ *   against another. It also has to work on a 390px phone, where a chart
+ *   library is a liability.
+ *
+ * COLUMN ORDER AND WINDOW (user, 2026-10-07)
+ *   The LATEST run is the leftmost data column — the reader's eye starts at
+ *   the left, so "tonight" must be where the reading starts, not at the far
+ *   end of a scroll. The five runs before it follow in descending date
+ *   order. Older runs are dropped from the UI: the pipeline still keeps a
+ *   week of history, but a table of eight nightly columns on a phone is
+ *   scroll noise, and the older numbers answer no question the reader is
+ *   asking.
  *
  * WHY "EJ MÄTT" IS A REAL CELL VALUE
  *   Runs from before this measurement existed have no entry. Printing 0 there
@@ -606,6 +615,9 @@ export function ApiMetricsPanel() {
  *   fact. An empty string with a dash is the honest rendering, and the table
  *   is only offered once there is at least one measured run to draw from.
  */
+/** How many runs the table shows: the latest plus the five before it. */
+const COUNT_HISTORY_RUNS = 6;
+
 function SourceCountHistory({
   history,
   latest,
@@ -613,11 +625,12 @@ function SourceCountHistory({
   history: RunRecord[];
   latest: RunRecord | null;
 }) {
-  // newest first. `latestRun` is the current run and is not in `history`.
+  // `history` is stored oldest-first; newest-first for display. `latestRun`
+  // is the current run and is not in `history`.
   const runs = [...(latest ? [latest] : []), ...history]
-    .slice()
-    .reverse()
-    .filter((r) => r.runAt);
+    .filter((r) => r.runAt)
+    .sort((a, b) => new Date(b.runAt).getTime() - new Date(a.runAt).getTime())
+    .slice(0, COUNT_HISTORY_RUNS);
   const measured = runs.filter((r) => r.sourceArticles);
   if (measured.length === 0) return null;
 
@@ -631,7 +644,8 @@ function SourceCountHistory({
     <>
       <div className="mod-label">Artiklar per källa, natt för natt</div>
       <p className="small dim" data-testid="count-history-note">
-        Antal artiklar som faktiskt tagits med i appen. En källa som står på 0
+        Antal artiklar som faktiskt tagits med i appen, senaste körningen till
+        vänster och de fem nätterna före den efter. En källa som står på 0
         har svarat men inte bidragit med något — det är inte samma sak som en
         källa som inte svarat alls. “—” betyder att den natten mättes inte
         ännu.
@@ -640,7 +654,9 @@ function SourceCountHistory({
           column cannot fit 390px legibly, and wrapping a table into a card per
           cell destroys the row-to-column correspondence that makes a table
           readable. Scrolling keeps the table a table. The scroll container is
-          keyboard-focusable so it is reachable without a mouse. */}
+          keyboard-focusable so it is reachable without a mouse. The window is
+          six runs (latest + five), so on a phone the newest columns are
+          visible without scrolling at all. */}
       <div className="ctablewrap" tabIndex={0} data-testid="metrics-count-history">
         <table className="ctable">
           <caption className="visually-hidden">

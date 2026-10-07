@@ -640,15 +640,23 @@ function CandidateCard({
 /**
  * Player detail.
  *
- * The blocks are kept strictly apart on purpose:
- *   1. IDENTITY  — what Wikidata says this person is. Facts.
- *   2. HÄCKEN    — whether a club link is recorded. Three-valued, never
- *                  collapsed: men's / women's / not recorded.
- *   3. STATUS    — never inferred. UNKNOWN is a legitimate, common answer.
+ * LAYOUT (user, 2026-10-07): photo small at the TOP RIGHT, general
+ * information to its LEFT, club and national-team records BELOW. The card
+ * leads with what a supporter checks first — who, born, how tall, where
+ * they play now — and the record lists follow.
  *
- * Every block states what it does not know. A confident wrong answer is worse
- * than an admitted gap, and this page is where a supporter is most likely to
- * trust us.
+ * REMOVED as duplicates or Wikidata plumbing:
+ *   - "Klubbar" — the career list already names every club.
+ *   - "Häcken" block — the HÄCKEN tag on the search/starred row carries it;
+ *     a paragraph restating "Wikidata anger … som klubb" is source-speak.
+ *   - "Status" block — "Wikidata registrerar inte om …" is plumbing, not
+ *     information for a supporter.
+ *   - "Kön" tile — visible from the photo/description; a tile for M/K is
+ *     noise.
+ *
+ * Every remaining gap still states what it does not know. A confident wrong
+ * answer is worse than an admitted gap, and this page is where a supporter
+ * is most likely to trust us.
  */
 function PlayerSheet({
   c,
@@ -671,19 +679,11 @@ function PlayerSheet({
    * statements too), which read as clubs once "Landslag" has its own section
    * — "Husqvarna FF · Sveriges U17-herrlandslag" was the visible
    * inconsistency, caught in live verification after deploy.
-   */
-  const clubNames = [...new Set(c.career.map((s) => s.team))];
-
-  /**
-   * Wikipedia narrative, fetched when the sheet opens.
    *
-   * Wikidata's structured claims are honest but thin — apps/goals qualifiers
-   * are curated for maybe half the stints, and nothing says what the player
-   * is doing NOW. The Wikipedia article ABOUT THIS EXACT ENTITY (found via
-   * the sitelinks Wikidata already returned, verified by wikibase_item) has
-   * the narrative: current club, career story, context. One request per open,
-   * cached for the session; a null result is cached too, because "Wikipedia
-   * has nothing verified on this person" is a fact, not a failure.
+   * REMOVED from the card (user, 2026-10-07): the career list already shows
+   * every club, so a separate "Klubbar" paragraph repeated the same names.
+   * The Häcken link lives on the search row and the starred row (the HÄCKEN
+   * tag), where it is actually useful for recognition.
    */
   const [wiki, setWiki] = useState<WikipediaSummary | null | undefined>(undefined);
   useEffect(() => {
@@ -845,61 +845,69 @@ function PlayerSheet({
           </p>
         )}
 
-        {/* ---- 0. photo — only when the source actually has one ---- */}
-        {c.imageUrl && (
-          <img
-            src={commonsImageUrl(c.imageUrl)}
-            alt={c.name}
-            loading="lazy"
-            decoding="async"
-            className="player-photo"
-            data-testid="player-photo"
-          />
-        )}
+        {/*
+         * LAYOUT (user, 2026-10-07): photo SMALL at the TOP RIGHT, general
+         * information to the LEFT of it, club and national-team records BELOW.
+         * The photo used to be a full-width banner that pushed every fact a
+         * screen down; a supporter opening the card wants the facts first and
+         * the face beside them.
+         */}
+        <div className="player-head">
+          <div className="player-head-facts">
+            {/* ---- Wikipedia narrative, when a verified article exists ---- */}
+            {wiki ? (
+              <div>
+                <p className="small" style={{ margin: "0 0 4px" }} data-testid="wiki-extract">
+                  {wiki.extract}
+                </p>
+                <p className="small dim" style={{ margin: 0 }} data-testid="wiki-source">
+                  <a className="link" href={wiki.pageUrl} target="_blank" rel="noopener noreferrer">
+                    Läs hela artikeln ({wiki.lang === "sv" ? "svenska" : "engelska"} Wikipedia)
+                  </a>
+                </p>
+              </div>
+            ) : null}
 
-        {/* ---- Wikipedia narrative, when a verified article exists ---- */}
-        {wiki === undefined ? null : wiki === null ? null : (
-          <div>
-            <div className="mod-label">Wikipedia</div>
-            <p className="small" style={{ margin: "0 0 4px" }} data-testid="wiki-extract">
-              {wiki.extract}
-            </p>
-            <p className="small dim" style={{ margin: 0 }} data-testid="wiki-source">
-              <a className="link" href={wiki.pageUrl} target="_blank" rel="noopener noreferrer">
-                Läs hela artikeln ({wiki.lang === "sv" ? "svenska" : "engelska"} Wikipedia)
-              </a>
-            </p>
+            {/* ---- general information ---- */}
+            <div>
+              <div className="kv">
+                <Stat v={c.dateOfBirth ?? null} l="Född" isText />
+                <Stat v={heightCm ?? null} l="Längd cm" />
+                <Stat v={position ?? null} l="Position" isText />
+                <Stat v={c.citizenship[0] ?? null} l="Nationalitet" isText />
+              </div>
+              {infobox?.foot && (
+                <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-foot">
+                  Ben: {infobox.foot}.
+                </p>
+              )}
+              {infobox?.currentClub && (
+                <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-current-club">
+                  Nuvarande klubb: {infobox.currentClub}.
+                </p>
+              )}
+              {c.dateOfDeath && (
+                <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="died">
+                  Avled {fmtDay(c.dateOfDeath)}.
+                </p>
+              )}
+            </div>
           </div>
-        )}
 
-        {/* ---- 1. identity ---- */}
-        <div>
-          <div className="mod-label">Uppgifter</div>
-          <div className="kv">
-            <Stat v={c.dateOfBirth ?? null} l="Född" isText />
-            <Stat v={heightCm ?? null} l="Längd cm" />
-            <Stat v={position ?? null} l="Position" isText />
-            <Stat v={c.gender === "male" ? "M" : c.gender === "female" ? "K" : null} l="Kön" isText />
-            <Stat v={c.citizenship[0] ?? null} l="Nationalitet" isText />
-          </div>
-          {infobox?.foot && (
-            <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-foot">
-              Ben: {infobox.foot}.
-            </p>
-          )}
-          {infobox?.currentClub && (
-            <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="infobox-current-club">
-              Nuvarande klubb: {infobox.currentClub}.
-            </p>
-          )}
-          {c.dateOfDeath && (
-            <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="died">
-              Avled {fmtDay(c.dateOfDeath)}.
-            </p>
+          {/* ---- 0. photo — small, top right, only when the source has one ---- */}
+          {c.imageUrl && (
+            <img
+              src={commonsImageUrl(c.imageUrl)}
+              alt={c.name}
+              loading="lazy"
+              decoding="async"
+              className="player-photo"
+              data-testid="player-photo"
+            />
           )}
         </div>
 
-        {/* ---- 2. career, per stint, with the same honesty ---- */}
+        {/* ---- career, per stint, with the same honesty ---- */}
         <div>
           <div className="mod-label">Karriär</div>
           {career.length > 0 ? (
@@ -936,7 +944,7 @@ function PlayerSheet({
           )}
         </div>
 
-        {/* ---- 3. national teams, kept apart from clubs ---- */}
+        {/* ---- national teams, kept apart from clubs ---- */}
         {nationalTeams.length > 0 && (
           <div>
             <div className="mod-label">Landslag</div>
@@ -958,55 +966,13 @@ function PlayerSheet({
           </div>
         )}
 
-        {/* ---- 2. Häcken link ---- */}
-        <div>
-          <div className="mod-label">Häcken</div>
-          {c.hackenTeam === "men" ? (
-            <p className="small" style={{ margin: 0 }} data-testid="hacken-yes">
-              Wikidata anger BK Häcken (herr) som klubb.
-            </p>
-          ) : c.hackenTeam === "women" ? (
-            <p className="small" style={{ margin: 0 }} data-testid="hacken-women">
-              Wikidata anger BK Häcken FF (damlag) som klubb.
-            </p>
-          ) : (
-            <p className="small dim" style={{ margin: 0 }} data-testid="hacken-unknown">
-              <AlertTriangle aria-hidden style={{ width: 12, height: 12, verticalAlign: "-1px" }} /> Wikidata anger
-              inte BK Häcken som klubb för {c.name}. Det betyder inte att hen inte spelat där — bara att uppgiften
-              saknas.
-            </p>
-          )}
-        </div>
-
-        {/* ---- 3. clubs — national teams are NOT clubs and are shown above ---- */}
-        <div>
-          <div className="mod-label">Klubbar</div>
-          {clubNames.length > 0 ? (
-            <p className="small" style={{ margin: 0 }} data-testid="clubs">
-              {clubNames.join(" · ")}
-            </p>
-          ) : (
-            <p className="small dim" style={{ margin: 0 }} data-testid="no-clubs">
-              Inga klubbuppgifter finns registrerade i Wikidata.
-            </p>
-          )}
-        </div>
-
-        {/* ---- status: only ever stated, never inferred ---- */}
-        <div>
-          <div className="mod-label">Status</div>
-          <p className="small dim" style={{ margin: 0 }} data-testid="status-unknown">
-            Wikidata registrerar inte om {c.name} är aktiv eller pensionerad. Appen gissar inte.
-          </p>
-        </div>
-
         {/* ---- provenance ---- */}
         <div>
           <div className="mod-label">Källa</div>
           <p className="small dim prov" style={{ margin: 0 }} data-testid="provenance">
-            Alla uppgifter kommer från Wikidata och kan vara ofullständiga.{" "}
+            Uppgifterna kommer från Wikidata och Wikipedia och kan vara ofullständiga.{" "}
             <a className="link" href={c.pageUrl} target="_blank" rel="noopener noreferrer">
-              Öppna posten ({c.qid})
+              Öppna Wikidata-posten ({c.qid})
             </a>
           </p>
         </div>
