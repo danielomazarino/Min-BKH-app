@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-06T03:48:01.183Z",
+    "generatedAt": "2026-10-07T03:49:08.497Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -14,11 +14,6 @@
       "gemini": "failed"
     },
     "sourceCounts": {
-      "Göteborgs-Posten": {
-        "fetched": 43,
-        "kept": 0,
-        "dropped": 43
-      },
       "Sportbladet": {
         "fetched": 39,
         "kept": 0,
@@ -26,8 +21,8 @@
       },
       "BK Häcken": {
         "fetched": 20,
-        "kept": 3,
-        "dropped": 17
+        "kept": 4,
+        "dropped": 16
       },
       "Expressen": {
         "fetched": 20,
@@ -49,6 +44,11 @@
         "kept": 0,
         "dropped": 10
       },
+      "Göteborgs-Posten": {
+        "fetched": 6,
+        "kept": 0,
+        "dropped": 6
+      },
       "Bollsvenskan": {
         "fetched": 1,
         "kept": 0,
@@ -61,7 +61,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-06T03:47:29.666Z",
+    "retrievedAt": "2026-10-07T03:48:34.437Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -935,7 +935,23 @@
   "cardMatchesInspected": 22,
   "news": [
     {
-      "id": "BK Häcken-3-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "id": "BK Häcken-0-https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
+      "title": "Inför biljettsläppet hemma mot IFK Göteborg",
+      "url": "https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
+      "summary": "I dag, tisdagen den 6 oktober klockan 13.00, öppnar förturen till hemmaderbyt mot IFK Göteborg.",
+      "publishedAt": "2026-10-06T09:50:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/388b323a-abaa-4e4f-b8fa-976cda7a366b.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
+      "sourceRole": "primary",
+      "sourceTags": [
+        "Herr"
+      ]
+    },
+    {
+      "id": "BK Häcken-4-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
       "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
@@ -951,7 +967,7 @@
       ]
     },
     {
-      "id": "BK Häcken-13-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "BK Häcken-14-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "url": "https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -967,7 +983,7 @@
       ]
     },
     {
-      "id": "BK Häcken-15-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "BK Häcken-16-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
@@ -983,7 +999,7 @@
       ]
     },
     {
-      "id": "Fotbolltransfers-14-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "id": "Fotbolltransfers-16-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
       "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
       "url": "https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
       "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
@@ -997,7 +1013,26 @@
   ],
   "newsEvents": [
     {
-      "id": "event-BK Häcken-3-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "id": "event-BK Häcken-0-https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
+      "title": "Inför biljettsläppet hemma mot IFK Göteborg",
+      "summary": "I dag, tisdagen den 6 oktober klockan 13.00, öppnar förturen till hemmaderbyt mot IFK Göteborg.",
+      "publishedAt": "2026-10-06T09:50:00.000Z",
+      "latestPublishedAt": "2026-10-06T09:50:00.000Z",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/388b323a-abaa-4e4f-b8fa-976cda7a366b.jpg",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
+          "publishedAt": "2026-10-06T09:50:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-4-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
       "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
       "publishedAt": "2026-10-01T13:35:00.000Z",
@@ -1016,7 +1051,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-13-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
+      "id": "event-BK Häcken-14-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-20T16:00:00.000Z",
@@ -1035,7 +1070,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
+      "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/bk-hacken-aker-till-kalmar-har-ar-matchtruppen",
       "title": "BK Häcken åker till Kalmar – här är matchtruppen",
       "summary": "Imorgon, klockan 14.00, ställs BK Häcken mot Kalmar FF i Allsvenskan.",
       "publishedAt": "2026-09-19T13:50:05.000Z",
@@ -1054,7 +1089,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-14-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "id": "event-Fotbolltransfers-16-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
       "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
       "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
       "publishedAt": "2026-09-02T20:56:42.000Z",
@@ -1086,16 +1121,16 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:540307",
-      "playerName": "Etrit Berisha",
+      "playerId": "fogis:1132533",
+      "playerName": "Kristan Marinkovic",
       "positionGroup": "goalkeepers",
-      "matchesPlayed": 5,
-      "matchesStarted": 5,
+      "matchesPlayed": 2,
+      "matchesStarted": 2,
       "goals": 0,
       "assists": 0,
       "yellowCards": 1,
       "redCards": 0,
-      "competition": "Allsvenskan  2026"
+      "competition": "Ettan Södra, herr  2026"
     },
     {
       "playerId": "fogis:872878",
@@ -1110,51 +1145,15 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:1132533",
-      "playerName": "Kristan Marinkovic",
+      "playerId": "fogis:540307",
+      "playerName": "Etrit Berisha",
       "positionGroup": "goalkeepers",
-      "matchesPlayed": 2,
-      "matchesStarted": 2,
+      "matchesPlayed": 5,
+      "matchesStarted": 5,
       "goals": 0,
       "assists": 0,
       "yellowCards": 1,
       "redCards": 0,
-      "competition": "Ettan Södra, herr  2026"
-    },
-    {
-      "playerId": "fogis:478646",
-      "playerName": "Adam Lundkvist",
-      "positionGroup": "defenders",
-      "matchesPlayed": 19,
-      "matchesStarted": 18,
-      "goals": 0,
-      "assists": 3,
-      "yellowCards": 3,
-      "redCards": 0,
-      "competition": "Allsvenskan  2026"
-    },
-    {
-      "playerId": "fogis:826008",
-      "playerName": "Ben Engdahl",
-      "positionGroup": "defenders",
-      "matchesPlayed": 0,
-      "matchesStarted": 0,
-      "goals": 0,
-      "assists": 0,
-      "yellowCards": 0,
-      "redCards": 0,
-      "competition": ""
-    },
-    {
-      "playerId": "fogis:1126135",
-      "playerName": "Leo Väisänen",
-      "positionGroup": "defenders",
-      "matchesPlayed": 4,
-      "matchesStarted": 3,
-      "goals": 0,
-      "assists": 0,
-      "yellowCards": 0,
-      "redCards": 1,
       "competition": "Allsvenskan  2026"
     },
     {
@@ -1170,38 +1169,38 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:1146319",
-      "playerName": "Filip Öhman",
+      "playerId": "fogis:1126135",
+      "playerName": "Leo Väisänen",
       "positionGroup": "defenders",
-      "matchesPlayed": 1,
-      "matchesStarted": 1,
+      "matchesPlayed": 4,
+      "matchesStarted": 3,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 1,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": "fogis:826008",
+      "playerName": "Ben Engdahl",
+      "positionGroup": "defenders",
+      "matchesPlayed": 0,
+      "matchesStarted": 0,
       "goals": 0,
       "assists": 0,
       "yellowCards": 0,
       "redCards": 0,
-      "competition": "Allsvenskan  2026"
+      "competition": ""
     },
     {
-      "playerId": "fogis:919310",
-      "playerName": "Olle Samuelsson",
+      "playerId": "fogis:478646",
+      "playerName": "Adam Lundkvist",
       "positionGroup": "defenders",
-      "matchesPlayed": 12,
-      "matchesStarted": 6,
+      "matchesPlayed": 19,
+      "matchesStarted": 18,
       "goals": 0,
-      "assists": 1,
-      "yellowCards": 1,
-      "redCards": 0,
-      "competition": "Allsvenskan  2026"
-    },
-    {
-      "playerId": "fogis:1056766",
-      "playerName": "Harry Hilvenius",
-      "positionGroup": "defenders",
-      "matchesPlayed": 16,
-      "matchesStarted": 16,
-      "goals": 1,
-      "assists": 0,
-      "yellowCards": 0,
+      "assists": 3,
+      "yellowCards": 3,
       "redCards": 0,
       "competition": "Allsvenskan  2026"
     },
@@ -1218,48 +1217,36 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:1251827",
-      "playerName": "Mikkel Rygaard Jensen",
-      "positionGroup": "midfields",
-      "matchesPlayed": 21,
-      "matchesStarted": 17,
-      "goals": 2,
-      "assists": 5,
-      "yellowCards": 5,
-      "redCards": 0,
-      "competition": "Allsvenskan  2026"
-    },
-    {
-      "playerId": "fogis:1009627",
-      "playerName": "Pontus Dahbo",
-      "positionGroup": "midfields",
-      "matchesPlayed": 9,
-      "matchesStarted": 1,
+      "playerId": "fogis:919310",
+      "playerName": "Olle Samuelsson",
+      "positionGroup": "defenders",
+      "matchesPlayed": 12,
+      "matchesStarted": 6,
       "goals": 0,
-      "assists": 0,
+      "assists": 1,
       "yellowCards": 1,
       "redCards": 0,
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:705320",
-      "playerName": "Julius Lindberg",
-      "positionGroup": "midfields",
-      "matchesPlayed": 20,
-      "matchesStarted": 18,
-      "goals": 7,
-      "assists": 7,
-      "yellowCards": 3,
+      "playerId": "fogis:1146319",
+      "playerName": "Filip Öhman",
+      "positionGroup": "defenders",
+      "matchesPlayed": 1,
+      "matchesStarted": 1,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
       "redCards": 0,
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:1549805",
-      "playerName": "Sanders Ngabo",
-      "positionGroup": "midfields",
-      "matchesPlayed": 10,
-      "matchesStarted": 2,
-      "goals": 0,
+      "playerId": "fogis:1056766",
+      "playerName": "Harry Hilvenius",
+      "positionGroup": "defenders",
+      "matchesPlayed": 16,
+      "matchesStarted": 16,
+      "goals": 1,
       "assists": 0,
       "yellowCards": 0,
       "redCards": 0,
@@ -1278,40 +1265,16 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:750969",
-      "playerName": "David Seger",
+      "playerId": "fogis:1549805",
+      "playerName": "Sanders Ngabo",
       "positionGroup": "midfields",
-      "matchesPlayed": 11,
-      "matchesStarted": 6,
+      "matchesPlayed": 10,
+      "matchesStarted": 2,
       "goals": 0,
-      "assists": 1,
-      "yellowCards": 1,
+      "assists": 0,
+      "yellowCards": 0,
       "redCards": 0,
       "competition": "Allsvenskan  2026"
-    },
-    {
-      "playerId": "fogis:1034709",
-      "playerName": "Nikola Mitrovic",
-      "positionGroup": "midfields",
-      "matchesPlayed": 5,
-      "matchesStarted": 3,
-      "goals": 0,
-      "assists": 0,
-      "yellowCards": 0,
-      "redCards": 0,
-      "competition": "Div  Västra Götaland, herr  2026"
-    },
-    {
-      "playerId": "fogis:1550027",
-      "playerName": "Sabri Dahari Kondo",
-      "positionGroup": "midfields",
-      "matchesPlayed": 1,
-      "matchesStarted": 0,
-      "goals": 0,
-      "assists": 0,
-      "yellowCards": 0,
-      "redCards": 0,
-      "competition": "Svenska Cupen 2026"
     },
     {
       "playerId": "fogis:1678145",
@@ -1326,11 +1289,35 @@
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:801089",
-      "playerName": "Harun Ibrahim",
+      "playerId": "fogis:1251827",
+      "playerName": "Mikkel Rygaard Jensen",
       "positionGroup": "midfields",
-      "matchesPlayed": 6,
-      "matchesStarted": 3,
+      "matchesPlayed": 21,
+      "matchesStarted": 17,
+      "goals": 2,
+      "assists": 5,
+      "yellowCards": 5,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": "fogis:705320",
+      "playerName": "Julius Lindberg",
+      "positionGroup": "midfields",
+      "matchesPlayed": 20,
+      "matchesStarted": 18,
+      "goals": 7,
+      "assists": 7,
+      "yellowCards": 3,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": "fogis:1009627",
+      "playerName": "Pontus Dahbo",
+      "positionGroup": "midfields",
+      "matchesPlayed": 9,
+      "matchesStarted": 1,
       "goals": 0,
       "assists": 0,
       "yellowCards": 1,
@@ -1350,28 +1337,52 @@
       "competition": "Allsvenskan 2026"
     },
     {
-      "playerId": "fogis:758301",
-      "playerName": "Adrian Svanbäck",
-      "positionGroup": "forwards",
-      "matchesPlayed": 22,
-      "matchesStarted": 21,
-      "goals": 5,
-      "assists": 6,
-      "yellowCards": 2,
+      "playerId": "fogis:750969",
+      "playerName": "David Seger",
+      "positionGroup": "midfields",
+      "matchesPlayed": 11,
+      "matchesStarted": 6,
+      "goals": 0,
+      "assists": 1,
+      "yellowCards": 1,
       "redCards": 0,
       "competition": "Allsvenskan  2026"
     },
     {
-      "playerId": "fogis:1552257",
-      "playerName": "Christ Ivan Wawa",
-      "positionGroup": "forwards",
-      "matchesPlayed": 2,
+      "playerId": "fogis:1550027",
+      "playerName": "Sabri Dahari Kondo",
+      "positionGroup": "midfields",
+      "matchesPlayed": 1,
       "matchesStarted": 0,
-      "goals": 1,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Svenska Cupen 2026"
+    },
+    {
+      "playerId": "fogis:801089",
+      "playerName": "Harun Ibrahim",
+      "positionGroup": "midfields",
+      "matchesPlayed": 6,
+      "matchesStarted": 3,
+      "goals": 0,
       "assists": 0,
       "yellowCards": 1,
       "redCards": 0,
       "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": "fogis:1034709",
+      "playerName": "Nikola Mitrovic",
+      "positionGroup": "midfields",
+      "matchesPlayed": 5,
+      "matchesStarted": 3,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Div  Västra Götaland, herr  2026"
     },
     {
       "playerId": "fogis:770195",
@@ -1386,6 +1397,18 @@
       "competition": "Allsvenskan  2026"
     },
     {
+      "playerId": "fogis:758301",
+      "playerName": "Adrian Svanbäck",
+      "positionGroup": "forwards",
+      "matchesPlayed": 22,
+      "matchesStarted": 21,
+      "goals": 5,
+      "assists": 6,
+      "yellowCards": 2,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
       "playerId": "fogis:1040287",
       "playerName": "Bamir Fierza Sadiku",
       "positionGroup": "forwards",
@@ -1394,6 +1417,18 @@
       "goals": 1,
       "assists": 0,
       "yellowCards": 0,
+      "redCards": 0,
+      "competition": "Allsvenskan  2026"
+    },
+    {
+      "playerId": "fogis:1552257",
+      "playerName": "Christ Ivan Wawa",
+      "positionGroup": "forwards",
+      "matchesPlayed": 2,
+      "matchesStarted": 0,
+      "goals": 1,
+      "assists": 0,
+      "yellowCards": 1,
       "redCards": 0,
       "competition": "Allsvenskan  2026"
     }
