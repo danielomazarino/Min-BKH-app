@@ -144,3 +144,70 @@ export function formatSourceBreakdown(rows: SourceBreakdown[]): string[] {
   );
   return lines;
 }
+
+// ---------------------------------------------------------------------------
+// Per-article audit
+// ---------------------------------------------------------------------------
+
+/**
+ * One fetched article with the pipeline's verdict — the data behind the
+ * in-app article audit (settings → "Granska alla hämtade artiklar").
+ *
+ * Counts say HOW MANY; this says WHICH, so a wrong drop can be spotted by
+ * eye. B-012 (the IFK Göteborg derby preview dropped as "unknown") was found
+ * exactly by asking for this by hand.
+ */
+export interface AuditEntry {
+  title: string;
+  url: string;
+  publisher: string;
+  publishedAt: string;
+  verdict: string;
+}
+
+/** Verdict for an article that survived both filters. */
+export const AUDIT_KEPT = "kept";
+/** Verdict for an article the prefilter passed but the men's filter removed. */
+export const AUDIT_MEN_EXCLUDED = "men-excluded";
+/** Verdict when no rule claims the article — an arithmetic gap, never normal. */
+export const AUDIT_UNACCOUNTED = "unaccounted";
+/** Hard bound on the audit array, so a runaway feed cannot inflate app.json. */
+export const AUDIT_MAX = 250;
+
+/**
+ * Build the per-article audit from the SAME inputs as `buildSourceBreakdown`,
+ * so the two can never disagree: every fetched article gets exactly one
+ * verdict, and kept + dropped must equal fetched per source.
+ *
+ * Verdict precedence mirrors the pipeline order: prefilter drops first, then
+ * the men's exclusion, then kept. A kept article reached the news pipeline —
+ * whether it survived into the final events is a later, separate decision.
+ *
+ * OBSERVABILITY ONLY: reads the arrays, never mutates them.
+ */
+export function buildArticleAudit<F extends { url: string; title: string; publisher: string; publishedAt: string }>(
+  fetched: F[],
+  keptUrls: Set<string>,
+  dropped: DroppedItem[],
+  menExcludedUrls: string[],
+): AuditEntry[] {
+  const menExcludedSet = new Set(menExcludedUrls);
+  const dropReasonBy = new Map(dropped.map((d) => [d.url, d.reason]));
+  const out: AuditEntry[] = [];
+  for (const item of fetched) {
+    const verdict = keptUrls.has(item.url)
+      ? AUDIT_KEPT
+      : menExcludedSet.has(item.url)
+        ? AUDIT_MEN_EXCLUDED
+        : (dropReasonBy.get(item.url) ?? AUDIT_UNACCOUNTED);
+    out.push({
+      title: item.title,
+      url: item.url,
+      publisher: item.publisher,
+      publishedAt: item.publishedAt,
+      verdict,
+    });
+  }
+  if (out.length > AUDIT_MAX) out.length = AUDIT_MAX;
+  return out;
+}

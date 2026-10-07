@@ -55,6 +55,8 @@ interface Group {
   skipped: number;
   costCredits: number;
   costReported: number;
+  /** Failure explanations from real attempts, deduplicated. */
+  errorReasons?: string[];
   /** Distinct services in the group, for the "8 källor" suffix. */
   members: ServiceAggregate[];
 }
@@ -177,6 +179,7 @@ export function groupServices(services: ServiceAggregate[]): Group[] {
     skipped: s.skipped,
     costCredits: s.costCredits,
     costReported: s.costReported,
+    errorReasons: s.errorReasons,
     members: [s],
   }));
 
@@ -193,6 +196,7 @@ export function groupServices(services: ServiceAggregate[]): Group[] {
       skipped: sum(feeds, (s) => s.skipped),
       costCredits: sum(feeds, (s) => s.costCredits),
       costReported: sum(feeds, (s) => s.costReported),
+      errorReasons: [...new Set(feeds.flatMap((s) => s.errorReasons ?? []))].slice(0, 5),
       members: feeds,
     });
   }
@@ -449,6 +453,16 @@ export function ApiMetricsPanel() {
                       recorded call, so show it rather than hiding it. */}
                   {g.skipped > 0 && skipReason(g) && (
                     <span className="msub skipwhy">{skipReason(g)}</span>
+                  )}
+                  {/* WHY a real attempt failed. The status code alone ("429")
+                      cannot be diagnosed — our quota and the shared upstream
+                      pool both answer 429 with opposite remedies. The pipeline
+                      patches the readable diagnosis onto the call record, and
+                      it is shown here verbatim. */}
+                  {g.errorReasons && g.errorReasons.length > 0 && (
+                    <span className="msub skipwhy" data-testid="error-reasons">
+                      {g.errorReasons.join(" · ")}
+                    </span>
                   )}
                 </div>
 

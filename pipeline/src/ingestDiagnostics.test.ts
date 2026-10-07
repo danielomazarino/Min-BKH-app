@@ -158,3 +158,69 @@ describe("per-source ingest breakdown", () => {
     expect(lines[1]).toContain("dropped");
   });
 });
+
+// ---------------------------------------------------------------------------
+// buildArticleAudit
+// ---------------------------------------------------------------------------
+
+import { buildArticleAudit, AUDIT_KEPT, AUDIT_MEN_EXCLUDED, AUDIT_UNACCOUNTED, AUDIT_MAX } from "./ingestDiagnostics";
+
+const ART = (url: string, publisher = "BK Häcken") => ({
+  url,
+  title: `Titel för ${url.slice(-12)}`,
+  publisher,
+  publishedAt: "2026-10-07T10:00:00Z",
+});
+
+describe("buildArticleAudit", () => {
+  it("gives every fetched article exactly one verdict", () => {
+    const fetched = [ART("a"), ART("b"), ART("c")];
+    const audit = buildArticleAudit(
+      fetched,
+      new Set(["a"]),
+      [{ url: "c", reason: "no Häcken relation" }],
+      ["b"],
+    );
+    expect(audit.map((a) => a.verdict)).toEqual([AUDIT_KEPT, AUDIT_MEN_EXCLUDED, "no Häcken relation"]);
+  });
+
+  it("marks kept articles as Häcken herr-relevant", () => {
+    const audit = buildArticleAudit([ART("a")], new Set(["a"]), [], []);
+    expect(audit[0].verdict).toBe(AUDIT_KEPT);
+  });
+
+  it("preserves the prefilter drop reason verbatim", () => {
+    const audit = buildArticleAudit(
+      [ART("x")],
+      new Set<string>(),
+      [{ url: "x", reason: "outside date window" }],
+      [],
+    );
+    expect(audit[0].verdict).toBe("outside date window");
+  });
+
+  it("uses unaccounted when no rule claims the article — never silently", () => {
+    const audit = buildArticleAudit([ART("y")], new Set<string>(), [], []);
+    expect(audit[0].verdict).toBe(AUDIT_UNACCOUNTED);
+  });
+
+  it("carries title, publisher and date through untouched", () => {
+    const item = { url: "u", title: "Rubriken", publisher: "SVT Sport", publishedAt: "2026-10-07T09:00:00Z" };
+    const audit = buildArticleAudit([item], new Set(["u"]), [], []);
+    expect(audit[0]).toEqual({ title: "Rubriken", url: "u", publisher: "SVT Sport", publishedAt: "2026-10-07T09:00:00Z", verdict: AUDIT_KEPT });
+  });
+
+  it("caps the output at AUDIT_MAX", () => {
+    const many = Array.from({ length: AUDIT_MAX + 30 }, (_, i) => ART(`u${i}`));
+    const audit = buildArticleAudit(many, new Set<string>(), [], []);
+    expect(audit).toHaveLength(AUDIT_MAX);
+  });
+
+  it("does not mutate the arrays it is handed", () => {
+    const fetched = [ART("a"), ART("b")];
+    const dropped = [{ url: "b", reason: "r" }];
+    buildArticleAudit(fetched, new Set(["a"]), dropped, []);
+    expect(fetched).toHaveLength(2);
+    expect(dropped).toHaveLength(1);
+  });
+});

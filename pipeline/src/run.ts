@@ -18,7 +18,11 @@ import { buildNewsEvents, publisherRole } from "./newsEvents";
 import type { WarningEvent } from "./warnings";
 import { readLastKnownGood } from "./stale";
 import { prefilterNews, DEFAULT_WINDOW_DAYS } from "./newsPrefilter";
-import { buildSourceBreakdown, formatSourceBreakdown } from "./ingestDiagnostics";
+import {
+  buildSourceBreakdown,
+  buildArticleAudit,
+  formatSourceBreakdown,
+} from "./ingestDiagnostics";
 import { fetchArticleTexts } from "./articleText";
 import {
   buildEventsFromGemini,
@@ -135,6 +139,17 @@ const STATUS: Record<string, SourceStatus> = {};
  */
 const SOURCE_COUNTS: Record<string, { fetched: number; kept: number; dropped: number }> = {};
 
+/**
+ * Every article the feeds delivered this run, with the pipeline's verdict.
+ *
+ * Populated once the ingest has run and read by `freshness()`, same lifecycle
+ * as SOURCE_COUNTS. This is the data behind the in-app article audit: a
+ * maintainer can see WHICH headlines each source delivered and which the
+ * pipeline considered Häcken-relevant — the counts alone cannot answer "was
+ * the filter right?" (B-012 was found by asking exactly that by hand).
+ */
+const ARTICLE_AUDIT: import("./types").ArticleAuditEntry[] = [];
+
 function generatedAt(): string {
   return new Date().toISOString();
 }
@@ -147,6 +162,8 @@ function freshness(): Freshness {
     // populate it does not write `"sourceCounts": {}` and imply that every
     // source genuinely found nothing. Absent means "not measured".
     ...(Object.keys(SOURCE_COUNTS).length > 0 ? { sourceCounts: { ...SOURCE_COUNTS } } : {}),
+    // Same honesty rule: absent means the run predates the audit.
+    ...(ARTICLE_AUDIT.length > 0 ? { articleAudit: ARTICLE_AUDIT } : {}),
   };
 }
 
@@ -436,6 +453,21 @@ async function main() {
     new Set(candidates.map((c) => c.url)),
     dropped,
     menExcludedUrls,
+  );
+
+  // Per-article audit, for the in-app validity check. Built from the SAME
+  // inputs as the breakdown above, so the two can never disagree: every
+  // fetched article gets exactly one verdict, and kept + dropped must equal
+  // fetched per source (the same invariant the breakdown asserts).
+  //
+  // Verdict precedence mirrors the actual pipeline order: prefilter drops
+  // first, then the men's exclusion, then kept. A kept article is one that
+  // reached the news pipeline — whether or not it survived into the final
+  // events (the Gemini path can still reject it, and that is a separate,
+  // later decision recorded on the event itself).
+  ARTICLE_AUDIT.length = 0;
+  ARTICLE_AUDIT.push(
+    ...buildArticleAudit(news, new Set(candidates.map((c) => c.url)), dropped, menExcludedUrls),
   );
   for (const line of formatSourceBreakdown(sourceBreakdown)) {
     console.log(line);

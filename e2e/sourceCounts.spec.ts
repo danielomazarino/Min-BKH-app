@@ -225,8 +225,10 @@ test.describe("What each source does", () => {
     );
     await page.goto("/#/installningar");
     const sources = page.getByTestId("news-sources");
-    await expect(sources).toContainText("3 av 20 artiklar behölls");
-    await expect(sources).toContainText("0 av 39 artiklar behölls");
+    // Text shortened 2026-10-07 (one-page settings restructure): the count
+    // label is now "N av M behölls" instead of "N av M artiklar behölls".
+    await expect(sources).toContainText("3 av 20 behölls");
+    await expect(sources).toContainText("0 av 39 behölls");
     // Every row has an info button.
     await expect(sources.getByRole("button", { name: /Vad betyder detta/ }).first()).toBeVisible();
   });

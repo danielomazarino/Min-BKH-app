@@ -108,6 +108,15 @@ export interface ServiceAggregate {
    * existed and was discarded one step before the person who needed it.
    */
   skipReasons?: string[];
+  /**
+   * Failure explanations from REAL attempts, one per failed call.
+   *
+   * Distinct from `skipReasons` (which covers non-attempts): these are calls
+   * that ran and failed. The panel shows them beside the "N fel" pill so a
+   * 429 can say "shared upstream pool, not your quota" instead of a bare
+   * number. Capped per service — a retry storm must not flood the log.
+   */
+  errorReasons?: string[];
   totalDurationMs: number;
   maxDurationMs: number;
   requestBytes: number;
@@ -343,6 +352,29 @@ export function noteCost(service: string, credits: number | null): void {
   }
 }
 
+/**
+ * Attach a richer failure explanation to the most recent call for a service.
+ *
+ * WHY THIS EXISTS: `trackedFetch` records only `HTTP 429` — the status code —
+ * because at fetch time it has not read the body. But the BODY is where the
+ * diagnosis lives: OpenRouter's 429 names `upstream_provider_shared_pool`, the
+ * actual provider ("Google AI Studio"), and a remedy hint. A panel that can
+ * only say "429" forces the reader to guess between OUR quota and the shared
+ * pool — two failures with opposite remedies. The caller, having read the
+ * body, patches the detail onto the existing record here.
+ *
+ * Same patch pattern as `noteCost`: the record already exists, only the
+ * caller knows the extra fact.
+ */
+export function noteErrorDetail(service: string, detail: string): void {
+  for (let i = calls.length - 1; i >= 0; i--) {
+    if (calls[i].service === service && calls[i].attempts > 0 && !calls[i].ok) {
+      calls[i].error = detail.slice(0, 300);
+      return;
+    }
+  }
+}
+
 /** Record a failure that never reached the network (e.g. a blocked call). */
 export function noteSkippedCall(service: string, reason: string, metered = false): void {
   calls.push({
@@ -449,6 +481,16 @@ function aggregate(list: ApiCallRecord[]): ServiceAggregate[] {
       skipReasons: group
         .filter((c) => c.attempts === 0 && !!c.error)
         .map((c) => c.error as string),
+      // Failure detail from real attempts, deduplicated: a service that fails
+      // the same way twice shows the reason once. Capped so a storm of
+      // distinct failures cannot flood the aggregate.
+      errorReasons: [
+        ...new Set(
+          group
+            .filter((c) => c.attempts > 0 && !c.ok && !!c.error)
+            .map((c) => c.error as string),
+        ),
+      ].slice(0, 5),
       totalDurationMs: group.reduce((n, c) => n + c.durationMs, 0),
       maxDurationMs: group.reduce((n, c) => Math.max(n, c.durationMs), 0),
       requestBytes: group.reduce((n, c) => n + (c.requestBytes ?? 0), 0),

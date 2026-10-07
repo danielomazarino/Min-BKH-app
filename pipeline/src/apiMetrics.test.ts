@@ -3,6 +3,7 @@ import {
   beginRun,
   buildMetrics,
   noteCost,
+  noteErrorDetail,
   noteLlmCall,
   noteSkippedCall,
   noteSourceArticles,
@@ -384,5 +385,63 @@ describe("history does not grow without bound", () => {
       prev = buildMetrics(prev);
     }
     expect(prev!.history.length).toBeLessThanOrEqual(7);
+  });
+});
+
+describe("noteErrorDetail + errorReasons", () => {
+  it("patches the diagnosis onto the failed call record", async () => {
+    // trackedFetch records only "HTTP 429" — the body's diagnosis (shared
+    // pool vs our quota) is known only to the caller, which patches it here.
+    // An unreachable host: trackedFetch records ok:false and rethrows.
+    await expect(
+      trackedFetch("openrouter", "http://127.0.0.1:1/not-listening"),
+    ).rejects.toBeTruthy();
+    noteErrorDetail("openrouter", "Delad gratis-pool hos Google AI Studio är upptagen");
+    const m = buildMetrics(null);
+    const row = m.latestRun?.services.find((s) => s.service === "openrouter");
+    expect(row?.errorReasons).toEqual([
+      "Delad gratis-pool hos Google AI Studio är upptagen",
+    ]);
+  });
+
+  it("never patches a SUCCESSFUL call", async () => {
+    await trackedFetch("svc-x", JSON_URL);
+    noteErrorDetail("svc-x", "should not land anywhere");
+    const m = buildMetrics(null);
+    const row = m.latestRun?.services.find((s) => s.service === "svc-x");
+    expect(row?.errorReasons ?? []).toEqual([]);
+  });
+
+  it("never patches a SKIPPED (never-attempted) call", () => {
+    noteSkippedCall("svc-y", "no key injected");
+    noteErrorDetail("svc-y", "should not overwrite the skip reason");
+    const m = buildMetrics(null);
+    const row = m.latestRun?.services.find((s) => s.service === "svc-y");
+    expect(row?.skipReasons).toEqual(["no key injected"]);
+    expect(row?.errorReasons ?? []).toEqual([]);
+  });
+
+  it("deduplicates identical failure reasons", async () => {
+    for (let i = 0; i < 3; i++) {
+      await expect(
+        trackedFetch("svc-dup", "http://127.0.0.1:1/not-listening"),
+      ).rejects.toBeTruthy();
+      noteErrorDetail("svc-dup", "same reason");
+    }
+    const m = buildMetrics(null);
+    const row = m.latestRun?.services.find((s) => s.service === "svc-dup");
+    expect(row?.errorReasons).toEqual(["same reason"]);
+  });
+
+  it("caps the reasons at 5 so a storm cannot flood the aggregate", async () => {
+    for (let i = 0; i < 8; i++) {
+      await expect(
+        trackedFetch("svc-storm", "http://127.0.0.1:1/not-listening"),
+      ).rejects.toBeTruthy();
+      noteErrorDetail("svc-storm", `reason ${i}`);
+    }
+    const m = buildMetrics(null);
+    const row = m.latestRun?.services.find((s) => s.service === "svc-storm");
+    expect(row?.errorReasons).toHaveLength(5);
   });
 });

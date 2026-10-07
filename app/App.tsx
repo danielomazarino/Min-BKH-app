@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { HashRouter, Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
 import { Settings as SettingsIcon } from "lucide-react";
 import { ApiMetricsPanel, Info } from "./shared/ApiMetricsPanel";
+import { ArticleAudit } from "./shared/ArticleAudit";
 import { sourcePurpose } from "./shared/sourcePurpose";
 import { KitToggle } from "./shared/KitToggle";
 import Brief from "./pages/Brief";
@@ -192,29 +193,36 @@ function AppShell({ state }: { state: AppDataState }) {
 }
 
 /**
- * Settings content. Supporter-facing facts first (freshness, why data may be
- * missing, which publishers feed the app); the provenance-heavy material sits
- * behind a native <details> so it never contaminates the main experience.
- * No secrets are ever exposed here.
+ * Settings content — ONE page, not a summary plus a hidden technical twin.
+ *
+ * Restructured 2026-10-07 (user request): the old layout had a supporter-facing
+ * source list AND a technical disclosure that repeated the same article
+ * counts, so the same numbers appeared twice with slightly different labels.
+ * Now: one source list (with counts), one audit link (the headlines behind
+ * the counts), one technical block (only what the list does not already
+ * say). Shorter texts throughout.
  */
 function SettingsPanel({ state }: { state: AppDataState }) {
   const data = state.status === "ready" ? state.data : null;
   const unavailable = data?.currentDataUnavailable;
   const source = data?.footballSource;
   const squadCount = data?.squadStats?.length ?? null;
+  const audit = data?.freshness.articleAudit;
+  const { search } = useLocation();
+  const auditOpen = idFromSearch(search) === "artiklar";
 
   return (
     <div className="stack-4">
       <section>
-        <div className="mod-label">Aktualitet</div>
+        <div className="mod-label">Data</div>
         <p className="small muted" data-testid="settings-updated">
           {data
-            ? `Data hämtad ${new Intl.DateTimeFormat("sv-SE", {
+            ? `Hämtad ${new Intl.DateTimeFormat("sv-SE", {
                 day: "numeric",
                 month: "short",
                 hour: "2-digit",
                 minute: "2-digit",
-              }).format(new Date(data.freshness.generatedAt))}. Nyheter uppdateras varje natt.`
+              }).format(new Date(data.freshness.generatedAt))} · uppdateras varje natt 03:30 UTC.`
             : "Data kunde inte läsas."}
         </p>
         {unavailable && (
@@ -222,24 +230,19 @@ function SettingsPanel({ state }: { state: AppDataState }) {
             Aktuell matchdata saknas just nu: {unavailable.reason}
           </p>
         )}
-      </section>
-
-      <section>
-        <div className="mod-label">Vyer</div>
-        <p className="small muted" data-testid="settings-squad">
-          {squadCount != null
-            ? `Aktuell herrtrupp: ${squadCount} spelare. Spelarhistoriken söks live mot Wikidata.`
-            : "Truppuppgifter kunde inte läsas."}
-        </p>
+        {squadCount != null && (
+          <p className="small muted" data-testid="settings-squad">
+            Aktuell herrtrupp: {squadCount} spelare. Spelarhistorik söks live mot Wikidata.
+          </p>
+        )}
       </section>
 
       <section>
         <div className="mod-label">Nyhetskällor</div>
         <p className="small dim" data-testid="news-sources-note">
-          Antalet visar hur många artiklar källan faktiskt bidrog med i den
-          senaste körningen, av de som kom in. <strong>OK</strong> betyder bara
-          att källan svarade — inte att den hittade något om Häcken. Klicka på
-          <strong> i</strong> bredvid en källa för att läsa vad den gör.
+          Artiklar behållna av totalt hämtade, senaste körningen. <strong>OK</strong> =
+          källan svarade (inte att den hittade något om Häcken). Tryck på{" "}
+          <strong>i</strong> för vad källan gör.
         </p>
         <div data-testid="news-sources">
           {data ? (
@@ -261,7 +264,7 @@ function SettingsPanel({ state }: { state: AppDataState }) {
                           ? "Artikelantal ej mätt"
                           : c.fetched === 0
                             ? "Inga artiklar kom in"
-                            : `${c.kept} av ${c.fetched} artiklar behölls`}
+                            : `${c.kept} av ${c.fetched} behölls`}
                       </span>
                     </span>
                     <span className="rl">
@@ -274,11 +277,28 @@ function SettingsPanel({ state }: { state: AppDataState }) {
             <p className="small dim">—</p>
           )}
         </div>
+        {/* THE HEADLINES BEHIND THE COUNTS. The list above says "3 av 20";
+            this says WHICH three and WHICH seventeen were dropped, so a wrong
+            verdict can be spotted by eye (that is how B-012 was found). */}
+        {audit && audit.length > 0 && (
+          <p className="small dim" style={{ marginTop: "var(--s2)" }}>
+            <Link className="link" to={`${SETTINGS_PATH}?id=artiklar`}>
+              Granska alla {audit.length} hämtade artiklar →
+            </Link>
+          </p>
+        )}
       </section>
+
+      {auditOpen && (
+        <section>
+          <div className="mod-label">Artikelgranskning</div>
+          <ArticleAudit audit={audit} />
+        </section>
+      )}
 
       <details className="disc" data-testid="diagnostics">
         <summary>
-          Teknisk information och proveniens
+          Teknisk information
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m6 9 6 6 6-6" />
           </svg>
@@ -305,9 +325,6 @@ function SettingsPanel({ state }: { state: AppDataState }) {
               ? ` · ${data.cardMatchesInspected} matcher kontrollerade för kort`
               : ""}
           </p>
-          <p className="small dim">
-            Nyhetshändelser: {data?.newsEvents?.length ?? 0} · Spelare: sökning mot Wikidata (ingen lokal lista)
-          </p>
           {data?.disciplineRule && (
             <p className="small dim" data-testid="rule-text">
               Varningsregel: {data.disciplineRule.threshold} varningar i olika matcher ger{" "}
@@ -318,8 +335,8 @@ function SettingsPanel({ state }: { state: AppDataState }) {
             </p>
           )}
           <p className="small dim">
-            Artiklar hämtas från källornas egna RSS-flöden. Firecrawl används bara för att hitta artiklar
-            — det är aldrig en källa.
+            Nyheter hämtas från källornas egna RSS-flöden. Firecrawl används bara för att
+            hitta artiklar — aldrig som källa.
           </p>
 
           {/* API measurement log. Rendered inside the existing technical

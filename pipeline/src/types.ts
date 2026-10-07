@@ -28,6 +28,34 @@ export interface SourceCount {
   dropped: number;
 }
 
+/**
+ * One fetched article, as recorded for the in-app ingest audit.
+ *
+ * WHY THIS EXISTS: the counts say HOW MANY articles a source contributed, but
+ * a maintainer checking validity needs to see WHICH ones — the actual
+ * headlines — and which of them the pipeline considered Häcken-relevant.
+ * Counts alone made a "0 av 39" row unverifiable: was the filter right, or
+ * did it drop real news? (B-012 was found exactly by asking that question.)
+ */
+export interface ArticleAuditEntry {
+  /** Article headline, as the feed delivered it. */
+  title: string;
+  /** Article URL — the identity used everywhere else. */
+  url: string;
+  /** Feed publisher name. */
+  publisher: string;
+  /** ISO publication timestamp from the feed. */
+  publishedAt: string;
+  /**
+   * What the pipeline did with this article:
+   *  - "kept"       — survived prefilter AND the men's filter; considered Häcken-relevant
+   *  - "men-excluded" — survived the prefilter but was removed as not men's-team news
+   *  - otherwise the prefilter drop reason verbatim ("outside date window",
+   *    "advertisement", "no Häcken relation", …)
+   */
+  verdict: string;
+}
+
 export interface Freshness {
   generatedAt: string;
   sourceStatus: Record<string, SourceStatus>;
@@ -43,6 +71,14 @@ export interface Freshness {
    * way. That ambiguity is what B-006 was about.
    */
   sourceCounts?: Record<string, SourceCount>;
+  /**
+   * EVERY article the feeds delivered this run, with the pipeline's verdict.
+   *
+   * OPTIONAL for the same reason as `sourceCounts`: absent means the run
+   * predates the audit, not that nothing was fetched. Capped at 250 entries
+   * (a real night fetches ~170) so app.json grows by a bounded amount.
+   */
+  articleAudit?: ArticleAuditEntry[];
 }
 
 /** Provenance metadata for the current football dataset. */

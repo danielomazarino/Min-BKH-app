@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { synthesizeWithOpenRouter, buildOpenRouterRequestPayload } from "./openrouter";
+import {
+  synthesizeWithOpenRouter,
+  buildOpenRouterRequestPayload,
+  describeOpenRouterError,
+} from "./openrouter";
 import { beginRun, buildMetrics } from "./apiMetrics";
 import type { GeminiArticleInput } from "./gemini";
 
@@ -302,5 +306,57 @@ describe("openrouter measurement path", () => {
     const serialised = JSON.stringify(m);
     expect(serialised).not.toContain("sk-or-v1-test");
     expect(serialised).not.toContain("Bearer");
+  });
+});
+describe("describeOpenRouterError", () => {
+  const SHARED_POOL_429 = JSON.stringify({
+    error: {
+      message: "Provider returned error",
+      code: 429,
+      metadata: {
+        raw: "google/gemma-4-31b-it:free is temporarily rate-limited upstream.",
+        provider_name: "Google AI Studio",
+        limit_source: "upstream_provider_shared_pool",
+        remedy_hint: "Retry shortly, add your own provider key, or route to another provider",
+      },
+    },
+  });
+
+  it("names the shared pool and the provider for a pool 429", () => {
+    const s = describeOpenRouterError(429, SHARED_POOL_429);
+    expect(s).toContain("Delad gratis-pool");
+    expect(s).toContain("Google AI Studio");
+    expect(s).toContain("inte vår kvot");
+    expect(s).toContain("Åtgärd:");
+  });
+
+  it("explains a 404 as a delisted model", () => {
+    const s = describeOpenRouterError(404, '{"error":{"message":"not found"}}');
+    expect(s).toContain("404");
+    expect(s).toContain("finns inte längre");
+  });
+
+  it("explains a 402 as billing", () => {
+    const s = describeOpenRouterError(402, "{}");
+    expect(s).toContain("fakturering");
+  });
+
+  it("explains a 5xx as provider routing failure", () => {
+    const s = describeOpenRouterError(503, "plain text body");
+    expect(s).toContain("leverantörens fel");
+  });
+
+  it("survives a non-JSON body", () => {
+    const s = describeOpenRouterError(500, "<html>gateway timeout</html>");
+    expect(s).toContain("500");
+  });
+
+  it("falls back to the raw message when the limit source is not the shared pool", () => {
+    const s = describeOpenRouterError(
+      429,
+      JSON.stringify({ error: { metadata: { raw: "our own quota is spent" } } }),
+    );
+    expect(s).toContain("our own quota is spent");
+    expect(s).not.toContain("Delad gratis-pool");
   });
 });

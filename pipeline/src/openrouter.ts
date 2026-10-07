@@ -19,7 +19,7 @@
  *   metrics recorder keep it out of the log.
  */
 
-import { trackedFetch, noteCost, noteLlmCall } from "./apiMetrics";
+import { trackedFetch, noteCost, noteErrorDetail, noteLlmCall } from "./apiMetrics";
 import { resolveFreeModel } from "./openrouterModel";
 import {
   parseGeminiResponse,
@@ -56,6 +56,65 @@ class OpenRouterHttpError extends Error {
   constructor(readonly status: number, body: string) {
     super(`OpenRouter HTTP ${status}: ${body.slice(0, 300)}`);
   }
+}
+
+/**
+ * Turn an OpenRouter error body into a short, diagnosable Swedish string.
+ *
+ * The body is JSON with an `error.metadata` block that names the REAL limit:
+ *   limit_source: "upstream_provider_shared_pool" → the shared free pool, not us
+ *   provider_name: "Google AI Studio"             → whose capacity was busy
+ *   remedy_hint / raw                              → what OpenRouter suggests
+ *
+ * Status codes get fixed meanings so the panel can explain them without the
+ * body: 402 billing, 401/403 auth, 404 model gone, 429 rate limit, 5xx provider.
+ */
+export function describeOpenRouterError(status: number, body: string): string {
+  interface ErrorMeta {
+    raw?: string;
+    provider_name?: string;
+    limit_source?: string;
+    remedy_hint?: string;
+  }
+  let meta: ErrorMeta | null = null;
+  try {
+    const parsed = JSON.parse(body) as { error?: { metadata?: ErrorMeta } };
+    meta = parsed.error?.metadata ?? null;
+  } catch {
+    /* non-JSON body — fall through to the status-based text */
+  }
+
+  const parts: string[] = [];
+  if (meta?.limit_source === "upstream_provider_shared_pool") {
+    parts.push(
+      `Delad gratis-pool hos ${meta.provider_name ?? "leverantören"} är upptagen — inte vår kvot`,
+    );
+  } else if (meta?.raw) {
+    parts.push(meta.raw.slice(0, 160));
+  }
+
+  switch (status) {
+    case 401:
+    case 403:
+      parts.push("401/403 = nyckeln avvisad (fel eller spärrad nyckel)");
+      break;
+    case 402:
+      parts.push("402 = fakturering — kontot saknar täckning även för gratismodeller");
+      break;
+    case 404:
+      parts.push("404 = modellen finns inte längre (avlistad från katalogen)");
+      break;
+    case 429:
+      if (parts.length === 0)
+        parts.push("429 = taktnivå nådd — kan vara vår kvot ELLER den delade poolen");
+      break;
+    default:
+      if (status >= 500)
+        parts.push(`${status} = leverantörens fel, ingen provider klarade routingen`);
+      else parts.push(`HTTP ${status}`);
+  }
+  if (meta?.remedy_hint) parts.push(`Åtgärd: ${meta.remedy_hint.slice(0, 120)}`);
+  return parts.join(" · ");
 }
 
 /**
@@ -208,6 +267,11 @@ export async function synthesizeWithOpenRouter(
 
     if (!res.ok) {
       const body = await res.text();
+      // The status alone ("HTTP 429") cannot be diagnosed: OUR quota and the
+      // SHARED upstream pool both answer 429 with opposite remedies. The body
+      // names which one it was (limit_source, provider_name, remedy_hint), so
+      // patch the readable parts onto the trackedFetch record for the panel.
+      noteErrorDetail("openrouter", describeOpenRouterError(res.status, body));
       throw new OpenRouterHttpError(res.status, body);
     }
 
