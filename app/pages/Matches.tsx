@@ -73,7 +73,13 @@ export default function Matches({ state }: { state: AppDataState }) {
   useEffect(() => {
     if (!wantsTable || state.status !== "ready") return;
     if (data.table.length === 0) return;
-    tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // The page does NOT scroll on the window: the `.layer` wrapper is the
+    // scroll container (overflow-y: auto, measured live). scrollIntoView
+    // walks up to the nearest scrollable ancestor, so it works — but only
+    // once the element is actually in the DOM with layout, hence the rAF.
+    requestAnimationFrame(() => {
+      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     navigate("/matcher", { replace: true });
     // Runs once per arrival with the param; the navigate above removes it.
     // (This project's ESLint config does not register react-hooks rules, so
