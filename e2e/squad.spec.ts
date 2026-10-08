@@ -182,10 +182,32 @@ test.describe("Squad card uses pre-resolved enrichment", () => {
   };
 
   test("renders the pre-resolved career with no live search", async ({ page }) => {
-    await page.route("**/data/app.json", (route) => route.fulfill({ json: ENRICHED }));
+    // HERMETIC, like brief.spec.ts's serve(): the service worker caches
+    // /data/app.json with NetworkFirst, so a route mock alone is a race — the
+    // worker can answer from its cache and the app then renders the REAL
+    // squad (27 players, no enrichment) instead of this fixture. That made
+    // this test pass or fail depending on whether the worker had already
+    // cached the file, which is why it failed in the batch and passed alone.
+    // Unregister the worker and drop the caches BEFORE routing, so the app
+    // must fetch our bytes.
+    await page.evaluate(async () => {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+      await Promise.all((await caches.keys()).map((k) => caches.delete(k)));
+    });
+
+    let hits = 0;
+    await page.route("**/data/app.json", (route) => {
+      hits++;
+      return route.fulfill({ json: ENRICHED });
+    });
     // The file-level beforeEach already navigated, so a hash-only goto would
     // NOT re-fetch app.json. A full reload is required for the mock to apply.
     await page.reload();
+    // POLL, do not assert immediately: reload() resolves on the load event,
+    // but the app fetches app.json asynchronously AFTER React mounts. An
+    // immediate check reads hits=0 and fails even though the mock is used.
+    await expect.poll(() => hits, { message: "app must fetch the stubbed data, not a cached copy" }).toBeGreaterThan(0);
     await page.getByTestId("squad-player").first().click();
     await expect(page.getByTestId("squad-facts")).toBeAttached();
     // The career comes straight from the enrichment — Häcken at the top.

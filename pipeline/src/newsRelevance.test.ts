@@ -58,6 +58,50 @@ describe("classifyRelevance — regression against known false positives", () =>
   });
 });
 
+describe("classifyRelevance — multi-part surnames (measured 2026-10-08)", () => {
+  // The squad lists "Mikkel Rygaard Jensen" but the press uses "Mikkel
+  // Rygaard". Taking the LAST token as the surname yielded "Jensen", so every
+  // "Rygaard …" headline was dropped as "no Häcken relation".
+  const KNOWN_MULTI: KnownPersons = {
+    currentPlayers: ["Mikkel Rygaard Jensen", "Sabri Dahari Kondo", "Bamir Fierza Sadiku", "Christ Ivan Wawa"],
+  };
+  const clsm = (title: string, summary = "", publisher = "Fotbolltransfers") =>
+    classifyRelevance({ title, summary, publisher }, KNOWN_MULTI);
+
+  it("matches the middle surname 'Rygaard' (not the last token 'Jensen')", () => {
+    const r = clsm("Rygaard: \"Primära intresset ligger i att komma hem till Danmark\"");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("Mikkel Rygaard Jensen");
+  });
+
+  it("matches the possessive form 'Rygaards'", () => {
+    const r = clsm("Rygaards gläds över transfern: \"Alla tänkte wow\"");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("matches 'Kondo' for Sabri Dahari Kondo", () => {
+    const r = clsm("Kondo om framtiden i Häcken", "Mittfältaren öppnar för samtal.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("matches 'Sadiku' for Bamir Fierza Sadiku", () => {
+    const r = clsm("Sadiku tillbaka i träning", "Anfallaren är redo igen.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("does NOT match a bare middle given-name 'Ivan' (Christ Ivan Wawa)", () => {
+    // A middle token that is a given name must not make every Ivan article a
+    // Häcken article. "ivan" is 4 chars, below the 5-char middle-token floor.
+    const r = clsm("Ivan gjorde mål för sitt nya lag", "Ivan hyllades efter matchen.");
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("does NOT match the ambiguous last token 'Jensen'", () => {
+    const r = clsm("Jensen räddade poängen för sitt lag", "Målvakten Jensen var stor.");
+    expect(r.relevance).toBe("UNRELATED");
+  });
+});
+
 describe("classifyRelevance — genuine Häcken articles retained", () => {
   it("official BK Häcken publisher is CURRENT_HACKEN", () => {
     const r = cls("Häcken vinner hemma", "2-0 mot Djurgården.", "BK Häcken");

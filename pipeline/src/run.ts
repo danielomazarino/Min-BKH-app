@@ -53,6 +53,7 @@ import { getRule } from "./rules";
 import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall, noteSourceArticles } from "./apiMetrics";
 import { synthesizeWithOpenRouter } from "./openrouter";
 import { enrichSquad } from "./squadEnrichment";
+import { accumulateNews } from "./newsArchive";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
@@ -637,6 +638,14 @@ async function main() {
     log: (m) => console.log(m),
   });
 
+  // ACCUMULATE news across runs. The feeds are sampled once a night and the
+  // volatile ones (gp.se holds ~10 front-page items) roll over within hours,
+  // so an unlucky sampling time permanently loses a story — measured
+  // 2026-10-08, when the run at 03:48 UTC missed GP's "Rygaard om Häckens
+  // väntan" published at 03:47:07. Merging preserves what any earlier run saw.
+  const prevForNews = readLastKnownGood<AppData>(resolve(DATA_DIR, "app.json"));
+  const accumulatedNews = accumulateNews(prevForNews?.news ?? [], relevantNews);
+
   const appData: AppData = {
     freshness: freshness(),
     footballSource: foot.source ?? undefined,
@@ -652,7 +661,7 @@ async function main() {
     discipline: foot.discipline,
     cardMatchesInspected: foot.cardMatchesInspected,
     disciplineRule: foot.disciplineRule,
-    news: relevantNews,
+    news: accumulatedNews,
     newsEvents,
     squadStats: foot.squadStats,
     squadEnrichment,

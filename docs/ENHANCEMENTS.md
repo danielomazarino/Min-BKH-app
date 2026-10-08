@@ -37,14 +37,26 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **558 unit tests passing** (28 files, verified locally 2026-10-08). E2E: squad 11/11, article-audit 5/5 green on chromium |
-| Data last generated | **2026-10-07 03:48 UTC** — nightly run succeeded; served build `73222f0.c05b88d` matches `HEAD` |
-| Settings | **REBUILT 2026-10-07 (`73222f0`, deployed)** — one page, no duplicated counts. New **article audit** subpage: every fetched headline per source, marked with the pipeline's verdict ("Häcken herr" / "Ej herrlag" / drop reason), each linking to the original article. OpenRouter failures now show WHY (shared-pool diagnosis, status-code meanings) under the "N fel" pill. **Audit data appears after the 2026-10-08 03:30 nightly** — until then the link is correctly absent |
+| Tests | **572 unit tests passing** (28 files, verified locally 2026-10-08). E2E: full two-engine suite green after the `/matcher` hooks fix (see below) |
+| Data last generated | **2026-10-08 03:52 UTC** — nightly run succeeded, **24/27 squad players enriched**; served `app.json` carries `squadEnrichment` |
+| News | **Accumulation shipped 2026-10-08 (B-014)** — news is now merged across nightly runs so a volatile feed (gp.se holds ~10 items) cannot permanently lose a story. First accumulating nightly: 2026-10-09 03:30 UTC |
+| Classifier | **Multi-part surnames fixed 2026-10-08 (B-012)** — "Mikkel Rygaard Jensen" now matches "Rygaard" headlines. The opponent-context widening is still OPEN |
+| Settings | **REBUILT 2026-10-07 (`73222f0`, deployed)** — one page, no duplicated counts. New **article audit** subpage: every fetched headline per source, marked with the pipeline's verdict ("Häcken herr" / "Ej herrlag" / drop reason), each linking to the original article. OpenRouter failures now show WHY (shared-pool diagnosis, status-code meanings) under the "N fel" pill |
 | Player cards | **REBUILT 2026-10-08** — the squad is now enriched ONCE per nightly (`squadEnrichment` in `app.json`), so Trupp cards open with career, photo and narrative already present. Career is the **union** of Wikidata and the Wikipedia infobox (was: pick one, which dropped real clubs). Home-country Wikipedia is tried (Norwegian for Wembangomo). Non-Swedish narratives are machine-translated and labelled. See **E-020** |
 | Updates | **NEW 2026-10-08** — an update banner appears when a new version is waiting, plus a manual "Sök efter uppdatering" in settings. Fixes the "I don't see your change" report caused by a stale service worker. See **E-021** |
 | Gemini | **Disabled in the nightly** (key not injected). Free tier measured: reachable ~48%, real-work probe 0/15. B-004 unvalidated |
 | OpenRouter | **Measurement-only nightly, still never reaches the app.** The pinned free model (`qwen/qwen3.8-27b:free`) was **DELISTED** by OpenRouter — the 2026-10-06 nightly got HTTP 404 while the key was healthy (0/1000 used). Fixed 2026-10-06: the model is now **resolved dynamically from the live free catalog** (`dd8bedb`); a delisted pin fails BEFORE the request instead of burning it. Verified live: resolver picks `google/gemma-4-31b-it:free`, but both verification requests got **HTTP 429 from the shared upstream pool** — the structural limit, unchanged. **All 16 current free models are single-provider** (measured from the endpoints API), so there is no routing resilience anywhere in the free catalog. See **B-008**, **B-012**, **B-013** |
-| Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement AND the squad enrichment |
+| Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement, the squad enrichment, AND news accumulation |
+
+### Fixed 2026-10-08 — the `/matcher` blank page (React error #310)
+
+`Matches.tsx` called `useRef`/`useEffect` **after** its loading/error early
+returns, so the loading render registered 3 hooks and the ready render 5 — React
+error #310 ("rendered more hooks than during the previous render"). The whole
+`/matcher` page rendered blank the moment data arrived, which failed **54 e2e
+tests** across both engines and left CI red for four consecutive commits
+(`dea4be8` → `37bff88`). The hooks now sit above the returns. A hook may never
+sit behind a conditional return.
 
 ### The Gemini availability probe was STOPPED on 2026-10-04
 
@@ -396,7 +408,27 @@ returns on the next check because a stale app is the thing to avoid.
 
 ## B-012 · The deterministic news filter drops real men's-team articles
 
-**Status:** OPEN — confirmed false negative measured 2026-10-07 · **Affects:** how complete the news feed is
+**Status:** PARTLY FIXED 2026-10-08 — multi-part surname matching shipped; the
+opponent-context widening is still OPEN · **Affects:** how complete the news feed is
+
+**Fixed 2026-10-08 (measured, unit-tested).** The classifier took the LAST token
+of a player's name as the surname. The squad lists **"Mikkel Rygaard Jensen"**,
+but the press — and Wikidata, and the player himself — use **"Mikkel Rygaard"**.
+So every "Rygaard …" headline matched nothing and was dropped as "no Häcken
+relation" (confirmed on Fotbollstidningar/GP: *"Rygaard om Häckens väntan"*,
+*"Rygaards gläds över transfern"*). The same failure hit **"Sabri Dahari Kondo"**
+(Kondo), **"Bamir Fierza Sadiku"** (Sadiku) and **"Wilson Lindberg Uhrström"**
+(Uhrström).
+
+`mentionsKnownPerson` now tries **every token after the first** as a surname
+candidate, with a possessive `s?` so "Rygaards" matches. Middle tokens need 5+
+chars (vs 4 for the final token) so a middle *given* name cannot match — "Christ
+Ivan Wawa" must not make every "Ivan" article a Häcken article. Ambiguous
+surnames (common Swedish words and the most common Nordic surnames, now
+including `jensen`) stay excluded. Pinned by 6 unit tests in
+`newsRelevance.test.ts` (both directions).
+
+**Still OPEN — the opponent-context widening** (the original finding below).
 
 **What was measured.** The 2026-10-06 nightly kept **6 of 173** fetched articles
 (4 events served). The club feed is currently dominated by women's-team
@@ -442,6 +474,43 @@ women's articles regress into the feed; both pinned by unit tests.
 **The deeper alternative** is the semantic layer (B-004/B-008) — which is
 exactly what keeps 429ing. Until a provider works, the deterministic fix above
 is the only path.
+
+---
+
+## B-014 · A single nightly sample permanently loses a volatile feed's story
+
+**Status:** FIXED 2026-10-08 (unit-tested) · **Affects:** whether a story that
+was published is ever shown
+
+**What was measured.** The feeds are sampled **once a night**, and several are
+volatile: `gp.se/rss` holds only the ~10 latest front-page items, and
+Sportbladet/Expressen/SVT roll over within a day or two. The 2026-10-08 run at
+03:48 UTC caught GP's feed four minutes into its refresh — it saw the
+02:55–03:00 batch and **missed** *"Rygaard om Häckens väntan: 'En risk'"*,
+published at **03:47:07** and only visible minutes later. That article was gone
+from the feed forever, and nothing in the pipeline could recover it. This is
+exactly what the user reported: *"check the gp.se source that is missing the
+news article from yesterday or the day before about the bk häcken herr team
+status before the coming weekend's game"*.
+
+**Fix.** `pipeline/src/newsArchive.ts` — `accumulateNews(previous, fresh)` merges
+each run's news with what the previous `app.json` already served, so an article
+seen on **any** night is retained until it ages out:
+
+- New items win on URL collision, so a corrected headline/summary updates.
+- Items older than **21 days** are dropped; the list is capped at **60**, newest
+  first, so `app.json` cannot grow without bound.
+- Same-title-same-day items are treated as one story.
+- It is a **data-merging step only** — it never changes a verdict, and the
+  per-run article audit still reports what *that* run fetched, so accumulation
+  cannot make the audit lie about tonight's fetch.
+
+Wired into `run.ts` (`accumulateNews(prevForNews?.news ?? [], relevantNews)`).
+Pinned by 8 unit tests in `newsArchive.test.ts`.
+
+**Not yet verified in production:** the next nightly (2026-10-09 03:30 UTC) is
+the first run that will accumulate. Confirm the served `app.json` news count
+grows rather than resets.
 
 ---
 
@@ -1719,7 +1788,8 @@ both linked in the sheet.
 | **B-006 diagnostics** | **DONE — seen in a real run** (`a1d4878`) | Per-source fetched/kept/dropped-by-reason in the nightly log with a `ZERO CONTRIBUTED` flag, **and observed working in the 2026-10-06 nightly** (six sources flagged ZERO CONTRIBUTED). The same counts are visible in the app since `c3c71ca` |
 | **B-008** | **OPEN — transport PROVEN, quality UNVALIDATED, model churn hit** | OpenRouter free tier worked where Gemini did not (same payload: Gemini **0/15**, OpenRouter **1/1**). Since then: the pinned model was **delisted** (404s), fixed by dynamic catalog resolution (`dd8bedb`); verification requests got **429 from the shared upstream pool**; **all 16 free models are single-provider** — no routing resilience exists. Quality on real news: still untested |
 | **B-009** | **DONE** | A unit test hardcoded a fixture date and asked the code to compare it to the real clock. At 15:00 UTC on 2026-10-04 the fixture silently became historical and the test began failing on its own — **with no code change**. Because CI and deploy both run the suite, it was **blocking every deploy**. Dates now derive from the clock at call time; no production code touched. Suite is **396/396 green** |
-| **B-012** | **OPEN — false negative measured** | The deterministic news filter drops real men's-team articles: the IFK Göteborg derby preview was confirmed dropped 2026-10-07 (keyword classifier has no men's signal in its text). Most drops are correct (women's coverage); the loss is the men's edge cases. Deterministic fix proposed; no provider dependency. The new article audit (E-018) makes wrong drops visible by eye from 2026-10-08. See the B-012 section |
+| **B-012** | **PARTLY FIXED 2026-10-08** | Multi-part surname matching shipped: "Mikkel Rygaard Jensen" now matches "Rygaard" headlines (was matching only "Jensen"), with a possessive `s?` and a 5-char floor on middle tokens so a middle given name cannot match. 6 unit tests, both directions. **Still OPEN:** the opponent-context widening (IFK Göteborg derby preview) and the four zero-contribution secondary feeds. See the B-012 section |
+| **B-014** | **FIXED 2026-10-08 — pending production verification** | A single nightly sample permanently lost a volatile feed's story (GP's "Rygaard om Häckens väntan", published 03:47:07, missed by the 03:48 run). `newsArchive.ts` now accumulates news across runs (21-day retention, 60-item cap, newest-first, fresh wins on URL collision). 8 unit tests. First accumulating nightly is 2026-10-09 03:30 UTC. See the B-014 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |

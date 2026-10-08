@@ -123,7 +123,11 @@ test.describe("Brief (dashboard)", () => {
     await first.click();
     await expect(page).toHaveURL(/\u0023\/trupp\?id=/);
     await expect(page.getByTestId("sheet")).toBeVisible();
-    await expect(page.getByTestId("squad-card-status")).toBeVisible();
+    // The card's kortläge line. The testid was renamed squad-card-status ->
+    // squad-card-state when the shared PlayerCard replaced the squad-only
+    // sheet (dea4be8); this assertion kept the old id and so failed on every
+    // run afterwards.
+    await expect(page.getByTestId("squad-card-state")).toBeVisible();
   });
 
   test("the next match is tappable and leads to the match section", async ({ page }) => {

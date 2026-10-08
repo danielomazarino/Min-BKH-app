@@ -66,6 +66,49 @@ export function mentionsHäcken(title: string, summary: string): boolean {
   return /\bhackens?\b/.test(text) || /\bbk ?hackens?\b/.test(text);
 }
 
+/**
+ * Surnames that are too ambiguous for surname-only matching: common Swedish
+ * words ("Seger" = victory, "Sten" = stone) and the most common Nordic
+ * surnames ("Viktor Andersson" must never match squad player "David
+ * Andersson"). "jensen" is here because it is the single most common Danish
+ * surname and would otherwise make "Mikkel Rygaard Jensen" match every
+ * unrelated Jensen article.
+ */
+const AMBIGUOUS_SURNAMES = new Set([
+  // common Swedish words
+  "seger", "sten", "berg", "lund", "mark", "wall", "dahl", "holm", "borg", "gren",
+  // among the most common Swedish/Danish surnames
+  "andersson", "johansson", "karlsson", "gustafson", "gustafsson", "nilsson",
+  "eriksson", "larsson", "olsson", "persson", "svensson", "jansson", "jensen",
+]);
+
+/**
+ * The name parts usable for surname-only matching, in the order to try them.
+ *
+ * WHY EVERY TOKEN AFTER THE FIRST, NOT JUST THE LAST (measured 2026-10-08)
+ * ------------------------------------------------------------------------
+ * The squad lists "Mikkel Rygaard Jensen", but the press — and Wikidata, and
+ * the player himself — use "Mikkel Rygaard". Taking the LAST token as the
+ * surname yielded "Jensen", so every "Rygaard …" headline matched nothing and
+ * several real articles were dropped as "no Häcken relation" (confirmed on
+ * Fotbollstidningar/GP: "Rygaard om Häckens väntan", "Rygaards gläds över
+ * transfern"). The same failure hit "Sabri Dahari Kondo" (Kondo), "Bamir
+ * Fierza Sadiku" (Sadiku) and "Wilson Lindberg Uhrström" (Uhrström).
+ *
+ * MIDDLE tokens get a longer minimum (5 chars, vs 4 for the final token)
+ * because a middle name is more likely to be a given name: "Christ Ivan Wawa"
+ * must not make every article about a person called Ivan a Häcken article.
+ */
+function surnameCandidates(normalizedName: string): string[] {
+  const parts = normalizedName.split(" ").filter(Boolean);
+  if (parts.length < 2) return [];
+  const after = parts.slice(1);
+  return after.filter((t, i) => {
+    const isLast = i === after.length - 1;
+    return t.length >= (isLast ? 4 : 5) && !AMBIGUOUS_SURNAMES.has(t);
+  });
+}
+
 /** Does the article mention a known Häcken person by name? */
 export function mentionsKnownPerson(title: string, summary: string, persons: string[]): string | null {
   const text = norm(`${title} ${summary}`);
@@ -73,28 +116,13 @@ export function mentionsKnownPerson(title: string, summary: string, persons: str
     const key = norm(p);
     if (key.length < 4) continue;
     if (text.includes(key)) return p;
-    // Surname-only match: headlines often use just the surname ("Falk utvisad").
-    // Word-boundary match on the surname — substring matching would false-positive
-    // ("Lindelöf" contains "linde", "Ibrahimovic" contains "ibrahim").
-    // Surnames that are also common Swedish words ("Seger" = victory, "Sten" = stone)
-    // are excluded from surname-only matching — they require the full name.
-    const parts = key.split(" ").filter(Boolean);
-    const surname = parts[parts.length - 1];
-    const AMBIGUOUS_SURNAMES = new Set([
-      // common Swedish words
-      "seger", "sten", "berg", "lund", "mark", "wall", "dahl", "holm", "borg", "gren",
-      // among the most common Swedish surnames — too ambiguous for surname-only
-      // matching ("Viktor Andersson" must never match squad player "David Andersson")
-      "andersson", "johansson", "karlsson", "gustafson", "gustafsson", "nilsson",
-      "eriksson", "larsson", "olsson", "persson", "svensson", "jansson",
-    ]);
-    if (
-      parts.length >= 2 &&
-      surname.length >= 4 &&
-      !AMBIGUOUS_SURNAMES.has(surname) &&
-      new RegExp(`\\b${surname}\\b`).test(text)
-    ) {
-      return p;
+    // Surname-only match: headlines often use just the surname ("Falk utvisad",
+    // "Rygaard om Häckens väntan"). Word-boundary match, with an optional
+    // possessive "s" so "Rygaards gläds …" matches too. Substring matching is
+    // deliberately NOT used: "Lindelöf" contains "linde", "Ibrahimovic"
+    // contains "ibrahim".
+    for (const surname of surnameCandidates(key)) {
+      if (new RegExp(`\\b${surname}s?\\b`).test(text)) return p;
     }
   }
   return null;

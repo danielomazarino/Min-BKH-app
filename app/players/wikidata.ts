@@ -834,6 +834,30 @@ export async function searchPlayersOnline(
     }
   }
 
+  // ---- 6. First + last name ---------------------------------------------
+  //
+  // MEASURED 2026-10-08: the squad lists players with middle names Wikidata
+  // does not record — "Sabri Dahari Kondo" (Wikidata: "Sabri Kondo"),
+  // "Bamir Fierza Sadiku" ("Bamir Sadiku"). Both full spellings return zero
+  // index hits AND zero cirrus hits, so the player is simply absent from the
+  // enrichment. Reducing to first + last token is the shape the source
+  // actually stores, and it is the ONLY step that can rescue these.
+  //
+  // It runs LAST, only when everything else failed: a first+last match is
+  // weaker evidence than a full-name or surname match, so it must never
+  // pre-empt a stronger one. And it is still filtered by isPerson AND
+  // isFootballer afterwards, so a namesake cannot slip through.
+  if (chosen.length === 0) {
+    const parts = query.split(/\s+/).filter(Boolean);
+    if (parts.length > 2) {
+      const reduced = `${parts[0]} ${parts[parts.length - 1]}`;
+      const result = await searchPlayersOnline(reduced, { ...deps, onPhase: undefined });
+      if (result.status === "results" && result.candidates.length > 0) {
+        return { ...result, query };
+      }
+    }
+  }
+
   if (chosen.length === 0) {
     // The index matched something, but nothing survived as a person. Say so
     // rather than pretending the search was empty.

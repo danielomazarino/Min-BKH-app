@@ -33,6 +33,37 @@ export default function Matches({ state }: { state: AppDataState }) {
   const { search } = useLocation();
   const navigate = useNavigate();
 
+  // ?section=tabellen — Brief's "Hela tabellen" link. The table sits below
+  // the match lists, so without an explicit scroll the reader landed on the
+  // page top and had to hunt for it (tester report, 2026-10-07). The ref is
+  // scrolled once data is ready; the param is then dropped from the URL so a
+  // manual reload does not yank the reader down again.
+  //
+  // THESE HOOKS MUST STAY ABOVE THE EARLY RETURNS. They were originally placed
+  // after the loading/error returns, so the loading render registered 3 hooks
+  // and the ready render registered 5 — React error #310, "rendered more hooks
+  // than during the previous render". That blanked the whole /matcher page the
+  // moment data arrived, and with it every e2e test that visited /matcher.
+  // A hook may never sit behind a conditional return.
+  const tableRef = useRef<HTMLElement | null>(null);
+  const wantsTable = new URLSearchParams(search).get("section") === "tabellen";
+  const tableRows = state.status === "ready" ? state.data.table.length : 0;
+  useEffect(() => {
+    if (!wantsTable || state.status !== "ready") return;
+    if (tableRows === 0) return;
+    // The page does NOT scroll on the window: the `.layer` wrapper is the
+    // scroll container (overflow-y: auto, measured live). scrollIntoView
+    // walks up to the nearest scrollable ancestor, so it works — but only
+    // once the element is actually in the DOM with layout, hence the rAF.
+    requestAnimationFrame(() => {
+      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    navigate("/matcher", { replace: true });
+    // Runs once per arrival with the param; the navigate above removes it.
+    // (This project's ESLint config does not register react-hooks rules, so
+    // there is no directive to silence — the comment is the record.)
+  }, [wantsTable, state.status, tableRows, navigate]);
+
   if (state.status === "loading") {
     return (
       <div className="layer" aria-busy="true" aria-label="Laddar" data-testid="matches-page">
@@ -62,29 +93,6 @@ export default function Matches({ state }: { state: AppDataState }) {
   const openId = idFromSearch(search);
   const openMatch = openId && detailId != null && String(detailId) === openId ? detail : null;
   const closeMatch = () => navigate("/matcher");
-
-  // ?section=tabellen — Brief's "Hela tabellen" link. The table sits below
-  // the match lists, so without an explicit scroll the reader landed on the
-  // page top and had to hunt for it (tester report, 2026-10-07). The ref is
-  // scrolled once data is ready; the param is then dropped from the URL so a
-  // manual reload does not yank the reader down again.
-  const tableRef = useRef<HTMLElement | null>(null);
-  const wantsTable = new URLSearchParams(search).get("section") === "tabellen";
-  useEffect(() => {
-    if (!wantsTable || state.status !== "ready") return;
-    if (data.table.length === 0) return;
-    // The page does NOT scroll on the window: the `.layer` wrapper is the
-    // scroll container (overflow-y: auto, measured live). scrollIntoView
-    // walks up to the nearest scrollable ancestor, so it works — but only
-    // once the element is actually in the DOM with layout, hence the rAF.
-    requestAnimationFrame(() => {
-      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-    navigate("/matcher", { replace: true });
-    // Runs once per arrival with the param; the navigate above removes it.
-    // (This project's ESLint config does not register react-hooks rules, so
-    // there is no directive to silence — the comment is the record.)
-  }, [wantsTable, state.status, data.table.length]);
 
   return (
     <>
