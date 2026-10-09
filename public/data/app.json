@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-09T03:53:05.224Z",
+    "generatedAt": "2026-10-09T07:52:53.392Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -31,23 +31,23 @@
       },
       "Fotbolltransfers": {
         "fetched": 20,
-        "kept": 3,
-        "dropped": 17
+        "kept": 9,
+        "dropped": 11
       },
       "SVT Sport": {
         "fetched": 20,
         "kept": 1,
         "dropped": 19
       },
+      "Göteborgs-Posten": {
+        "fetched": 15,
+        "kept": 0,
+        "dropped": 15
+      },
       "Allsvenskan": {
         "fetched": 10,
         "kept": 0,
         "dropped": 10
-      },
-      "Göteborgs-Posten": {
-        "fetched": 3,
-        "kept": 0,
-        "dropped": 3
       },
       "Bollsvenskan": {
         "fetched": 1,
@@ -197,10 +197,31 @@
         "verdict": "men-excluded"
       },
       {
+        "title": "Gianni Infantino backas av hela Afrika",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/d774wz/gianni-infantino-backas-av-hela-afrika?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-09T07:05:21.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Dejan Kulusevskis hemliga matchminuter",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/eGGMq9/dejan-kulusevskis-hemliga-matchminuter-i-london?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-09T06:48:26.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
         "title": "Frun ryter ifrån – efter ryktena",
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/w338a4/marcos-llorentes-fru-ryter-ifran-efter-ryktena?utm_medium=rss",
         "publisher": "Sportbladet",
-        "publishedAt": "2026-10-08T23:31:50.000Z",
+        "publishedAt": "2026-10-09T05:03:28.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Oliver Månsson om platsen på världslistan: ”Ska inte sväva iväg”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/8GGBPr/oliver-mansson-om-platsen-pa-varldslistan-ska-inte-svava-ivag?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-09T04:55:58.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -449,25 +470,25 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Uppgifter: VM-målvakten obehörig i VM-kvalmatch",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/R5rogx/uppgifter-fifa-kande-till-kongo-kinshasas-otillatna-vm-malvakt?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-06T15:34:40.000Z",
+        "title": "Kulusevski tillbaka på planen – spelade match",
+        "url": "https://www.expressen.se/sport/fotboll/premier-league/kulusevski-tillbaka-pa-planen-spelade-match/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T06:58:56.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Sverige lyfter på världsrankningen",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/BMjBzw/sverige-lyfter-pa-varldsrankningen-i-fotboll?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-06T14:19:28.000Z",
-        "verdict": "no Häcken relation"
+        "title": "Jag väljer VSK på Gamla Ullevi",
+        "url": "https://www.expressen.se/sport/fotboll/jag-valjer-vsk-pa-gamla-ullevi/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T06:00:00.000Z",
+        "verdict": "advertisement"
       },
       {
-        "title": "”Jag är redan rik – behöver inte springa”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/4O7q1q/fred-berattar-om-jhon-duran-pengar-gav-brist-pa-motivation?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-06T13:01:59.000Z",
-        "verdict": "no Häcken relation"
+        "title": "IFK Göteborg blir sårbara då",
+        "url": "https://www.expressen.se/sport/fotboll/ifk-goteborg--blir-sarbara-da/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T05:00:00.000Z",
+        "verdict": "advertisement"
       },
       {
         "title": "Nathalie Björns mardröm: ”Orkar inte vara här”",
@@ -589,28 +610,28 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kim Källström svarar på spelarkritiken",
-        "url": "https://www.expressen.se/sport/fotboll/landslaget/kim-kallstrom-svarar-pa-spelarkritiken/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-07T14:10:53.000Z",
+        "title": "Planen för att få i gång supertalangen: ”Bara kör”",
+        "url": "https://www.svt.se/sport/fotboll/planen-for-att-fa-i-gang-supertalangen-bara-kor",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-09T06:30:18.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Manojlovics mardröm i Norge: ”Vad ska man göra?”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/manojlovics-mardrom-i-norge-vad-ska-man-gora/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-07T13:03:57.000Z",
+        "title": "Ivar Stenberg hyllas för läckra assisten: ”En riktigt smart spelare”",
+        "url": "https://www.svt.se/sport/ishockey/ivar-stenberg-hyllas-for-lackra-assisten-en-riktigt-smart-spelare",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-09T04:55:55.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Haksabanovic bekräftar intresset efter orden från Stahre",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/haksabanovic-bekraftar-intresset-efter-orden-fran-stahre/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-07T13:02:15.000Z",
+        "title": "Kritik mot Djurgårdens lagbygge: ”Förbluffande”",
+        "url": "https://www.svt.se/sport/ishockey/kritik-mot-djurgardens-lagbygge-forbluffande",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-09T04:42:08.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Ordbråket i TV4: ”Kallar min morsa för hora”",
+        "title": "Ordbråket efter matchen: ”Kallar min morsa för hora”",
         "url": "https://www.svt.se/sport/ishockey/ordbraket-i-tv4-kallar-min-morsa-for-hora",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-08T20:20:59.000Z",
@@ -726,27 +747,6 @@
         "url": "https://www.svt.se/sport/handboll/skara-segrare-i-gigantmotet",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-07T19:46:57.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Love Härenstam spikade igen när SSK vann mot Modo",
-        "url": "https://www.svt.se/sport/ishockey/love-harenstam-spikade-igen-nar-ssk-vann-mot-modo",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-07T19:41:48.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "AIK hakar på i toppen – efter sent avgörande och årets (?) miss",
-        "url": "https://www.svt.se/sport/ishockey/aik-hakar-pa-i-toppen-sent-avgorande-och-arets-miss",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-07T19:19:26.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Lindsey Vonn uttagen till landslaget – efter kraschen i OS",
-        "url": "https://www.svt.se/sport/alpint/lindsey-vonn-uttagen-till-landslagstruppen-efter-kraschen-i-os",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-07T19:01:40.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -880,14 +880,14 @@
         "url": "https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-23T17:15:23.000Z",
-        "verdict": "men-excluded"
+        "verdict": "kept"
       },
       {
         "title": "Rygaard: \"Primära intresset ligger i att komma hem till Danmark\"",
         "url": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-22T20:31:57.000Z",
-        "verdict": "men-excluded"
+        "verdict": "kept"
       },
       {
         "title": "LISTA: Kontraktsläget i BK Häcken",
@@ -901,7 +901,7 @@
         "url": "https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-11T20:17:08.000Z",
-        "verdict": "no Häcken relation"
+        "verdict": "kept"
       },
       {
         "title": "\"Jag hoppas verkligen att jag kan överbevisa dem\"",
@@ -922,14 +922,14 @@
         "url": "https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-07T09:42:12.000Z",
-        "verdict": "no Häcken relation"
+        "verdict": "kept"
       },
       {
         "title": "Harun Ibrahim: \"Man hoppades på något annat\"",
         "url": "https://fotbolltransfers.com/nyheter/harun-ibrahim-man-hoppades-pa-nagot-annat/221353",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-05T19:29:10.000Z",
-        "verdict": "men-excluded"
+        "verdict": "kept"
       },
       {
         "title": "Här är alla sommarvärvningar i Allsvenskan 2026",
@@ -950,7 +950,7 @@
         "url": "https://fotbolltransfers.com/nyheter/officiellt-ibrahim-sadiq-klar-for-colorado-rapids/221271",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-04T02:22:44.000Z",
-        "verdict": "men-excluded"
+        "verdict": "kept"
       },
       {
         "title": "Officiellt: Severin Nioule byter klubb",
@@ -965,6 +965,90 @@
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-02T20:56:42.000Z",
         "verdict": "kept"
+      },
+      {
+        "title": "Därför är middagsbjudningen en utdöende konst",
+        "url": "https://www.gp.se/kultur/kulturkronika/vi-maste-borja-bjuda-pa-samre-middagar.152f10bd-7200-5e45-ba36-c46d720f307c",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T05:14:02.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Ingen arbetsgivare vill ta i en med tång efter 50",
+        "url": "https://www.gp.se/asikt-och-debatt/fria-ord/ingen-arbetsgivare-vill-ta-i-en-med-tang-efter-50.da5fb7b0-8c73-5eca-bc17-e34735d1a777",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T05:00:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Lätt att förstå varför allt färre litar på S-ledaren",
+        "url": "https://www.gp.se/politik/kommentar.ca02e22e-9dcb-5ae5-996a-3bd79ecdf032",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T04:01:22.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Andersson (S) inte längre i topp – förtroendet dalar",
+        "url": "https://www.gp.se/politik/gp-novus-fortroendet-for-andersson-s-dalar.f07526f5-49f4-5e8b-8019-978943446a64",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T04:00:19.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Björklunds blåvita brandtal: ”Vi ska jaga”",
+        "url": "https://www.gp.se/sport/fotboll/ifk-goteborg/joachim-bjorklunds-brandtal-till-spelarna-i-blavitt-vi-ska-jaga.d890dd19-665d-5b55-8027-0b85478710ea",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:58:16.000Z",
+        "verdict": "general allsvenskan, no Häcken relation"
+      },
+      {
+        "title": "Blåvitt-talangen Oliver Månsson på exklusiva listan",
+        "url": "https://www.gp.se/sport/fotboll/ifk-goteborg/oliver-mansson-ensam-svensk-pa-the-guardians-talanglista.63e9b6c6-9143-5574-89f8-ba9802ed64ac",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:54:47.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Britt-Marie Mattsson: Trump bjuder in Putin till sin egen golfklubb",
+        "url": "https://www.gp.se/nyheter/varlden/trump-bjuder-in-putin-till-sin-egen-golfklubb.dcdb3345-4dae-58c6-8b3f-8bb5f6fb5a81",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:51:38.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "På Nefertiti formar Nana Rashid ord som lera",
+        "url": "https://www.gp.se/kultur/musik/konsertrecension/pa-nefertiti-formar-nana-rashid-ord-som-lera.312a33dd-0ec1-55b5-8854-7b49f5443dd5",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:49:53.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Hundratusentals pingviner borta",
+        "url": "https://www.gp.se/nyheter/varlden/varldens-storsta-pingvinkoloni-har-minskat-drastiskt.214a7f5a-f2e1-5cb6-a03d-fa30410d3a52",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:47:11.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Anställda på Domino’s pizza får inte ut sin lön",
+        "url": "https://www.gp.se/ekonomi/anstallda-pa-pizzakedjan-dominos-far-inte-ut-sin-lon.4e5876ed-3a88-526d-9226-787e489aa327",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:46:26.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Här är det svårast att sälja bostad i Göteborg",
+        "url": "https://www.gp.se/ekonomi/har-tar-det-langst-tid-att-salja-sin-bostad-i-goteborg.b2e3470f-8f6a-5fe7-a1c1-627d43b91dd9",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:45:27.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Sofie är en av 200 som inte fick plats på gymnasiet i Göteborg",
+        "url": "https://www.gp.se/nyheter/goteborg/nastan-200-behoriga-elever-fick-inte-plats-pa-gymnasiet.b9a5b737-dc5e-539c-a9f9-91d6658c7266",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-09T03:43:20.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Valhalla är oersättlig arkitektur – bygg ny simhall på en annan plats",
@@ -994,7 +1078,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-09T03:49:32.031Z",
+    "retrievedAt": "2026-10-09T07:48:02.563Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -1868,6 +1952,66 @@
   "cardMatchesInspected": 22,
   "news": [
     {
+      "id": "Göteborgs-Posten-6-https://www.gp.se/nyheter/varlden/trump-bjuder-in-putin-till-sin-egen-golfklubb.dcdb3345-4dae-58c6-8b3f-8bb5f6fb5a81",
+      "title": "Britt-Marie Mattsson: Trump bjuder in Putin till sin egen golfklubb",
+      "url": "https://www.gp.se/nyheter/varlden/trump-bjuder-in-putin-till-sin-egen-golfklubb.dcdb3345-4dae-58c6-8b3f-8bb5f6fb5a81",
+      "summary": "Men vill Putin svinga klubban i Florida?",
+      "publishedAt": "2026-10-09T03:51:38.000Z",
+      "publisher": "Göteborgs-Posten",
+      "category": "former",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.gp.se/nyheter/varlden/trump-bjuder-in-putin-till-sin-egen-golfklubb.dcdb3345-4dae-58c6-8b3f-8bb5f6fb5a81",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "SVT Sport-4-https://www.svt.se/sport/ishockey/tva-hakningar-gav-timra-forsta-segern",
+      "title": "Två hakningar gav Timrå första segern",
+      "url": "https://www.svt.se/sport/ishockey/tva-hakningar-gav-timra-forsta-segern",
+      "summary": "Jumbon Timrå hade inte vunnit en match och bara gjort åtta mål. Idag kom en islossning när man avgjorde mot serieettan Frölunda genom två raka power play-mål i mittperioden.",
+      "publishedAt": "2026-10-08T19:43:22.000Z",
+      "publisher": "SVT Sport",
+      "category": "former",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.svt.se/sport/ishockey/tva-hakningar-gav-timra-forsta-segern",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "Expressen-13-https://www.expressen.se/sport/fotboll/vm-94-hjalten-roger-ljung-skiljer-sig-/",
+      "title": "VM 94-hjälten Roger Ljung skiljer sig",
+      "url": "https://www.expressen.se/sport/fotboll/vm-94-hjalten-roger-ljung-skiljer-sig-/",
+      "summary": "VM 94-hjälten Roger Ljung och frun Christina skiljer sig. Paret har varit gift sedan 2004.",
+      "publishedAt": "2026-10-08T09:01:56.000Z",
+      "publisher": "Expressen",
+      "category": "former",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.expressen.se/sport/fotboll/vm-94-hjalten-roger-ljung-skiljer-sig-/",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "SVT Sport-17-https://www.svt.se/sport/ishockey/seger-i-alexander-ovetjkins-sista-hemmapremiar",
+      "title": "Seger i Alexander Ovetjkins sista hemmapremiär",
+      "url": "https://www.svt.se/sport/ishockey/seger-i-alexander-ovetjkins-sista-hemmapremiar",
+      "summary": "Alexander Ovetjkin, 41, hyllades stort av Washington-publiken när han i natt spelade sin sista hemmapremiär i NHL. – Er kapten, nummer åtta, Alexander Ovetjkin, presenterades han av sönerna Sergej och Ilja.",
+      "publishedAt": "2026-10-08T04:57:09.000Z",
+      "publisher": "SVT Sport",
+      "category": "former",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.svt.se/sport/ishockey/seger-i-alexander-ovetjkins-sista-hemmapremiar",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "Fotbolltransfers-2-https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
+      "title": "Silas Andersen: \"Jag skulle älska det\"",
+      "url": "https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
+      "summary": "Silas Andersen hoppas få chansen att spela tillsammans med Cristiano Ronaldo i Sporting CP.",
+      "publishedAt": "2026-10-07T09:45:41.000Z",
+      "publisher": "Fotbolltransfers",
+      "category": "former",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
+      "sourceRole": "secondary"
+    },
+    {
       "id": "BK Häcken-2-https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
       "title": "Inför biljettsläppet hemma mot IFK Göteborg",
       "url": "https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
@@ -1898,6 +2042,30 @@
       "sourceTags": [
         "Herr"
       ]
+    },
+    {
+      "id": "Fotbolltransfers-7-https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
+      "title": "Rygaards gläds över transfern: \"Alla tänkte wow\"",
+      "url": "https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
+      "summary": "Efter den dyra övergången hyllas han av sin före detta lagkamrat Mikkel Rygaard.",
+      "publishedAt": "2026-09-23T17:15:23.000Z",
+      "publisher": "Fotbolltransfers",
+      "category": "men",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "Fotbolltransfers-8-https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
+      "title": "Rygaard: \"Primära intresset ligger i att komma hem till Danmark\"",
+      "url": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
+      "summary": "Mikkel Rygaard sitter på ett utgående kontrakt och berättar att han kan återvända till Danmark.",
+      "publishedAt": "2026-09-22T20:31:57.000Z",
+      "publisher": "Fotbolltransfers",
+      "category": "men",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
+      "sourceRole": "secondary"
     },
     {
       "id": "BK Häcken-16-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
@@ -1972,6 +2140,42 @@
       "summaryMethod": "rss-description"
     },
     {
+      "id": "event-Fotbolltransfers-7-https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
+      "title": "Rygaards gläds över transfern: \"Alla tänkte wow\"",
+      "summary": "Efter den dyra övergången hyllas han av sin före detta lagkamrat Mikkel Rygaard.",
+      "publishedAt": "2026-09-23T17:15:23.000Z",
+      "latestPublishedAt": "2026-09-23T17:15:23.000Z",
+      "category": "men",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
+          "publishedAt": "2026-09-23T17:15:23.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-8-https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
+      "title": "Rygaard: \"Primära intresset ligger i att komma hem till Danmark\"",
+      "summary": "Mikkel Rygaard sitter på ett utgående kontrakt och berättar att han kan återvända till Danmark.",
+      "publishedAt": "2026-09-22T20:31:57.000Z",
+      "latestPublishedAt": "2026-09-22T20:31:57.000Z",
+      "category": "men",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
+          "publishedAt": "2026-09-22T20:31:57.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
       "id": "event-BK Häcken-16-https://bkhacken.se/nyhet/gustav-lindgren-det-kandes-valdigt-bra-fran-den-forsta-minuten",
       "title": "Gustav Lindgren: ”Det kändes väldigt bra från den första minuten”",
       "summary": "BK Häcken tog en 5–0-seger mot Kalmar FF i Allsvenskan.",
@@ -2010,12 +2214,84 @@
       "summaryMethod": "rss-description"
     },
     {
+      "id": "event-Fotbolltransfers-10-https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
+      "title": "Officiellt: Zeidane Inoussa lånas ut av Swansea",
+      "summary": "Efter många turer lånar Swansea City ut Zeidane Inoussa. Det blir spel i den polska högstaligan för svensken.",
+      "publishedAt": "2026-09-11T20:17:08.000Z",
+      "latestPublishedAt": "2026-09-11T20:17:08.000Z",
+      "category": "former",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
+          "publishedAt": "2026-09-11T20:17:08.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
+      "title": "Officiellt: Edward Chilufya lånas ut",
+      "summary": "FC Midtjylland meddelar att man lånar ut Edward Chilufya.",
+      "publishedAt": "2026-09-07T09:42:12.000Z",
+      "latestPublishedAt": "2026-09-07T09:42:12.000Z",
+      "category": "former",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
+          "publishedAt": "2026-09-07T09:42:12.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-14-https://fotbolltransfers.com/nyheter/harun-ibrahim-man-hoppades-pa-nagot-annat/221353",
+      "title": "Harun Ibrahim: \"Man hoppades på något annat\"",
+      "summary": "Han fick inte mottagandet som han hoppades när han var tillbaka på Gamla Ullevi mot gamla laget GAIS.",
+      "publishedAt": "2026-09-05T19:29:10.000Z",
+      "latestPublishedAt": "2026-09-05T19:29:10.000Z",
+      "category": "men",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/harun-ibrahim-man-hoppades-pa-nagot-annat/221353",
+          "publishedAt": "2026-09-05T19:29:10.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-17-https://fotbolltransfers.com/nyheter/officiellt-ibrahim-sadiq-klar-for-colorado-rapids/221271",
+      "title": "Officiellt: AZ Alkmaar säljer Ibrahim Sadiq",
+      "summary": "AZ Alkmaar säljer Ibrahim Sadiq. Den ex-allsvenske stjärnan fortsätter karriären i MLS.",
+      "publishedAt": "2026-09-04T02:22:44.000Z",
+      "latestPublishedAt": "2026-09-04T02:22:44.000Z",
+      "category": "men",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-ibrahim-sadiq-klar-for-colorado-rapids/221271",
+          "publishedAt": "2026-09-04T02:22:44.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
       "id": "event-Fotbolltransfers-19-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
       "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
       "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
       "publishedAt": "2026-09-02T20:56:42.000Z",
       "latestPublishedAt": "2026-09-02T20:56:42.000Z",
-      "category": "club",
+      "category": "men",
       "sources": [
         {
           "publisher": "Fotbolltransfers",
@@ -2739,17 +3015,76 @@
       "citizenship": [
         "Norge"
       ],
+      "position": "Right-back",
       "heightCm": 180,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q81206122",
       "career": [
         {
-          "years": "????–????",
-          "team": "Kvik Halden FK",
-          "loan": false
+          "years": "2025–",
+          "team": "Häcken",
+          "loan": false,
+          "apps": 23,
+          "goals": 0
+        },
+        {
+          "years": "2022–2025",
+          "team": "Bodø/Glimt",
+          "loan": false,
+          "apps": 67,
+          "goals": 3
+        },
+        {
+          "years": "2019–2021",
+          "team": "Sandefjord",
+          "loan": false,
+          "apps": 59,
+          "goals": 0
+        },
+        {
+          "years": "2017–2018",
+          "team": "Jerv",
+          "loan": false,
+          "apps": 57,
+          "goals": 1
+        },
+        {
+          "years": "2016",
+          "team": "Fredrikstad",
+          "loan": true,
+          "apps": 9,
+          "goals": 0
+        },
+        {
+          "years": "2015",
+          "team": "Kvik Halden",
+          "loan": true,
+          "apps": 26,
+          "goals": 6
+        },
+        {
+          "years": "2014–2016",
+          "team": "Sarpsborg 08",
+          "loan": false,
+          "apps": 1,
+          "goals": 0
         }
       ],
-      "nationalTeams": [],
-      "usedInfobox": false,
+      "nationalTeams": [
+        {
+          "years": "2023",
+          "team": "Norway",
+          "loan": false,
+          "apps": 1,
+          "goals": 0
+        }
+      ],
+      "infoboxLang": "en",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Brice Wembangomo, född 18 december 1996 i Kinshasa i Kongo-Kinshasa, är en norsk fotbollsspelare som spelar för BK Häcken. Han har tidigare spelat för bland annat Sandefjord och Sarpsborg 08.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Brice_Wembangomo"
+      },
       "candidate": {
         "qid": "Q81206122",
         "name": "Brice Wembangomo",
@@ -2864,9 +3199,51 @@
           "goals": 3
         }
       ],
-      "nationalTeams": [],
+      "nationalTeams": [
+        {
+          "years": "2019–",
+          "team": "Finland",
+          "loan": false,
+          "apps": 27,
+          "goals": 0
+        },
+        {
+          "years": "2017–2018",
+          "team": "Finland U21",
+          "loan": false,
+          "apps": 8,
+          "goals": 0
+        },
+        {
+          "years": "2015",
+          "team": "Finland U18",
+          "loan": false,
+          "apps": 5,
+          "goals": 0
+        },
+        {
+          "years": "2015",
+          "team": "Finland U19",
+          "loan": false,
+          "apps": 4,
+          "goals": 1
+        },
+        {
+          "years": "2014",
+          "team": "Finland U17",
+          "loan": false,
+          "apps": 1,
+          "goals": 0
+        }
+      ],
       "infoboxLang": "sv",
       "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Leo Väisänen, född 23 juli 1997 i Helsingfors, är en finländsk fotbollsspelare som spelar för BK Häcken. Han representerar även det finländska landslaget.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Leo_V%C3%A4is%C3%A4nen",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Leo_V%C3%A4is%C3%A4nen.jpg/330px-Leo_V%C3%A4is%C3%A4nen.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+      },
       "candidate": {
         "qid": "Q24827220",
         "name": "Leo Väisänen",
@@ -2924,46 +3301,82 @@
       "citizenship": [
         "Sverige"
       ],
+      "position": "Högerback",
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q109667419",
       "career": [
         {
-          "years": "????–????",
-          "team": "Hammarby TFF",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "Hammarby Fotboll",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "BK Häcken",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "Utsiktens BK",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "Jönköpings Södra IF",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "FC Nordsjælland",
-          "loan": false
-        },
-        {
-          "years": "????–????",
+          "years": "2024",
           "team": "FC Helsingør",
-          "loan": false
+          "loan": true,
+          "apps": 3,
+          "goals": 0
+        },
+        {
+          "years": "2024–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 0,
+          "goals": 0
+        },
+        {
+          "years": "2024",
+          "team": "Utsiktens BK",
+          "loan": true,
+          "apps": 3,
+          "goals": 0
+        },
+        {
+          "years": "2023",
+          "team": "Jönköpings Södra IF",
+          "loan": true,
+          "apps": 12,
+          "goals": 0
+        },
+        {
+          "years": "2022",
+          "team": "Hammarby TFF",
+          "loan": true,
+          "apps": 12,
+          "goals": 0
+        },
+        {
+          "years": "2022–2024",
+          "team": "Nordsjælland",
+          "loan": false,
+          "apps": 0,
+          "goals": 0
+        },
+        {
+          "years": "2021–2022",
+          "team": "Hammarby IF",
+          "loan": false,
+          "apps": 1,
+          "goals": 0
         }
       ],
-      "nationalTeams": [],
-      "usedInfobox": false,
+      "nationalTeams": [
+        {
+          "years": "2021–2022",
+          "team": "Sverige U19",
+          "loan": false,
+          "apps": 2,
+          "goals": 0
+        },
+        {
+          "years": "2019",
+          "team": "Sverige U17",
+          "loan": false,
+          "apps": 4,
+          "goals": 1
+        }
+      ],
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Ben Mikael Engdahl, född 17 september 2003, är en svensk fotbollsspelare som spelar för BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Ben_Engdahl"
+      },
       "candidate": {
         "qid": "Q109667419",
         "name": "Ben Engdahl",
@@ -3021,60 +3434,86 @@
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q18196418",
       "career": [
         {
-          "years": "2011–????",
-          "team": "IF Elfsborg",
-          "loan": false
+          "years": "2024–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 27,
+          "goals": 0
         },
         {
-          "years": "2010–2010",
+          "years": "2023",
+          "team": "Austin FC",
+          "loan": false,
+          "apps": 23,
+          "goals": 0
+        },
+        {
+          "years": "2018–2023",
+          "team": "Houston Dynamo",
+          "loan": false,
+          "apps": 121,
+          "goals": 0
+        },
+        {
+          "years": "2013–2018",
+          "team": "IF Elfsborg",
+          "loan": false,
+          "apps": 110,
+          "goals": 3
+        },
+        {
+          "years": "2010",
           "team": "Nyköpings BIS",
           "loan": false,
           "apps": 7,
           "goals": 0
-        },
-        {
-          "years": "????–????",
-          "team": "BK Häcken",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "Austin FC",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "Houston Dynamo",
-          "loan": false
         }
       ],
       "nationalTeams": [
         {
-          "years": "2016–????",
-          "team": "Sveriges herrlandslag i fotboll",
-          "loan": false
+          "years": "2016",
+          "team": "Sverige U23",
+          "loan": false,
+          "apps": 4,
+          "goals": 0
         },
         {
-          "years": "2014–????",
-          "team": "Sveriges U21-herrlandslag i fotboll",
-          "loan": false
+          "years": "2016–",
+          "team": "Sverige",
+          "loan": false,
+          "apps": 2,
+          "goals": 0
+        },
+        {
+          "years": "2014–2017",
+          "team": "Sverige U21",
+          "loan": false,
+          "apps": 13,
+          "goals": 0
         },
         {
           "years": "2012–2013",
-          "team": "Sveriges U19-herrlandslag i fotboll",
+          "team": "Sverige U19",
           "loan": false,
           "apps": 15,
           "goals": 1
         },
         {
-          "years": "2011–2011",
-          "team": "Sveriges U17-herrlandslag i fotboll",
+          "years": "2011",
+          "team": "Sverige U17",
           "loan": false,
           "apps": 3,
           "goals": 0
         }
       ],
-      "usedInfobox": false,
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Adam Lundqvist, född 20 mars 1994 i Nyköping, är en svensk fotbollsspelare som spelar för BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Adam_Lundqvist",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/85/Adam_Lundqvist.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+      },
       "candidate": {
         "qid": "Q18196418",
         "name": "Adam Lundqvist",
@@ -3299,7 +3738,7 @@
       "citizenship": [
         "Sverige"
       ],
-      "position": "Mittback",
+      "position": "CB",
       "heightCm": 190,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q135395045",
       "career": [
@@ -3314,7 +3753,7 @@
           "years": "2025–",
           "team": "BK Häcken",
           "loan": false,
-          "apps": 12,
+          "apps": 19,
           "goals": 0
         },
         {
@@ -3327,14 +3766,14 @@
       ],
       "nationalTeams": [
         {
-          "years": "2025–",
-          "team": "Sverige U21",
+          "years": "2025–2026",
+          "team": "Sweden U21",
           "loan": false,
-          "apps": 2,
+          "apps": 5,
           "goals": 0
         }
       ],
-      "infoboxLang": "sv",
+      "infoboxLang": "en",
       "usedInfobox": true,
       "wiki": {
         "lang": "sv",
@@ -3483,9 +3922,36 @@
           "goals": 1
         }
       ],
-      "nationalTeams": [],
+      "nationalTeams": [
+        {
+          "years": "2026–",
+          "team": "Sverige U21",
+          "loan": false,
+          "apps": 1,
+          "goals": 0
+        },
+        {
+          "years": "2024–",
+          "team": "Sverige U19",
+          "loan": false,
+          "apps": 15,
+          "goals": 0
+        },
+        {
+          "years": "2023–2024",
+          "team": "Sverige U17",
+          "loan": false,
+          "apps": 14,
+          "goals": 0
+        }
+      ],
       "infoboxLang": "sv",
       "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Harry Joachim Hilvenius, född 6 oktober 2007, är en svensk fotbollsspelare som spelar för BK Häcken dit han kom från Onsala BK 2023. Hilvenius har även representerat det svenska landslaget på olika juniornivåer.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Harry_Hilvenius"
+      },
       "candidate": {
         "qid": "Q134444234",
         "name": "Harry Hilvenius",
@@ -3539,10 +4005,26 @@
       "citizenship": [
         "Elfenbenskusten"
       ],
+      "position": "Mittfältare",
+      "heightCm": 176,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q139267264",
-      "career": [],
+      "career": [
+        {
+          "years": "2026–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 2,
+          "goals": 0
+        }
+      ],
       "nationalTeams": [],
-      "usedInfobox": false,
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Abdoulaye Doumbia, född 27 oktober 2007, är en ivoriansk fotbollsspelare som spelar för BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Abdoulaye_Doumbia"
+      },
       "candidate": {
         "qid": "Q139267264",
         "name": "Abdoulaye Doumbia",
@@ -3589,10 +4071,76 @@
       "citizenship": [
         "Konungariket Danmark"
       ],
+      "position": "Mittfältare",
+      "heightCm": 174,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q112731684",
-      "career": [],
-      "nationalTeams": [],
-      "usedInfobox": false,
+      "career": [
+        {
+          "years": "2025–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 8,
+          "goals": 1
+        },
+        {
+          "years": "2024",
+          "team": "Philadelphia Union",
+          "loan": false,
+          "apps": 0,
+          "goals": 0
+        },
+        {
+          "years": "2024",
+          "team": "Philadelphia Union II",
+          "loan": false,
+          "apps": 17,
+          "goals": 0
+        },
+        {
+          "years": "2024–2025",
+          "team": "AC Horsens",
+          "loan": false,
+          "apps": 25,
+          "goals": 8
+        },
+        {
+          "years": "2021–2023",
+          "team": "Lyngby BK",
+          "loan": false,
+          "apps": 27,
+          "goals": 1
+        }
+      ],
+      "nationalTeams": [
+        {
+          "years": "2023",
+          "team": "Danmark U20",
+          "loan": false,
+          "apps": 2,
+          "goals": 0
+        },
+        {
+          "years": "2022",
+          "team": "Danmark U18",
+          "loan": false,
+          "apps": 2,
+          "goals": 0
+        },
+        {
+          "years": "2022",
+          "team": "Danmark U19",
+          "loan": false,
+          "apps": 4,
+          "goals": 0
+        }
+      ],
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Bukuru Jack-Sanders Ngabo, född 4 juli 2004, är en dansk fotbollsspelare som spelar för BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Sanders_Ngabo"
+      },
       "candidate": {
         "qid": "Q112731684",
         "name": "Sanders Ngabo",
@@ -3649,13 +4197,45 @@
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q110229575",
       "career": [
         {
+          "years": "2026–",
+          "team": "Häcken",
+          "loan": false,
+          "apps": 5,
+          "goals": 0
+        },
+        {
+          "years": "2022–2026",
+          "team": "KFUM",
+          "loan": false,
+          "apps": 126,
+          "goals": 16
+        },
+        {
           "years": "2022–????",
           "team": "KFUM Oslo",
+          "loan": false
+        },
+        {
+          "years": "2019–2021",
+          "team": "Skeid",
+          "loan": false,
+          "apps": 38,
+          "goals": 4
+        },
+        {
+          "years": "2017",
+          "team": "Brooklyn Italians",
           "loan": false
         }
       ],
       "nationalTeams": [],
-      "usedInfobox": false,
+      "infoboxLang": "en",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Simen Hestnes, född 5 februari 1996 i Ski, är en norsk fotbollsspelare som spelar för BK Häcken. Han har tidigare spelat för bland annat KFUM-Kameratene Oslo och Vålerengens IF.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Simen_Hestnes"
+      },
       "candidate": {
         "qid": "Q110229575",
         "name": "Simen Hestnes",
@@ -3710,18 +4290,114 @@
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q27473659",
       "career": [
         {
-          "years": "????–????",
-          "team": "Charlton Athletic FC",
-          "loan": false
+          "years": "2022–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 125,
+          "goals": 26
         },
         {
-          "years": "????–????",
-          "team": "BK Häcken",
-          "loan": false
+          "years": "2021",
+          "team": "ŁKS Łódź",
+          "loan": false,
+          "apps": 29,
+          "goals": 2
+        },
+        {
+          "years": "2018–2020",
+          "team": "Nordsjælland",
+          "loan": false,
+          "apps": 86,
+          "goals": 12
+        },
+        {
+          "years": "2016–2018",
+          "team": "Lyngby",
+          "loan": false,
+          "apps": 61,
+          "goals": 10
+        },
+        {
+          "years": "2012–2016",
+          "team": "Næstved",
+          "loan": false,
+          "apps": 115,
+          "goals": 38
+        },
+        {
+          "years": "2010",
+          "team": "B.1921",
+          "loan": false,
+          "apps": 12,
+          "goals": 13
+        },
+        {
+          "years": "2010–2012",
+          "team": "Lolland Falster Alliancen",
+          "loan": false,
+          "apps": 62,
+          "goals": 17
+        },
+        {
+          "years": "2009",
+          "team": "Herfølge",
+          "loan": false,
+          "apps": 2,
+          "goals": 0
+        },
+        {
+          "years": "2009–2010",
+          "team": "HB Køge",
+          "loan": false,
+          "apps": 3,
+          "goals": 0
+        },
+        {
+          "years": "2007–2009",
+          "team": "Charlton Athletic",
+          "loan": false,
+          "apps": 0,
+          "goals": 0
+        },
+        {
+          "years": "2006–2007",
+          "team": "Herfølge",
+          "loan": false,
+          "apps": 7,
+          "goals": 0
         }
       ],
-      "nationalTeams": [],
-      "usedInfobox": false,
+      "nationalTeams": [
+        {
+          "years": "2009",
+          "team": "Danmark U19",
+          "loan": false,
+          "apps": 4,
+          "goals": 0
+        },
+        {
+          "years": "2009",
+          "team": "Danmark U20",
+          "loan": false,
+          "apps": 3,
+          "goals": 0
+        },
+        {
+          "years": "2008",
+          "team": "Danmark U18",
+          "loan": false,
+          "apps": 4,
+          "goals": 0
+        }
+      ],
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Mikkel Rygaard Jensen, född 25 december 1990, är en dansk fotbollsspelare som spelar för BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Mikkel_Rygaard",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Mikkel_Rygaard_Jensen_%28H%C3%A4cken_vs_Qaraba%C4%9F%2C_UEFA_Europa_League%2C_5_October_2023%29.jpg/330px-Mikkel_Rygaard_Jensen_%28H%C3%A4cken_vs_Qaraba%C4%9F%2C_UEFA_Europa_League%2C_5_October_2023%29.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+      },
       "candidate": {
         "qid": "Q27473659",
         "name": "Mikkel Rygaard",
@@ -3778,37 +4454,52 @@
       "citizenship": [
         "Sverige"
       ],
+      "position": "Mittfältare/anfallare/högerback",
       "heightCm": 182,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q97102447",
       "career": [
         {
-          "years": "????–????",
+          "years": "2024–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 33,
+          "goals": 6
+        },
+        {
+          "years": "2020–2023",
+          "team": "Gais",
+          "loan": false,
+          "apps": 111,
+          "goals": 26
+        },
+        {
+          "years": "2018–2019",
+          "team": "Qviding FIF",
+          "loan": false,
+          "apps": 39,
+          "goals": 30
+        },
+        {
+          "years": "2016–2017",
           "team": "Ytterby IS",
-          "loan": false
+          "loan": false,
+          "apps": 20,
+          "goals": 6
         },
         {
           "years": "????–????",
           "team": "IFK Göteborg",
           "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "Qviding FIF",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "Gais",
-          "loan": false
-        },
-        {
-          "years": "????–????",
-          "team": "BK Häcken",
-          "loan": false
         }
       ],
       "nationalTeams": [],
-      "usedInfobox": false,
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Jörgen Julius \"Julle\" Lindberg, född 4 januari 1999, är en svensk fotbollsspelare som spelar för BK Häcken. Han har tidigare på seniornivå representerat Ytterby IS, Qviding FIF, och Gais, där han utsågs till årets spelare i Superettan 2023.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Julius_Lindberg"
+      },
       "candidate": {
         "qid": "Q97102447",
         "name": "Julius Lindberg",
@@ -3861,18 +4552,43 @@
       "citizenship": [
         "Sverige"
       ],
+      "position": "Offensiv mittfältare",
       "heightCm": 185,
       "imageUrl": "Pontus Dahbo (Häcken vs AIK, 1 October 2023).jpg",
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q117447273",
       "career": [
         {
-          "years": "????–????",
+          "years": "2023–",
           "team": "BK Häcken",
-          "loan": false
+          "loan": false,
+          "apps": 14,
+          "goals": 2
         }
       ],
-      "nationalTeams": [],
-      "usedInfobox": false,
+      "nationalTeams": [
+        {
+          "years": "2022–",
+          "team": "Sverige U19",
+          "loan": false,
+          "apps": 6,
+          "goals": 1
+        },
+        {
+          "years": "2021",
+          "team": "Sverige U17",
+          "loan": false,
+          "apps": 3,
+          "goals": 0
+        }
+      ],
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Pontus Bror Harry Dahbo, född 11 oktober 2005 är en svensk fotbollsspelare (mittfältare) som spelar för BK Häcken i Allsvenskan.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Pontus_Dahbo",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Pontus_Dahbo_%28H%C3%A4cken_vs_AIK%2C_1_October_2023%29.jpg/330px-Pontus_Dahbo_%28H%C3%A4cken_vs_AIK%2C_1_October_2023%29.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+      },
       "candidate": {
         "qid": "Q117447273",
         "name": "Pontus Dahbo",
@@ -3928,56 +4644,10 @@
       "citizenship": [
         "Sverige"
       ],
-      "position": "Attacking midfielder",
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q133869836",
-      "career": [
-        {
-          "years": "2026–",
-          "team": "BK Häcken",
-          "loan": false,
-          "apps": 0,
-          "goals": 0
-        },
-        {
-          "years": "2025–2026",
-          "team": "Hammarby IF",
-          "loan": false,
-          "apps": 9,
-          "goals": 0
-        },
-        {
-          "years": "2025–2026",
-          "team": "Hammarby TFF",
-          "loan": true,
-          "apps": 17,
-          "goals": 5
-        }
-      ],
-      "nationalTeams": [
-        {
-          "years": "2024",
-          "team": "Sweden U18",
-          "loan": false,
-          "apps": 3,
-          "goals": 0
-        },
-        {
-          "years": "2024",
-          "team": "Sweden U19",
-          "loan": false,
-          "apps": 1,
-          "goals": 0
-        },
-        {
-          "years": "2022",
-          "team": "Sweden U16",
-          "loan": false,
-          "apps": 3,
-          "goals": 0
-        }
-      ],
-      "infoboxLang": "en",
-      "usedInfobox": true,
+      "career": [],
+      "nationalTeams": [],
+      "usedInfobox": false,
       "wiki": {
         "lang": "sv",
         "extract": "Wilson Lindberg Uhrström, född 23 mars 2006, är en svensk fotbollsspelare som spelar för BK Häcken. Han har tidigare spelat för bland annat Hammarby TFF och Hammarby IF. Han har även representerad den svensk landslaget på olika juniornuvårer.",
@@ -4037,60 +4707,29 @@
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q96358314",
       "career": [
         {
-          "years": "2026–",
-          "team": "BK Häcken",
-          "loan": false,
-          "apps": 0,
-          "goals": 0
+          "years": "????–????",
+          "team": "Örebro SK Fotboll",
+          "loan": false
         },
         {
-          "years": "2025–2026",
-          "team": "CSKA Sofia",
-          "loan": false,
-          "apps": 14,
-          "goals": 0
-        },
-        {
-          "years": "2024–2025",
-          "team": "Östers IF",
-          "loan": false,
-          "apps": 40,
-          "goals": 8
-        },
-        {
-          "years": "2020–2023",
-          "team": "Örebro SK",
-          "loan": false,
-          "apps": 111,
-          "goals": 10
-        },
-        {
-          "years": "2019",
+          "years": "????–????",
           "team": "Sollentuna FK",
-          "loan": false,
-          "apps": 27,
-          "goals": 9
+          "loan": false
         },
         {
-          "years": "2018",
-          "team": "IFK Stocksund",
-          "loan": false,
-          "apps": 26,
-          "goals": 5
+          "years": "????–????",
+          "team": "Östers IF",
+          "loan": false
         },
         {
-          "years": "2017",
+          "years": "????–????",
           "team": "BKV Norrtälje",
-          "loan": false,
-          "apps": 25,
-          "goals": 4
+          "loan": false
         },
         {
-          "years": "2016",
-          "team": "IFK Osby",
-          "loan": false,
-          "apps": 19,
-          "goals": 4
+          "years": "????–????",
+          "team": "BK Häcken",
+          "loan": false
         },
         {
           "years": "????–????",
@@ -4099,8 +4738,7 @@
         }
       ],
       "nationalTeams": [],
-      "infoboxLang": "sv",
-      "usedInfobox": true,
+      "usedInfobox": false,
       "wiki": {
         "lang": "sv",
         "extract": "John David Theodor Seger, född 15 juli 1999, är en svensk fotbollsspelare som spelar för BK Häcken. Hans bror, Albin och kusin Alexander är också fotbollsspelare.",
@@ -4163,57 +4801,50 @@
         "Sverige",
         "Etiopien"
       ],
-      "position": "Mittfältare alt. ytterback",
       "heightCm": 185,
       "imageUrl": "Harun ibrahim gais.jpg",
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q115633115",
       "career": [
         {
-          "years": "2026",
+          "years": "2026–2026",
           "team": "Al Bataeh Club",
-          "loan": true,
+          "loan": false,
           "apps": 0,
           "goals": 0
         },
         {
-          "years": "2026",
+          "years": "2026–????",
           "team": "BK Häcken",
-          "loan": true,
-          "apps": 0,
-          "goals": 0
+          "loan": false
         },
         {
-          "years": "2025",
+          "years": "2025–2025",
           "team": "Gais",
           "loan": false,
           "apps": 18,
           "goals": 3
         },
         {
-          "years": "2025–",
+          "years": "2025–????",
           "team": "Sharjah FC",
-          "loan": false,
-          "apps": 3,
-          "goals": 0
+          "loan": false
         },
         {
-          "years": "2024",
+          "years": "2024–2024",
           "team": "Gais",
-          "loan": true,
+          "loan": false,
           "apps": 27,
           "goals": 0
         },
         {
-          "years": "2023–2024",
+          "years": "2023–????",
           "team": "Molde FK",
-          "loan": false,
-          "apps": 0,
-          "goals": 0
+          "loan": false
         },
         {
-          "years": "2023",
-          "team": "IK Sirius",
-          "loan": true,
+          "years": "2023–2023",
+          "team": "IK Sirius FK",
+          "loan": false,
           "apps": 6,
           "goals": 0
         },
@@ -4223,18 +4854,10 @@
           "loan": false,
           "apps": 35,
           "goals": 5
-        },
-        {
-          "years": "2020",
-          "team": "Angered BK",
-          "loan": false,
-          "apps": 9,
-          "goals": 0
         }
       ],
       "nationalTeams": [],
-      "infoboxLang": "sv",
-      "usedInfobox": true,
+      "usedInfobox": false,
       "wiki": {
         "lang": "sv",
         "extract": "Harun Mohammed Ademnur Ibrahim, född 26 februari 2003, är en svensk fotbollsspelare som spelar för BK Häcken, på lån från den emiratiska klubben Sharjah FC. Han har tidigare representerat Gais, Molde FK och IK Sirius.",
@@ -4292,10 +4915,40 @@
       "citizenship": [
         "Sverige"
       ],
+      "position": "Mittfältare",
+      "heightCm": 188,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q134539300",
-      "career": [],
+      "career": [
+        {
+          "years": "2026",
+          "team": "Utsiktens BK",
+          "loan": true,
+          "apps": 5,
+          "goals": 1
+        },
+        {
+          "years": "2026–",
+          "team": "FC Trollhättan",
+          "loan": true,
+          "apps": 5,
+          "goals": 0
+        },
+        {
+          "years": "2025–{{0|0000}}",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 4,
+          "goals": 0
+        }
+      ],
       "nationalTeams": [],
-      "usedInfobox": false,
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Nikola Mitrovic, född 28 maj 2006, är en svensk fotbollsspelare som spelar för FC Trollhättan, på lån från BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Nikola_Mitrovic"
+      },
       "candidate": {
         "qid": "Q134539300",
         "name": "Nikola Mitrovic",
@@ -4388,6 +5041,12 @@
       "nationalTeams": [],
       "infoboxLang": "sv",
       "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Gustav Willy Lindgren, född 16 augusti 2001, är en svensk fotbollsspelare som spelar för BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Gustav_Lindgren_(fotbollsspelare)",
+        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Gustav_Lindgren.jpg/330px-Gustav_Lindgren.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+      },
       "candidate": {
         "qid": "Q119517997",
         "name": "Gustav Willy Lindgren",
@@ -4442,11 +5101,55 @@
       "citizenship": [
         "Finland"
       ],
+      "position": "Forward",
       "heightCm": 179,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q124733260",
-      "career": [],
-      "nationalTeams": [],
-      "usedInfobox": false,
+      "career": [
+        {
+          "years": "2025–",
+          "team": "Häcken",
+          "loan": false,
+          "apps": 52,
+          "goals": 15
+        },
+        {
+          "years": "2023–2025",
+          "team": "Helsingborg",
+          "loan": false,
+          "apps": 41,
+          "goals": 10
+        }
+      ],
+      "nationalTeams": [
+        {
+          "years": "2026–",
+          "team": "Finland",
+          "loan": false,
+          "apps": 4,
+          "goals": 1
+        },
+        {
+          "years": "2025",
+          "team": "Finland U21",
+          "loan": false,
+          "apps": 2,
+          "goals": 4
+        },
+        {
+          "years": "2022",
+          "team": "Finland U18",
+          "loan": false,
+          "apps": 3,
+          "goals": 0
+        }
+      ],
+      "infoboxLang": "en",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Adrian Lars Fredrik Svanbäck, född 8 juni 2004 i Jakobstad, är en finländsk fotbollsspelare som spelar för BK Häcken. Han har tidigare spelat för Helsingborg.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Adrian_Svanb%C3%A4ck"
+      },
       "candidate": {
         "qid": "Q124733260",
         "name": "Adrian Svanbäck",
@@ -4624,10 +5327,26 @@
       "citizenship": [
         "Sverige"
       ],
+      "position": "Anfallare",
+      "heightCm": 195,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q140473371",
-      "career": [],
+      "career": [
+        {
+          "years": "2026–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 1,
+          "goals": 1
+        }
+      ],
       "nationalTeams": [],
-      "usedInfobox": false,
+      "infoboxLang": "sv",
+      "usedInfobox": true,
+      "wiki": {
+        "lang": "sv",
+        "extract": "Bamir Fierza Sadiku, född 22 augusti 2007, är en svensk fotbollsspelare som spelar för BK Häcken.",
+        "pageUrl": "https://sv.wikipedia.org/wiki/Bamir_Sadiku"
+      },
       "candidate": {
         "qid": "Q140473371",
         "name": "Bamir Sadiku",

@@ -109,18 +109,58 @@ function surnameCandidates(normalizedName: string): string[] {
   });
 }
 
-/** Does the article mention a known Häcken person by name? */
-export function mentionsKnownPerson(title: string, summary: string, persons: string[]): string | null {
+/**
+ * Does the article mention a known Häcken person by name?
+ *
+ * `surnameOnly` (default true) allows a surname-only match, which headlines
+ * often use ("Falk utvisad", "Rygaard om Häckens väntan"). It is safe for the
+ * CURRENT squad — 27 club-verified names — but NOT for the former-player list.
+ *
+ * WHY FORMER PLAYERS REQUIRE A FULL NAME (measured 2026-10-09)
+ * -----------------------------------------------------------
+ * The former-player list is ~294 names from Wikidata, and surname-only matching
+ * against it produced real false positives in a live run:
+ *   - "VM 94-hjälten Roger Ljung skiljer sig" matched former player Jesper Ljung
+ *   - "Britt-Marie Mattsson: Trump bjuder in Putin…" matched Jesper Mattsson
+ *   - "Silas Andersen: Jag skulle älska det" matched Niklas Andersen
+ * Common Swedish/Danish surnames collide constantly at that list size, so a
+ * former player must be named in full. A surname-only mention of a former
+ * player is missed — the conservative trade-off, because showing hockey and
+ * celebrity news is worse than missing an occasional surname-only headline.
+ */
+export function mentionsKnownPerson(
+  title: string,
+  summary: string,
+  persons: string[],
+  opts: { surnameOnly?: boolean } = {},
+): string | null {
+  const surnameOnly = opts.surnameOnly ?? true;
   const text = norm(`${title} ${summary}`);
+
+  // PASS 1 — full-name matches, across EVERY person, before any surname match.
+  //
+  // WHY TWO PASSES (measured 2026-10-09): "Officiellt: AZ Alkmaar säljer
+  // Ibrahim Sadiq" is about the FORMER player Ibrahim Sadiq, but a single
+  // pass reached squad player "Harun Ibrahim" first and matched on the shared
+  // surname "Ibrahim" — attributing the article to the wrong person. A full
+  // name is strictly stronger evidence than a surname, so it must win even
+  // when the surname match appears earlier in the list.
   for (const p of persons) {
     const key = norm(p);
     if (key.length < 4) continue;
     if (text.includes(key)) return p;
-    // Surname-only match: headlines often use just the surname ("Falk utvisad",
-    // "Rygaard om Häckens väntan"). Word-boundary match, with an optional
-    // possessive "s" so "Rygaards gläds …" matches too. Substring matching is
-    // deliberately NOT used: "Lindelöf" contains "linde", "Ibrahimovic"
-    // contains "ibrahim".
+  }
+
+  if (!surnameOnly) return null;
+
+  // PASS 2 — surname-only match: headlines often use just the surname ("Falk
+  // utvisad", "Rygaard om Häckens väntan"). Word-boundary match, with an
+  // optional possessive "s" so "Rygaards gläds …" matches too. Substring
+  // matching is deliberately NOT used: "Lindelöf" contains "linde",
+  // "Ibrahimovic" contains "ibrahim".
+  for (const p of persons) {
+    const key = norm(p);
+    if (key.length < 4) continue;
     for (const surname of surnameCandidates(key)) {
       if (new RegExp(`\\b${surname}s?\\b`).test(text)) return p;
     }
@@ -132,6 +172,44 @@ export function mentionsKnownPerson(title: string, summary: string, persons: str
 export function isGeneralAllsvenskan(title: string, summary: string): boolean {
   const text = norm(`${title} ${summary}`);
   return /allsvenskan/.test(text) && !mentionsHäcken(title, summary);
+}
+
+/**
+ * Match a known Häcken man, applying the right strictness per list.
+ *
+ * Current squad (27 club-verified names): surname-only is allowed, because
+ * headlines routinely use just the surname and the list is small enough that
+ * collisions are rare.
+ *
+ * Former players (~294 Wikidata names): FULL NAME ONLY. Surname-only matching
+ * at that size produced real false positives in a live run (Roger Ljung →
+ * Jesper Ljung, Britt-Marie Mattsson → Jesper Mattsson, Silas Andersen →
+ * Niklas Andersen). See `mentionsKnownPerson`.
+ *
+ * Returns the matched name and whether it is a current squad member.
+ */
+function matchKnownMan(
+  title: string,
+  summary: string,
+  known: KnownPersons,
+): { person: string; isCurrent: boolean } | null {
+  // PASS 1 — FULL NAME across BOTH lists, before any surname match.
+  //
+  // Order matters: "Officiellt: AZ Alkmaar säljer Ibrahim Sadiq" names the
+  // former player Ibrahim Sadiq, but a surname pass over the current squad
+  // would match "Harun Ibrahim" on the shared surname "Ibrahim" first. A full
+  // name is strictly stronger evidence, so it must win across the whole set.
+  const currentFull = mentionsKnownPerson(title, summary, known.currentPlayers, { surnameOnly: false });
+  if (currentFull) return { person: currentFull, isCurrent: true };
+  const formerFull = mentionsKnownPerson(title, summary, known.formerPlayers ?? [], { surnameOnly: false });
+  if (formerFull) return { person: formerFull, isCurrent: false };
+
+  // PASS 2 — surname-only, CURRENT SQUAD ONLY. The 27 club-verified names are
+  // safe for this; the ~294 former names are not (see mentionsKnownPerson).
+  const currentSurname = mentionsKnownPerson(title, summary, known.currentPlayers);
+  if (currentSurname) return { person: currentSurname, isCurrent: true };
+
+  return null;
 }
 
 export interface NewsRelevanceResult {
@@ -180,16 +258,15 @@ export function classifyRelevance(
   // 2) Explicit Häcken mention in relevant context.
   if (mentionsHäcken(title, summary)) {
     if (womenContext) return { relevance: "UNRELATED", category: "women", reason: "Häcken mention but women's context" };
-    const person = mentionsKnownPerson(title, summary, [
-      ...known.currentPlayers,
-      ...(known.formerPlayers ?? []),
-    ]);
-    if (person) {
+    const match = matchKnownMan(title, summary, known);
+    if (match) {
+      // A former player named in a Häcken article is FORMER_PLAYER, not
+      // CURRENT_HACKEN — the UI tags it "Former player".
       return {
-        relevance: "CURRENT_HACKEN",
+        relevance: match.isCurrent ? "CURRENT_HACKEN" : "FORMER_PLAYER",
         category: "men",
-        reason: `Häcken mention + known person: ${person}`,
-        matchedPerson: person,
+        reason: `Häcken mention + known person: ${match.person}`,
+        matchedPerson: match.person,
       };
     }
     if (publisher === "BK Häcken") {
@@ -219,23 +296,19 @@ export function classifyRelevance(
   // prefilter ignored known-person matching; wiring the prefilter to reuse
   // this branch made it reachable, so the gap is closed here rather than
   // worked around in the caller.
-  const person = mentionsKnownPerson(title, summary, [
-    ...known.currentPlayers,
-    ...(known.formerPlayers ?? []),
-  ]);
-  if (person) {
+  const match = matchKnownMan(title, summary, known);
+  if (match) {
     if (womenContext) {
-      return { relevance: "UNRELATED", category: "women", reason: `women's context overrides known person: ${person}`, matchedPerson: person };
+      return { relevance: "UNRELATED", category: "women", reason: `women's context overrides known person: ${match.person}`, matchedPerson: match.person };
     }
     if (youthContext) {
-      return { relevance: "UNRELATED", category: "youth", reason: `youth context overrides known person: ${person}`, matchedPerson: person };
+      return { relevance: "UNRELATED", category: "youth", reason: `youth context overrides known person: ${match.person}`, matchedPerson: match.person };
     }
-    const isCurrent = known.currentPlayers.some((c) => norm(c) === norm(person));
     return {
-      relevance: isCurrent ? "CURRENT_HACKEN" : "FORMER_PLAYER",
+      relevance: match.isCurrent ? "CURRENT_HACKEN" : "FORMER_PLAYER",
       category: "men",
-      reason: `known Häcken person: ${person}`,
-      matchedPerson: person,
+      reason: `known Häcken person: ${match.person}`,
+      matchedPerson: match.person,
     };
   }
 

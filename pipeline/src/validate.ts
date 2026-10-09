@@ -44,7 +44,7 @@ const NewsItem = z.object({
   summary: z.string().optional(),
   publishedAt: z.string(),
   publisher: z.string(),
-  category: z.enum(["men", "women", "youth", "club", "unknown"]),
+  category: z.enum(["men", "women", "youth", "club", "former", "unknown"]),
   imageUrl: z.string().optional(),
   discoveredVia: z.string(),
   dedupeKey: z.string().optional(),
@@ -56,7 +56,7 @@ const NewsEvent = z.object({
   title: z.string(),
   summary: z.string(),
   publishedAt: z.string(),
-  category: z.enum(["men", "women", "youth", "club", "unknown"]),
+  category: z.enum(["men", "women", "youth", "club", "former", "unknown"]),
   latestPublishedAt: z.string(),
   sources: z.array(
     z.object({

@@ -82,16 +82,20 @@ export function prefilterNews(items: NewsItem[], opts: PrefilterOptions = {}): P
     // Kalmar" is the single most newsworthy item in its set, and dropping it
     // on a literal string match was a real false negative.
     //
+    // A FORMER Häcken man counts too (2026-10-09): "Officiellt: Zeidane
+    // Inoussa lånas ut av Swansea" never says "Häcken" and was dropped. The
+    // user's requirement is that the app shares news about current AND former
+    // men's-team players.
+    //
     // This REUSES classifyRelevance rather than introducing a second person
     // matcher, so the conservative stances stay exactly as they are: a
     // women's player still wins, a Häcken mention with no men's evidence is
     // still UNKNOWN, and ambiguous surnames are still excluded.
-    const namesCurrentPlayer = Boolean(
-      opts.known && classifyRelevance(item, opts.known).relevance === "CURRENT_HACKEN",
-    );
+    const rel = opts.known ? classifyRelevance(item, opts.known) : null;
+    const namesKnownMan = rel?.relevance === "CURRENT_HACKEN" || rel?.relevance === "FORMER_PLAYER";
 
     // General Allsvenskan coverage without a Häcken mention is league noise.
-    if (!official && !mentions && !namesCurrentPlayer) {
+    if (!official && !mentions && !namesKnownMan) {
       const reason = isGeneralAllsvenskan(item.title, item.summary ?? "")
         ? "general allsvenskan, no Häcken relation"
         : "no Häcken relation";

@@ -54,6 +54,7 @@ import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall, noteSou
 import { synthesizeWithOpenRouter } from "./openrouter";
 import { enrichSquad } from "./squadEnrichment";
 import { accumulateNews } from "./newsArchive";
+import { fetchFormerPlayers, subtractCurrentSquad } from "./formerPlayers";
 
 const DATA_DIR = resolve(import.meta.dirname, "../../public/data");
 
@@ -409,11 +410,23 @@ async function main() {
   const foot = await collectCurrentFootballData();
   const { next, last, upcoming, recent } = pickNextAndLast(foot.matches);
 
+  // Former men's-team players, resolved from Wikidata (P54 = BK Häcken men's),
+  // minus the current squad. NO MAINTAINED LIST — the set is whatever Wikidata
+  // says today. Failure is non-fatal: an empty list just means no former-player
+  // signal this run. See formerPlayers.ts for why this exists.
+  console.log("Resolving former players from Wikidata…");
+  const allHackenPlayers = await fetchFormerPlayers({ fetch, log: (m) => console.log(m) });
+  const formerPlayers = subtractCurrentSquad(
+    allHackenPlayers,
+    foot.squadStats.map((p) => p.playerName),
+  );
+
   // Entity/relation-based news relevance (replaces generic keyword matching).
   // Women's-team identity evidence: known women's squad players + Damallsvenskan
   // opponents. Sourced from bkhacken.se dam trupp (verified 2026-09-25).
   const known: KnownPersons = {
     currentPlayers: foot.squadStats.map((p) => p.playerName),
+    formerPlayers,
     womenPlayers: KNOWN_WOMEN_PLAYERS,
     womenContextTerms: [
       "damallsvenskan", "svenska cupen dam", "champions league dam", "europa cup dam",
@@ -431,7 +444,12 @@ async function main() {
   // The men's news section is a POSITIVE set: anything the source labelled
   // "Dam", or that we classified as women's, is removed here so neither the
   // Gemini stage nor the deterministic fallback can reintroduce it.
-  const candidates = menRelevantNews(prefiltered);
+  //
+  // `known` is passed so this gate is ENTITY-AWARE: it must not undo the
+  // prefilter's person rescue (measured 2026-10-09 — Rygaard, Harun Ibrahim
+  // and every former-player story were dropped here). A former player is
+  // tagged `former` so the UI can show "Former player".
+  const candidates = menRelevantNews(prefiltered, known);
   const menExcluded = prefiltered.length - candidates.length;
   console.log(
     `news: ${candidates.length} candidates, ${dropped.length} dropped before Gemini` +
@@ -601,7 +619,11 @@ async function main() {
       console.error("Gemini produced no men's events — falling back to deterministic events");
       newsEvents = buildNewsEvents(
         menRelevantNews(
-          candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+          candidates.filter((n) => {
+            const r = classifyRelevance(n, known).relevance;
+            return r === "CURRENT_HACKEN" || r === "FORMER_PLAYER";
+          }),
+          known,
         ),
       );
     }
@@ -609,7 +631,11 @@ async function main() {
     // Gemini unavailable: keep the previous deterministic behaviour unchanged.
     newsEvents = buildNewsEvents(
       menRelevantNews(
-        candidates.filter((n) => classifyRelevance(n, known).relevance === "CURRENT_HACKEN"),
+        candidates.filter((n) => {
+          const r = classifyRelevance(n, known).relevance;
+          return r === "CURRENT_HACKEN" || r === "FORMER_PLAYER";
+        }),
+        known,
       ),
     );
   }

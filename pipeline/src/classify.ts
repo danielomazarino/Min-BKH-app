@@ -1,4 +1,5 @@
 import type { NewsCategory, NewsItem } from "./types";
+import { classifyRelevance, type KnownPersons } from "./newsRelevance";
 
 /**
  * Deterministic classification of BK Häcken news into men/women/youth/club.
@@ -136,11 +137,52 @@ export function isExplicitlyWomenTeam(item: NewsItem): boolean {
  *
  * Sources that publish no labels keep the previous behaviour, where locally
  * classified club content is admitted unless it is promotional.
+ *
+ * ENTITY-AWARE WHEN GIVEN `known` (2026-10-09)
+ * --------------------------------------------
+ * This gate used to run the keyword-only `classifyNews`, which knows no player
+ * names. That made it UNDO the prefilter's work: an article the prefilter
+ * correctly rescued by player name ("Rygaards gläds över transfern") got
+ * `category: "unknown"` here and was dropped. Measured 2026-10-09 — Rygaard,
+ * Harun Ibrahim and every former-player story were lost this way.
+ *
+ * When `known` is supplied, an article that names a current or former Häcken
+ * man is admitted regardless of keywords, and a former player is tagged
+ * `former`. The women's veto still wins (it is applied inside
+ * `classifyRelevance`), so this widens men's evidence without weakening the
+ * women's exclusion. When `known` is omitted the behaviour is unchanged, so
+ * existing callers and tests are unaffected.
  */
-export function menRelevantNews(items: NewsItem[]): NewsItem[] {
+export function menRelevantNews(items: NewsItem[], known?: KnownPersons): NewsItem[] {
   return items.filter((n) => {
     if (isExplicitlyWomenTeam(n)) return false;
     if (n.category === "women") return false;
+
+    // Entity-aware path: a named current/former Häcken man is men's news even
+    // when no keyword matches. This is what stops the gate undoing the
+    // prefilter's person rescue.
+    //
+    // Deliberately keyed on `matchedPerson` AND a men's/former verdict, NOT on
+    // the whole CURRENT_HACKEN verdict:
+    //  - CURRENT_HACKEN also covers "official club source", which would bypass
+    //    the authoritative source-tag check below and let tagged club content
+    //    (sustainability, association news) into the men's feed.
+    //  - `matchedPerson` is ALSO set when the women's/youth veto fires (the
+    //    verdict is then UNRELATED), so checking the person alone would admit
+    //    a women's article that merely names a men's player.
+    if (known) {
+      const rel = classifyRelevance(n, known);
+      const isMenOrFormer = rel.relevance === "CURRENT_HACKEN" || rel.relevance === "FORMER_PLAYER";
+      if (rel.matchedPerson && isMenOrFormer) {
+        // Set the category explicitly. The item arrived as "unknown" from the
+        // keyword classifier, and the event's category is taken from the lead
+        // item — so without this a rescued article would render with no tag
+        // and an "unknown" category.
+        n.category = rel.relevance === "FORMER_PLAYER" ? "former" : "men";
+        return true;
+      }
+    }
+
     const tags = (n.sourceTags ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean);
     if (tags.length > 0) {
       // Authoritative labels present: only a men's-team label qualifies.

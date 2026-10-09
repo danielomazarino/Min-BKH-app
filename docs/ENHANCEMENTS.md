@@ -411,6 +411,86 @@ returns on the next check because a stale app is the thing to avoid.
 **Status:** PARTLY FIXED 2026-10-08 — multi-part surname matching shipped; the
 opponent-context widening is still OPEN · **Affects:** how complete the news feed is
 
+### ⚠️ IN PROGRESS 2026-10-09 — the two-gate mismatch (read this first if resuming)
+
+**The user's requirement (2026-10-09):** *"The whole app is about sharing
+relevant news about current and former players in the men's team of BK Häcken
+and the current team as such, so just fix the filters and implement, test and
+deploy. No maintained lists allowed, and add tag 'Former player'."*
+
+**Root cause measured 2026-10-09.** The pipeline filters news in TWO stages that
+use TWO DIFFERENT classifiers:
+
+| Stage | Function | Knows player names? |
+| --- | --- | --- |
+| Gate 1 — prefilter | `prefilterNews` → `classifyRelevance` (`newsRelevance.ts`) | **Yes** — current squad |
+| Gate 2 — men's gate | `menRelevantNews` → `classifyNews` (`classify.ts`) | **No** — keyword list only |
+
+**Gate 2 undoes Gate 1.** An article Gate 1 correctly rescues by player name
+gets `category: "unknown"` from the keyword classifier, and Gate 2 drops it.
+Measured against the live audit (2026-10-08 run):
+
+- "Rygaards gläds över transfern" → Gate 1 `CURRENT_HACKEN` (Mikkel Rygaard
+  Jensen) → Gate 2 `unknown` → **DROPPED**
+- "Harun Ibrahim: Man hoppades på något annat" → same → **DROPPED**
+- "Officiellt: Zeidane Inoussa lånas ut av Swansea" → Gate 1 `UNRELATED` →
+  **DROPPED** (former player: `known.formerPlayers` is never populated)
+
+**Former players have no signal at all.** `known.formerPlayers` is declared in
+`KnownPersons` but **never populated** in `run.ts` — only `currentPlayers` and
+`womenPlayers` are. The hand-curated registry was retired 2026-09-26, which left
+no former-player path. `classifyRelevance` can return `FORMER_PLAYER`, but
+nothing downstream uses it, and `NewsCategory` has no `former` value.
+
+**The fix (planned, no maintained lists):**
+1. **Dynamic former-player source.** Derive former men's-team players from
+   Wikidata (P54 "member of sports team" = BK Häcken men's QID), excluding the
+   current squad — the same mechanism `app/players/wikidata.ts` already uses.
+   No hand-maintained list.
+2. **Unify the gates.** Gate 2 must reuse the entity-aware `classifyRelevance`
+   (or accept `known`), so a name match at Gate 1 is not undone at Gate 2.
+3. **Add a `former` category** to `NewsCategory`/`NewsEvent` and a
+   **"Former player"** tag in `News.tsx` (which today renders only `· Dam`).
+4. **Tests both directions:** current-squad article kept; former-player article
+   kept and tagged; women's still excluded; ambiguous surname still excluded.
+5. **Deploy** and verify the served build id.
+
+**IMPLEMENTED 2026-10-09 (pending deploy).** All five steps are done:
+
+- **`pipeline/src/formerPlayers.ts` (new).** `fetchFormerPlayers` runs one SPARQL
+  query — every human with P54 = Q639723 (BK Häcken men's) and P106 = Q937857
+  (footballer). Measured: **305 players, ~6 s, one request**. `subtractCurrentSquad`
+  removes the current squad by normalized name (Wikidata says "Mikkel Rygaard",
+  the squad says "Mikkel Rygaard Jensen"). Failure is non-fatal: an outage
+  returns `[]` and the run simply has no former-player signal.
+- **Gate 2 is now entity-aware.** `menRelevantNews(items, known?)` reuses
+  `classifyRelevance`; a named current/former man is admitted regardless of
+  keywords, and a former player is tagged `category: "former"`. Omitting `known`
+  preserves the old behaviour exactly.
+- **`classifyRelevance`** returns `FORMER_PLAYER` (not `CURRENT_HACKEN`) for a
+  former player, in both the Häcken-mention and no-mention branches.
+- **`NewsCategory`** gains `"former"`; `validate.ts` accepts it; `gemini.ts`
+  preserves it through the synthesis path; `News.tsx` renders **"· Tidigare
+  spelare"** on the card and in the sheet.
+- **Tests:** `formerPlayers.test.ts` (16) + an e2e tag test. 586 unit tests pass.
+
+**A false-positive class found and fixed during verification.** With ~294
+former names, surname-only matching let unrelated news in — measured in a live
+run: *"VM 94-hjälten Roger Ljung skiljer sig"* matched former player **Jesper
+Ljung**; *"Britt-Marie Mattsson: Trump bjuder in Putin…"* matched **Jesper
+Mattsson**; *"Silas Andersen: Jag skulle älska det"* matched **Niklas
+Andersen**. Fix: `mentionsKnownPerson` now takes `surnameOnly`, and
+`matchKnownMan` runs a **full-name pass across BOTH lists first**, then a
+surname-only pass over the **current squad only** (27 club-verified names are
+safe; 294 Wikidata names are not). A former player must be named in full — the
+conservative trade-off, because showing hockey and celebrity news is worse than
+missing an occasional surname-only headline.
+
+**Session notes:** `/memories/session/former-player-news-plan.md` and
+`/memories/repo/news-filtering-analysis-2026-10-09.md`.
+
+---
+
 **Fixed 2026-10-08 (measured, unit-tested).** The classifier took the LAST token
 of a player's name as the surname. The squad lists **"Mikkel Rygaard Jensen"**,
 but the press — and Wikidata, and the player himself — use **"Mikkel Rygaard"**.

@@ -121,6 +121,7 @@ function GridCard({ e, onOpen }: { e: NewsEvent; onOpen: () => void }) {
         <span className="ncard-meta">
           {fmtDay(e.latestPublishedAt || e.publishedAt)}
           {e.category === "women" ? " · Dam" : ""}
+          {e.category === "former" ? " · Tidigare spelare" : ""}
         </span>
         <span className="ncard-title">{e.title}</span>
         <span className="ncard-src">
@@ -154,7 +155,10 @@ function ChronologicalList({ events, onOpen }: { events: NewsEvent[]; onOpen: (e
           {g.items.map((e) => (
             <button type="button" className="news-row" key={e.id} onClick={() => onOpen(e)} data-testid="news-row">
               <span className="when">{fmtDay(e.latestPublishedAt || e.publishedAt)}</span>
-              <span className="head">{e.title}</span>
+              <span className="head">
+                {e.title}
+                {e.category === "former" ? <span className="tag"> · Tidigare spelare</span> : null}
+              </span>
               <span className="pub" aria-hidden="true">
                 <SourceDots sources={e.sources} />
               </span>
@@ -189,8 +193,13 @@ export function SourceDots({ sources }: { sources: NewsEvent["sources"] }) {
  */
 function NewsSheet({ event, onClose }: { event: NewsEvent; onClose: () => void }) {
   const multi = event.sources.length > 1;
+  const tag = event.category === "women" ? "Dam" : event.category === "former" ? "Tidigare spelare" : null;
   return (
-    <Sheet title={event.title} subtitle={fmtDay(event.latestPublishedAt || event.publishedAt)} onClose={onClose}>
+    <Sheet
+      title={event.title}
+      subtitle={[tag, fmtDay(event.latestPublishedAt || event.publishedAt)].filter(Boolean).join(" · ")}
+      onClose={onClose}
+    >
       <div className="stack-3">
         {event.imageUrl && (
           <div className="news-thumb" style={{ borderRadius: 12 }}>

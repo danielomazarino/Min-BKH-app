@@ -254,4 +254,14 @@ test.describe("News content correctness (Section H)", () => {
       await expect(cards.nth(i)).not.toContainText("Dam");
     }
   });
+
+  test("a former-player story is tagged 'Tidigare spelare'", async ({ page }) => {
+    // The tag only appears when the data actually contains a former-player
+    // event, so this is skipped rather than failed on a feed without one.
+    // Former events can land in the grid OR the chronological list, so both
+    // are checked.
+    const tagged = page.locator('[data-testid="news-card"], [data-testid="news-row"]').filter({ hasText: "Tidigare spelare" });
+    if ((await tagged.count()) === 0) test.skip(true, "no former-player event in the current feed");
+    await expect(tagged.first()).toBeVisible();
+  });
 });

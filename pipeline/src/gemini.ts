@@ -528,13 +528,16 @@ function fallbackSummary(item: NewsItem): string {
 function eventFromItems(id: string, items: NewsItem[], summary: string, method: NewsEvent["summaryMethod"]): NewsEvent {
   const sorted = [...items].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
   const lead = sorted[0];
+  // Preserve the "former" tag set by menRelevantNews. Everything else in this
+  // path is men's news by construction, so the default stays "men".
+  const category: NewsCategory = sorted.some((s) => s.category === "former") ? "former" : "men";
   return {
     id,
     title: lead.title,
     summary,
     publishedAt: lead.publishedAt,
     latestPublishedAt: lead.publishedAt,
-    category: "men",
+    category,
     sources: sorted.map((s) => ({
       publisher: s.publisher,
       title: s.title,

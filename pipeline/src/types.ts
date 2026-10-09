@@ -4,8 +4,7 @@ import type { SquadEnrichment } from "./squadEnrichment";
 
 export type Competition = "allsvenskan" | "svenska-cupen" | "europa" | "other";
 
-export type NewsCategory = "men" | "women" | "youth" | "club" | "unknown";
-
+export type NewsCategory = "men" | "women" | "youth" | "club" | "former" | "unknown";
 export type VerificationStatus = "confirmed" | "reported" | "unverified" | "unknown";
 
 export type SourceStatus = "ok" | "failed" | "skipped";
