@@ -183,3 +183,70 @@ describe("prefilterNews — person rescue", () => {
     expect(res.dropped.map((d) => d.reason)).toContain("over candidate cap");
   });
 });
+
+/**
+ * URL-slug and article-body rescue (measured 2026-10-09).
+ *
+ * The Fotbolltransfers club feed states the Häcken relationship only in the URL
+ * slug or the article body. Measured on the live feed: title+summary kept 7 of
+ * 20 items, +slug kept 11, +body kept 20/20 with no false positives.
+ */
+describe("prefilterNews — slug and body rescue", () => {
+  it("keeps an item whose only Häcken evidence is in the article body", () => {
+    // "BK Häcken värvade Severin Nioule … 2023" — nothing in title/summary/url.
+    const base = {
+      id: "nioule",
+      publisher: "Fotbolltransfers",
+      title: "Officiellt: Severin Nioule byter klubb",
+      summary: "Severin Nioule lämnar Royal Charleroi SC.",
+      url: "https://fotbolltransfers.com/nyheter/officiellt-royal-francs-borains-lanar-severin-nioule/221270",
+    };
+    // Without the body, no Häcken evidence exists anywhere → dropped.
+    expect(kept([item(base)], known)).toEqual([]);
+    // With the body attached, the mention is found → kept.
+    const withBody = item({
+      ...base,
+      bodyText: "Den allsvenska klubben BK Häcken värvade Severin Nioule, 21, från ASEC Mimosas sommaren 2023.",
+    });
+    expect(kept([withBody], known)).toEqual(["nioule"]);
+  });
+
+  it("keeps a body-Häcken item that names no known person at all", () => {
+    // A club-finance story. The rescue must not depend on `matchedPerson`,
+    // because there is no person in it.
+    const finance = item({
+      id: "finance",
+      publisher: "Fotbolltransfers",
+      title: "\"Krävs för att föreningen ska fortsätta vara konkurrenskraftig\"",
+      summary: "Föreningen noterar minskade intäkter och varslar nu personal.",
+      url: "https://fotbolltransfers.com/nyheter/kraver-for-att-bk-hacken/222100",
+      bodyText: "BK Häcken noterar minskade intäkter och varslar nu personal enligt klubbchefen.",
+    });
+    for (const p of known.currentPlayers) expect(finance.title + (finance.summary ?? "")).not.toContain(p);
+    expect(kept([finance], known)).toEqual(["finance"]);
+  });
+
+  it("still drops league noise whose body never names Häcken", () => {
+    const noise = item({
+      id: "noise",
+      publisher: "Fotbolltransfers",
+      title: "Allsvenskan: Örgryte och Mjällby spelar inför omstart",
+      bodyText: "Båda klubbarna laddar inför höstens matcher i Allsvenskan.",
+    });
+    expect(kept([noise], known)).toEqual([]);
+  });
+
+  it("a body Häcken mention alone does not decide men/women — that is gate 2", () => {
+    // The prefilter has never done men/women discrimination (documented above),
+    // so a body that names Häcken is kept here even when it is women's news.
+    // The men's gate (menRelevantNews) is what removes it; see news.test.ts.
+    const womens = item({
+      id: "w",
+      publisher: "Fotbolltransfers",
+      title: "Viktig match i helgen",
+      url: "https://fotbolltransfers.com/nyheter/viktig-match/1",
+      bodyText: "BK Häcken damlaget möter Vittsjö i Damallsvenskan på söndag.",
+    });
+    expect(kept([womens], known)).toEqual(["w"]);
+  });
+});

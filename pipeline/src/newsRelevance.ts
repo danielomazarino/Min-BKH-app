@@ -57,12 +57,60 @@ function norm(s: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+/**
+ * The URL slug turned into matchable words.
+ *
+ * WHY (measured 2026-10-09): on the Fotbolltransfers club feed the SUBJECT of
+ * the article is in the URL slug, not the title —
+ *   title: "Öppnar för flytt inom Allsvenskan"
+ *   slug:  mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan
+ * The slug names "Mikkel Rygaard"; the title names nobody. Matching
+ * title+summary alone found 7 of 20 live items; adding the slug found 11.
+ *
+ * The slug is ASCII-fied (å/ä→a, ö→o), lowercase and hyphen-separated, so it
+ * is normalised the same way as every other text (norm()) before matching. The
+ * trailing numeric article id is dropped. This is a MATCH surface only: no name
+ * is ever harvested from it into a list.
+ */
+export function slugText(url: string): string {
+  if (!url) return "";
+  const clean = url.split(/[?#]/)[0];
+  const parts = clean.split("/").filter(Boolean);
+  let last = parts[parts.length - 1] ?? "";
+  if (/^\d+$/.test(last)) last = parts[parts.length - 2] ?? "";
+  return last.replace(/[-_]+/g, " ");
+}
+
+/**
+ * ALL evidence text an article offers, concatenated for matching.
+ *
+ * Single source of truth on purpose: `mentionsHäcken`, `matchKnownMan` and the
+ * women's-context check must all see the SAME text, or a Häcken mention could
+ * be found in the body while a player name was looked for only in the title.
+ *
+ * Included, strongest first: title, summary, URL slug, article body.
+ */
+function evidenceText(item: {
+  title?: string;
+  summary?: string;
+  url?: string;
+  bodyText?: string;
+}): string {
+  return norm(
+    [item.title ?? "", item.summary ?? "", slugText(item.url ?? ""), item.bodyText ?? ""].join(" "),
+  );
+}
+
 /** Explicit Häcken mention in relevant context. */
-export function mentionsHäcken(title: string, summary: string): boolean {
+export function mentionsHäcken(
+  title: string,
+  summary: string,
+  extra?: { url?: string; bodyText?: string },
+): boolean {
   // norm() strips diacritics, so "häcken" becomes "hacken" — match the
   // normalized form. "hackens?" also covers the possessive form "Häckens"
   // (e.g. "Häckens CL-premiär"), which \bhacken\b alone rejected.
-  const text = norm(`${title} ${summary}`);
+  const text = evidenceText({ title, summary, url: extra?.url, bodyText: extra?.bodyText });
   return /\bhackens?\b/.test(text) || /\bbk ?hackens?\b/.test(text);
 }
 
@@ -132,10 +180,10 @@ export function mentionsKnownPerson(
   title: string,
   summary: string,
   persons: string[],
-  opts: { surnameOnly?: boolean } = {},
+  opts: { surnameOnly?: boolean; url?: string; bodyText?: string } = {},
 ): string | null {
   const surnameOnly = opts.surnameOnly ?? true;
-  const text = norm(`${title} ${summary}`);
+  const text = evidenceText({ title, summary, url: opts.url, bodyText: opts.bodyText });
 
   // PASS 1 — full-name matches, across EVERY person, before any surname match.
   //
@@ -169,9 +217,13 @@ export function mentionsKnownPerson(
 }
 
 /** Is the article about Allsvenskan generally (not Häcken-specific)? */
-export function isGeneralAllsvenskan(title: string, summary: string): boolean {
-  const text = norm(`${title} ${summary}`);
-  return /allsvenskan/.test(text) && !mentionsHäcken(title, summary);
+export function isGeneralAllsvenskan(
+  title: string,
+  summary: string,
+  extra?: { url?: string; bodyText?: string },
+): boolean {
+  const text = evidenceText({ title, summary, url: extra?.url, bodyText: extra?.bodyText });
+  return /allsvenskan/.test(text) && !mentionsHäcken(title, summary, extra);
 }
 
 /**
@@ -192,6 +244,7 @@ function matchKnownMan(
   title: string,
   summary: string,
   known: KnownPersons,
+  extra?: { url?: string; bodyText?: string },
 ): { person: string; isCurrent: boolean } | null {
   // PASS 1 — FULL NAME across BOTH lists, before any surname match.
   //
@@ -199,14 +252,14 @@ function matchKnownMan(
   // former player Ibrahim Sadiq, but a surname pass over the current squad
   // would match "Harun Ibrahim" on the shared surname "Ibrahim" first. A full
   // name is strictly stronger evidence, so it must win across the whole set.
-  const currentFull = mentionsKnownPerson(title, summary, known.currentPlayers, { surnameOnly: false });
+  const currentFull = mentionsKnownPerson(title, summary, known.currentPlayers, { surnameOnly: false, ...extra });
   if (currentFull) return { person: currentFull, isCurrent: true };
-  const formerFull = mentionsKnownPerson(title, summary, known.formerPlayers ?? [], { surnameOnly: false });
+  const formerFull = mentionsKnownPerson(title, summary, known.formerPlayers ?? [], { surnameOnly: false, ...extra });
   if (formerFull) return { person: formerFull, isCurrent: false };
 
   // PASS 2 — surname-only, CURRENT SQUAD ONLY. The 27 club-verified names are
   // safe for this; the ~294 former names are not (see mentionsKnownPerson).
-  const currentSurname = mentionsKnownPerson(title, summary, known.currentPlayers);
+  const currentSurname = mentionsKnownPerson(title, summary, known.currentPlayers, extra);
   if (currentSurname) return { person: currentSurname, isCurrent: true };
 
   return null;
@@ -232,19 +285,23 @@ export interface NewsRelevanceResult {
  * - Allsvenskan without Häcken mention → GENERAL_ALLSVENSKAN.
  */
 export function classifyRelevance(
-  item: Pick<NewsItem, "title" | "summary" | "publisher">,
+  item: Pick<NewsItem, "title" | "summary" | "publisher"> &
+    Partial<Pick<NewsItem, "url" | "bodyText" | "clubScoped">>,
   known: KnownPersons,
 ): NewsRelevanceResult {
   const title = item.title ?? "";
   const summary = item.summary ?? "";
   const publisher = item.publisher ?? "";
+  const url = item.url ?? "";
+  const bodyText = item.bodyText ?? "";
+  const extra = { url, bodyText };
 
   // Women's/youth context always wins over men's relevance.
-  const text = norm(`${title} ${summary}`);
+  const text = evidenceText({ title, summary, url, bodyText });
   const womenContext =
     /damallsvenskan|damlaget|damerna|damfotboll|kvinnor|obs dam|kvinnlig|women'?s champions league|women'?s super league/i.test(text) ||
     // Known women's-team players are strong women's evidence (e.g. Jennifer Falk).
-    mentionsKnownPerson(title, summary, known.womenPlayers ?? []) !== null ||
+    mentionsKnownPerson(title, summary, known.womenPlayers ?? [], extra) !== null ||
     (known.womenContextTerms ?? []).some((t) => text.includes(norm(t)));
   const youthContext = /akademi|u19|u17|pojkar|flickor|junior|p05|p07/.test(text);
 
@@ -256,9 +313,9 @@ export function classifyRelevance(
   }
 
   // 2) Explicit Häcken mention in relevant context.
-  if (mentionsHäcken(title, summary)) {
+  if (mentionsHäcken(title, summary, extra)) {
     if (womenContext) return { relevance: "UNRELATED", category: "women", reason: "Häcken mention but women's context" };
-    const match = matchKnownMan(title, summary, known);
+    const match = matchKnownMan(title, summary, known, extra);
     if (match) {
       // A former player named in a Häcken article is FORMER_PLAYER, not
       // CURRENT_HACKEN — the UI tags it "Former player".
@@ -271,6 +328,27 @@ export function classifyRelevance(
     }
     if (publisher === "BK Häcken") {
       return { relevance: "CURRENT_HACKEN", category: "men", reason: "official club source" };
+    }
+    // A CLUB-SCOPED feed (Fotbolltransfers' /rss/klubbar/27) carries one men's
+    // club's transfers and contracts and cannot carry women's news — verified
+    // 2026-10-09: 20/20 live items mention Häcken in the body, 0 mention "dam",
+    // and Fotbolltransfers lists no women's league. So for these items an
+    // explicit Häcken mention is itself sufficient men's evidence, exactly as
+    // the official club feed already is. Without this, club-finance and
+    // contract-list stories ("Krävs för att BK Häcken ska fortsätta vara
+    // konkurrenskraftiga", "LISTA: Kontraktsläget i BK Häcken") were dropped as
+    // "no men's evidence — could be women's team".
+    //
+    // This replaces ONLY the `menMarker` requirement below, never the Häcken
+    // mention requirement above — the scope argument proves the club is men's,
+    // it does not prove the mention is about the club's men's team by itself.
+    if (item.clubScoped) {
+      // The youth veto is applied here for the same reason the official-source
+      // branch applies it: a club-scoped feed can still carry academy news, and
+      // "Häcken akademi … Pojkarna U17" must not become men's-team news merely
+      // because the feed is the club's. (Caught by test before shipping.)
+      if (youthContext) return { relevance: "UNRELATED", category: "youth", reason: "club-scoped feed but youth context" };
+      return { relevance: "CURRENT_HACKEN", category: "men", reason: "club-scoped feed + Häcken mention" };
     }
     // Secondary source with Häcken mention but NO men's evidence (no known
     // men's player, no men's competition marker). The Häcken mention alone
@@ -296,7 +374,7 @@ export function classifyRelevance(
   // prefilter ignored known-person matching; wiring the prefilter to reuse
   // this branch made it reachable, so the gap is closed here rather than
   // worked around in the caller.
-  const match = matchKnownMan(title, summary, known);
+  const match = matchKnownMan(title, summary, known, extra);
   if (match) {
     if (womenContext) {
       return { relevance: "UNRELATED", category: "women", reason: `women's context overrides known person: ${match.person}`, matchedPerson: match.person };
@@ -313,7 +391,7 @@ export function classifyRelevance(
   }
 
   // 4) General Allsvenskan coverage — related to the league, not to Häcken.
-  if (isGeneralAllsvenskan(title, summary)) {
+  if (isGeneralAllsvenskan(title, summary, extra)) {
     return { relevance: "GENERAL_ALLSVENSKAN", category: "men", reason: "Allsvenskan without Häcken relation" };
   }
 

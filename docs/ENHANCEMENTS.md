@@ -25,7 +25,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
-## Current state — 2026-10-08 (01:30 CEST / 23:30 UTC)
+## Current state — 2026-10-09 (14:50 CEST / 12:50 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live
 > state yourself: `git log -1` for the current commit, `curl -s
@@ -37,9 +37,9 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | --- | --- |
 | App | Live at `danielomazarino.github.io/Min-BKH-app` |
 | Current commit | `git log -1` — deliberately not hardcoded, because a hash here is stale the moment the next commit lands |
-| Tests | **572 unit tests passing** (28 files, verified locally 2026-10-08). E2E: full two-engine suite green after the `/matcher` hooks fix (see below) |
+| Tests | **610 unit tests passing** (29 files, verified locally 2026-10-09). E2E: full two-engine suite green after the `/matcher` hooks fix (see below) |
 | Data last generated | **2026-10-08 03:52 UTC** — nightly run succeeded, **24/27 squad players enriched**; served `app.json` carries `squadEnrichment` |
-| News | **Accumulation shipped 2026-10-08 (B-014)** — news is now merged across nightly runs so a volatile feed (gp.se holds ~10 items) cannot permanently lose a story. First accumulating nightly: 2026-10-09 03:30 UTC |
+| News | **B-015: club-feed scoping shipped 2026-10-09 (pending deploy)** — Häcken news is no longer dropped when the player name is only in the URL slug or the article body (7/20 → 20/20 on the live Fotbolltransfers club feed). See **B-015**. Accumulation from B-014 also now re-validates archived items, so a fixed filter can withdraw a wrong item |
 | Classifier | **Multi-part surnames fixed 2026-10-08 (B-012)** — "Mikkel Rygaard Jensen" now matches "Rygaard" headlines. The opponent-context widening is still OPEN |
 | Settings | **REBUILT 2026-10-07 (`73222f0`, deployed)** — one page, no duplicated counts. New **article audit** subpage: every fetched headline per source, marked with the pipeline's verdict ("Häcken herr" / "Ej herrlag" / drop reason), each linking to the original article. OpenRouter failures now show WHY (shared-pool diagnosis, status-code meanings) under the "N fel" pill |
 | Player cards | **REBUILT 2026-10-08** — the squad is now enriched ONCE per nightly (`squadEnrichment` in `app.json`), so Trupp cards open with career, photo and narrative already present. Career is the **union** of Wikidata and the Wikipedia infobox (was: pick one, which dropped real clubs). Home-country Wikipedia is tried (Norwegian for Wembangomo). Non-Swedish narratives are machine-translated and labelled. See **E-020** |
@@ -554,6 +554,110 @@ women's articles regress into the feed; both pinned by unit tests.
 **The deeper alternative** is the semantic layer (B-004/B-008) — which is
 exactly what keeps 429ing. Until a provider works, the deterministic fix above
 is the only path.
+
+---
+
+## B-015 · Häcken news is filtered out when the player name is only in the URL slug or the article body
+
+**Status:** FIXED 2026-10-09 (unit-tested, not yet deployed) · **Affects:**
+whether real Häcken transfer/contract news is ever shown
+
+**What the user reported.** *"all news that are not under fotbollstransfers i
+have checked are relevant for BK Häcken herr… so we need more work on why these
+are filtered away"*, with examples: *"# Mads Agger: 'Häcken kändes helt rätt' is
+clearly about a new häcken player"*, plus articles about **Silas Andersen**,
+**Mikkel Rygaard** and **Simen Hestnes** that were dropped.
+
+**What was measured** (live Fotbolltransfers club feed `rss/klubbar/27`, 20
+items, 2026-10-09):
+
+| Evidence available to the classifier | Häcken-relevant |
+| --- | --- |
+| title + summary | **7 / 20** |
+| + URL slug | **11 / 20** |
+| + article body | **20 / 20** (no false positives) |
+
+Three separate causes, all confirmed against live pages:
+
+1. **The subject is in the URL slug, not the title.** `rss.ts` stored `url` but
+   never matched on it. Title *"Öppnar för flytt inom Allsvenskan"*, slug
+   `mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan` — squad player Rygaard is
+   named only in the slug.
+2. **The Häcken relationship is often stated only in the body.**
+   *"BK Häcken värvade Severin Nioule … 2023"*, *"Silas Andersen lämnade BK
+   Häcken för Sporting CP i somras"*. Neither player is in Wikidata's P54 list,
+   so no name list could ever supply it.
+3. **A club-scoped feed still needed a competition keyword.** Even with the
+   mention found, *"Krävs för att BK Häcken ska fortsätta vara
+   konkurrenskraftiga"* (club finances) and *"LISTA: Kontraktsläget i BK Häcken"*
+   were dropped as *"no men's evidence — could be women's team"*.
+
+**Why the mentions were genuinely there.** A raw-text Häcken count is
+contaminated by the site's club-navigation menu (the literal sequence `AIK BK
+Häcken Degerfors IF Djurgårdens IF…`). Re-measured against **article prose only**
+(the `article-text` paragraphs FTs renders), the Häcken mention is real in
+**20/20** items and **0** are menu-only. The weakest cases are the two league-wide
+round-ups (`LISTA: Alla utgående kontrakt`, `Här är alla sommarvärvningar`),
+where Häcken is a *section* of the round-up.
+
+**Fix.**
+
+- `rss.ts` / `RSS_SOURCES` — a `clubScoped` flag, set only for
+  `fotbolltransfers.com/rss/klubbar/27`. Verified before use: all 20 items
+  mention Häcken in the body, **none** mention "dam", and Fotbolltransfers lists
+  **no women's league at all** (`/ligor`), so women's news cannot arrive through
+  it. The flag replaces **only** the `menMarker` requirement — never the
+  Häcken-mention requirement, and never the women's/youth veto.
+- `newsRelevance.ts` — one `evidenceText()` (title + summary + **URL slug** +
+  **article body**) is now the single match surface for `mentionsHäcken`,
+  `matchKnownMan` and the women's-context check, so they can never disagree.
+  New `slugText()` decodes the ASCII-fied slug (`å/ä→a`, `ö→o`, hyphens→spaces,
+  trailing article id dropped).
+- `run.ts` — article bodies are fetched for **club-scoped feed items only**, and
+  only for items whose title/summary lack Häcken (13 of 20 live items; 4
+  concurrent, 20s timeout, never throws). `bodyText` is **stripped before
+  `app.json` is written** and never served.
+- `classify.ts` — `menRelevantNews` accepts a club-scoped item that
+  `classifyRelevance` already accepted, so team-level items with no person
+  (contract lists, club finances) are no longer re-dropped.
+- The prefilter now accepts the whole **men's/former verdict**, not just
+  `matchedPerson`, for the same reason.
+- **Nothing is harvested.** Neither the slug nor the body is ever mined into a
+  player list; they are only ever *matched* against the live squad and Wikidata.
+  The "no maintained lists" rule is untouched.
+
+**Regression found and fixed while testing.** A body mention alone is *not*
+enough on a general secondary feed: the prefilter would keep *"Officiellt:
+Severin Nioule byter klubb"* (body names Häcken via "den allsvenska klubben")
+while the men's gate still returned UNKNOWN — a silent contradiction. The
+club-scoped flag is what resolves it for the club feed. Both directions are
+pinned by tests.
+
+**Also fixed here (found by the same investigation): archived items were never
+re-validated.** `accumulateNews` re-published whatever was already stored, so
+four false positives from an earlier, looser build — *"VM 94-hjälten Roger Ljung
+skiljer sig"*, *"Britt-Marie Mattsson: Trump bjuder in Putin…"*, two ice-hockey
+stories — stayed in the payload for the full **21-day retention window**, tagged
+"Tidigare spelare", even though the current classifier returns UNRELATED for all
+four. Accumulation now takes an optional `isStillValid` predicate applied to
+**archived items only** (never to this run's fresh survivors, which the run's own
+audit already reported) and writes back the corrected `category`. A filter fix
+can now **withdraw** a wrong item, not only stop new ones.
+
+**Tests.** 610 unit tests pass (+22). New coverage: slug matching, `slugText`
+decoding, body matching, the women's/youth veto on the club-scoped and body
+paths, `menRelevantNews` club-scoped team news, and archive re-validation.
+
+**Verified on a real run (local, 2026-10-09).** `npm run pipeline` reports
+`news: 22 candidates` and `Fotbolltransfers fetched 20 kept 16`; the served
+`news` array went from 11 items (containing 4 stale false positives) to **14
+items, all `men`, zero false positives**. `Mads Agger`, `Silas Andersen`, `Simen
+Hestnes`, `Mikkel Rygaard` — all now present. The two genuinely-former players
+(`Zeidane Inoussa`, `Edward Chilufya`) keep the `former` tag in `newsEvents`.
+
+**Not yet proven:** the deployed site. Deploy + served-build-id check are
+outstanding. **Production behaviour of the next nightly is unverified** — the
+figures above are a local run.
 
 ---
 
@@ -1870,6 +1974,7 @@ both linked in the sheet.
 | **B-009** | **DONE** | A unit test hardcoded a fixture date and asked the code to compare it to the real clock. At 15:00 UTC on 2026-10-04 the fixture silently became historical and the test began failing on its own — **with no code change**. Because CI and deploy both run the suite, it was **blocking every deploy**. Dates now derive from the clock at call time; no production code touched. Suite is **396/396 green** |
 | **B-012** | **FIXED 2026-10-09 — deployed `8b26b28`** | The two-gate mismatch is closed: `menRelevantNews` is now entity-aware, so a name match at Gate 1 is no longer undone at Gate 2. Former players are resolved dynamically from Wikidata (P54 = BK Häcken men's; 305 players, no maintained list) and tagged `former`. Live-verified: Rygaard, Harun Ibrahim shown as men's; Inoussa, Chilufya tagged "Tidigare spelare". Surname-only matching restricted to the current squad after three live false positives (Ljung/Mattsson/Andersen). See the B-012 section |
 | **B-014** | **FIXED 2026-10-08 — pending production verification** | A single nightly sample permanently lost a volatile feed's story (GP's "Rygaard om Häckens väntan", published 03:47:07, missed by the 03:48 run). `newsArchive.ts` now accumulates news across runs (21-day retention, 60-item cap, newest-first, fresh wins on URL collision). 8 unit tests. First accumulating nightly is 2026-10-09 03:30 UTC. See the B-014 section |
+| **B-015** | **FIXED 2026-10-09 — pending deploy** | Real Häcken news was dropped when the player name appeared only in the URL slug or the article body. Measured on the live Fotbolltransfers club feed: title+summary matched **7/20** items, +slug **11/20**, +body **20/20** (verified against article prose only — the club-nav menu is a false Häcken source). Fix: `evidenceText()` = title+summary+slug+body is the single match surface; a `clubScoped` flag for `rss/klubbar/27` (verified: no women's league exists on that site) replaces only the men's-keyword requirement. Also: `accumulateNews` never re-validated archived items, so 4 stale false positives from an earlier build (Roger Ljung, Britt-Marie Mattsson, 2 ice-hockey stories) were re-published for 21 days — now withdrawn. **No maintained lists**: slug/body are matched, never harvested. See the B-015 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |

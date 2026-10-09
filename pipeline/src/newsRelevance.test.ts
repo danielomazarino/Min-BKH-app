@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyRelevance, type KnownPersons } from "./newsRelevance";
+import { classifyRelevance, mentionsHäcken, slugText, type KnownPersons } from "./newsRelevance";
 
 const KNOWN: KnownPersons = {
   currentPlayers: ["Sondr", "Silas", "Layouni"],
@@ -194,5 +194,181 @@ describe("classifyRelevance — women's-team exclusion (regression: Sportbladet 
   it("generic Häcken article without men's evidence is not silently men's", () => {
     const r = clsw("Häcken spelar nästa vecka", "");
     expect(r.relevance).toBe("UNKNOWN");
+  });
+});
+
+/**
+ * URL-slug and article-body evidence (measured 2026-10-09).
+ *
+ * The Fotbolltransfers club feed puts the SUBJECT in the slug and often states
+ * the Häcken relationship only in the BODY. Measured on the live feed:
+ * title+summary matched 7 of 20 items, +slug matched 11, +body matched 20/20
+ * with no false positives. These tests pin the mechanism, not the feed.
+ */
+describe("classifyRelevance — URL slug evidence", () => {
+  const KNOWN_SLUG: KnownPersons = {
+    currentPlayers: ["Mikkel Rygaard Jensen", "Nikola Mitrovic"],
+    formerPlayers: [],
+  };
+  const clss = (title: string, slug: string, summary = "", publisher = "Fotbolltransfers") =>
+    classifyRelevance({ title, summary, publisher, url: `https://fotbolltransfers.com/nyheter/${slug}/222568` }, KNOWN_SLUG);
+
+  it("matches the subject named only in the slug", () => {
+    // Real pair: the title names nobody, the slug names squad player Rygaard.
+    const r = clss("Öppnar för flytt inom Allsvenskan", "mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("Mikkel Rygaard Jensen");
+  });
+
+  it("normalises the ASCII-fied slug (å/ä→a, ö→o, hyphens→spaces)", () => {
+    // The slug is lowercase ASCII, the squad name is not — they must still meet.
+    const r = clss("Officiellt: Lämnar Häcken för division 2-klubb", "officiellt-vastra-frolunda-lanar-nikola-mitrovic");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("Nikola Mitrovic");
+  });
+
+  it("drops the trailing numeric article id from the slug", () => {
+    expect(slugText("https://fotbolltransfers.com/nyheter/foo-bar/222568")).toBe("foo bar");
+    expect(slugText("https://x.com/nyheter/foo-bar/")).toBe("foo bar");
+    expect(slugText("https://x.com/a/b/foo-bar?utm=1")).toBe("foo bar");
+    expect(slugText("")).toBe("");
+  });
+
+  it("a slug-only surname match does NOT fire for ambiguous surnames", () => {
+    // "andersson" is ambiguous — a slug mentioning an Andersson must not make
+    // the article a Häcken article just because a squad player shares it.
+    const known: KnownPersons = { currentPlayers: ["David Andersson"], formerPlayers: [] };
+    const r = classifyRelevance(
+      { title: "Bokar upp landslagskollen", summary: "", publisher: "Sportbladet", url: "https://x.com/viktor-andersson-bokar/1" },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+});
+
+describe("classifyRelevance — article body evidence", () => {
+  const KNOWN_BODY: KnownPersons = { currentPlayers: ["Nikola Mitrovic"], formerPlayers: [] };
+
+  it("body Häcken mention + a men's competition marker is accepted", () => {
+    // Deliberately NOT clubScoped: this models a general feed whose body names
+    // Häcken. The Häcken mention plus the men's marker "Allsvenskan" is enough.
+    const r = classifyRelevance(
+      {
+        title: "Officiellt: Severin Nioule byter klubb",
+        summary: "Severin Nioule lämnar Royal Charleroi SC.",
+        publisher: "Fotbollstransfers",
+        bodyText: "BK Häcken värvade Severin Nioule från ASEC Mimosas 2023. Han gjorde två mål i Allsvenskan.",
+      },
+      KNOWN_BODY,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("a body Häcken mention WITHOUT a men's marker stays UNKNOWN on a general feed", () => {
+    // Correct conservative behaviour, and the reason the prefilter keeping such
+    // an item is not sufficient on its own: the prefilter establishes that
+    // Häcken is mentioned, the men's gate establishes that it is the MEN'S
+    // team. "den allsvenska klubben" is the adjective, not the league name, so
+    // this is still UNKNOWN here — and the club-scoped flag is what resolves it
+    // for the Fotbolltransfers club feed.
+    const bodyText = "Den allsvenska klubben BK Häcken värvade Severin Nioule, 21, från ASEC Mimosas sommaren 2023.";
+    const r = classifyRelevance(
+      { title: "Officiellt: Severin Nioule byter klubb", summary: "", publisher: "Sportbladet", bodyText },
+      KNOWN_BODY,
+    );
+    expect(r.relevance).toBe("UNKNOWN");
+    // …and the SAME article is accepted once the source scope is known.
+    const scoped = classifyRelevance(
+      { title: "Officiellt: Severin Nioule byter klubb", summary: "", publisher: "Fotbollstransfers", bodyText, clubScoped: true },
+      KNOWN_BODY,
+    );
+    expect(scoped.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("finds a named player in the body when the title/summary omit them", () => {
+    const r = classifyRelevance(
+      {
+        title: "Nyförvärvet om sin första tid",
+        summary: "Mittfältaren berättar om säsongsinledningen.",
+        publisher: "Fotbolltransfers",
+        bodyText: "Nikola Mitrovic har gjort fem matcher sedan han kom till klubben.",
+      },
+      KNOWN_BODY,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("Nikola Mitrovic");
+  });
+
+  it("the Häcken mention is found in the body when title and summary lack it", () => {
+    // Silas Andersen left Häcken but is NOT in Wikidata P54, so no known-person
+    // match is possible. The only Häcken evidence is the body sentence.
+    const title = "Silas Andersen: \"Jag skulle älska det\"";
+    const summary = "Silas Andersen hoppas få chansen att spela med Cristiano Ronaldo i Sporting CP.";
+    const bodyText = "Silas Andersen lämnade BK Häcken för Sporting CP i somras.";
+    expect(mentionsHäcken(title, summary)).toBe(false);
+    expect(mentionsHäcken(title, summary, { bodyText })).toBe(true);
+  });
+
+  it("body cannot resurrect a women's article", () => {
+    const r = classifyRelevance(
+      {
+        title: "Häcken spelar viktig match",
+        summary: "",
+        publisher: "Sportbladet",
+        bodyText: "Damlaget möter Vittsjö i Damallsvenskan.",
+      },
+      { currentPlayers: [], formerPlayers: [] },
+    );
+    expect(r.relevance).toBe("UNRELATED");
+    expect(r.category).toBe("women");
+  });
+});
+
+/**
+ * Club-scoped feeds (measured 2026-10-09).
+ *
+ * Fotbolltransfers' `/rss/klubbar/27` is BK Häcken's own club feed. Its scope
+ * is source-level men's Häcken evidence — the analogue of the official
+ * bkhacken.se feed — so a Häcken mention does not additionally need a
+ * competition keyword. Verified: all 20 live items mention Häcken in the body,
+ * none mention "dam", and Fotbolltransfers lists no women's league.
+ *
+ * The flag replaces ONLY the `menMarker` requirement. It never removes the
+ * Häcken-mention requirement, and it never overrides the women's veto.
+ */
+describe("classifyRelevance — club-scoped feed", () => {
+  const k: KnownPersons = { currentPlayers: [], formerPlayers: [] };
+  const cl = (title: string, summary = "", clubScoped = true) =>
+    classifyRelevance({ title, summary, publisher: "Fotbolltransfers", clubScoped }, k);
+
+  it("club finance story with a Häcken mention is accepted", () => {
+    const r = cl("\"Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga\"", "BK Häcken noterar minskade intäkter och varslar nu personal.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.reason).toBe("club-scoped feed + Häcken mention");
+  });
+
+  it("same item from a general secondary source stays UNKNOWN (flag is what changed)", () => {
+    const r = classifyRelevance(
+      { title: "\"Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga\"", summary: "BK Häcken noterar minskade intäkter och varslar nu personal.", publisher: "Sportbladet" },
+      k,
+    );
+    expect(r.relevance).toBe("UNKNOWN");
+  });
+
+  it("still requires a Häcken mention — scope alone is not enough", () => {
+    const r = cl("Allsvenskan: Örgryte och Mjällby spelar inför omstart");
+    expect(r.relevance).toBe("GENERAL_ALLSVENSKAN");
+  });
+
+  it("does NOT override the women's veto", () => {
+    const r = cl("Häcken damerna spelade oavgjort", "Damerna tog en poäng mot Vittsjö.");
+    expect(r.relevance).toBe("UNRELATED");
+    expect(r.category).toBe("women");
+  });
+
+  it("does NOT override the youth veto", () => {
+    const r = cl("Häcken akademi vann derby", "Pojkarna U17 visade stark form.");
+    expect(r.relevance).toBe("UNRELATED");
+    expect(r.category).toBe("youth");
   });
 });

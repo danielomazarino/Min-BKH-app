@@ -75,12 +75,13 @@ export function prefilterNews(items: NewsItem[], opts: PrefilterOptions = {}): P
       continue;
     }
     const official = item.publisher === "BK Häcken";
-    const mentions = mentionsHäcken(item.title, item.summary ?? "");
+    const extra = { url: item.url, bodyText: item.bodyText };
+    const mentions = mentionsHäcken(item.title, item.summary ?? "", extra);
 
-    // A secondary-source article that never says "Häcken" but names a current
-    // Häcken man is still Häcken news — "Gustav Lindgren gör hattrick mot
-    // Kalmar" is the single most newsworthy item in its set, and dropping it
-    // on a literal string match was a real false negative.
+    // A secondary-source article that never says "Häcken" in its title but
+    // names a current Häcken man is still Häcken news — "Gustav Lindgren gör
+    // hattrick mot Kalmar" is the single most newsworthy item in its set, and
+    // dropping it on a literal string match was a real false negative.
     //
     // A FORMER Häcken man counts too (2026-10-09): "Officiellt: Zeidane
     // Inoussa lånas ut av Swansea" never says "Häcken" and was dropped. The
@@ -91,12 +92,24 @@ export function prefilterNews(items: NewsItem[], opts: PrefilterOptions = {}): P
     // matcher, so the conservative stances stay exactly as they are: a
     // women's player still wins, a Häcken mention with no men's evidence is
     // still UNKNOWN, and ambiguous surnames are still excluded.
+    //
+    // The whole men's/former VERDICT is accepted, not just `matchedPerson`
+    // (2026-10-09). Two real classes of Häcken news carry no person at all and
+    // were dropped here purely because no person was matched:
+    //   - a club-scoped feed item whose Häcken relation appears in the body
+    //     ("Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga" —
+    //     club finances, no competition keyword);
+    //   - the club's own contract/transfer list ("LISTA: Kontraktsläget i BK
+    //     Häcken").
+    // classifyRelevance has already applied every conservative veto to reach
+    // CURRENT_HACKEN/FORMER_PLAYER, so re-checking `matchedPerson` here would
+    // only re-drop what those vetos deliberately allowed.
     const rel = opts.known ? classifyRelevance(item, opts.known) : null;
     const namesKnownMan = rel?.relevance === "CURRENT_HACKEN" || rel?.relevance === "FORMER_PLAYER";
 
     // General Allsvenskan coverage without a Häcken mention is league noise.
     if (!official && !mentions && !namesKnownMan) {
-      const reason = isGeneralAllsvenskan(item.title, item.summary ?? "")
+      const reason = isGeneralAllsvenskan(item.title, item.summary ?? "", extra)
         ? "general allsvenskan, no Häcken relation"
         : "no Häcken relation";
       dropped.push({ url: item.url, reason });

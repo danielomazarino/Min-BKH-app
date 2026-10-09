@@ -31,6 +31,7 @@ export async function fetchRss(
   url: string,
   publisher: string,
   discoveredVia = "rss",
+  opts: { clubScoped?: boolean } = {},
 ): Promise<FetchedFeed> {
   try {
     const res = await trackedFetch(`rss:${publisher}`, url, {
@@ -60,6 +61,9 @@ export async function fetchRss(
         imageUrl: enclosure,
         discoveredVia,
         dedupeKey: link,
+        // Source-scope evidence travels with every item from this feed. Only
+        // set for a feed that can contain nothing but one men's club's news.
+        ...(opts.clubScoped ? { clubScoped: true } : {}),
       };
     });
     return { ok: true, items };

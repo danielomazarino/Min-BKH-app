@@ -48,7 +48,7 @@ import {
 } from "./smNormalize";
 import { matchesSquadPlayer, resolveCanonicalId } from "./playerIdentity";
 import { buildLedger, computeSeasonDiscipline, type CardEvent } from "./discipline";
-import { classifyRelevance, type KnownPersons } from "./newsRelevance";
+import { classifyRelevance, mentionsHäcken, type KnownPersons } from "./newsRelevance";
 import { getRule } from "./rules";
 import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall, noteSourceArticles } from "./apiMetrics";
 import { synthesizeWithOpenRouter } from "./openrouter";
@@ -111,7 +111,15 @@ const RSS_SOURCES = [
   // HTTP 200 with a full HTML page and zero RSS markers. Only /rss/klubbar/27
   // is a real feed. fetchRss checks res.ok AND parses for rss/feed, so a 200
   // alone would not be trusted here.
-  { url: "https://fotbolltransfers.com/rss/klubbar/27", publisher: "Fotbolltransfers" },
+  //
+  // clubScoped (measured 2026-10-09): this is the club's OWN feed, so its scope
+  // is a men's Häcken relationship — the analogue of the official bkhacken.se
+  // feed. Verified: all 20 live items mention Häcken in the article BODY, and
+  // Fotbolltransfers has no women's league at all (`/ligor` lists none), so a
+  // women's item cannot arrive through it. Without the flag, an item like
+  // "Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga" (club
+  // finances, no competition keyword) was dropped as "could be women's team".
+  { url: "https://fotbolltransfers.com/rss/klubbar/27", publisher: "Fotbolltransfers", clubScoped: true },
 
   // Göteborgs-Posten — regional newspaper, home city of BK Häcken.
   //
@@ -175,7 +183,7 @@ function freshness(): Freshness {
 async function collectNews(): Promise<NewsItem[]> {
   const all: NewsItem[] = [];
   for (const src of RSS_SOURCES) {
-    const feed = await fetchRss(src.url, src.publisher);
+    const feed = await fetchRss(src.url, src.publisher, "rss", { clubScoped: src.clubScoped });
     STATUS[`rss:${src.publisher}`] = feed.ok ? "ok" : "failed";
     if (feed.ok) {
       for (const item of feed.items) {
@@ -439,6 +447,39 @@ async function main() {
   // Gemini is the semantic authority on men's vs women's team and on which
   // articles describe the same underlying event. The pre-filter only removes
   // cheap, unambiguous noise (date window, ads, non-Häcken league coverage).
+  //
+  // ARTICLE BODIES FOR CLUB-SCOPED FEEDS (2026-10-09). On the Fotbolltransfers
+  // club feed the Häcken relationship is frequently stated ONLY in the body:
+  //   "BK Häcken värvade Severin Nioule … 2023"
+  //   "Silas Andersen lämnade BK Häcken för Sporting CP i somras"
+  //   "har lämnat Pogoń Szczecin för Häcken"  (Mads Agger, a new signing)
+  // while the title, summary and slug name nobody. Measured on the live feed:
+  // title+summary rescued 7 of 20 items, +slug rescued 11, +body rescued 20/20
+  // with no false positives. Bodies are fetched for CLUB-SCOPED feed items
+  // ONLY (a bounded set), and only for items the cheap text pass cannot already
+  // resolve — so the added cost is a handful of requests, not one per article.
+  //
+  // Deliberately includes GENERAL_ALLSVENSKAN items: "Öppnar för flytt inom
+  // Allsvenskan" looks like league noise until the body reveals it is about
+  // squad player Mikkel Rygaard. Excluding them here would skip the very items
+  // that need the body.
+  const needsBody = news.filter(
+    (n) => n.clubScoped && !mentionsHäcken(n.title, n.summary ?? "", { url: n.url }),
+  );
+  if (needsBody.length > 0) {
+    console.log(`news: fetching ${needsBody.length} club-scoped article body(ies) for relevance…`);
+    const bodies = await fetchArticleTexts(needsBody.map((n) => n.url), 4);
+    let attached = 0;
+    for (const n of needsBody) {
+      const t = bodies.get(n.url);
+      if (t?.ok && t.text) {
+        n.bodyText = t.text;
+        attached++;
+      }
+    }
+    console.log(`news: body evidence attached to ${attached}/${needsBody.length} item(s)`);
+  }
+
   const windowDays = Number(process.env.NEWS_WINDOW_DAYS ?? DEFAULT_WINDOW_DAYS);
   const { candidates: prefiltered, dropped } = prefilterNews(news, { windowDays, known });
   // The men's news section is a POSITIVE set: anything the source labelled
@@ -670,7 +711,40 @@ async function main() {
   // 2026-10-08, when the run at 03:48 UTC missed GP's "Rygaard om Häckens
   // väntan" published at 03:47:07. Merging preserves what any earlier run saw.
   const prevForNews = readLastKnownGood<AppData>(resolve(DATA_DIR, "app.json"));
-  const accumulatedNews = accumulateNews(prevForNews?.news ?? [], relevantNews);
+  // Re-validate ARCHIVED items against the CURRENT rules before re-serving them.
+  //
+  // Measured 2026-10-09: four false positives ("VM 94-hjälten Roger Ljung
+  // skiljer sig", "Britt-Marie Mattsson: Trump bjuder in Putin…", and two
+  // ice-hockey stories) were re-published every night, tagged "Tidigare
+  // spelare", for the full 21-day retention window — even though the current
+  // classifier returns UNRELATED for all four. They entered under an earlier,
+  // looser build and accumulation never questioned them again.
+  //
+  // The verdict must be recomputed, not merely re-checked: `category` is a
+  // stored field, and an item's stored category may itself be what a fixed
+  // classifier would no longer assign. So the predicate both re-classifies AND
+  // writes back the corrected category, and also requires men's/former
+  // relevance so club/promotional content cannot ride along.
+  const accumulatedNews = accumulateNews(prevForNews?.news ?? [], relevantNews, new Date(), {
+    isStillValid: (item) => {
+      const rel = classifyRelevance(item, known);
+      if (rel.relevance !== "CURRENT_HACKEN" && rel.relevance !== "FORMER_PLAYER") return false;
+      item.category = rel.relevance === "FORMER_PLAYER" ? "former" : "men";
+      return true;
+    },
+  });
+
+  // `bodyText` is RELEVANCE EVIDENCE ONLY — it must never be served.
+  //
+  // It is up to ~4000 characters per article and is attached to the same
+  // object references that flow into app.json (the candidate set is mutated in
+  // place), so without this the daily payload would grow by tens of kilobytes
+  // of raw newspaper prose that the app never renders — and which the app has
+  // no contract to display. The app's news contract is the metadata derived
+  // from it (title, summary, category, provenance). Stripping here, once,
+  // keeps every consumer above untouched and makes the exclusion impossible to
+  // forget.
+  for (const n of accumulatedNews) delete n.bodyText;
 
   const appData: AppData = {
     freshness: freshness(),

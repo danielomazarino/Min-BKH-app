@@ -173,7 +173,18 @@ export function menRelevantNews(items: NewsItem[], known?: KnownPersons): NewsIt
     if (known) {
       const rel = classifyRelevance(n, known);
       const isMenOrFormer = rel.relevance === "CURRENT_HACKEN" || rel.relevance === "FORMER_PLAYER";
-      if (rel.matchedPerson && isMenOrFormer) {
+      // Two ways to qualify:
+      //  - a named current/former Häcken man (the original person rescue), or
+      //  - a CLUB-SCOPED feed item that classifyRelevance has already accepted
+      //    as Häcken (2026-10-09). The Fotbolltransfers club feed carries
+      //    team-level news with no person in it — club finances, contract
+      //    lists ("LISTA: Kontraktsläget i BK Häcken") — and requiring a person
+      //    dropped them even though their relevance was already established.
+      //    `rel.club-scoped` items are, by construction, one men's club's news,
+      //    so the source-tag check below (which guards against team-neutral
+      //    club content) is not needed for them.
+      const clubScopedTeamNews = Boolean(n.clubScoped) && isMenOrFormer;
+      if ((rel.matchedPerson && isMenOrFormer) || clubScopedTeamNews) {
         // Set the category explicitly. The item arrived as "unknown" from the
         // keyword classifier, and the event's category is taken from the lead
         // item — so without this a rescued article would render with no tag

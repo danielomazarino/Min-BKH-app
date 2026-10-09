@@ -255,3 +255,60 @@ describe("news deduplication", () => {
     expect(r.relevance === "CURRENT_HACKEN").toBe(false);
   });
 });
+
+/**
+ * Club-scoped feed items with no person (measured 2026-10-09).
+ *
+ * Requiring `matchedPerson` in `menRelevantNews` dropped team-level Häcken news
+ * from the Fotbolltransfers club feed — club finances and the club's own
+ * contract list ("LISTA: Kontraktsläget i BK Häcken") name no player. The
+ * source-scope flag admits them, with every conservative veto still applied.
+ */
+describe("menRelevantNews — club-scoped team news", () => {
+  const known = { currentPlayers: [], formerPlayers: [], womenPlayers: ["Jennifer Falk"], womenContextTerms: [] };
+
+  it("keeps club-scoped team news that names no player", () => {
+    const list = news({
+      id: "cl",
+      publisher: "Fotbolltransfers",
+      title: "LISTA: Kontraktsläget i BK Häcken",
+      summary: "Här går vi igenom kontraktsläget i BK Häcken.",
+      clubScoped: true,
+    });
+    expect(menRelevantNews([list], known).map((n) => n.id)).toEqual(["cl"]);
+  });
+
+  it("does NOT keep the same team news from a general secondary source", () => {
+    // Scope is the evidence, not the publisher. Without the flag, an item with
+    // no person and no men's label is correctly left out of the men's feed.
+    const list = news({
+      id: "gen",
+      publisher: "Sportbladet",
+      title: "Häcken bekräftar minskade intäkter",
+      summary: "Klubben varslar personal enligt klubbchefen.",
+    });
+    expect(menRelevantNews([list], known).map((n) => n.id)).toEqual([]);
+  });
+
+  it("still excludes a women's item from a club-scoped feed", () => {
+    const womens = news({
+      id: "cw",
+      publisher: "Fotbolltransfers",
+      title: "Häcken damlaget möter Vittsjö",
+      summary: "Damlaget spelar i Damallsvenskan på söndag.",
+      clubScoped: true,
+    });
+    expect(menRelevantNews([womens], known).map((n) => n.id)).toEqual([]);
+  });
+
+  it("still excludes youth context from a club-scoped feed", () => {
+    const youth = news({
+      id: "cy",
+      publisher: "Fotbolltransfers",
+      title: "Häcken akademi vann derby",
+      summary: "Pojkarna U17 visade stark form.",
+      clubScoped: true,
+    });
+    expect(menRelevantNews([youth], known).map((n) => n.id)).toEqual([]);
+  });
+});

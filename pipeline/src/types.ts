@@ -207,12 +207,45 @@ export interface NewsItem {
   /** Provenance role of this specific article's reporting. */
   sourceRole?: SourceRole;
   /**
+   * True when the FEED this article came from covers one men's club only
+   * (currently: Fotbolltransfers' club feed for BK Häcken, `/rss/klubbar/27`).
+   *
+   * This is source-level evidence, the analogue of the official club feed: the
+   * feed's scope already establishes a men's-team Häcken relationship, so an
+   * article that explicitly names Häcken does not additionally need a
+   * competition keyword to be men's news. It is deliberately NOT a general
+   * "trust this publisher" flag — it is only set for a feed that can contain
+   * nothing but one men's club's transfers and contracts.
+   *
+   * Confirmed 2026-10-09: all 20 live items mention Häcken in the article
+   * body, none mention "dam", and Fotbolltransfers has no women's league at
+   * all (`/ligor` lists none) — so a women's-scoped item cannot arrive here.
+   */
+  clubScoped?: boolean;
+  /**
    * Authoritative team/category labels as published by the source itself
    * (BK Häcken renders one badge per article: "Herr", "Dam", "Hållbarhet",
    * "Föreningen", ...). These are evidence, never a substitute for the
    * article's own content, and they take precedence over text heuristics.
    */
   sourceTags?: string[];
+  /**
+   * Article BODY text, when it was fetched for relevance.
+   *
+   * Why it exists (measured 2026-10-09): on the Fotbolltransfers club feed the
+   * Häcken relationship is often stated ONLY in the body —
+   *   "BK Häcken värvade Severin Nioule … 2023"
+   *   "Silas Andersen lämnade BK Häcken för Sporting CP i somras"
+   *   "har lämnat Pogoń Szczecin för Häcken"  (Mads Agger, a new signing)
+   * — while the title, summary and slug name nobody. Classifying on
+   * title+summary+slug alone rescued 11 of 20 live items; adding the body
+   * rescued 20 of 20, with no false positives.
+   *
+   * It is attached for RELEVANCE ONLY and stripped before `app.json` is
+   * written, so it never reaches the served payload. It is matched, never
+   * harvested: no player name is ever extracted from it into a list.
+   */
+  bodyText?: string;
 }
 
 /**
