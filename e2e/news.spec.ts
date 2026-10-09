@@ -282,32 +282,27 @@ test.describe("News content correctness (Section H)", () => {
   });
 
   test("a readable story opens with its full text in-app, not just a link", async ({ page }) => {
-    // The point of the feature: reading bkhacken.se / fotbollstranfers stories
-    // without leaving the app. Skipped when the feed has no readable body.
-    const cards = page.getByTestId("news-card");
-    const n = await cards.count();
-    if (n === 0) test.skip(true, "no news in data");
+    // The point of the feature: reading bkhacken.se / fotbolltransfers stories
+    // without leaving the app.
+    //
+    // Uses the app's OWN deep link rather than clicking a card. Clicking was
+    // flaky in CI: after closing a sheet the backdrop can still intercept the
+    // next click, and the retry loop burns the whole test timeout. The deep
+    // link exercises the same render path deterministically.
+    const events = await page.evaluate(async () => {
+      const res = await fetch("/Min-BKH-app/data/app.json");
+      const json = await res.json();
+      return (json.newsEvents ?? []).map((e: { id: string; body?: string }) => ({ id: e.id, hasBody: !!e.body }));
+    });
+    const readable = events.find((e) => e.hasBody);
+    if (!readable) test.skip(true, "no readable body in the current feed");
 
-    let opened = false;
-    for (let i = 0; i < n && !opened; i++) {
-      await cards.nth(i).click();
-      const body = page.getByTestId("news-body");
-      if ((await body.count()) > 0) {
-        await expect(body).toBeVisible();
-        // Real prose, not a one-line stub.
-        const text = await body.innerText();
-        expect(text.length).toBeGreaterThan(200);
-        // The external link is still offered for provenance.
-        await expect(page.getByTestId("source-link").first()).toBeVisible();
-        opened = true;
-      } else {
-        // Close the sheet and WAIT for the backdrop to go before the next
-        // click — otherwise the backdrop intercepts the pointer and the click
-        // retries until the test times out (observed in CI).
-        await page.keyboard.press("Escape");
-        await expect(page.getByTestId("sheet-backdrop")).toBeHidden();
-      }
-    }
-    if (!opened) test.skip(true, "no readable body in the current feed");
+    await page.goto(`/#/nyheter?id=${encodeURIComponent(readable.id)}`);
+    const body = page.getByTestId("news-body");
+    await expect(body).toBeVisible();
+    // Real prose, not a one-line stub.
+    expect((await body.innerText()).length).toBeGreaterThan(200);
+    // The external link is still offered for provenance.
+    await expect(page.getByTestId("source-link").first()).toBeVisible();
   });
 });
