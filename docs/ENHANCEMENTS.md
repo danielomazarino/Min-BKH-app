@@ -559,8 +559,8 @@ is the only path.
 
 ## B-016 · Read the story in the app, and give the tiles images
 
-**Status:** FIXED 2026-10-09 (unit + e2e tested, not yet deployed) · **Affects:**
-whether a supporter can read a story without leaving the app
+**Status:** FIXED 2026-10-09 — **deployed `bf7314a` and verified in production** ·
+**Affects:** whether a supporter can read a story without leaving the app
 
 **What the user asked for.** *"investigate if we can scrape the information of
 the articles that are not behind paywalls such as expressen. and use the images
@@ -636,8 +636,14 @@ a thumbnail; a readable story opens with >200 chars of text in-app and still
 offers its source link). Verified in the browser: the four tiles are illustrated
 and a story opens with 15 paragraphs of clean prose.
 
-**Not yet proven:** the deployed site, and the next nightly's production
-behaviour.
+**Verified in PRODUCTION (2026-10-09 18:35 UTC).** Served
+`data-build="bf7314a.752448b"`, and the served `data/app.json` is
+**byte-identical** to the committed file (`sha256 b598473aaeb88d35…`). The
+served feed carries **20 of 21 events with an image and a readable body**; the
+one without either is the Expressen story, correctly excluded. No `bodyText`
+leaked into the payload.
+
+**Not yet proven:** the next nightly's production behaviour.
 
 ---
 
@@ -2067,7 +2073,7 @@ both linked in the sheet.
 | **B-012** | **FIXED 2026-10-09 — deployed `8b26b28`** | The two-gate mismatch is closed: `menRelevantNews` is now entity-aware, so a name match at Gate 1 is no longer undone at Gate 2. Former players are resolved dynamically from Wikidata (P54 = BK Häcken men's; 305 players, no maintained list) and tagged `former`. Live-verified: Rygaard, Harun Ibrahim shown as men's; Inoussa, Chilufya tagged "Tidigare spelare". Surname-only matching restricted to the current squad after three live false positives (Ljung/Mattsson/Andersen). See the B-012 section |
 | **B-014** | **FIXED 2026-10-08 — pending production verification** | A single nightly sample permanently lost a volatile feed's story (GP's "Rygaard om Häckens väntan", published 03:47:07, missed by the 03:48 run). `newsArchive.ts` now accumulates news across runs (21-day retention, 60-item cap, newest-first, fresh wins on URL collision). 8 unit tests. First accumulating nightly is 2026-10-09 03:30 UTC. See the B-014 section |
 | **B-015** | **FIXED 2026-10-09 — deployed `1539f98`, verified in production** | Real Häcken news was dropped when the player name appeared only in the URL slug or the article body. Measured on the live Fotbolltransfers club feed: title+summary matched **7/20** items, +slug **11/20**, +body **20/20** (verified against article prose only — the club-nav menu is a false Häcken source). Fix: `evidenceText()` = title+summary+slug+body is the single match surface; a `clubScoped` flag for `rss/klubbar/27` (verified: no women's league exists on that site) replaces only the men's-keyword requirement. Also: `accumulateNews` never re-validated archived items, so 4 stale false positives from an earlier build (Roger Ljung, Britt-Marie Mattsson, 2 ice-hockey stories) were re-published for 21 days — now withdrawn. **No maintained lists**: slug/body are matched, never harvested. See the B-015 section |
-| **B-016** | **FIXED 2026-10-09 — pending deploy** | Stories can now be read in-app, and the four tiles have images. `og:image` was never read (only 4/21 events had a thumbnail) and the generic extractor returned page navigation as "body text". Per-source extractors + `isReadableSource()` allow-list: **bkhacken.se** and **fotbolltransfers.com** are read (both `User-agent: *` / `Disallow:`, neither paywalled); **Expressen is excluded** — paywalled AND Bonnier News' robots.txt prohibits scraping "text, graphics, images". Images use the same gate as bodies. Result: 20/21 events with an image and a readable body, +11.7 KB gzipped. See the B-016 section |
+| **B-016** | **FIXED 2026-10-09 — deployed `bf7314a`, verified in production** | Stories can now be read in-app, and the four tiles have images. `og:image` was never read (only 4/21 events had a thumbnail) and the generic extractor returned page navigation as "body text". Per-source extractors + `isReadableSource()` allow-list: **bkhacken.se** and **fotbolltransfers.com** are read (both `User-agent: *` / `Disallow:`, neither paywalled); **Expressen is excluded** — paywalled AND Bonnier News' robots.txt prohibits scraping "text, graphics, images". Images use the same gate as bodies. Result: 20/21 events with an image and a readable body, +11.7 KB gzipped. See the B-016 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |

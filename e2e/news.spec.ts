@@ -301,7 +301,11 @@ test.describe("News content correctness (Section H)", () => {
         await expect(page.getByTestId("source-link").first()).toBeVisible();
         opened = true;
       } else {
+        // Close the sheet and WAIT for the backdrop to go before the next
+        // click — otherwise the backdrop intercepts the pointer and the click
+        // retries until the test times out (observed in CI).
         await page.keyboard.press("Escape");
+        await expect(page.getByTestId("sheet-backdrop")).toBeHidden();
       }
     }
     if (!opened) test.skip(true, "no readable body in the current feed");
