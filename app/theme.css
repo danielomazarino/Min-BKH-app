@@ -1836,6 +1836,21 @@ main {
   pointer-events: none;
 }
 
+/* In-app reading text in the story sheet.
+   Named `news-read`, NOT `news-body` — `.news-body` is already the flex
+   container for the news CARD, and reusing it would restyle every card. */
+.news-read {
+  font-size: var(--t-body);
+  line-height: 1.55;
+  color: var(--text-1);
+}
+.news-read p {
+  margin: 0 0 0.75em;
+}
+.news-read p:last-child {
+  margin-bottom: 0;
+}
+
 .news-body {
   padding: var(--s3);
   flex: 1;

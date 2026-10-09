@@ -301,6 +301,26 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            // News thumbnails and article images, served from the publishers'
+            // CDNs (bkhacken.se DigitalOcean Spaces, fotbolltransfers CDN).
+            //
+            // CacheFirst, not NetworkFirst: these are immutable per URL and
+            // re-fetching them on every open wastes the reader's data. Without
+            // this rule the images were not cached at all, so a story opened
+            // offline showed an empty thumbnail box.
+            //
+            // `statuses: [0, 200]` includes opaque cross-origin responses
+            // (status 0), which is what a no-cors <img> yields — without it the
+            // rule would silently cache nothing.
+            urlPattern: /^https:\/\/[^/]*(digitaloceanspaces\.com|bonniernews\.se)\/.*\.(?:png|jpe?g|webp|gif|avif)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "bkh-news-images",
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
       },
     }),

@@ -264,4 +264,46 @@ test.describe("News content correctness (Section H)", () => {
     if ((await tagged.count()) === 0) test.skip(true, "no former-player event in the current feed");
     await expect(tagged.first()).toBeVisible();
   });
+
+  test("the four tiles carry a thumbnail when the source provides one", async ({ page }) => {
+    // Measured 2026-10-09: only bkhacken.se published an RSS <enclosure>, so
+    // just 4 of 21 events had an image. `og:image` is now read for sources we
+    // are permitted to read, so the tiles should be illustrated.
+    const cards = page.getByTestId("news-card");
+    const n = await cards.count();
+    if (n === 0) test.skip(true, "no news in data");
+    let withImg = 0;
+    for (let i = 0; i < n; i++) {
+      if ((await cards.nth(i).locator("img").count()) > 0) withImg++;
+    }
+    // Not every source may be readable, so this asserts the mechanism works
+    // rather than a fixed count.
+    expect(withImg).toBeGreaterThan(0);
+  });
+
+  test("a readable story opens with its full text in-app, not just a link", async ({ page }) => {
+    // The point of the feature: reading bkhacken.se / fotbollstranfers stories
+    // without leaving the app. Skipped when the feed has no readable body.
+    const cards = page.getByTestId("news-card");
+    const n = await cards.count();
+    if (n === 0) test.skip(true, "no news in data");
+
+    let opened = false;
+    for (let i = 0; i < n && !opened; i++) {
+      await cards.nth(i).click();
+      const body = page.getByTestId("news-body");
+      if ((await body.count()) > 0) {
+        await expect(body).toBeVisible();
+        // Real prose, not a one-line stub.
+        const text = await body.innerText();
+        expect(text.length).toBeGreaterThan(200);
+        // The external link is still offered for provenance.
+        await expect(page.getByTestId("source-link").first()).toBeVisible();
+        opened = true;
+      } else {
+        await page.keyboard.press("Escape");
+      }
+    }
+    if (!opened) test.skip(true, "no readable body in the current feed");
+  });
 });

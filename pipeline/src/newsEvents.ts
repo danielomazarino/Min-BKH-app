@@ -1,4 +1,5 @@
 import type { NewsEvent, NewsItem, SourceRole } from "./types";
+import { MAX_BODY_CHARS } from "./articleText";
 
 /**
  * Source role registry — per-publication defaults, refined per article when
@@ -49,6 +50,10 @@ export function buildNewsEvents(items: NewsItem[]): NewsEvent[] {
     // that has one so a story never loses its thumbnail just because the
     // newest article happened to have no image.
     const imageUrl = lead.imageUrl ?? sorted.find((s) => s.imageUrl)?.imageUrl;
+    // In-app reading text: the lead source's body, when we are permitted to
+    // read it. Prefer the lead, then any source that has one, so a story stays
+    // readable whenever ANY of its sources is readable.
+    const body = lead.bodyText ?? sorted.find((s) => s.bodyText)?.bodyText;
     events.push({
       id: `event-${lead.id}`,
       title: lead.title,
@@ -57,18 +62,14 @@ export function buildNewsEvents(items: NewsItem[]): NewsEvent[] {
       latestPublishedAt: lead.publishedAt,
       category: lead.category,
       ...(imageUrl ? { imageUrl } : {}),
-      // The lead article's image represents the event; fall back to any
-      // source that has one so a story never loses its thumbnail because the
-      // newest article happens to have no image.
-      ...(lead.imageUrl ?? sorted.find((s) => s.imageUrl)?.imageUrl
-        ? { imageUrl: lead.imageUrl ?? sorted.find((s) => s.imageUrl)?.imageUrl }
-        : {}),
+      ...(body ? { body: body.slice(0, MAX_BODY_CHARS) } : {}),
       sources: sorted.map((s) => ({
         publisher: s.publisher,
         url: s.url,
         publishedAt: s.publishedAt,
         role: s.sourceRole ?? publisherRole(s.publisher),
         discoveredVia: s.discoveredVia,
+        ...(s.imageUrl ? { imageUrl: s.imageUrl } : {}),
       })),
       summaryMethod: summaryMethod(sorted),
     });

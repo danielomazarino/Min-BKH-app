@@ -265,6 +265,18 @@ export interface NewsEvent {
    * Used for compact story thumbnails — never as a hero image.
    */
   imageUrl?: string;
+  /**
+   * Article body text for IN-APP READING, when the source permits it.
+   *
+   * WHY: the detail sheet previously offered only a summary plus links, so
+   * reading a story meant leaving the app for an external browser. This is the
+   * extracted body of the lead source, capped at MAX_BODY_CHARS (~2000).
+   *
+   * Only set for sources verified as both non-paywalled and scrape-permitted
+   * (bkhacken.se, fotbolltransfers.com — see `isReadableSource`). Absent means
+   * "read at the source", and the sheet keeps its external link.
+   */
+  body?: string;
   sources: Array<{
     publisher: string;
     /** Original article headline, preserved for provenance. */
@@ -273,6 +285,8 @@ export interface NewsEvent {
     publishedAt: string;
     role: SourceRole;
     discoveredVia: string;
+    /** This source's own editorial image, when the page declares one. */
+    imageUrl?: string;
   }>;
   /** How the event summary was produced. */
   summaryMethod: "rss-description" | "extracted" | "excerpt" | "gemini-synthesis" | "gemini-synthesis-fallback";

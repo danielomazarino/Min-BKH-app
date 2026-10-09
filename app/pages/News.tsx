@@ -211,6 +211,21 @@ function NewsSheet({ event, onClose }: { event: NewsEvent; onClose: () => void }
             {event.summary}
           </p>
         )}
+        {/* In-app reading text. Present only for sources we are permitted to
+            read in full (bkhacken.se, fotbolltransfers.com) — see
+            `isReadableSource`. When absent the sheet keeps its external link,
+            so the reader is never left without a way to the story. */}
+        {event.body && (
+          <div className="news-read" data-testid="news-body">
+            {event.body
+              .split(/\n{2,}/)
+              .map((p) => p.trim())
+              .filter(Boolean)
+              .map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+          </div>
+        )}
         <div>
           <div className="mod-label">{multi ? `${event.sources.length} källor` : event.sources[0]?.publisher}</div>
           <div data-testid="source-list">

@@ -23,7 +23,7 @@ import {
   buildArticleAudit,
   formatSourceBreakdown,
 } from "./ingestDiagnostics";
-import { fetchArticleTexts } from "./articleText";
+import { fetchArticleTexts, isReadableSource } from "./articleText";
 import {
   buildEventsFromGemini,
   synthesizeWithGemini,
@@ -574,6 +574,52 @@ async function main() {
     };
   });
 
+  // ── IN-APP READING + THUMBNAILS ──────────────────────────────────────────
+  //
+  // The detail sheet used to offer only a summary plus links, so reading a
+  // story meant leaving the app. Two additions, both from the SAME fetch above
+  // (no extra requests):
+  //
+  //  1. `imageUrl` from `og:image`. Only bkhacken.se publishes an RSS
+  //     `<enclosure>`, so just 4 of 21 events had a thumbnail; `og:image`
+  //     exists on both readable sources.
+  //  2. `bodyText` for sources we are PERMITTED to read in full. Verified
+  //     2026-10-09: bkhacken.se and fotbolltransfers.com both publish
+  //     `User-agent: *` / `Disallow:` (empty = allowed) and neither is
+  //     paywalled. Expressen is excluded on two independent grounds — it is
+  //     paywalled AND Bonnier News' robots.txt prohibits scraping "for text
+  //     and data aggregation". An unlisted source keeps its headline, summary
+  //     and link; only the body is withheld.
+  //
+  // `bodyText` is stripped before app.json is written (see below) — the SERVED
+  // field is `NewsEvent.body`, capped at MAX_BODY_CHARS.
+  //
+  // IMAGES ARE GATED BY THE SAME ALLOW-LIST AS BODIES, deliberately. Expressen
+  // is excluded from body scraping because Bonnier News' robots.txt prohibits
+  // scraping "text, graphics, images … for text and data aggregation". Pulling
+  // their `og:image` while refusing their text would be inconsistent with that
+  // stated boundary, so one rule covers both. An excluded source keeps its
+  // headline, summary and link — the app's existing aggregation — and simply
+  // shows no thumbnail.
+  let imagesAttached = 0;
+  let bodiesAttached = 0;
+  for (const c of candidates) {
+    const t = texts.get(c.url);
+    if (!t) continue;
+    if (!isReadableSource(c.url)) continue;
+    if (t.imageUrl && !c.imageUrl) {
+      c.imageUrl = t.imageUrl;
+      imagesAttached++;
+    }
+    if (t.ok && t.text) {
+      c.bodyText = t.text;
+      bodiesAttached++;
+    }
+  }
+  console.log(
+    `news: images attached to ${imagesAttached} item(s); readable bodies to ${bodiesAttached} item(s)`,
+  );
+
   const gem = await synthesizeWithGemini(geminiInput);
   STATUS.gemini = gem.status.ok ? "ok" : gem.result === null ? "failed" : "ok";
 
@@ -734,16 +780,17 @@ async function main() {
     },
   });
 
-  // `bodyText` is RELEVANCE EVIDENCE ONLY — it must never be served.
+  // `bodyText` is RELEVANCE + READING EVIDENCE ONLY — it must never be served
+  // raw.
   //
   // It is up to ~4000 characters per article and is attached to the same
   // object references that flow into app.json (the candidate set is mutated in
   // place), so without this the daily payload would grow by tens of kilobytes
-  // of raw newspaper prose that the app never renders — and which the app has
-  // no contract to display. The app's news contract is the metadata derived
-  // from it (title, summary, category, provenance). Stripping here, once,
-  // keeps every consumer above untouched and makes the exclusion impossible to
-  // forget.
+  // of raw newspaper prose. The SERVED reading text is `NewsEvent.body`, which
+  // `buildNewsEvents` derives from `bodyText` and caps at MAX_BODY_CHARS.
+  //
+  // This MUST run after `newsEvents` is built (it reads `bodyText`), and before
+  // app.json is written.
   for (const n of accumulatedNews) delete n.bodyText;
 
   const appData: AppData = {
