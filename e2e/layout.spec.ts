@@ -241,21 +241,26 @@ test.describe("Layout", () => {
   });
 
   /**
-   * REGRESSION: the sheet must clear the floating nav at EVERY width.
+   * REGRESSION: the sheet's CONTENT must clear the floating nav at EVERY
+   * width.
    *
-   * This was broken at >= 700px only, so the 390px iPhone suite could never
-   * see it. `@media (min-width: 700px) { .sheet { margin: 0 auto; } }` is a
-   * SHORTHAND and therefore reset `margin-bottom` to 0, discarding the
-   * `margin-bottom: var(--chrome-bottom)` that insets the sheet. Measured on
-   * the deployed site at 1222px: the sheet bottom sat 74px UNDER the nav
-   * top, i.e. the last rows of the sheet were covered.
+   * 2026-10-09, from the iPhone: the sheet itself now runs to the SCREEN
+   * BOTTOM and the nav floats OVER it (that overlay is the requested design,
+   * not a defect). What must still hold is that the sheet's SCROLLABLE
+   * CONTENT is never hidden behind the bar — `.sheet-body` reserves
+   * `--chrome-bottom` as bottom padding for exactly that.
    *
-   * The assertion is numeric rather than visual on purpose: a shorthand
-   * silently reverting one longhand is exactly the kind of defect that
-   * survives a screenshot review.
+   * So the assertion moved from the sheet's box to its content: the last
+   * scrollable content edge must sit at or above the nav's top edge.
+   *
+   * History of this test: it used to assert `sheet.bottom <= nav.top`, which
+   * was the old geometry (the sheet inset by the nav band). The shorthand
+   * `margin: 0 auto` at >=700px once reset `margin-bottom` to 0 and the sheet
+   * sat 74px UNDER the nav — that defect is what made the assertion numeric
+   * rather than visual, and the numeric discipline is kept here.
    */
   for (const vp of VIEWPORTS) {
-    test(`the open sheet clears the floating nav at ${vp.name}`, async ({ page }) => {
+    test(`the open sheet's content clears the floating nav at ${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto("/#/nyheter");
       await expect(page.getByTestId("tabbar")).toBeVisible();
@@ -304,20 +309,30 @@ test.describe("Layout", () => {
 
       const geo = await page.evaluate(() => {
         const sheet = document.querySelector('[data-testid="settings-sheet"]')!;
+        const body = sheet.querySelector(".sheet-body")!;
         const nav = document.querySelector("[data-testid=tabbar]")!;
-        const s = sheet.getBoundingClientRect();
+        const b = body.getBoundingClientRect();
         const n = nav.getBoundingClientRect();
+        const cs = getComputedStyle(body);
         return {
-          clearance: Math.round(n.top - s.bottom),
-          marginBottom: getComputedStyle(sheet).marginBottom,
+          // The lowest pixel of CONTENT (excluding the reserved bottom padding)
+          // versus the nav's top edge.
+          contentBottom: Math.round(b.bottom - parseFloat(cs.paddingBottom)),
+          navTop: Math.round(n.top),
+          sheetBottom: Math.round(sheet.getBoundingClientRect().bottom),
+          viewportH: window.innerHeight,
         };
       });
 
-      expect(geo.marginBottom, `margin-bottom was reset at ${vp.width}px`).not.toBe("0px");
       expect(
-        geo.clearance,
-        `sheet/nav overlap at ${vp.width}px (margin-bottom=${geo.marginBottom})`,
-      ).toBeGreaterThanOrEqual(0);
+        geo.contentBottom,
+        `sheet content hidden behind the nav at ${vp.width}px (contentBottom=${geo.contentBottom}, navTop=${geo.navTop})`,
+      ).toBeLessThanOrEqual(geo.navTop);
+      // The NEW geometry: the sheet itself reaches the screen bottom.
+      expect(
+        geo.sheetBottom,
+        `the sheet should reach the screen bottom at ${vp.width}px`,
+      ).toBeGreaterThanOrEqual(geo.viewportH - 1);
     });
   }
 });

@@ -312,3 +312,74 @@ describe("menRelevantNews — club-scoped team news", () => {
     expect(menRelevantNews([youth], known).map((n) => n.id)).toEqual([]);
   });
 });
+
+/**
+ * The "club" fallback must not bypass the women's veto.
+ *
+ * MEASURED 2026-10-09 — this leaked a women's article into the men's feed.
+ * SVT's "Schröder om starten i Real Madrid" is about Felicia Schröder, a former
+ * BK Häcken WOMEN's player. Its summary says "i sin nya klubb", so
+ * `classifyNews` returned "club" (a team-NEUTRAL category reached from a generic
+ * word), and the old `return !isClubPromotional(n.title)` admitted it without
+ * ever consulting `classifyRelevance` — which had already returned UNKNOWN
+ * ("Häcken mention but no men's evidence — could be women's team"). The audit
+ * UI then showed it as "Häcken herr".
+ */
+describe("menRelevantNews — the club fallback and the women's veto", () => {
+  const known = {
+    currentPlayers: ["Gustav Lindgren"],
+    formerPlayers: [],
+    womenPlayers: ["Jennifer Falk"],
+    womenContextTerms: ["damallsvenskan"],
+  };
+
+  it("does NOT admit a women's article that classifyNews called 'club'", () => {
+    const schroder = news({
+      id: "schroder",
+      publisher: "SVT Sport",
+      title: "Schröder om starten i Real Madrid: Jag älskar ju att göra mål",
+      summary:
+        "Hon har varit på allas läppar sedan flytten till Real Madrid. Före detta Häcken-spelaren Felicia Schröder har öst in mål i sin nya klubb.",
+    });
+    // The keyword classifier really does call this "club" — that is the trap.
+    expect(classifyNews(schroder.title, schroder.summary ?? "", [])).toBe("club");
+    expect(menRelevantNews([schroder], known)).toEqual([]);
+  });
+
+  it("still admits genuine club content that clears the relevance engine", () => {
+    // Association/sustainability news from the official source: no men's
+    // evidence needed because the SOURCE establishes relevance.
+    const club = news({
+      id: "club",
+      publisher: "BK Häcken",
+      title: "Föreningen bjuder in till årsmöte",
+      summary: "Medlemmar är välkomna till föreningens årsmöte i november.",
+      category: "club",
+    });
+    expect(menRelevantNews([club], known).map((n) => n.id)).toEqual(["club"]);
+  });
+
+  it("still drops promotional club content", () => {
+    const promo = news({
+      id: "promo",
+      publisher: "BK Häcken",
+      title: "Köp årskort till nästa säsong",
+      summary: "Säkra din plats på läktaren.",
+      category: "club",
+    });
+    expect(menRelevantNews([promo], known)).toEqual([]);
+  });
+
+  it("behaves as before when `known` is omitted", () => {
+    // Without the relevance engine there is nothing to consult, so the old
+    // non-promotional behaviour is preserved for existing callers.
+    const club = news({
+      id: "club2",
+      publisher: "BK Häcken",
+      title: "Föreningen bjuder in till årsmöte",
+      summary: "Medlemmar är välkomna.",
+      category: "club",
+    });
+    expect(menRelevantNews([club]).map((n) => n.id)).toEqual(["club2"]);
+  });
+});

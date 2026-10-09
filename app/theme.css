@@ -183,6 +183,13 @@
      drift apart. */
   --chrome-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
 
+  /* The visible gap between the header banner and a tall sheet's top edge.
+     Requested from the iPhone (2026-10-09): the sheet used to stop EXACTLY at
+     the header's bottom edge, so the page behind was never sighted. A fixed
+     12px band lets the background show through and reads as a proper iOS
+     page-sheet. */
+  --sheet-top-gap: 12px;
+
   --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-sheet: 300ms;
   --dur-dismiss: 220ms;
@@ -593,6 +600,10 @@ main {
      always be scrolled up out from under the bar. */
   padding: 0 var(--s4) var(--chrome-bottom);
   scrollbar-width: none;
+  /* Momentum scrolling is already native on iOS via -webkit-overflow-scrolling;
+     this hint keeps the compositor from re-rasterising the whole layer on
+     every frame while the finger is down. */
+  overscroll-behavior-y: contain;
 }
 .layer::-webkit-scrollbar {
   display: none;
@@ -637,7 +648,13 @@ main {
      so --fabnav-h (and therefore --chrome-bottom) describes the real control
      rather than a stale 58px assumption. */
   bottom: calc(var(--fabnav-gap) + env(safe-area-inset-bottom, 0px));
-  z-index: 40;
+  /* ABOVE the sheet backdrop (z-index 60). The user's contract, 2026-10-09:
+     "the menu should still float above the card and the card float under it —
+     that is the use of such menu." The nav stays visible and tappable while a
+     sheet is open, so the sheet reads as content sliding up UNDER a floating
+     control, not as a modal that replaces the whole screen. The sheet-body's
+     bottom padding already reserves the nav band, so no content is hidden. */
+  z-index: 70;
   /* THE WIDTH CAP.
    *
    * The bar is ALWAYS horizontally centred and cannot be dragged sideways, so
@@ -1930,6 +1947,14 @@ main {
   text-align: left;
   padding: 11px 0;
   border-bottom: 1px solid var(--hairline);
+  /* SCROLL COST (2026-10-09, from the iPhone): the Tidigare list can hold
+     dozens of rows, and every row paints its hairline, text and layout even
+     when far off-screen. `content-visibility: auto` lets the browser skip
+     layout/paint for rows outside the viewport while keeping them findable
+     (Ctrl+F, a11y tree). `contain-intrinsic-size` reserves the row's height
+     so the scrollbar does not jump as rows render in. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 44px;
 }
 .news-row:last-child {
   border-bottom: none;
@@ -2367,25 +2392,26 @@ main {
 .sheet {
   position: relative;
   width: 100%;
-  /* Bounded by the chrome on BOTH sides, not by a fixed fraction.
+  /* Bounded by the header on the top and the SCREEN on the bottom.
    *
-   * Two defects are pinned here. First (2026-10-05): `min(88dvh, 100dvh -
-   * var(--chrome-bottom))` ignored the nav, so a tall sheet's grabber sat at
-   * y = -5px — off screen. Second (2026-10-06): even after the nav fix the
-   * sheet could still grow up under the sticky header, hiding its title
-   * behind the header's blur. Subtracting --chrome-top keeps the sheet's top
-   * edge below the header banner by construction, and both bands track their
-   * elements automatically if either changes height again. */
-  max-height: min(88dvh, calc(100dvh - var(--chrome-bottom) - var(--chrome-top)));
+   * History: `min(88dvh, 100dvh - var(--chrome-bottom))` ignored the nav
+   * (2026-10-05); then `… - var(--chrome-bottom) - var(--chrome-top)` kept
+   * the sheet below the header but inset its BOTTOM by the nav band too
+   * (2026-10-06).
+   *
+   * 2026-10-09, from the iPhone: the bottom inset made the sheet look like it
+   * was hovering above the liquid-glass nav instead of rising out of it. The
+   * sheet now runs to the SCREEN BOTTOM and the nav floats OVER it (the nav's
+   * z-index is above the backdrop's). Only the top is bounded: the header band
+   * plus --sheet-top-gap, so the page behind is sighted beneath the banner.
+   * The sheet-body's own bottom padding still reserves the nav band, so the
+   * last line of content is never hidden. */
+  max-height: calc(100dvh - var(--chrome-top) - var(--sheet-top-gap));
   display: flex;
   flex-direction: column;
-  /* The sheet must not sit UNDER the floating nav. The nav occupies
-     --chrome-bottom (its height + gaps + safe area) and stays visible while a
-     sheet is open, so the sheet is inset by exactly that band. Without this
-     the last rows of news text were covered by the bar — the defect reported
-     from the real device. `--chrome-bottom` is the single source of truth, so
-     the two can never drift apart. */
-  margin-bottom: var(--chrome-bottom);
+  /* The sheet rises from the very bottom of the screen. The floating nav
+     overlays its lower band — that overlay is the point, not a defect. */
+  margin-bottom: 0;
   background: var(--surface);
   border-radius: var(--r-sheet) var(--r-sheet) 0 0;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
@@ -2691,6 +2717,11 @@ details.disc .disc-body {
 }
 
 .srow {
+  /* Same scroll-cost treatment as .news-row: the squad list is 27+ rows and
+     the former-players list can be far longer. Off-screen rows skip layout
+     and paint; the intrinsic size keeps the scrollbar honest. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 52px;
   display: flex;
   align-items: center;
   gap: var(--s3);
@@ -3027,12 +3058,14 @@ details.disc .disc-body {
   .sheet {
     max-width: 560px;
     /* `margin: 0 auto` is a SHORTHAND, so it resets margin-bottom back to 0
-       and silently discards the `margin-bottom: var(--chrome-bottom)` that
-       keeps the sheet clear of the floating nav. That shipped broken: the
-       sheet sat 74px UNDER the nav at every width >= 700px. Only the
-       horizontal auto margins are wanted here. */
+       and silently discards whatever the base rule set. The base rule now
+       sets `margin-bottom: 0` (the sheet runs to the screen bottom and the
+       nav floats over it), so the shorthand is harmless today — but the
+       explicit longhand stays so a future change to the base rule cannot be
+       silently reverted here again. That shorthand reset shipped broken once
+       (the sheet sat 74px UNDER the nav at every width >= 700px). */
     margin: 0 auto;
-    margin-bottom: var(--chrome-bottom);
+    margin-bottom: 0;
   }
   .sheet-backdrop {
     justify-content: center;

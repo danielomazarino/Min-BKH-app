@@ -200,7 +200,30 @@ export function menRelevantNews(items: NewsItem[], known?: KnownPersons): NewsIt
       return tags.some((t) => MEN_TEAM_TAGS.has(t)) && n.category === "men";
     }
     if (n.category === "men") return true;
-    if (n.category === "club") return !isClubPromotional(n.title);
+    if (n.category === "club") {
+      // A "club" item is team-NEUTRAL by construction: `classifyNews` reaches
+      // that category from a generic word ("klubb", "förening", "medlem"), not
+      // from any men's-team evidence. Admitting it on `!isClubPromotional`
+      // alone therefore bypassed the women's veto entirely.
+      //
+      // MEASURED 2026-10-09 — this leaked a women's article into the men's
+      // feed. SVT's "Schröder om starten i Real Madrid" is about Felicia
+      // Schröder, a former BK Häcken WOMEN's player. Its summary says "i sin
+      // nya klubb", so `classifyNews` returned "club"; the old fallback then
+      // admitted it, even though `classifyRelevance` had already returned
+      // UNKNOWN ("Häcken mention but no men's evidence — could be women's
+      // team"). The audit UI showed it as "Häcken herr".
+      //
+      // So a club item must ALSO clear the relevance engine. That keeps the
+      // legitimate club content (association news, sustainability) while
+      // restoring the veto: an item with no men's evidence is not men's news.
+      if (isClubPromotional(n.title)) return false;
+      if (known) {
+        const rel = classifyRelevance(n, known);
+        return rel.relevance === "CURRENT_HACKEN" || rel.relevance === "FORMER_PLAYER";
+      }
+      return true;
+    }
     return false;
   });
 }
