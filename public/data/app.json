@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-09T19:47:30.007Z",
+    "generatedAt": "2026-10-10T03:51:48.260Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -14,11 +14,6 @@
       "gemini": "failed"
     },
     "sourceCounts": {
-      "Göteborgs-Posten": {
-        "fetched": 48,
-        "kept": 0,
-        "dropped": 48
-      },
       "Sportbladet": {
         "fetched": 39,
         "kept": 0,
@@ -31,13 +26,13 @@
       },
       "Expressen": {
         "fetched": 20,
-        "kept": 1,
-        "dropped": 19
+        "kept": 0,
+        "dropped": 20
       },
       "Fotbolltransfers": {
         "fetched": 20,
-        "kept": 17,
-        "dropped": 3
+        "kept": 19,
+        "dropped": 1
       },
       "SVT Sport": {
         "fetched": 20,
@@ -48,6 +43,11 @@
         "fetched": 10,
         "kept": 0,
         "dropped": 10
+      },
+      "Göteborgs-Posten": {
+        "fetched": 4,
+        "kept": 0,
+        "dropped": 4
       },
       "Bollsvenskan": {
         "fetched": 1,
@@ -195,6 +195,20 @@
         "publisher": "BK Häcken",
         "publishedAt": "2026-09-18T13:51:33.000Z",
         "verdict": "men-excluded"
+      },
+      {
+        "title": "Cancersjuke Staffans nya mål",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/jv395q/cancersjuke-staffan-lageson-ser-sina-sista-matcher-med-vsk?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-09T22:01:01.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Sam Larsson om märkliga straffen: ”Genomuselt”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/8GPml1/sam-larsson-om-markliga-straffen-genomuselt?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-09T21:05:22.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "WAGNER: Trovärdigare, mer realistiskt IFK Göteborg",
@@ -456,17 +470,52 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Gais-spelaren påkörd av bil",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/7770aB/gais-spelaren-dennis-collander-pakord-av-bil?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-08T09:38:38.000Z",
+        "title": "”Pappa förstod, men mamma var faktiskt förbannad”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/pappa-forstod-men-mamma-var-faktiskt-forbannad/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-10T03:00:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Tillbaka i träning 30 dagar efter hjärtoperation",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/0BBnAM/scott-mctominay-tillbaka-i-napoli-efter-hjartoperation?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-08T09:37:59.000Z",
+        "title": "Cristiano Ronaldos mamma i tårar efter konflikten: ”Jag grät”",
+        "url": "https://www.expressen.se/sport/fotboll/cristiano-ronaldos-mamma-i-tarar-efter-konflikten-jag-grat/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T20:50:33.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Sam Larsson sågar sig själv: ”Genomuselt”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/sam-larsson-sagar-sig-sjalv-genomuselt/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T20:48:16.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Emil Fasth, 18, drog i gång ramsa med supportrarna",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/drog-i-gang-ramsa-med-supportrarna/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T20:34:06.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Simmelhack: ”En vansinnig tackling”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/simmelhack-en-vansinnig-tackling/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T20:17:12.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Daniel Svensson målskytt innan Dortmund föll ihop",
+        "url": "https://www.expressen.se/sport/fotboll/daniel-svensson-malskytt-for-dortmund/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T20:59:49.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Sätt ner foten – ge dem det nu",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/satt-ner-foten-ge-dem-det-nu/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-09T19:54:10.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -508,7 +557,7 @@
         "title": "Felicia Schröder hattrickhjälte mot Litauen",
         "url": "https://www.expressen.se/sport/fotboll/landslaget/felicia-schroder-gor-forsta-landslagsmalet/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-09T19:18:08.000Z",
+        "publishedAt": "2026-10-09T19:54:35.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -561,53 +610,18 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Norwegian bestrider allt – efter Haalands stämning",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/norwegian-bestrider-allt-efter-haalands-stamning-/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-09T12:47:34.000Z",
+        "title": "Här gör Daniel Svensson säsongens första ligamål",
+        "url": "https://www.svt.se/sport/fotboll/har-gor-daniel-svensson-sasongens-forsta-ligamal",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-09T20:32:45.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Oliver Månsson, 17, pekas ut som en av världens största talanger",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/oliver-mansson-17-pekas-ut-som-en-av-varldens-storsta-talanger/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-09T11:31:10.000Z",
+        "title": "Tyler Kelleher fyramålsskytt i Leksands överkörning",
+        "url": "https://www.svt.se/sport/ishockey/tyler-kelleher-fyramalsskytt-i-leksands-overkorning",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-09T19:58:16.000Z",
         "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Jämförs med Rosenberg – kan få allsvensk debut",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/jamfors-med-rosenberg-kan-fa-allsvensk-debut/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-09T11:29:48.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Vad pågår egentligen i Manchester United?",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/tips/vad-pa-egentligen-i-manchester-united-/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-09T11:20:06.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Enzo Marescas första ord om Citys dom",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/enzo-marescas-forsta-ord-om-citys-dom/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-09T11:19:44.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Genomgång: Utgående kontrakt i allsvenskan",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/genomgang-utgaende-kontrakt-i-allsvenskan-fqxjv/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-09T08:36:33.000Z",
-        "verdict": "kept"
-      },
-      {
-        "title": "Ingen Elena Sadiku i SVT:s sändningar",
-        "url": "https://www.expressen.se/sport/fotboll/landslaget/ingen-elena-sadiku-i-svts-sandningar-/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-09T08:49:42.000Z",
-        "verdict": "men-excluded"
       },
       {
         "title": "Märkliga scenerna – backen tvingas ställa sig i mål",
@@ -736,24 +750,10 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Ivar Stenberg hyllas för läckra assisten: ”En riktigt smart spelare”",
-        "url": "https://www.svt.se/sport/ishockey/ivar-stenberg-hyllas-for-lackra-assisten-en-riktigt-smart-spelare",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-09T04:55:55.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Kritik mot Djurgårdens lagbygge: ”Förbluffande”",
-        "url": "https://www.svt.se/sport/ishockey/kritik-mot-djurgardens-lagbygge-forbluffande",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-09T04:42:08.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Djurgårdens Hahn inför derbyt: nio sommarvärvningar, &#8220;Jag är väldigt nöjd. Vi fick allt vi ville få gjort&#8221;",
-        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=d96273ed-4558-de0b-6139-1515cea8d711",
+        "title": "Uppgifter: Mittfältaren Róbert Hugi Sævarsson tränar med Hammarby – född 2010, nio matcher i Besta deild",
+        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=ba9aed44-eafa-f15f-4a0c-cdf6b0c94d96",
         "publisher": "Bollsvenskan",
-        "publishedAt": "2026-10-09T15:30:37.000Z",
+        "publishedAt": "2026-10-09T22:31:20.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -957,349 +957,41 @@
         "url": "https://fotbolltransfers.com/nyheter/officiellt-royal-francs-borains-lanar-severin-nioule/221270",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-04T02:13:23.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
         "url": "https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-02T20:56:42.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
-        "title": "Chrissie Hynde lyckades få Lindström att tappa det i ”På spåret”",
-        "url": "https://www.gp.se/kultur/tv/tv-recension/pa-sparet-bjod-pa-soliga-resmal-och-en-egensinnig-jazzorkester.30e5e16a-1861-5e21-b8da-f774b9f835d5",
+        "title": "Svenska löntagare förtjänar några goda ekonomiska år",
+        "url": "https://www.gp.se/asikt-och-debatt/ledare/gastkolumn/svenska-lontagare-fortjanar-nagra-goda-ekonomiska-ar.4dfe3786-703f-59d8-975e-ed933c9ca0ce",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T19:02:45.000Z",
+        "publishedAt": "2026-10-10T03:00:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "”Blåvitt imponerar – men nu börjar stora provet”",
-        "url": "https://www.gp.se/sport/fotboll/ifk-goteborg/snabbanalys-blavitt-imponerar-men-nu-borjar-det-stora-provet.26240ae7-f90a-52c2-987b-07f3cdd7eed7",
+        "title": "När ska vi få föräldrar som vill vara med sina barn – inte slippa dem?",
+        "url": "https://www.gp.se/asikt-och-debatt/fria-ord/nar-ska-vi-fa-foraldrar-som-vill-vara-med-sina-barn-inte-slippa-dem.48dae2c2-b063-5249-b702-62055a949814",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T18:56:54.000Z",
+        "publishedAt": "2026-10-10T03:00:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Västtrafik om avslängda musikern: ”Får inte spela instrument ombord”",
-        "url": "https://www.gp.se/kultur/han-bar-pa-instrumentfodral-blev-avslangd-fran-tunnelbanan.43f3345a-bbfb-50e6-b0ac-ecc4b3bd75a2",
+        "title": "Marco Rubio visar att det finns en annan amerikansk höger",
+        "url": "https://www.gp.se/asikt-och-debatt/ledare/marco-rubio-visar-att-det-finns-en-annan-amerikansk-hoger.ee7cd6c8-6eb4-5129-958d-3b45d0dc686f",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T18:24:44.000Z",
+        "publishedAt": "2026-10-10T03:00:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Poserade med vapen och ”Fuck Biden”-tröja – är Trumps nya pressassistent",
-        "url": "https://www.gp.se/nyheter/varlden/detta-ar-beni-rae-harmony-trumps-nya-pressassistent.85076edd-eb0d-5af7-90a0-42dfc22fcf44",
+        "title": "Göteborg kan behålla valfriheten i välfärden men slippa vinstjakten",
+        "url": "https://www.gp.se/asikt-och-debatt/debatt/goteborg-kan-behalla-valfriheten-i-valfarden-men-slippa-vinstjakten.bf6e29a3-0061-5726-85fc-f48d08ab0bc1",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T18:16:17.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Var nästan utdöd – nu bor 180 000 på en enda atoll",
-        "url": "https://www.gp.se/nyheter/varlden/var-nastan-utdod-nu-bor-180-000-pa-en-atoll-i-seychellerna.b1a70f3f-c65e-5088-ae92-4867ea433916",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T18:08:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Betygen: De var bäst när Sverige vann",
-        "url": "https://www.gp.se/sport/fotboll/duon-glanste-nar-sverige-vann-stort.a6c6e094-e6c3-558f-90a7-f36f89fb2318",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T18:01:35.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Rökdis sveper in – skolor stängs",
-        "url": "https://www.gp.se/nyheter/varlden/smog-stanger-skolor-drabbar-resmal-i-sydostasien.9d26c3e4-0703-50f8-a4f8-f82d84749f6a",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T16:48:38.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Fyraåring fördes bort – nu återförenad med mamma",
-        "url": "https://www.gp.se/krim/pappa-forde-fyraaring-till-syrien-nu-aterforenad-med-mamman.064d54ef-b139-56ca-ae3c-6c2e428e96d5",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T15:55:20.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Svensk gripen för mord på plastikkirurg i Spanien",
-        "url": "https://www.gp.se/nyheter/varlden/svensk-18-aring-gripen-for-mord-pa-plastikkirurg-i-marbella.5b3188bf-8906-58e7-9a0d-63d28d05564e",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T15:37:02.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Rödgröna mötet är klart – Magdalena Andersson tveksam till statsministeromröstning",
-        "url": "https://www.gp.se/politik/magdalena-andersson-om-att-vinna-statsministeromrostningen-osannolikt.a225861e-60a4-59c5-9416-04f0343ad1e8",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T15:29:19.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Nya delen i Rinkebysviten är en välmenande men platt historielektion",
-        "url": "https://www.gp.se/kultur/litteratur/litteraturrecension/recension-vi-bygger-en-ny-varld-av-elise-karlsson.58370d34-46ef-515b-a20d-0e9de99f5e3c",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T15:19:22.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Så startar Sverige i jakten på VM",
-        "url": "https://www.gp.se/sport/folj-litauen-sverige-i-vm-playoffet.0df85725-b07e-557a-ab3b-afaa71ada733",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T15:07:10.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "”Upptäcktsrisken för kriminella aktörer är låg”",
-        "url": "https://www.gp.se/politik/statlig-utredning-foreslar-tillstandsplikt-i-sjukvarden.baa84458-2c96-5c92-b267-70e29115a6a2",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T14:10:27.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Buccal fat removal - ingreppet unga kommer ångra",
-        "url": "https://www.gp.se/livsstil/trendiga-skonhetsingreppet-unga-kommer-angra-enligt-kirurgen.fa3f3cd0-539c-5a51-bbc9-be3fac3f8209",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T13:21:49.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Avrättning i USA ska livesändas: ”Medeltida”",
-        "url": "https://www.gp.se/nyheter/varlden/avrattning-i-usa-ska-livesandas-kritiseras-av-experter-medeltida.79717eb5-f9c6-5bf5-b600-cdc8aff665b3",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T12:51:49.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Recension: Suggesivt och spännande på Atalante",
-        "url": "https://www.gp.se/kultur/scen/recension-u-me-pa-atalante.acee5588-eb9b-5395-ab6a-e6d701904e29",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T12:28:38.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Göteborgs lilla vinbar imponerar stort – Uteätarna höjer betyget",
-        "url": "https://www.gp.se/kultur/restaurang/recension-gp-testar-bar-la-lune-pa-vasa-kyrkogata.c404fe21-59b1-503e-9c23-98b9efb483a9",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T12:19:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "TV-profilen Sladjan Osmanagic död",
-        "url": "https://www.gp.se/sport/sladjan-osmanagic-ar-dod.1266c0c4-757a-5424-ad80-f7c8fb367299",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T12:11:34.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "C kliver in i styret med M och S i Bollebygd – vill bromsa nya satsningar",
-        "url": "https://www.gp.se/politik/nytt-styre-klart-i-bollebygd-m-s-och-c-bildar-majoritet.851aba2a-1dbb-5a69-b1a1-dff953c2ce0e",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T12:08:24.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Efter förtroendetappet: ”Känner frustration”",
-        "url": "https://www.gp.se/politik/andersson-om-bottensiffran-kanner-frustration.aaa39901-ce35-5364-999d-3a16720ea45f",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T11:34:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Här anländer de rödgröna partierna till Högberga gård",
-        "url": "https://www.gp.se/politik/nu-mots-de-rodgrona-pa-lidingo.cf22111d-1718-5658-9f20-1a2a8dac827e",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T10:50:06.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Sverige deltar i kärnvapenövning",
-        "url": "https://www.gp.se/politik/sverige-deltar-i-karnvapenovning.c7595bb0-afd0-5269-9126-a18d60b1809f",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T10:26:18.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Åtta fynd bland höstens nya viner på Systembolaget: ”Charmtroll”",
-        "url": "https://www.gp.se/livsstil/tva-dagar/nya-viner-i-oktober-pa-systembolaget-atta-tips.c5c4c03a-dfaf-5412-851d-af3e1a9e0914",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T10:21:23.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Så blir Halloween på Liseberg 2026",
-        "url": "https://www.gp.se/nyheter/goteborg/skrackomraden-pa-liseberg-oppnar-for-alla-barn.e5e74808-df1b-5b5a-ba02-2c7797f3fb7e",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T10:03:23.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Nyhetsshowen 9 oktober * Nu är Borås stekhett",
-        "url": "https://www.gp.se/nyhetsshowen/nu-ar-boras-stekhett.0275cfd8-7788-5187-b5ed-588190642162",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T09:28:06.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Så mycket höjs hyrorna i Göteborg 2027",
-        "url": "https://www.gp.se/ekonomi/sa-mycket-hojs-hyran-for-26-000-hushall-i-goteborg.20ba5d92-8bcf-5cbf-9cfd-a501e22a73d7",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T09:15:09.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Navanethem ”Navi” Pillay får Nobels fredspris",
-        "url": "https://www.gp.se/nyheter/varlden/navanethem-navi-pillay-far-arets-fredspris.f11baa8b-ef5a-5fcc-9f1a-6fecb91f17f4",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T09:02:28.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Recension: Trasigt vackert på årets Hasselbladskonsert",
-        "url": "https://www.gp.se/kultur/musik/konsertrecension/recension-hasselbladskonsert-arstiderna-i-nya-farger-med-goteborgs-symfoniker.3f31158c-40d3-5389-8ad9-620d2da7b98d",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T08:38:31.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Tre elever anhållna efter razzia på internatskolan Sigtuna",
-        "url": "https://www.gp.se/nyheter/sverige/tre-elever-anhallna-pa-sigtuna.32c7c529-774f-5be0-978b-1fdc9fe37b6b",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T08:22:19.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Därför saknas experten i SVT",
-        "url": "https://www.gp.se/sport/fotboll/elena-sadiku-saknas-i-svt.aaa26cf8-762c-51f9-ae18-1d81ec593e43",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T08:21:58.000Z",
-        "verdict": "men-excluded"
-      },
-      {
-        "title": "Då slår hyresvärdarna i Göteborg på värmen",
-        "url": "https://www.gp.se/nyheter/goteborg/da-slar-goteborgs-hyresvardar-pa-varmen.1a06fcdf-6b0e-5b27-9c17-088c0bbbb156",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T08:07:46.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Funktionsnedsatta unga mer utsatta för brott",
-        "url": "https://www.gp.se/nyheter/sverige/funktionsnedsatta-unga-mer-utsatta-for-brott.c0b08f12-38eb-5549-97cd-7a15c30a8e48",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T08:02:28.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Fler bokade akter än någonsin på festivalen",
-        "url": "https://www.gp.se/kultur/stigberget-live-festival-14-akter-fran-pop-till-punk.4d6f5485-6748-50e7-ac5e-e7ba4fce8fd3",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T07:53:40.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Därför är middagsbjudningen en utdöende konst",
-        "url": "https://www.gp.se/kultur/kulturkronika/vi-maste-borja-bjuda-pa-samre-middagar.152f10bd-7200-5e45-ba36-c46d720f307c",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T05:14:02.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Ingen arbetsgivare vill ta i en med tång efter 50",
-        "url": "https://www.gp.se/asikt-och-debatt/fria-ord/ingen-arbetsgivare-vill-ta-i-en-med-tang-efter-50.da5fb7b0-8c73-5eca-bc17-e34735d1a777",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T05:00:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Lätt att förstå varför allt färre litar på S-ledaren",
-        "url": "https://www.gp.se/politik/kommentar.ca02e22e-9dcb-5ae5-996a-3bd79ecdf032",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T04:01:22.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Förtroendet för Andersson (S) dalar",
-        "url": "https://www.gp.se/politik/gp-novus-fortroendet-for-andersson-s-dalar.f07526f5-49f4-5e8b-8019-978943446a64",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T04:00:19.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Blåvitt spänner bågen: ”Vi ska jaga”",
-        "url": "https://www.gp.se/sport/fotboll/ifk-goteborg/joachim-bjorklunds-brandtal-till-spelarna-i-blavitt-vi-ska-jaga.d890dd19-665d-5b55-8027-0b85478710ea",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:58:16.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "Blåvitt-talangen Oliver Månsson på exklusiva listan",
-        "url": "https://www.gp.se/sport/fotboll/ifk-goteborg/oliver-mansson-ensam-svensk-pa-the-guardians-talanglista.63e9b6c6-9143-5574-89f8-ba9802ed64ac",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:54:47.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Britt-Marie Mattsson: Trump bjuder in Putin till sin egen golfklubb",
-        "url": "https://www.gp.se/nyheter/varlden/trump-bjuder-in-putin-till-sin-egen-golfklubb.dcdb3345-4dae-58c6-8b3f-8bb5f6fb5a81",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:51:38.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "På Nefertiti formar Nana Rashid ord som lera",
-        "url": "https://www.gp.se/kultur/musik/konsertrecension/pa-nefertiti-formar-nana-rashid-ord-som-lera.312a33dd-0ec1-55b5-8854-7b49f5443dd5",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:49:53.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Hundratusentals pingviner borta",
-        "url": "https://www.gp.se/nyheter/varlden/varldens-storsta-pingvinkoloni-har-minskat-drastiskt.214a7f5a-f2e1-5cb6-a03d-fa30410d3a52",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:47:11.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Anställda på Domino’s pizza får inte ut sin lön",
-        "url": "https://www.gp.se/ekonomi/anstallda-pa-pizzakedjan-dominos-far-inte-ut-sin-lon.4e5876ed-3a88-526d-9226-787e489aa327",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:46:26.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Här är det svårast att sälja bostad i Göteborg",
-        "url": "https://www.gp.se/ekonomi/har-tar-det-langst-tid-att-salja-sin-bostad-i-goteborg.b2e3470f-8f6a-5fe7-a1c1-627d43b91dd9",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:45:27.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Sofie är en av 200 som inte fick plats på gymnasiet i Göteborg",
-        "url": "https://www.gp.se/nyheter/goteborg/nastan-200-behoriga-elever-fick-inte-plats-pa-gymnasiet.b9a5b737-dc5e-539c-a9f9-91d6658c7266",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:43:20.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Valhalla är oersättlig arkitektur – bygg ny simhall på en annan plats",
-        "url": "https://www.gp.se/asikt-och-debatt/debatt/valhalla-ar-oersattlig-arkitektur-bygg-ny-simhall-pa-en-annan-plats.220ad63e-f6f5-593d-ad38-2d9aaf31f8ce",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:00:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Med låg invandring kan man ta humanitära hänsyn",
-        "url": "https://www.gp.se/asikt-och-debatt/ledare/attstoppatonarsutvisningarnaarettrimligthumanitartovervagande-.63906ef7-cf36-5b35-b544-02370b37ddb5",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T03:00:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Vi väljare måste kompromissa - det borde också gälla partierna",
-        "url": "https://www.gp.se/asikt-och-debatt/debatt/vi-valjare-maste-kompromissa-det-borde-ocksa-galla-partierna.46814e2a-bd77-562e-860e-a451ed835b33",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-09T02:55:00.000Z",
+        "publishedAt": "2026-10-10T02:55:00.000Z",
         "verdict": "no Häcken relation"
       }
     ]
@@ -1309,7 +1001,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-09T19:42:32.913Z",
+    "retrievedAt": "2026-10-10T03:48:15.802Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -2373,24 +2065,6 @@
   ],
   "newsEvents": [
     {
-      "id": "event-Expressen-18-https://www.expressen.se/sport/fotboll/allsvenskan/genomgang-utgaende-kontrakt-i-allsvenskan-fqxjv/",
-      "title": "Genomgång: Utgående kontrakt i allsvenskan",
-      "summary": "Mängder av allsvenska spelare sitter på utgående kontrakt. Expressens Anel Avdic och Mattias Tengblad går igenom läget i samtliga lag – i två delar. Del två: Gais, Hammarby, Häcken, Elfsborg, Mjällby, Västerås, Örgryte och Djurgården.",
-      "publishedAt": "2026-10-09T08:36:33.000Z",
-      "latestPublishedAt": "2026-10-09T08:36:33.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "Expressen",
-          "url": "https://www.expressen.se/sport/fotboll/allsvenskan/genomgang-utgaende-kontrakt-i-allsvenskan-fqxjv/",
-          "publishedAt": "2026-10-09T08:36:33.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
       "id": "event-Fotbolltransfers-0-https://fotbolltransfers.com/nyheter/simen-hestnes-oppnar-upp-det-har-varit-en-valdigt-jobbig-tid/222649",
       "title": "Häckens nyförvärv: \"Det har varit en väldigt jobbig tid\"",
       "summary": "Mittfältarens första tid i BK Häcken har präglats av sorgen efter sin mammas bortgång.",
@@ -2827,6 +2501,48 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01781895961/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-18-https://fotbolltransfers.com/nyheter/officiellt-royal-francs-borains-lanar-severin-nioule/221270",
+      "title": "Officiellt: Severin Nioule byter klubb",
+      "summary": "Severin Nioule lämnar Royal Charleroi SC. Den ex-allsvenske yttern lånas ut till dem.",
+      "publishedAt": "2026-09-04T02:13:23.000Z",
+      "latestPublishedAt": "2026-09-04T02:13:23.000Z",
+      "category": "men",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01770056877/528x300.jpg",
+      "body": "Den allsvenska klubben BK Häcken värvade Severin Nioule, 21, från ASEC Mimosas sommaren 2023.\n\nDet blev två mål och två assist på totalt 29 allsvenska matcher. I våras var han utlånad till Varbergs BoIS.\n\nI juli valde Häcken att sälja yttern till belgiska klubben Royal Charleroi SC. Nioule skrev på för tre år.\n\nNu meddelar Royal Charleroi på sin officiella hemsida att Nioule lånas ut till Royal Francs Borains.\n\n21-åringen kommer att spela för den belgiska andraligaklubben resten av säsongen.\n\nSeverin Nioule est prêté aux Francs Borains pour la saison 26/27. Bonne saison, Severin! #RCSC #NapoleonScore pic.twitter.com/gEAezOJhKZ — Royal Charleroi Sporting Club (@SportCharleroi) September 3, 2026\n\nDen allsvenska klubben BK Häcken värvade Severin Nioule, 21, från ASEC Mimosas sommaren 2023.\n\nDet blev två mål och två assist på totalt 29 allsvenska matcher. I våras var han utlånad till Varbergs BoIS.\n\nI juli valde Häcken att sälja yttern till belgiska klubben Royal Charleroi SC. Nioule skrev på för tre år.\n\nNu meddelar Royal Charleroi på sin officiella hemsida att Nioule lånas ut till Royal Francs Borains.\n\n21-åringen kommer att spela för den belgiska andraligaklubben resten av säsongen.\n\nSeverin Nioule est prêté aux Francs Borains pour la saison 26/27. Bonne saison, Severin! #RCSC #NapoleonScore pic.twitter.com/gEAezOJhKZ — Royal Charleroi Sporting Club (@SportCharleroi) September 3, 2026",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-royal-francs-borains-lanar-severin-nioule/221270",
+          "publishedAt": "2026-09-04T02:13:23.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01770056877/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-19-https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+      "title": "Officiellt: BK Häcken lånar ut Sanders Ngabo",
+      "summary": "BK Häcken lånar ut Sanders Ngabo. Klubben meddelar även att det finns en köpoption.",
+      "publishedAt": "2026-09-02T20:56:42.000Z",
+      "latestPublishedAt": "2026-09-02T20:56:42.000Z",
+      "category": "men",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788348028/528x300.jpg",
+      "body": "Den gångna sommaren anslöt Sanders Ngabo, 22, till BK Häcken.\n\nUnder hösten gjorde mittfältaren ett mål på åtta matcher i Allsvenskan.\n\nDenna säsongen har han kommit till spel i tio ligamatcher, men det var endast blivit två starter.\n\nHan sitter på ett kontrakt med klubben som sträcker sig över säsongen 2029.\n\nMathilda Schuler / BILDBYRÅN\n\nNu meddelar klubben på sin officiella hemsida att man lånar ut Ngabo till danska Lyngby BK.\n\nHäckens fotbollschef Martin Ericsson berättar om beslutet att låna ut 22-åringen.\n\n– Sanders är i behov av kontinuerlig speltid, vilket vi inte kunnat ge honom under senaste tiden, säger han till hemsidan.\n\nLånet sträcker sig till och med sommaren 2027. Det finns även en köpoption.\n\nKänns som en bra lösning.\n\n– Han kommer till en miljö som han känner väl och till en liga som håller högkvalitet, så det känns som en bra lösning med fina förutsättningar, säger fotbollschefen till hemsidan.\n\nSanders Ngabo lånas ut till danska högstaligan BK Häcken har kommit överens med danska Lyngby Boldklub om en utlåning av Sanders Ngabo. Låneavtalet innehåller en köpoption och sträcker sig till och med sommaren 2027. Läs intervjun https://t.co/HXgUlJMfWh #bkhäcken pic.twitter.com/M9RFNycg2o — BK Häcken (@bkhackenofcl) September 2, 2026\n\nDen gångna sommaren anslöt Sanders Ngabo, 22, till BK Häcken.\n\nUnder hösten gjorde mittfältaren ett mål på åtta matcher i Allsvenskan.\n\nDenna säsongen har han kommit till spel i tio ligamatcher, men det var endast blivit två starter.\n\nHan sitter på ett kontrakt med klubben som sträcker sig över säsongen 2029.\n\nMathilda Schuler / BILDBYRÅN\n\nNu meddelar klubben på sin officiella hemsida att man lånar ut Ngabo till danska Lyngby BK.\n\nHäckens fotbollschef Martin Ericsson berättar om beslutet att låna ut 22-åringen.\n\n– Sanders är i behov av kontinuerlig speltid, vilket vi inte kunnat ge honom under senaste tiden, säger han till hemsidan.\n\nLånet sträcker sig till och med sommaren 2027. Det finns även en köpoption.\n\nKänns som en b",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-sanders-ngabo-klar-for-lyngby-bk/221211",
+          "publishedAt": "2026-09-02T20:56:42.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788348028/528x300.jpg"
         }
       ],
       "summaryMethod": "rss-description"
@@ -3318,24 +3034,35 @@
       "citizenship": [
         "Sverige"
       ],
-      "position": "Gardien de but",
+      "position": "Målvakt",
       "heightCm": 187,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q124620884",
       "career": [
         {
-          "years": "????–????",
-          "team": "IFK Norrköping FK",
-          "loan": false
+          "years": "2026–",
+          "team": "BK Häcken",
+          "loan": false,
+          "apps": 5,
+          "goals": 0
         },
         {
-          "years": "????–????",
+          "years": "2023–2026{{0|0000}}",
+          "team": "IFK Norrköping",
+          "loan": false,
+          "apps": 30,
+          "goals": 0
+        },
+        {
+          "years": "2023–2024",
           "team": "IF Sylvia",
-          "loan": false
+          "loan": true,
+          "apps": 32,
+          "goals": 0
         }
       ],
       "nationalTeams": [],
-      "infoboxLang": "fr",
-      "usedInfobox": false,
+      "infoboxLang": "sv",
+      "usedInfobox": true,
       "wiki": {
         "lang": "sv",
         "extract": "David Andersson, född 16 september 2003, är en svensk fotbollsspelare som spelar i BK Häcken. Han är son till Bosse Andersson, före detta sportchef i Djurgårdens IF.",
@@ -3988,36 +3715,25 @@
       ],
       "nationalTeams": [
         {
-          "years": "2016",
-          "team": "Sverige U23",
-          "loan": false,
-          "apps": 4,
-          "goals": 0
+          "years": "2016–????",
+          "team": "Sveriges herrlandslag i fotboll",
+          "loan": false
         },
         {
-          "years": "2016–",
-          "team": "Sverige",
-          "loan": false,
-          "apps": 2,
-          "goals": 0
-        },
-        {
-          "years": "2014–2017",
-          "team": "Sverige U21",
-          "loan": false,
-          "apps": 13,
-          "goals": 0
+          "years": "2014–????",
+          "team": "Sveriges U21-herrlandslag i fotboll",
+          "loan": false
         },
         {
           "years": "2012–2013",
-          "team": "Sverige U19",
+          "team": "Sveriges U19-herrlandslag i fotboll",
           "loan": false,
           "apps": 15,
           "goals": 1
         },
         {
-          "years": "2011",
-          "team": "Sverige U17",
+          "years": "2011–2011",
+          "team": "Sveriges U17-herrlandslag i fotboll",
           "loan": false,
           "apps": 3,
           "goals": 0
@@ -4025,12 +3741,6 @@
       ],
       "infoboxLang": "sv",
       "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Adam Lundqvist, född 20 mars 1994 i Nyköping, är en svensk fotbollsspelare som spelar för BK Häcken.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Adam_Lundqvist",
-        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/85/Adam_Lundqvist.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
-      },
       "candidate": {
         "qid": "Q18196418",
         "name": "Adam Lundqvist",
@@ -4139,12 +3849,6 @@
         }
       ],
       "usedInfobox": false,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Filip Viktor Helander, född 22 april 1993 i Södra Sallerups församling i Malmö, är en svensk fotbollsspelare (mittback) som spelar för BK Häcken.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Filip_Helander",
-        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/UEFA_EURO_qualifiers_Sweden_vs_Romaina_20190323_Filip_Helander_14_%28cropped%29.jpg/330px-UEFA_EURO_qualifiers_Sweden_vs_Romaina_20190323_Filip_Helander_14_%28cropped%29.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
-      },
       "candidate": {
         "qid": "Q2946166",
         "name": "Filip Helander",
@@ -4201,40 +3905,10 @@
       "citizenship": [
         "Sverige"
       ],
-      "position": "Mittback",
-      "heightCm": 190,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q135395045",
-      "career": [
-        {
-          "years": "2025",
-          "team": "Sandvikens IF",
-          "loan": false,
-          "apps": 13,
-          "goals": 0
-        },
-        {
-          "years": "2025–",
-          "team": "BK Häcken",
-          "loan": false,
-          "apps": 12,
-          "goals": 0
-        },
-        {
-          "years": "2024",
-          "team": "Oskarshamns AIK",
-          "loan": false,
-          "apps": 28,
-          "goals": 1
-        }
-      ],
+      "career": [],
       "nationalTeams": [],
-      "infoboxLang": "sv",
-      "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Olle Julius Samuelsson, född 16 maj 2004, är en svensk fotbollsspelare som spelar för BK Häcken. Hans far Svante Samuelsson är en tidigare fotbollsspelare.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Olle_Samuelsson"
-      },
+      "usedInfobox": false,
       "candidate": {
         "qid": "Q135395045",
         "name": "Olle Samuelsson",
@@ -4293,11 +3967,6 @@
       ],
       "nationalTeams": [],
       "usedInfobox": false,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Filip Olov Öhman, född 26 januari 2008 är en svensk fotbollsspelare (försvarare) som spelar för BK Häcken i Allsvenskan.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Filip_%C3%96hman"
-      },
       "candidate": {
         "qid": "Q131143661",
         "name": "Filip Öhman",
@@ -4350,11 +4019,6 @@
       "career": [],
       "nationalTeams": [],
       "usedInfobox": false,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Harry Joachim Hilvenius, född 6 oktober 2007, är en svensk fotbollsspelare som spelar för BK Häcken dit han kom från Onsala BK 2023. Hilvenius har även representerat det svenska landslaget på olika juniornivåer.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Harry_Hilvenius"
-      },
       "candidate": {
         "qid": "Q134444234",
         "name": "Harry Hilvenius",
@@ -4634,11 +4298,6 @@
       "nationalTeams": [],
       "infoboxLang": "en",
       "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Simen Hestnes, född 5 februari 1996 i Ski, är en norsk fotbollsspelare som spelar för BK Häcken. Han har tidigare spelat för bland annat KFUM-Kameratene Oslo och Vålerengens IF.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Simen_Hestnes"
-      },
       "candidate": {
         "qid": "Q110229575",
         "name": "Simen Hestnes",
@@ -4696,7 +4355,7 @@
           "years": "2022–",
           "team": "BK Häcken",
           "loan": false,
-          "apps": 117,
+          "apps": 125,
           "goals": 26
         },
         {
@@ -4773,27 +4432,27 @@
       "nationalTeams": [
         {
           "years": "2009",
-          "team": "Denmark U19",
+          "team": "Danmark U19",
           "loan": false,
           "apps": 4,
           "goals": 0
         },
         {
           "years": "2009",
-          "team": "Denmark U20",
+          "team": "Danmark U20",
           "loan": false,
           "apps": 3,
           "goals": 0
         },
         {
           "years": "2008",
-          "team": "Denmark U18",
+          "team": "Danmark U18",
           "loan": false,
           "apps": 4,
           "goals": 0
         }
       ],
-      "infoboxLang": "en",
+      "infoboxLang": "sv",
       "usedInfobox": true,
       "wiki": {
         "lang": "sv",
@@ -4857,52 +4516,37 @@
       "citizenship": [
         "Sverige"
       ],
-      "position": "Mittfältare/anfallare/högerback",
       "heightCm": 182,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q97102447",
       "career": [
         {
-          "years": "2024–",
-          "team": "BK Häcken",
-          "loan": false,
-          "apps": 33,
-          "goals": 6
-        },
-        {
-          "years": "2020–2023",
-          "team": "Gais",
-          "loan": false,
-          "apps": 111,
-          "goals": 26
-        },
-        {
-          "years": "2018–2019",
-          "team": "Qviding FIF",
-          "loan": false,
-          "apps": 39,
-          "goals": 30
-        },
-        {
-          "years": "2016–2017",
+          "years": "????–????",
           "team": "Ytterby IS",
-          "loan": false,
-          "apps": 20,
-          "goals": 6
+          "loan": false
         },
         {
           "years": "????–????",
           "team": "IFK Göteborg",
           "loan": false
+        },
+        {
+          "years": "????–????",
+          "team": "Qviding FIF",
+          "loan": false
+        },
+        {
+          "years": "????–????",
+          "team": "Gais",
+          "loan": false
+        },
+        {
+          "years": "????–????",
+          "team": "BK Häcken",
+          "loan": false
         }
       ],
       "nationalTeams": [],
-      "infoboxLang": "sv",
-      "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Jörgen Julius \"Julle\" Lindberg, född 4 januari 1999, är en svensk fotbollsspelare som spelar för BK Häcken. Han har tidigare på seniornivå representerat Ytterby IS, Qviding FIF, och Gais, där han utsågs till årets spelare i Superettan 2023.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Julius_Lindberg"
-      },
+      "usedInfobox": false,
       "candidate": {
         "qid": "Q97102447",
         "name": "Julius Lindberg",
@@ -4955,43 +4599,18 @@
       "citizenship": [
         "Sverige"
       ],
-      "position": "Offensiv mittfältare",
       "heightCm": 185,
       "imageUrl": "Pontus Dahbo (Häcken vs AIK, 1 October 2023).jpg",
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q117447273",
       "career": [
         {
-          "years": "2023–",
+          "years": "????–????",
           "team": "BK Häcken",
-          "loan": false,
-          "apps": 14,
-          "goals": 2
+          "loan": false
         }
       ],
-      "nationalTeams": [
-        {
-          "years": "2022–",
-          "team": "Sverige U19",
-          "loan": false,
-          "apps": 6,
-          "goals": 1
-        },
-        {
-          "years": "2021",
-          "team": "Sverige U17",
-          "loan": false,
-          "apps": 3,
-          "goals": 0
-        }
-      ],
-      "infoboxLang": "sv",
-      "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Pontus Bror Harry Dahbo, född 11 oktober 2005 är en svensk fotbollsspelare (mittfältare) som spelar för BK Häcken i Allsvenskan.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Pontus_Dahbo",
-        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Pontus_Dahbo_%28H%C3%A4cken_vs_AIK%2C_1_October_2023%29.jpg/330px-Pontus_Dahbo_%28H%C3%A4cken_vs_AIK%2C_1_October_2023%29.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
-      },
+      "nationalTeams": [],
+      "usedInfobox": false,
       "candidate": {
         "qid": "Q117447273",
         "name": "Pontus Dahbo",
@@ -5047,61 +4666,10 @@
       "citizenship": [
         "Sverige"
       ],
-      "position": "Attacking midfielder",
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q133869836",
-      "career": [
-        {
-          "years": "2026–",
-          "team": "BK Häcken",
-          "loan": false,
-          "apps": 0,
-          "goals": 0
-        },
-        {
-          "years": "2025–2026",
-          "team": "Hammarby IF",
-          "loan": false,
-          "apps": 9,
-          "goals": 0
-        },
-        {
-          "years": "2025–2026",
-          "team": "Hammarby TFF",
-          "loan": true,
-          "apps": 17,
-          "goals": 5
-        }
-      ],
-      "nationalTeams": [
-        {
-          "years": "2024",
-          "team": "Sweden U18",
-          "loan": false,
-          "apps": 3,
-          "goals": 0
-        },
-        {
-          "years": "2024",
-          "team": "Sweden U19",
-          "loan": false,
-          "apps": 1,
-          "goals": 0
-        },
-        {
-          "years": "2022",
-          "team": "Sweden U16",
-          "loan": false,
-          "apps": 3,
-          "goals": 0
-        }
-      ],
-      "infoboxLang": "en",
-      "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Wilson Lindberg Uhrström, född 23 mars 2006, är en svensk fotbollsspelare som spelar för BK Häcken. Han har tidigare spelat för bland annat Hammarby TFF och Hammarby IF. Han har även representerad den svensk landslaget på olika juniornuvårer.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Wilson_Lindberg_Uhrstr%C3%B6m"
-      },
+      "career": [],
+      "nationalTeams": [],
+      "usedInfobox": false,
       "candidate": {
         "qid": "Q133869836",
         "name": "Wilson Lindberg Uhrström",
@@ -5156,60 +4724,29 @@
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q96358314",
       "career": [
         {
-          "years": "2026–",
-          "team": "BK Häcken",
-          "loan": false,
-          "apps": 0,
-          "goals": 0
+          "years": "????–????",
+          "team": "Örebro SK Fotboll",
+          "loan": false
         },
         {
-          "years": "2025–2026",
-          "team": "CSKA Sofia",
-          "loan": false,
-          "apps": 14,
-          "goals": 0
-        },
-        {
-          "years": "2024–2025",
-          "team": "Östers IF",
-          "loan": false,
-          "apps": 40,
-          "goals": 8
-        },
-        {
-          "years": "2020–2023",
-          "team": "Örebro SK",
-          "loan": false,
-          "apps": 111,
-          "goals": 10
-        },
-        {
-          "years": "2019",
+          "years": "????–????",
           "team": "Sollentuna FK",
-          "loan": false,
-          "apps": 27,
-          "goals": 9
+          "loan": false
         },
         {
-          "years": "2018",
-          "team": "IFK Stocksund",
-          "loan": false,
-          "apps": 26,
-          "goals": 5
+          "years": "????–????",
+          "team": "Östers IF",
+          "loan": false
         },
         {
-          "years": "2017",
+          "years": "????–????",
           "team": "BKV Norrtälje",
-          "loan": false,
-          "apps": 25,
-          "goals": 4
+          "loan": false
         },
         {
-          "years": "2016",
-          "team": "IFK Osby",
-          "loan": false,
-          "apps": 19,
-          "goals": 4
+          "years": "????–????",
+          "team": "BK Häcken",
+          "loan": false
         },
         {
           "years": "????–????",
@@ -5218,14 +4755,7 @@
         }
       ],
       "nationalTeams": [],
-      "infoboxLang": "sv",
-      "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "John David Theodor Seger, född 15 juli 1999, är en svensk fotbollsspelare som spelar för BK Häcken. Hans bror, Albin och kusin Alexander är också fotbollsspelare.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/David_Seger",
-        "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/David_Seger.jpg/330px-David_Seger.jpg?utm_source=sv.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
-      },
+      "usedInfobox": false,
       "candidate": {
         "qid": "Q96358314",
         "name": "David Seger",
@@ -5597,55 +5127,11 @@
       "citizenship": [
         "Finland"
       ],
-      "position": "Forward",
       "heightCm": 179,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q124733260",
-      "career": [
-        {
-          "years": "2025–",
-          "team": "Häcken",
-          "loan": false,
-          "apps": 52,
-          "goals": 15
-        },
-        {
-          "years": "2023–2025",
-          "team": "Helsingborg",
-          "loan": false,
-          "apps": 41,
-          "goals": 10
-        }
-      ],
-      "nationalTeams": [
-        {
-          "years": "2026–",
-          "team": "Finland",
-          "loan": false,
-          "apps": 4,
-          "goals": 1
-        },
-        {
-          "years": "2025",
-          "team": "Finland U21",
-          "loan": false,
-          "apps": 2,
-          "goals": 4
-        },
-        {
-          "years": "2022",
-          "team": "Finland U18",
-          "loan": false,
-          "apps": 3,
-          "goals": 0
-        }
-      ],
-      "infoboxLang": "en",
-      "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Adrian Lars Fredrik Svanbäck, född 8 juni 2004 i Jakobstad, är en finländsk fotbollsspelare som spelar för BK Häcken. Han har tidigare spelat för Helsingborg.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Adrian_Svanb%C3%A4ck"
-      },
+      "career": [],
+      "nationalTeams": [],
+      "usedInfobox": false,
       "candidate": {
         "qid": "Q124733260",
         "name": "Adrian Svanbäck",
@@ -5698,39 +5184,10 @@
       "citizenship": [
         "Elfenbenskusten"
       ],
-      "position": "Ytter",
-      "heightCm": 171,
       "pageUrl": "https://www.wikidata.org/wiki/Special:EntityPage/Q136365919",
-      "career": [
-        {
-          "years": "2025–",
-          "team": "BK Häcken",
-          "loan": false,
-          "apps": 1,
-          "goals": 0
-        },
-        {
-          "years": "2022–2025",
-          "team": "RC Abidjan",
-          "loan": false
-        }
-      ],
-      "nationalTeams": [
-        {
-          "years": "2024",
-          "team": "Elfenbenskusten U20",
-          "loan": false,
-          "apps": 4,
-          "goals": 2
-        }
-      ],
-      "infoboxLang": "sv",
-      "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Christ Ivan Alex Wawa, född 9 juni 2007 i Fresco, är en ivoriansk fotbollsspelare som spelar för BK Häcken.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Christ_Wawa"
-      },
+      "career": [],
+      "nationalTeams": [],
+      "usedInfobox": false,
       "candidate": {
         "qid": "Q136365919",
         "name": "Christ Wawa",
@@ -5838,11 +5295,6 @@
       "nationalTeams": [],
       "infoboxLang": "sv",
       "usedInfobox": true,
-      "wiki": {
-        "lang": "sv",
-        "extract": "Bamir Fierza Sadiku, född 22 augusti 2007, är en svensk fotbollsspelare som spelar för BK Häcken.",
-        "pageUrl": "https://sv.wikipedia.org/wiki/Bamir_Sadiku"
-      },
       "candidate": {
         "qid": "Q140473371",
         "name": "Bamir Sadiku",
