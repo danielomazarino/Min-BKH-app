@@ -53,6 +53,7 @@ import { getRule } from "./rules";
 import { beginRun, readMetrics, writeMetrics, noteCost, noteSkippedCall, noteSourceArticles } from "./apiMetrics";
 import { synthesizeWithOpenRouter } from "./openrouter";
 import { enrichSquad } from "./squadEnrichment";
+import { mergeAppData } from "./appMerge";
 import { accumulateNews } from "./newsArchive";
 import { fetchFormerPlayers, subtractCurrentSquad } from "./formerPlayers";
 
@@ -876,32 +877,12 @@ function writeAppIfBetter(path: string, next: AppData, isEmpty: (d: AppData) => 
     writeFileSync(path, JSON.stringify(merged, null, 2));
     return;
   }
-  const merged: AppData = {
-    freshness: next.freshness,
-    footballSource: next.footballSource ?? prev.footballSource,
-    nextMatch: next.nextMatch ?? prev.nextMatch,
-    lastResult: next.lastResult ?? prev.lastResult,
-    upcoming: next.upcoming.length ? next.upcoming : prev.upcoming,
-    recent: next.recent.length ? next.recent : prev.recent,
-    lastMatchDetail: next.lastMatchDetail ?? prev.lastMatchDetail,
-    table: next.table.length ? next.table : prev.table,
-    tablePosition: next.tablePosition ?? prev.tablePosition,
-    warnings: next.warnings ?? prev.warnings,
-    discipline: next.discipline?.length ? next.discipline : prev.discipline ?? [],
-    cardMatchesInspected: next.cardMatchesInspected || prev.cardMatchesInspected || 0,
-    news: next.news.length ? next.news : prev.news,
-    newsEvents: next.newsEvents.length ? next.newsEvents : (prev.newsEvents ?? []),
-    squadStats: next.squadStats?.length ? next.squadStats : prev.squadStats,
-    // Enrichment is keyed by player id, so a partial result must MERGE with
-    // the previous map rather than replace it — a player Wikidata failed to
-    // resolve tonight keeps last night's data instead of vanishing.
-    squadEnrichment:
-      next.squadEnrichment && Object.keys(next.squadEnrichment).length
-        ? { ...(prev.squadEnrichment ?? {}), ...next.squadEnrichment }
-        : prev.squadEnrichment,
-    disciplineRule: next.disciplineRule ?? prev.disciplineRule,
-    currentDataUnavailable: next.currentDataUnavailable ?? prev.currentDataUnavailable,
-  };
+  // The merge itself lives in appMerge.ts (unit-tested). Squad enrichment
+  // goes through a per-player quality guard there: a degraded nightly result
+  // (e.g. a Wikimedia 429 stub) must not overwrite richer last-known-good
+  // data — measured 2026-10-12, 19 of 26 players degraded across three
+  // nightlies because next always won per player.
+  const merged = mergeAppData(prev, next);
   writeFileSync(path, JSON.stringify(merged, null, 2));
 }
 

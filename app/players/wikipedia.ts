@@ -31,7 +31,12 @@
  *
  * COST: one request per language tried, at most two (sv then en), only when a
  * sheet is opened. Cached per Q-ID for the session.
+ *
+ * Every request carries the mandatory Wikimedia User-Agent (see
+ * wikimediaHeaders.ts): without it Node's fetch gets a hard 429, which
+ * silently degraded the nightly's squad enrichment (measured 2026-10-12).
  */
+import { wikimediaHeaders } from "./wikimediaHeaders";
 
 /** REST summary endpoint per language. `origin=*` is not needed here; the
  *  REST endpoint sends `access-control-allow-origin: *` unconditionally. */
@@ -112,7 +117,9 @@ export async function fetchWikipediaSummaryInLang(
   deps: { fetch: FetchLike },
 ): Promise<WikipediaSummary | null> {
   try {
-    const res = await deps.fetch(REST(lang, title), { headers: { Accept: "application/json" } });
+    const res = await deps.fetch(REST(lang, title), {
+      headers: wikimediaHeaders(),
+    });
     if (res.status === 404) return null; // article gone
     if (!res.ok) return null;
 

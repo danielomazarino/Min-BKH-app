@@ -29,6 +29,8 @@ const ENDPOINT = "https://api.mymemory.translated.net/get";
 /** MyMemory caps a single query; longer text is truncated by the API. */
 const MAX_CHARS = 480;
 
+import { wikimediaHeaders } from "./wikimediaHeaders";
+
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const CACHE_MAX = 80;
 
@@ -87,7 +89,10 @@ export async function translateText(
   const url = `${ENDPOINT}?q=${encodeURIComponent(trimmed.slice(0, MAX_CHARS))}&langpair=${encodeURIComponent(src)}|${encodeURIComponent(to)}`;
 
   try {
-    const res = await deps.fetch(url, { headers: { Accept: "application/json" } });
+    // MyMemory is not Wikimedia, but a descriptive UA costs nothing and
+    // several free endpoints rate-limit anonymous clients. Same header as
+    // the Wikipedia modules for consistency.
+    const res = await deps.fetch(url, { headers: wikimediaHeaders() });
     if (!res.ok) return null;
     const json = (await res.json()) as {
       responseData?: { translatedText?: string };

@@ -32,6 +32,10 @@
  * One request per language tried, at most two (sv then en), only when a
  * sheet is opened, cached for the session.
  *
+ * EVERY request carries the mandatory Wikimedia User-Agent (see
+ * wikimediaHeaders.ts): without it Node's fetch gets a hard 429, which
+ * silently degraded the nightly's squad enrichment (measured 2026-10-12).
+ *
  * THE IDENTITY TRAP, AGAIN
  * ------------------------
  * The same trap as the summary layer: "Mats Hedén" on sv.wikipedia is a
@@ -49,6 +53,7 @@
  * cannot find the value's end (a pipe inside {{...}} is not a field
  * separator). The parser below walks the text and tracks brace depth.
  */
+import { wikimediaHeaders } from "./wikimediaHeaders";
 
 /**
  * The MediaWiki parse endpoint for a page's lead section wikitext.
@@ -83,7 +88,7 @@ async function resolveNationalTemplates(
   if (!templates || templates.length === 0) return wikitext;
   try {
     const res = await deps.fetch(EXPAND(lang, templates.join("\n")), {
-      headers: { Accept: "application/json" },
+      headers: wikimediaHeaders(),
     });
     if (!res.ok) return wikitext;
     const json = (await res.json()) as { expandtemplates?: { wikitext?: string } };
@@ -570,7 +575,9 @@ export async function fetchInfobox(
   deps: { fetch: FetchLike },
 ): Promise<InfoboxData | null> {
   try {
-    const res = await deps.fetch(PARSE(lang, title), { headers: { Accept: "application/json" } });
+    const res = await deps.fetch(PARSE(lang, title), {
+      headers: wikimediaHeaders(),
+    });
     if (!res.ok) return null;
     const json = (await res.json()) as { parse?: { wikitext?: { "*": string } } };
     let wikitext = json.parse?.wikitext?.["*"];
