@@ -224,19 +224,17 @@ test.describe("What each source does", () => {
       }),
     );
     await page.goto("/#/installningar");
-    // RESTRUCTURED 2026-10-12 (user request): the per-run counts moved OUT of
-    // the settings source list — they duplicated the cross-table in the
-    // technical section, and the cross-table is the view that is kept. The
-    // settings list now carries the source STATUS (OK/FEL) and the entry
-    // point to the audit; the counts live in exactly one place.
-    const section = page.getByTestId("news-sources-section");
-    await section.locator("summary").click();
-    const sources = page.getByTestId("news-sources");
-    await expect(sources).toContainText("Sportbladet");
-    await expect(sources).toContainText("BK Häcken");
-    // Every row has an info button.
-    await expect(sources.getByRole("button", { name: /Vad betyder detta/ }).first()).toBeVisible();
-    // The note points at the one place the counts still live.
-    await expect(page.getByTestId("news-sources-note")).toContainText("Artiklar per källa");
+    // RESTRUCTURED 2026-10-13 (user request): the Nyhetskällor section is
+    // GONE — its status rows and counts duplicated what the technical
+    // section shows in more detail. The per-source counts live ONLY in the
+    // metrics cross-table ("Artiklar per källa, natt för natt") now.
+    await page.getByTestId("diagnostics").locator("summary").click();
+    const table = page.getByTestId("metrics-count-history");
+    await expect(table).toBeVisible();
+    await expect(table).toContainText("Sportbladet");
+    await expect(table).toContainText("BK Häcken");
+    // The removed section must not come back.
+    await expect(page.getByTestId("news-sources-section")).toHaveCount(0);
+    await expect(page.getByTestId("news-sources")).toHaveCount(0);
   });
 });

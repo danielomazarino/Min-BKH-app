@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { HashRouter, Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
 import { Settings as SettingsIcon } from "lucide-react";
-import { ApiMetricsPanel, Info } from "./shared/ApiMetricsPanel";
+import { ApiMetricsPanel } from "./shared/ApiMetricsPanel";
 import { ArticleAudit } from "./shared/ArticleAudit";
-import { sourcePurpose } from "./shared/sourcePurpose";
 import { KitToggle } from "./shared/KitToggle";
 import Brief from "./pages/Brief";
 import News from "./pages/News";
@@ -16,8 +15,6 @@ import { FloatingTabBar } from "./shared/FloatingTabBar";
 import { Sheet } from "./shared/Sheet";
 import { UpdateBanner } from "./shared/UpdateBanner";
 import { useAppUpdate, type AppUpdate } from "./shared/useAppUpdate";
-import { recordVisit } from "./shared/visitStats";
-import { VisitStatsPanel } from "./shared/VisitStatsPanel";
 import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
@@ -109,14 +106,6 @@ function AppShell({ state }: { state: AppDataState }) {
       setFrom(null);
     }
   }, [pathname, search, settingsOpen]);
-
-  // LOCAL visit statistics: one entry per destination change, on this device
-  // only. Sheets are overlays, not visits, so they are not counted (the
-  // recorder ignores unknown paths itself). The write is failure-tolerant —
-  // a full or blocked localStorage must never break navigation.
-  useEffect(() => {
-    recordVisit(pathname);
-  }, [pathname]);
 
   // Escape closes the sheet, matching every other detail surface.
   useEffect(() => {
@@ -275,11 +264,23 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
             <p className="small muted" data-testid="current-unavailable">
               {unavailableHuman}
             </p>
-            {/* The raw reason, for the maintainer. Kept out of the supporter's
-                reading path but never hidden entirely — it is the evidence. */}
-            <p className="small dim" data-testid="current-unavailable-raw">
-              Teknisk detalj: {unavailable.reason}
-            </p>
+            {/* The raw reason, for the maintainer. The nightly's error string
+                can contain a whole JSON blob; it is collapsed behind a
+                disclosure and lives OUT of the supporter's reading path
+                (user, 2026-10-13: "the follow rows of unreadable errors"). */}
+            <details className="disc" data-testid="current-unavailable-detail">
+              <summary>
+                Teknisk detalj
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </summary>
+              <div className="disc-body">
+                <p className="small dim err-raw" data-testid="current-unavailable-raw">
+                  {unavailable.reason}
+                </p>
+              </div>
+            </details>
           </>
         )}
         {squadCount != null && (
@@ -308,96 +309,26 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
             </button>
           )}
         </div>
+        {/* WHAT THE BUTTON DOES (user, 2026-10-13). A button whose effect is
+            invisible invites repeated pressing; one sentence removes the
+            mystery. The app also checks for a new version in the background
+            every hour — this button is the manual version of that. */}
+        <p className="small dim" data-testid="update-check-note">
+          Kontrollerar om en nyare version av appen finns och laddar den i så
+          fall. Appen kollar också automatiskt en gång i timmen.
+        </p>
       </section>
 
-      {/* ---- NYHETSKÄLLOR: collapsed. The per-run counts here duplicated the
-              cross-table in the technical section (user, 2026-10-12: the
-              cross-table and the audit list are the ones that matter; the
-              latest-run rows can go). What remains is the entry point to the
-              audit — the list that validates the filtering — plus the source
-              status pills, which are the only place a FAILED source is
-              visible at a glance. ---- */}
-      <details className="disc" data-testid="news-sources-section" open={auditOpen}>
-        <summary>
-          Nyhetskällor
-          <span className="count">
-            {data
-              ? `${Object.entries(data.freshness.sourceStatus).filter(([k]) => k.startsWith("rss:")).length} källor`
-              : ""}
-          </span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </summary>
-        <div className="disc-body stack-3">
-          <div data-testid="news-sources">
-            {data ? (
-              Object.entries(data.freshness.sourceStatus)
-                .filter(([k]) => k.startsWith("rss:"))
-                .map(([k, v]) => {
-                  const name = k.replace("rss:", "");
-                  const purpose = sourcePurpose(name);
-                  return (
-                    <div className="srcrow srcrow-explained" key={k}>
-                      <span className="nm">
-                        {name}
-                        <Info
-                          label={`${purpose.what} Om något går sönder: ${purpose.ifBroken}`}
-                        />
-                      </span>
-                      <span className="rl">
-                        {v === "ok" ? "OK" : v === "failed" ? "FEL" : "HOPPAR ÖVER"}
-                      </span>
-                    </div>
-                  );
-                })
-            ) : (
-              <p className="small dim">—</p>
-            )}
-          </div>
-          <p className="small dim" data-testid="news-sources-note">
-            <strong>OK</strong> = källan svarade (inte att den hittade något om
-            Häcken). Artiklarna per källa och natt finns under Teknisk
-            information → Artiklar per källa.
-          </p>
-          {/* THE HEADLINES BEHIND THE COUNTS. This is the list that validates
-              the filtering — every fetched article with its verdict, so a
-              wrong drop can be spotted by eye (that is how B-012 was found). */}
-          {audit && audit.length > 0 && (
-            <p className="small dim" style={{ marginTop: "var(--s2)" }}>
-              <Link className="link" to={`${SETTINGS_PATH}?id=artiklar`}>
-                Granska alla {audit.length} hämtade artiklar →
-              </Link>
-            </p>
-          )}
-
-          {auditOpen && (
-            <section>
-              <div className="mod-label">Artikelgranskning</div>
-              <ArticleAudit audit={audit} />
-            </section>
-          )}
-        </div>
-      </details>
-
-      {/* ---- BESÖKSSTATISTIK: collapsed. Local-only counts, clearly labelled
-              as this device's own usage — the app sends nothing anywhere. ---- */}
-      <details className="disc" data-testid="visit-stats-section">
-        <summary>
-          Besöksstatistik
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </summary>
-        <div className="disc-body stack-3">
-          <VisitStatsPanel />
-        </div>
-      </details>
-
       {/* ---- TEKNISK INFORMATION: collapsed. Everything a maintainer needs —
-              provenance, the warning rule, the API measurement log with the
-              per-source cross-table, and the raw error detail. ---- */}
-      <details className="disc" data-testid="diagnostics">
+              provenance, the warning rule, the article audit (the list that
+              validates the filtering), and the API measurement log with the
+              per-source cross-table.
+
+              The separate "Nyhetskällor" section was REMOVED (user,
+              2026-10-13): its status rows and counts duplicated what this
+              section already shows in more detail. The audit lives here now,
+              and the deep link #/installningar?id=artiklar auto-opens it. ---- */}
+      <details className="disc" data-testid="diagnostics" open={auditOpen}>
         <summary>
           Teknisk information
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -439,6 +370,24 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
             Nyheter hämtas från källornas egna RSS-flöden. Firecrawl används bara för att
             hitta artiklar — aldrig som källa.
           </p>
+
+          {/* THE HEADLINES BEHIND THE COUNTS. The list that validates the
+              filtering — every fetched article with its verdict, so a wrong
+              drop can be spotted by eye (that is how B-012 was found). It
+              lives here now that the separate Nyhetskällor section is gone. */}
+          {audit && audit.length > 0 && (
+            <p className="small dim">
+              <Link className="link" to={`${SETTINGS_PATH}?id=artiklar`}>
+                Granska alla {audit.length} hämtade artiklar →
+              </Link>
+            </p>
+          )}
+          {auditOpen && (
+            <section>
+              <div className="mod-label">Artikelgranskning</div>
+              <ArticleAudit audit={audit} />
+            </section>
+          )}
 
           {/* API measurement log. Fetched lazily by the panel itself, so it
               costs nothing until someone actually opens this section. The
