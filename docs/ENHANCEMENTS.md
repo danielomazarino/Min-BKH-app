@@ -42,7 +42,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | News | **B-015 DEPLOYED + VERIFIED 2026-10-09 (`1539f98`)** — Häcken news is no longer dropped when the player name is only in the URL slug or the article body (7/20 → 20/20 on the live Fotbolltransfers club feed). Served data is byte-identical to the commit; served feed shows 14 news / 21 events, 0 women's, 0 false positives. See **B-015**. Accumulation from B-014 also now re-validates archived items, so a fixed filter can withdraw a wrong item. **B-017 also shipped 2026-10-09 (`564eb31`)** — the women's leak is closed (a club item must also clear the relevance engine) and stories can be read in-app with images. See **B-016**, **B-017** |
 | Classifier | **Multi-part surnames fixed 2026-10-08 (B-012)** — "Mikkel Rygaard Jensen" now matches "Rygaard" headlines. The opponent-context widening is still OPEN |
 | Settings | **REBUILT 2026-10-07 (`73222f0`, deployed)** — one page, no duplicated counts. New **article audit** subpage: every fetched headline per source, marked with the pipeline's verdict ("Häcken herr" / "Ej herrlag" / drop reason), each linking to the original article. OpenRouter failures now show WHY (shared-pool diagnosis, status-code meanings) under the "N fel" pill |
-| Player cards | **REBUILT 2026-10-08** — the squad is now enriched ONCE per nightly (`squadEnrichment` in `app.json`), so Trupp cards open with career, photo and narrative already present. Career is the **union** of Wikidata and the Wikipedia infobox (was: pick one, which dropped real clubs). Home-country Wikipedia is tried (Norwegian for Wembangomo). Non-Swedish narratives are machine-translated and labelled. See **E-020**. **One open report: Filip Helander's card shows no Wikipedia data — the served data for him is complete, so this is a rendering or stale-cache question. See B-018** |
+| Player cards | **REBUILT 2026-10-08** — the squad is now enriched ONCE per nightly (`squadEnrichment` in `app.json`), so Trupp cards open with career, photo and narrative already present. Career is the **union** of Wikidata and the Wikipedia infobox (was: pick one, which dropped real clubs). Home-country Wikipedia is tried (Norwegian for Wembangomo). Non-Swedish narratives are machine-translated and labelled. See **E-020**. **2026-10-12: the "stale card" reports (Helander, Rygaard, Wembangomo) were RESOLVED — the nightly's requests to Wikipedia were being rate-limited for a missing User-Agent, silently degrading the stored data. Fixed and verified; squad and search now agree. See B-018** |
 | Updates | **NEW 2026-10-08** — an update banner appears when a new version is waiting, plus a manual "Sök efter uppdatering" in settings. Fixes the "I don't see your change" report caused by a stale service worker. See **E-021** |
 | Gemini | **Disabled in the nightly** (key not injected). Free tier measured: reachable ~48%, real-work probe 0/15. B-004 unvalidated |
 | OpenRouter | **Measurement-only nightly, still never reaches the app.** The pinned free model (`qwen/qwen3.8-27b:free`) was **DELISTED** by OpenRouter — the 2026-10-06 nightly got HTTP 404 while the key was healthy (0/1000 used). Fixed 2026-10-06: the model is now **resolved dynamically from the live free catalog** (`dd8bedb`); a delisted pin fails BEFORE the request instead of burning it. Verified live: resolver picks `google/gemma-4-31b-it:free`, but both verification requests got **HTTP 429 from the shared upstream pool** — the structural limit, unchanged. **All 16 current free models are single-provider** (measured from the endpoints API), so there is no routing resilience anywhere in the free catalog. See **B-008**, **B-012**, **B-013** |
@@ -557,43 +557,49 @@ is the only path.
 
 ---
 
-## B-018 · Filip Helander's squad card shows no Wikipedia data
+## B-018 · Squad cards showed stale Wikidata / missing Wikipedia data — RESOLVED 2026-10-12
 
-**Status:** OPEN — under investigation · **Affects:** one player's card detail
+**Status:** RESOLVED · **Fixed in:** commit `b267cc9` (deployed + byte-verified)
 
-**What the user reported.** Filip Helander's card does not get the Wikipedia
-data.
+**What the user reported.** Filip Helander's card did not get the Wikipedia
+data. Follow-up (2026-10-12): comparing Rygaard and Helander between the
+search tab and the squad tab gave different results, and Wembangomo was the
+clearest example.
 
-**What was measured (2026-10-09, served `app.json`).** The pipeline data is
-**complete** for him:
+**Root cause (measured live, not inferred).** Two defects:
 
-- `squadEnrichment["fogis:453737"]` exists and the squad row's `playerId` is
-  exactly `fogis:453737` — the lookup key the card uses matches.
-- `.wiki` is present: `lang: "sv"`, a 145-character extract ("Filip Viktor
-  Helander, född 22 april 1993 … spelar för BK Häcken."), a Wikimedia thumbnail
-  URL, and `pageUrl` to `sv.wikipedia.org/wiki/Filip_Helander`.
-- `career` has 4 entries (Hellas Verona, Malmö FF, Husie IF, BK Häcken).
-- `usedInfobox: false` — the infobox path did not fire for him, but the `wiki`
-  path did, and the card renders from `enrichment.wiki` first (PlayerCard.tsx
-  line ~223).
+1. **Wikimedia 429s User-Agent-less requests.** The nightly pipeline runs in
+   Node, where `fetch` sends no User-Agent. `wikidata.ts` already set the
+   header (measured 2026-09-26) so the search step always resolved a Q-ID —
+   but `infobox.ts`, `wikipedia.ts` and `translate.ts` sent only `Accept`.
+   Every infobox and summary request from the nightly was 429'd and swallowed
+   into `null` ("nothing verified to add"). Measured on identical URLs from
+   the same machine, same minute: no UA → 429, with UA → 200.
+2. **The per-player merge let degraded results overwrite good ones.**
+   `{ ...prev, ...next }` means next always wins per player. Rygaard's career
+   flapped 11 rows → 2 → 11 → 2 across four runs; 19 of 26 players degraded
+   between 2026-10-09 and 2026-10-12, 15 strictly worse.
 
-**Conclusion so far.** The defect is NOT in the pipeline. Two remaining
-hypotheses, in order of likelihood:
+**Why the two tabs differed for the same player.** The squad tab renders the
+pipeline's pre-resolved enrichment (no UA → 429 → degraded); the search tab
+does live browser fetches (the browser supplies its own User-Agent → 200 →
+full data). Same code, different runtime.
 
-1. **Stale service worker on the device.** The user's iPhone has previously
-   shown an old bundle after a deploy (documented in the UX-rebuild notes).
-   The card reads `squadEnrichment` from `app.json`; if the device served a
-   cached `app.json` from before the enrichment nightly, the card would show
-   nothing. Check: Settings → article audit / "Sök efter uppdatering", or
-   clear the SW and hard-reload.
-2. **A rendering-path defect in `PlayerCard`** — e.g. the enrichment prop not
-   reaching the card for squad opens (Squad.tsx passes
-   `data?.squadEnrichment?.[open.playerId]`), or an early return before the
-   wiki block. Not yet inspected in detail.
+**The fix.**
 
-**Next step.** Reproduce on the live site with the SW cleared; if the card
-still shows no wiki text, instrument `PlayerCard`'s enrichment branch and
-inspect what it receives for `fogis:453737`.
+- `app/players/wikimediaHeaders.ts` — shared User-Agent + header builder,
+  wired into the three modules. Browsers ignore the header (it is a forbidden
+  header name), so the live path is unchanged.
+- `pipeline/src/appMerge.ts` — the app.json merge extracted from `run.ts`
+  with a per-player quality guard: a new enrichment wins only when its score
+  (career rows + wiki + national teams) is not lower than the stored one, so
+  a rate-limited stub can never erase good data again.
+- 12 new tests; 660 unit tests, typecheck, lint and build green.
+
+**Verified in production.** Data-update run `38304210472` (success, enriched
+26/27). Served `app.json` sha256 equals the committed bytes; Wembangomo 7
+career rows + sv wiki, Helander 10 rows + sv wiki, Rygaard 11 rows + sv wiki.
+Served build id `3139fe2` matches HEAD.
 
 ---
 
@@ -2177,7 +2183,7 @@ both linked in the sheet.
 | **B-015** | **FIXED 2026-10-09 — deployed `1539f98`, verified in production** | Real Häcken news was dropped when the player name appeared only in the URL slug or the article body. Measured on the live Fotbolltransfers club feed: title+summary matched **7/20** items, +slug **11/20**, +body **20/20** (verified against article prose only — the club-nav menu is a false Häcken source). Fix: `evidenceText()` = title+summary+slug+body is the single match surface; a `clubScoped` flag for `rss/klubbar/27` (verified: no women's league exists on that site) replaces only the men's-keyword requirement. Also: `accumulateNews` never re-validated archived items, so 4 stale false positives from an earlier build (Roger Ljung, Britt-Marie Mattsson, 2 ice-hockey stories) were re-published for 21 days — now withdrawn. **No maintained lists**: slug/body are matched, never harvested. See the B-015 section |
 | **B-016** | **FIXED 2026-10-09 — deployed `bf7314a`, verified in production** | Stories can now be read in-app, and the four tiles have images. `og:image` was never read (only 4/21 events had a thumbnail) and the generic extractor returned page navigation as "body text". Per-source extractors + `isReadableSource()` allow-list: **bkhacken.se** and **fotbolltransfers.com** are read (both `User-agent: *` / `Disallow:`, neither paywalled); **Expressen is excluded** — paywalled AND Bonnier News' robots.txt prohibits scraping "text, graphics, images". Images use the same gate as bodies. Result: 20/21 events with an image and a readable body, +11.7 KB gzipped. See the B-016 section |
 | **B-017** | **FIXED 2026-10-09 — deployed `564eb31`, verified in production** | Three iPhone fixes: (1) a women's article leaked into the men's feed — `menRelevantNews`'s club fallback admitted a team-neutral item without consulting `classifyRelevance`, which had already returned UNKNOWN; SVT's Schröder piece (ex-Häcken women's player) showed as "Häcken herr". A club item must now also clear the relevance engine. (2) The sheet now runs to the SCREEN BOTTOM with a 12px gap under the header banner. (3) The floating nav's z-index was UNDER the sheet backdrop, so the menu vanished when a sheet opened — it now floats OVER the sheet ("the menu should still float above the card and the card float under it"). Plus `content-visibility` on the long lists for smoother scrolling. See the B-017 section |
-| **B-018** | **OPEN — under investigation** | Filip Helander's squad card reportedly shows no Wikipedia data. Measured 2026-10-09: the SERVED data is complete — `squadEnrichment["fogis:453737"].wiki` has `lang:"sv"`, a 145-char extract, an image URL, and 4 career entries. So the defect is in RENDERING or the device saw a stale service-worker cache, not in the pipeline. Next step: reproduce on the live site with the SW cleared, then inspect `PlayerCard`'s enrichment path. See the B-018 section |
+| **B-018** | **RESOLVED 2026-10-12 — deployed `b267cc9`, byte-verified** | Squad cards showed stale Wikidata / missing Wikipedia data while the search tab showed full data for the same player. Root cause measured live: (1) Wikimedia 429s User-Agent-less requests — the nightly's Node fetch sent no UA to the infobox/summary/translation endpoints, and the 429 was swallowed into `null` (19 of 26 players degraded across three nightlies; Rygaard flapped 11→2→11→2 career rows); (2) the per-player merge let degraded results overwrite good ones. Fix: shared `wikimediaHeaders()` on all Wikimedia-facing modules + `appMerge.ts` with a per-player quality guard. Verified: Wembangomo 7 rows + wiki, Helander 10 + wiki, Rygaard 11 + wiki; served sha256 == committed. See the B-018 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |
