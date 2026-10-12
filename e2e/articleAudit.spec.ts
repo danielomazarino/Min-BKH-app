@@ -40,6 +40,9 @@ test.describe("Article audit", () => {
   test("the link appears when audit data exists and opens the list", async ({ page }) => {
     await page.route("**/data/app.json", (route) => route.fulfill({ json: appData(true) }));
     await page.goto("/#/installningar");
+    // RESTRUCTURED 2026-10-12: the audit link lives inside the collapsed
+    // "Nyhetskällor" section now — open it first.
+    await page.getByTestId("news-sources-section").locator("summary").click();
     await page.getByRole("link", { name: /Granska alla 3 hämtade artiklar/ }).click();
     const audit = page.getByTestId("article-audit");
     await expect(audit).toBeVisible();

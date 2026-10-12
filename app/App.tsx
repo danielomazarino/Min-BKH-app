@@ -16,6 +16,8 @@ import { FloatingTabBar } from "./shared/FloatingTabBar";
 import { Sheet } from "./shared/Sheet";
 import { UpdateBanner } from "./shared/UpdateBanner";
 import { useAppUpdate, type AppUpdate } from "./shared/useAppUpdate";
+import { recordVisit } from "./shared/visitStats";
+import { VisitStatsPanel } from "./shared/VisitStatsPanel";
 import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
@@ -107,6 +109,14 @@ function AppShell({ state }: { state: AppDataState }) {
       setFrom(null);
     }
   }, [pathname, search, settingsOpen]);
+
+  // LOCAL visit statistics: one entry per destination change, on this device
+  // only. Sheets are overlays, not visits, so they are not counted (the
+  // recorder ignores unknown paths itself). The write is failure-tolerant —
+  // a full or blocked localStorage must never break navigation.
+  useEffect(() => {
+    recordVisit(pathname);
+  }, [pathname]);
 
   // Escape closes the sheet, matching every other detail surface.
   useEffect(() => {
@@ -225,8 +235,29 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
     setChecked(found ? "found" : "none");
   };
 
+  /**
+   * A raw pipeline error string is not a sentence. The nightly records the
+   * upstream failure verbatim ("Fixtures ej tillgängliga: [{\"message\":…
+   * INTERNAL_SERVER_ERROR\"}]"), which is diagnosis-grade for a maintainer
+   * and noise for a supporter. The supporter gets a plain sentence; the raw
+   * detail moves into the technical section where it belongs.
+   */
+  const unavailableHuman = (() => {
+    if (!unavailable) return null;
+    if (/fixtures/i.test(unavailable.reason)) {
+      return "Matchlistan kunde inte hämtas just nu. Datauppdateringen försöker igen i natt — matcherna kommer tillbaka automatiskt.";
+    }
+    if (/tabell/i.test(unavailable.reason)) {
+      return "Tabellen kunde inte hämtas just nu. Datauppdateringen försöker igen i natt.";
+    }
+    return "Aktuell matchdata kunde inte hämtas just nu. Datauppdateringen försöker igen i natt.";
+  })();
+
   return (
     <div className="stack-4">
+      {/* ---- DATA: the only section open by default. It answers the three
+              questions a supporter actually has: is the data fresh, is
+              anything broken, and is my app up to date. ---- */}
       <section>
         <div className="mod-label">Data</div>
         <p className="small muted" data-testid="settings-updated">
@@ -240,9 +271,16 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
             : "Data kunde inte läsas."}
         </p>
         {unavailable && (
-          <p className="small muted" data-testid="current-unavailable">
-            Aktuell matchdata saknas just nu: {unavailable.reason}
-          </p>
+          <>
+            <p className="small muted" data-testid="current-unavailable">
+              {unavailableHuman}
+            </p>
+            {/* The raw reason, for the maintainer. Kept out of the supporter's
+                reading path but never hidden entirely — it is the evidence. */}
+            <p className="small dim" data-testid="current-unavailable-raw">
+              Teknisk detalj: {unavailable.reason}
+            </p>
+          </>
         )}
         {squadCount != null && (
           <p className="small muted" data-testid="settings-squad">
@@ -272,65 +310,93 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
         </div>
       </section>
 
-      <section>
-        <div className="mod-label">Nyhetskällor</div>
-        <p className="small dim" data-testid="news-sources-note">
-          Artiklar behållna av totalt hämtade, senaste körningen. <strong>OK</strong> =
-          källan svarade (inte att den hittade något om Häcken). Tryck på{" "}
-          <strong>i</strong> för vad källan gör.
-        </p>
-        <div data-testid="news-sources">
-          {data ? (
-            Object.entries(data.freshness.sourceStatus)
-              .filter(([k]) => k.startsWith("rss:"))
-              .map(([k, v]) => {
-                const name = k.replace("rss:", "");
-                const purpose = sourcePurpose(name);
-                const c = data.freshness.sourceCounts?.[name];
-                return (
-                  <div className="srcrow srcrow-explained" key={k}>
-                    <span className="nm">
-                      {name}
-                      <Info
-                        label={`${purpose.what} Om något går sönder: ${purpose.ifBroken}`}
-                      />
-                      <span className="msub">
-                        {c === undefined
-                          ? "Artikelantal ej mätt"
-                          : c.fetched === 0
-                            ? "Inga artiklar kom in"
-                            : `${c.kept} av ${c.fetched} behölls`}
+      {/* ---- NYHETSKÄLLOR: collapsed. The per-run counts here duplicated the
+              cross-table in the technical section (user, 2026-10-12: the
+              cross-table and the audit list are the ones that matter; the
+              latest-run rows can go). What remains is the entry point to the
+              audit — the list that validates the filtering — plus the source
+              status pills, which are the only place a FAILED source is
+              visible at a glance. ---- */}
+      <details className="disc" data-testid="news-sources-section" open={auditOpen}>
+        <summary>
+          Nyhetskällor
+          <span className="count">
+            {data
+              ? `${Object.entries(data.freshness.sourceStatus).filter(([k]) => k.startsWith("rss:")).length} källor`
+              : ""}
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+        <div className="disc-body stack-3">
+          <div data-testid="news-sources">
+            {data ? (
+              Object.entries(data.freshness.sourceStatus)
+                .filter(([k]) => k.startsWith("rss:"))
+                .map(([k, v]) => {
+                  const name = k.replace("rss:", "");
+                  const purpose = sourcePurpose(name);
+                  return (
+                    <div className="srcrow srcrow-explained" key={k}>
+                      <span className="nm">
+                        {name}
+                        <Info
+                          label={`${purpose.what} Om något går sönder: ${purpose.ifBroken}`}
+                        />
                       </span>
-                    </span>
-                    <span className="rl">
-                      {v === "ok" ? "OK" : v === "failed" ? "FEL" : "HOPPAR ÖVER"}
-                    </span>
-                  </div>
-                );
-              })
-          ) : (
-            <p className="small dim">—</p>
+                      <span className="rl">
+                        {v === "ok" ? "OK" : v === "failed" ? "FEL" : "HOPPAR ÖVER"}
+                      </span>
+                    </div>
+                  );
+                })
+            ) : (
+              <p className="small dim">—</p>
+            )}
+          </div>
+          <p className="small dim" data-testid="news-sources-note">
+            <strong>OK</strong> = källan svarade (inte att den hittade något om
+            Häcken). Artiklarna per källa och natt finns under Teknisk
+            information → Artiklar per källa.
+          </p>
+          {/* THE HEADLINES BEHIND THE COUNTS. This is the list that validates
+              the filtering — every fetched article with its verdict, so a
+              wrong drop can be spotted by eye (that is how B-012 was found). */}
+          {audit && audit.length > 0 && (
+            <p className="small dim" style={{ marginTop: "var(--s2)" }}>
+              <Link className="link" to={`${SETTINGS_PATH}?id=artiklar`}>
+                Granska alla {audit.length} hämtade artiklar →
+              </Link>
+            </p>
+          )}
+
+          {auditOpen && (
+            <section>
+              <div className="mod-label">Artikelgranskning</div>
+              <ArticleAudit audit={audit} />
+            </section>
           )}
         </div>
-        {/* THE HEADLINES BEHIND THE COUNTS. The list above says "3 av 20";
-            this says WHICH three and WHICH seventeen were dropped, so a wrong
-            verdict can be spotted by eye (that is how B-012 was found). */}
-        {audit && audit.length > 0 && (
-          <p className="small dim" style={{ marginTop: "var(--s2)" }}>
-            <Link className="link" to={`${SETTINGS_PATH}?id=artiklar`}>
-              Granska alla {audit.length} hämtade artiklar →
-            </Link>
-          </p>
-        )}
-      </section>
+      </details>
 
-      {auditOpen && (
-        <section>
-          <div className="mod-label">Artikelgranskning</div>
-          <ArticleAudit audit={audit} />
-        </section>
-      )}
+      {/* ---- BESÖKSSTATISTIK: collapsed. Local-only counts, clearly labelled
+              as this device's own usage — the app sends nothing anywhere. ---- */}
+      <details className="disc" data-testid="visit-stats-section">
+        <summary>
+          Besöksstatistik
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+        <div className="disc-body stack-3">
+          <VisitStatsPanel />
+        </div>
+      </details>
 
+      {/* ---- TEKNISK INFORMATION: collapsed. Everything a maintainer needs —
+              provenance, the warning rule, the API measurement log with the
+              per-source cross-table, and the raw error detail. ---- */}
       <details className="disc" data-testid="diagnostics">
         <summary>
           Teknisk information
@@ -374,9 +440,10 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
             hitta artiklar — aldrig som källa.
           </p>
 
-          {/* API measurement log. Rendered inside the existing technical
-              disclosure, and fetched lazily by the panel itself, so it costs
-              nothing until someone actually opens this section. */}
+          {/* API measurement log. Fetched lazily by the panel itself, so it
+              costs nothing until someone actually opens this section. The
+              per-source cross-table over nights lives here — it is the one
+              article-count view that is kept (user, 2026-10-12). */}
           <div className="mod-label">Mätlogg</div>
           <ApiMetricsPanel />
         </div>

@@ -224,12 +224,19 @@ test.describe("What each source does", () => {
       }),
     );
     await page.goto("/#/installningar");
+    // RESTRUCTURED 2026-10-12 (user request): the per-run counts moved OUT of
+    // the settings source list — they duplicated the cross-table in the
+    // technical section, and the cross-table is the view that is kept. The
+    // settings list now carries the source STATUS (OK/FEL) and the entry
+    // point to the audit; the counts live in exactly one place.
+    const section = page.getByTestId("news-sources-section");
+    await section.locator("summary").click();
     const sources = page.getByTestId("news-sources");
-    // Text shortened 2026-10-07 (one-page settings restructure): the count
-    // label is now "N av M behölls" instead of "N av M artiklar behölls".
-    await expect(sources).toContainText("3 av 20 behölls");
-    await expect(sources).toContainText("0 av 39 behölls");
+    await expect(sources).toContainText("Sportbladet");
+    await expect(sources).toContainText("BK Häcken");
     // Every row has an info button.
     await expect(sources.getByRole("button", { name: /Vad betyder detta/ }).first()).toBeVisible();
+    // The note points at the one place the counts still live.
+    await expect(page.getByTestId("news-sources-note")).toContainText("Artiklar per källa");
   });
 });
