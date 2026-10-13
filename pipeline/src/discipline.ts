@@ -85,6 +85,18 @@ export interface PlayerDiscipline {
   relevantWarnings: Array<{ matchId: number; date: string }>;
   /** Date of the match that served a suspension, when detectable. */
   servedAt?: string;
+  /**
+   * Every suspension the player has served this season, chronologically.
+   *
+   * The Doumbia case (2026-10-13) proved a player can serve TWO suspensions
+   * in one season (3rd warning → round 9, 6th warning → round 20). The old
+   * single `servedAt` could not represent that, and the engine's one-shot
+   * serve-check reported `suspended_next` for a player who had already served
+   * the second suspension. `servedSuspensions` is the auditable record;
+   * `servedAt` is kept for backwards compatibility and always equals the
+   * FIRST served suspension.
+   */
+  servedSuspensions?: string[];
   /** True when the ledger is incomplete (missing matches) — status may be UNKNOWN. */
   incomplete: boolean;
   /**
@@ -152,6 +164,7 @@ export function computeSeasonDiscipline(
     let pending = warningCount;
     let status: DisciplineStatus = "none";
     let servedAt: string | undefined;
+    const servedSuspensions: string[] = [];
 
     const departed = !inSquad(playerId, name);
 
@@ -167,21 +180,64 @@ export function computeSeasonDiscipline(
       if (finishedMatchDates.length === 0) {
         status = "unknown";
       } else {
-        const thresholdDate = relevant[rule.threshold - 1].matchDate;
-        const finishedAfter = finishedMatchDates.filter((d) => d > thresholdDate);
-        if (finishedAfter.length >= rule.suspensionMatches) {
-          status = "served";
-          servedAt = finishedAfter[0];
-          // Warnings after the served suspension count toward the NEXT threshold.
-          const afterServed = relevant.filter((w) => w.matchDate > servedAt!);
-          pending = afterServed.length;
-          if (pending >= rule.threshold) {
+        // ITERATIVE serve detection (the Doumbia fix, 2026-10-13).
+        //
+        // The old logic checked the threshold ONCE: it found the first
+        // finished match after the 3rd warning, marked the suspension served,
+        // counted the remaining warnings, and stopped. A player who reaches
+        // the threshold a SECOND time in the same season (Doumbia: 3rd yellow
+        // 2026-05-17 → served round 9 on 2026-05-25; 6th yellow 2026-08-29 →
+        // served round 20 on 2026-09-05) was then reported as
+        // `suspended_next` even though the second suspension had already
+        // been served — a false "Avstängd nästa match" that persisted for
+        // weeks.
+        //
+        // The loop consumes warnings exactly as the rule does: each time the
+        // pending count reaches the threshold, the suspension is served by
+        // the first finished match after that threshold date, those
+        // `suspensionMatches` matches are consumed, and the remaining
+        // warnings continue to accumulate toward the next threshold.
+        let remaining = [...relevant];
+        for (;;) {
+          if (remaining.length < rule.threshold) break;
+          const thresholdDate = remaining[rule.threshold - 1].matchDate;
+          const finishedAfter = finishedMatchDates.filter((d) => d > thresholdDate);
+          if (finishedAfter.length < rule.suspensionMatches) {
+            // Threshold reached but not yet served — the player is out for
+            // the next match in this competition. The pending warnings stay
+            // counted (established semantics: `warningsUntilSuspension`
+            // reports the count that triggered the suspension; the status
+            // carries the "out" fact).
             status = "suspended_next";
-          } else if (pending === rule.threshold - 1) {
-            status = "at_risk";
+            break;
           }
-        } else {
+          const servedDate = finishedAfter[0];
+          servedSuspensions.push(servedDate);
+          // Warnings AFTER the served match count toward the next threshold.
+          // Warnings up to and including the threshold match are consumed.
+          remaining = remaining.filter((w) => w.matchDate > servedDate);
+          // Skip the matches the suspension was served across.
+          const consumed = finishedMatchDates
+            .filter((d) => d > thresholdDate)
+            .slice(0, rule.suspensionMatches);
+          const lastServedDate = consumed[consumed.length - 1];
+          remaining = remaining.filter((w) => w.matchDate > lastServedDate);
+        }
+        pending = remaining.length;
+        if (servedSuspensions.length > 0) {
+          // `servedAt` stays the FIRST served suspension (backwards
+          // compatibility with the single-suspension field); the full
+          // chronological record lives in `servedSuspensions`.
+          servedAt = servedSuspensions[0];
+          status = "served";
+          if (pending >= rule.threshold) status = "suspended_next";
+          else if (pending === rule.threshold - 1) status = "at_risk";
+        } else if (pending >= rule.threshold) {
           status = "suspended_next";
+        } else if (pending === rule.threshold - 1) {
+          status = "at_risk";
+        } else {
+          status = "none";
         }
       }
     } else if (warningCount === rule.threshold - 1) {
@@ -218,6 +274,7 @@ export function computeSeasonDiscipline(
       status,
       relevantWarnings: relevant.map((w) => ({ matchId: w.matchId, date: w.matchDate })),
       ...(servedAt ? { servedAt } : {}),
+      ...(servedSuspensions.length > 0 ? { servedSuspensions: [...servedSuspensions] } : {}),
       incomplete,
       ...(departed ? { departed: true } : {}),
     });

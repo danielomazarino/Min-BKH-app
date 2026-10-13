@@ -134,6 +134,18 @@ export interface PlayerDiscipline {
   status: DisciplineStatus;
   relevantWarnings: Array<{ matchId: number; date: string }>;
   servedAt?: string;
+  /**
+   * Every suspension the player has served this season, chronologically.
+   *
+   * The Doumbia case (2026-10-13) proved a player can serve TWO suspensions
+   * in one season (3rd warning → round 9, 6th warning → round 20). The old
+   * single `servedAt` could not represent that, and the engine's one-shot
+   * serve-check reported `suspended_next` for a player who had already served
+   * the second suspension. `servedSuspensions` is the auditable record;
+   * `servedAt` is kept for backwards compatibility and always equals the
+   * FIRST served suspension.
+   */
+  servedSuspensions?: string[];
   incomplete: boolean;
   /** E-005 — true when the player is not in the current squad. */
   departed?: boolean;

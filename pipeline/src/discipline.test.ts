@@ -430,4 +430,80 @@ describe("computeSeasonDiscipline · current-squad scoping (E-005)", () => {
       expect(res.map((d) => d.status).sort()).toEqual(["at_risk", "at_risk"]);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // The Doumbia regression (2026-10-13).
+  //
+  // Real case: Abdoulaye Doumbia (BK Häcken) collected 6 warnings in 2026.
+  // The 3rd (2026-05-17, Mjällby) triggered a suspension served in round 9
+  // (2026-05-25, Elfsborg — verified: he is absent from that lineup). The 6th
+  // (2026-08-29, Västerås SK) triggered a second suspension served in round
+  // 20 (2026-09-05, GAIS — verified: absent from that lineup, and
+  // bollsvenskan.se 2026-09-04 reported "Väisänen och Doumbia avstängda mot
+  // GAIS"). The old one-shot serve-check reported `suspended_next` for weeks
+  // after the second suspension had already been served.
+  // ---------------------------------------------------------------------------
+  describe("multiple suspensions in one season (the Doumbia case)", () => {
+    const DOUMBIA_WARNINGS = [
+      yellow("fogis:1564471", "Abdoulaye Doumbia", 6529838, "2026-04-11"),
+      yellow("fogis:1564471", "Abdoulaye Doumbia", 6529848, "2026-04-19"),
+      yellow("fogis:1564471", "Abdoulaye Doumbia", 6529889, "2026-05-17"),
+      yellow("fogis:1564471", "Abdoulaye Doumbia", 6529945, "2026-08-01"),
+      yellow("fogis:1564471", "Abdoulaye Doumbia", 6529959, "2026-08-17"),
+      yellow("fogis:1564471", "Abdoulaye Doumbia", 6529977, "2026-08-29"),
+    ];
+    const DOUMBIA_SQUAD = squad([{ playerId: "fogis:1564471", playerName: "Abdoulaye Doumbia" }]);
+    // Häcken's finished 2026 Allsvenskan matches (the real fixture dates).
+    const SEASON_FINISHED = [
+      "2026-04-06", "2026-04-11", "2026-04-19", "2026-04-22", "2026-04-27",
+      "2026-05-02", "2026-05-10", "2026-05-17", "2026-05-25", "2026-05-31",
+      "2026-07-06", "2026-07-11", "2026-07-19", "2026-07-27", "2026-08-01",
+      "2026-08-09", "2026-08-17", "2026-08-21", "2026-08-29", "2026-09-05",
+      "2026-09-11", "2026-09-20", "2026-10-11",
+    ];
+
+    it("recognises BOTH served suspensions, not just the first", () => {
+      const res = computeSeasonDiscipline(DOUMBIA_WARNINGS, RULE, SEASON_FINISHED, null, DOUMBIA_SQUAD);
+      const d = res[0];
+      expect(d.playerName).toBe("Abdoulaye Doumbia");
+      expect(d.status).toBe("served");
+      expect(d.servedSuspensions).toEqual(["2026-05-25", "2026-09-05"]);
+      expect(d.servedAt).toBe("2026-05-25");
+      expect(d.warningsUntilSuspension).toBe(0);
+    });
+
+    it("reports suspended_next when the second threshold is NOT yet served", () => {
+      // Same warnings, but the season ends right after the 6th yellow —
+      // round 20 has not been played. The player IS out for the next match.
+      const finished = SEASON_FINISHED.filter((d) => d < "2026-09-05");
+      const res = computeSeasonDiscipline(DOUMBIA_WARNINGS, RULE, finished, null, DOUMBIA_SQUAD);
+      const d = res[0];
+      expect(d.status).toBe("suspended_next");
+      expect(d.servedSuspensions).toEqual(["2026-05-25"]);
+      // Established semantics: the pending count that triggered the
+      // suspension is reported, not zeroed (see the suspended_next tests
+      // above).
+      expect(d.warningsUntilSuspension).toBe(3);
+    });
+
+    it("keeps the first suspension correct when only one threshold is reached", () => {
+      const three = DOUMBIA_WARNINGS.slice(0, 3);
+      const res = computeSeasonDiscipline(three, RULE, SEASON_FINISHED, null, DOUMBIA_SQUAD);
+      const d = res[0];
+      expect(d.status).toBe("served");
+      expect(d.servedSuspensions).toEqual(["2026-05-25"]);
+      expect(d.warningsUntilSuspension).toBe(0);
+    });
+
+    it("reports suspended_next when the threshold is reached and no match has finished since", () => {
+      // Threshold reached in the very last finished match — nothing after it
+      // to serve the suspension in.
+      const finished = SEASON_FINISHED.filter((d) => d <= "2026-08-29");
+      const res = computeSeasonDiscipline(DOUMBIA_WARNINGS, RULE, finished, null, DOUMBIA_SQUAD);
+      const d = res[0];
+      expect(d.status).toBe("suspended_next");
+      expect(d.servedSuspensions).toEqual(["2026-05-25"]);
+      expect(d.warningsUntilSuspension).toBe(3);
+    });
+  });
 });

@@ -557,6 +557,81 @@ is the only path.
 
 ---
 
+## B-019 · The discipline engine reported a served suspension as still pending — RESOLVED 2026-10-13
+
+**Status:** RESOLVED · **Fixed in:** this change (pending deploy)
+
+**What the user reported.** Doumbia's 2026 statistics show six yellow cards, but
+the publicly available warning-risk picture was inconsistent with his match
+participation and reported suspensions. The app kept showing him as
+"Avstängd nästa match" long after any suspension should have been served.
+
+**Investigation (match-level evidence, not aggregate totals).** FotMob's
+unofficial API was probed with a handful of single requests (2026-10-13):
+
+- `leagues?id=67` — Allsvenskan 2026, 240 fixtures, Häcken's 30 rounds with
+  dates and match ids.
+- `matchDetails?matchId=…` — card events carry `card: "Yellow"`, minute,
+  stable `playerId`, and the lineups carry team ids. Player ids are stable
+  across matches (Doumbia = 1910671 in every payload).
+- `playerData?id=1910671` — a per-match log with `yellowCards` per match.
+  Summing the deduplicated Allsvenskan log gives exactly 6 yellows, matching
+  the league leaderboard (`data.fotmob.com/stats/67/season/1000000497/yellow_card.json`,
+  gzipped, 282 entries, Doumbia rank 2 with 6).
+
+**The warning sequence (verified at event level in both endpoints):**
+
+| # | Match | Date | Minute |
+|---|-------|------|--------|
+| 1 | IFK Göteborg–Häcken (R2) | 2026-04-11 | 40' |
+| 2 | Häcken–GAIS (R3) | 2026-04-19 | 51' |
+| 3 | Mjällby–Häcken (R8) | 2026-05-17 | 88' |
+| 4 | Häcken–Kalmar FF (R15) | 2026-08-01 | 57' |
+| 5 | Häcken–Halmstads BK (R17) | 2026-08-17 | 9' |
+| 6 | Häcken–Västerås SK (R19) | 2026-08-29 | 33' |
+
+**Suspension evidence.** After the 3rd warning, Doumbia is absent from the
+round-9 lineup (Elfsborg–Häcken, 2026-05-25) — the only Häcken match he
+missed between rounds 8 and 10. After the 6th warning, he is absent from the
+round-20 lineup (GAIS–Häcken, 2026-09-05), and the club's own matchday
+announcement (bkhacken.se via Bollsvenskan, 2026-09-04) states "Väisänen och
+Doumbia avstängda mot GAIS". Both suspensions were therefore served, exactly
+where the 3-warnings rule predicts.
+
+**Root cause in our engine.** `computeSeasonDiscipline` checked the threshold
+ONCE: it found the first finished match after the 3rd warning, marked the
+suspension served, counted the remaining warnings — and stopped. A player who
+reaches the threshold a SECOND time in the same season was never re-checked,
+so the engine reported `suspended_next` ("Avstängd nästa match") for weeks
+after the second suspension had been served.
+
+**The fix.**
+
+- The serve-check is now **iterative**: each time the pending count reaches
+  the threshold, the suspension is served by the first finished match after
+  that threshold date, the served matches are consumed, and the remaining
+  warnings continue toward the next threshold.
+- New `servedSuspensions` field on `PlayerDiscipline` records every served
+  suspension chronologically (auditable); `servedAt` is kept and always
+  equals the first.
+- 4 new regression tests encode the real Doumbia case (both suspensions
+  recognised; suspended_next when the second is not yet served; single
+  threshold unchanged; threshold reached in the last finished match).
+
+**Verified.** 669 unit tests green, typecheck clean, `pipeline:validate` OK.
+Regenerated ledger: Doumbia `served` with `servedSuspensions`
+[2026-05-25, 2026-09-05] and `warningsUntilSuspension: 0`; all 17 other
+players' statuses unchanged (diffed against the previous commit's data).
+
+**Terms-of-use note (FotMob).** FotMob's ToS prohibits automated retrieval
+without permission, and its robots.txt disallows `/api/*`. The evidence above
+was gathered with a handful of one-off manual requests for this investigation
+only. The production pipeline continues to use SportoMedia (licensed, in use
+since 2026-09); no FotMob integration was added. A FotMob-based nightly would
+require permission from FotMob first.
+
+---
+
 ## B-018 · Squad cards showed stale Wikidata / missing Wikipedia data — RESOLVED 2026-10-12
 
 **Status:** RESOLVED · **Fixed in:** commit `b267cc9` (deployed + byte-verified)
@@ -2184,6 +2259,7 @@ both linked in the sheet.
 | **B-016** | **FIXED 2026-10-09 — deployed `bf7314a`, verified in production** | Stories can now be read in-app, and the four tiles have images. `og:image` was never read (only 4/21 events had a thumbnail) and the generic extractor returned page navigation as "body text". Per-source extractors + `isReadableSource()` allow-list: **bkhacken.se** and **fotbolltransfers.com** are read (both `User-agent: *` / `Disallow:`, neither paywalled); **Expressen is excluded** — paywalled AND Bonnier News' robots.txt prohibits scraping "text, graphics, images". Images use the same gate as bodies. Result: 20/21 events with an image and a readable body, +11.7 KB gzipped. See the B-016 section |
 | **B-017** | **FIXED 2026-10-09 — deployed `564eb31`, verified in production** | Three iPhone fixes: (1) a women's article leaked into the men's feed — `menRelevantNews`'s club fallback admitted a team-neutral item without consulting `classifyRelevance`, which had already returned UNKNOWN; SVT's Schröder piece (ex-Häcken women's player) showed as "Häcken herr". A club item must now also clear the relevance engine. (2) The sheet now runs to the SCREEN BOTTOM with a 12px gap under the header banner. (3) The floating nav's z-index was UNDER the sheet backdrop, so the menu vanished when a sheet opened — it now floats OVER the sheet ("the menu should still float above the card and the card float under it"). Plus `content-visibility` on the long lists for smoother scrolling. See the B-017 section |
 | **B-018** | **RESOLVED 2026-10-12 — deployed `b267cc9`, byte-verified** | Squad cards showed stale Wikidata / missing Wikipedia data while the search tab showed full data for the same player. Root cause measured live: (1) Wikimedia 429s User-Agent-less requests — the nightly's Node fetch sent no UA to the infobox/summary/translation endpoints, and the 429 was swallowed into `null` (19 of 26 players degraded across three nightlies; Rygaard flapped 11→2→11→2 career rows); (2) the per-player merge let degraded results overwrite good ones. Fix: shared `wikimediaHeaders()` on all Wikimedia-facing modules + `appMerge.ts` with a per-player quality guard. Verified: Wembangomo 7 rows + wiki, Helander 10 + wiki, Rygaard 11 + wiki; served sha256 == committed. See the B-018 section |
+| **B-019** | **RESOLVED 2026-10-13 — fix verified against real data, pending deploy** | The discipline engine reported Doumbia as "Avstängd nästa match" for weeks AFTER he had already served his second suspension. Root cause: the serve-check ran ONCE per player — a player who reaches the 3-warning threshold a second time in the same season was never re-checked. FotMob match-level evidence (lineups + the club's own announcement) proves both suspensions were served (round 9, 2026-05-25 and round 20, 2026-09-05). Fix: iterative serve detection + `servedSuspensions` audit field. 4 new regression tests; 669 unit tests green; regenerated ledger shows Doumbia `served` with both dates, all 17 other players unchanged. See the B-019 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |
