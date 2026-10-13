@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-13T21:25:37.452Z",
+    "generatedAt": "2026-10-13T21:29:53.747Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -195,6 +195,13 @@
         "publisher": "BK Häcken",
         "publishedAt": "2026-09-20T22:50:00.000Z",
         "verdict": "men-excluded"
+      },
+      {
+        "title": "Extraöppet i Norrköping: ”Vi ska ut!”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OgakG3/sa-ska-ifk-norrkoping-fira-allsvenskt-avancemang?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-13T21:22:20.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Förlorade efter jättebjudningen",
@@ -463,13 +470,6 @@
         "verdict": "kept"
       },
       {
-        "title": "”Förstör matchen – det är en katastrof”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/eGd7Jy/straffilska-i-helsingborg-foll-mot-ik-brage?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-11T17:38:45.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
         "title": "Gyökeres mållös – när Arsenal körde över Lille",
         "url": "https://www.expressen.se/sport/fotboll/champions-league/gyokeres-mallos-nar-arsenal-korde-over-lille/",
         "publisher": "Expressen",
@@ -610,6 +610,13 @@
         "verdict": "no Häcken relation"
       },
       {
+        "title": "Marklund: Här är svenskorna som var bäst mot Litauen",
+        "url": "https://www.svt.se/sport/fotboll/marklund-har-ar-svenskorna-som-var-bast-mot-litauen-s6xtyg",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-13T21:21:13.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
         "title": "Zećira Mušović tillbaka efter 679 dagar – och sysslolös: ”Stod och frös”",
         "url": "https://www.svt.se/sport/fotboll/zecira-musovic-tillbaka-efter-679-dagar-och-sysslolos-stod-och-fros",
         "publisher": "SVT Sport",
@@ -740,13 +747,6 @@
         "url": "https://www.svt.se/sport/fotboll/isak-bjerkebo-tvingades-lamna-aterbud-till-landslaget-otroligt-tungt",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-13T04:42:29.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Rasmus Dahlin nätade – och klev av skadad",
-        "url": "https://www.svt.se/sport/ishockey/rasmus-dahlin-natade-och-klev-av-skadad",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-12T20:40:45.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -1295,7 +1295,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-13T21:21:19.940Z",
+    "retrievedAt": "2026-10-13T21:26:26.615Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -2292,7 +2292,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Sportbladet-32-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
+      "id": "Sportbladet-33-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
       "title": "Petar U21-landslagsman i Häcken – själv petad i U21–landslaget",
       "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
       "summary": "Tränaren kritisk",
@@ -2345,7 +2345,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Sportbladet-37-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
+      "id": "Sportbladet-38-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
       "title": "Gustafssons udda löfte: ”Då lämnar jag kortet i baren...”",
       "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
       "summary": "Udda löftet ✓ Rygaard: ”Ska ta det dyraste”",
@@ -2738,7 +2738,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Sportbladet-32-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
+      "id": "event-Sportbladet-33-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
       "title": "Petar U21-landslagsman i Häcken – själv petad i U21–landslaget",
       "summary": "Petar U21-landslagsman i Häcken – själv petad i U21–landslaget",
       "publishedAt": "2026-10-12T08:54:42.000Z",
@@ -2800,7 +2800,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Sportbladet-37-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
+      "id": "event-Sportbladet-38-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
       "title": "Gustafssons udda löfte: ”Då lämnar jag kortet i baren...”",
       "summary": "Udda löftet ✓ Rygaard: ”Ska ta det dyraste”",
       "publishedAt": "2026-10-11T17:52:05.000Z",
