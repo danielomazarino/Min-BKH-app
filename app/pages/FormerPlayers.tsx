@@ -86,7 +86,7 @@ function pushRecent(q: string): string[] {
   return next;
 }
 
-export default function FormerPlayers() {
+export default function FormerPlayers({ squadNames = [] }: { squadNames?: string[] }) {
   const [favorites, setFavorites] = useState<StarredPlayer[]>(() => loadFavorites());
   const [draft, setDraft] = useState("");
   const [recent, setRecent] = useState<string[]>(() => loadRecent());
@@ -142,6 +142,11 @@ export default function FormerPlayers() {
     setState({ status: "searching", query });
     const result = await searchPlayersOnline(query, {
       fetch: window.fetch.bind(window),
+      // The current squad is the one identity evidence the app owns: a
+      // candidate matching a squad name leads the list (user, 2026-10-13:
+      // "Doumbia" must find the squad's Abdoulaye Doumbia, not only famous
+      // namesakes).
+      squadNames,
       // The chain is genuinely multi-step (index → cirrus → hydration →
       // labels, measured up to ~10 s on a cold cache). Naming the step is
       // the difference between "the app is thinking" and "the app hung".
@@ -153,7 +158,7 @@ export default function FormerPlayers() {
     writeCache(query, result, Date.now());
     setSearchPhase(null);
     setState(result);
-  }, []);
+  }, [squadNames]);
 
   const submit = (q: string) => {
     setDraft(q);

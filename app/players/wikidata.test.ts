@@ -840,3 +840,144 @@ describe("searchPlayersOnline — the six honest states", () => {
     expect(state.candidates[0].name).toBe("Alexander Jeremejeff");
   });
 });
+
+/**
+ * The Doumbia regression (user, 2026-10-13): searching a BARE SURNAME of a
+ * current squad player returned famous namesakes and a singer — but not the
+ * squad player himself, who was reachable only through the surname graph.
+ * Three defects, each pinned here:
+ *   1. non-footballer people (a singer, a deputy) filled the result list,
+ *   2. the surname backlinks fallback only fired when ZERO people were found,
+ *   3. the backlinks call truncated at 50 links AND wbgetentities rejected
+ *      the >50-id hydration batch silently (toomanyvalues → 0 entities).
+ */
+describe("searchPlayersOnline — bare-surname searches (the Doumbia regression)", () => {
+  // The squad player: Abdoulaye Doumbia, Q139267264. NOT in the index for
+  // "Doumbia" (measured live), but a P734 bearer of surname Q21491321.
+  const ABDOULAYE = {
+    id: "Q139267264",
+    labels: { sv: { value: "Abdoulaye Doumbia" }, en: { value: "Abdoulaye Doumbia" } },
+    descriptions: { sv: { value: "ivoriansk fotbollsspelare" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } }],
+      P734: [{ mainsnak: { datavalue: { value: { id: "Q21491321" } } } }],
+    },
+  };
+  // A famous namesake the index DOES surface.
+  const SEYDOU = {
+    id: "Q299244",
+    labels: { sv: { value: "Seydou Doumbia" }, en: { value: "Seydou Doumbia" } },
+    descriptions: { sv: { value: "ivoriansk fotbollsspelare" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } }],
+    },
+  };
+  // A singer the index also surfaces — the leak the user saw as hit #4.
+  const SINGER = {
+    id: "Q263170",
+    labels: { sv: { value: "Tiken Jah Fakoly" }, en: { value: "Tiken Jah Fakoly" } },
+    descriptions: { sv: { value: "ivoriansk sångare" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: "Q488205" } } } }],
+    },
+  };
+  const SURNAME_ENTITY = {
+    id: "Q21491321",
+    labels: { sv: { value: "Doumbia" } },
+    claims: { P31: [{ mainsnak: { datavalue: { value: { id: "Q101352" } } } }] },
+  };
+
+  /** Stub the whole graph: index (no Abdoulaye), entities, backlinks (with him). */
+  function doumbiaFetch() {
+    return stubFetch((url) => {
+      if (url.includes("wbsearchentities")) {
+        return indexResponse([
+          { id: "Q21491321", label: "Doumbia" },
+          { id: "Q263170", label: "Tiken Jah Fakoly" },
+          { id: "Q299244", label: "Seydou Doumbia" },
+        ]);
+      }
+      if (url.includes("list=backlinks")) {
+        // 54 bearers — Abdoulaye among them, beyond the old 50-link cut.
+        const bearers = Array.from({ length: 53 }, (_, i) => ({ title: `Q9000${i}` }));
+        bearers.push({ title: "Q139267264" });
+        return jsonResponse({ query: { backlinks: bearers } });
+      }
+      if (url.includes("wbgetentities")) {
+        // URLSearchParams decodes the %7C separators; a raw regex match does
+        // not, and then NO id matches and every hydration returns empty —
+        // which reads as "not-found" and fails the test for a reason that has
+        // nothing to do with the code under test.
+        const ids = (new URL(url).searchParams.get("ids") ?? "").split("|");
+        const out: Record<string, unknown> = {};
+        for (const id of ids) {
+          if (id === "Q139267264") out[id] = ABDOULAYE;
+          else if (id === "Q299244") out[id] = SEYDOU;
+          else if (id === "Q263170") out[id] = SINGER;
+          else if (id === "Q21491321") out[id] = SURNAME_ENTITY;
+          else out[id] = { id, labels: { sv: { value: `Bearer ${id}` } }, claims: { P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }], P106: [{ mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } }] } };
+        }
+        return entitiesResponse(out);
+      }
+      return jsonResponse({ query: { search: [] } });
+    });
+  }
+
+  it("finds the squad player for a bare surname even though the index misses him", async () => {
+    const state = (await searchPlayersOnline("Doumbia", { fetch: doumbiaFetch(), squadNames: ["Abdoulaye Doumbia"] })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    expect(state.status).toBe("results");
+    expect(state.candidates.some((c) => c.qid === "Q139267264")).toBe(true);
+  });
+
+  it("the squad player LEADS the list when the query matches his surname", async () => {
+    const state = (await searchPlayersOnline("Doumbia", { fetch: doumbiaFetch(), squadNames: ["Abdoulaye Doumbia"] })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    expect(state.candidates[0].qid).toBe("Q139267264");
+  });
+
+  it("non-footballer people never fill slots ahead of footballers", async () => {
+    const state = (await searchPlayersOnline("Doumbia", { fetch: doumbiaFetch() })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    // The singer (Q263170) must not appear while footballers are still cut
+    // by the candidate cap.
+    const singerIndex = state.candidates.findIndex((c) => c.qid === "Q263170");
+    const footballerCount = state.candidates.filter((c) => /fotboll/i.test(c.description ?? "")).length;
+    if (singerIndex !== -1) {
+      expect(singerIndex).toBeGreaterThan(footballerCount - 1);
+    }
+  });
+
+  it("the backlinks hydration is batched so >50 bearers are not silently lost", async () => {
+    const fetchMock = doumbiaFetch();
+    await searchPlayersOnline("Doumbia", { fetch: fetchMock, squadNames: ["Abdoulaye Doumbia"] });
+    // Every wbgetentities call must carry at most 50 ids — the API rejects
+    // more with toomanyvalues and ZERO entities (measured), which read
+    // exactly like "no bearers".
+    const urls = fetchMock.mock.calls.map((c) => String(c[0])).filter((u) => u.includes("wbgetentities"));
+    for (const u of urls) {
+      const ids = (u.match(/ids=([^&]*)/)?.[1] ?? "").split("|").filter(Boolean);
+      expect(ids.length).toBeLessThanOrEqual(50);
+    }
+  });
+
+  it("a full-name query does NOT spend the extra surname-backlinks request", async () => {
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("wbsearchentities")) return indexResponse([{ id: "Q299244", label: "Seydou Doumbia" }]);
+      if (url.includes("list=backlinks")) return jsonResponse({ query: { backlinks: [] } });
+      return entitiesResponse({ Q299244: SEYDOU });
+    });
+    await searchPlayersOnline("Seydou Doumbia", { fetch: fetchMock });
+    const urls = fetchMock.mock.calls.map((c) => String(c[0]));
+    expect(urls.some((u) => u.includes("list=backlinks"))).toBe(false);
+  });
+});

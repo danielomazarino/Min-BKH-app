@@ -85,24 +85,19 @@ test.describe("Article audit", () => {
 });
 
 /**
- * The manual update check. A stale service worker is the "I don't see your
- * change" report the user explicitly does not want to be called about, so the
- * settings sheet offers a way to force a check instead of waiting for the
- * hourly poll.
+ * The manual update check was REMOVED from the settings sheet (user,
+ * 2026-10-13): the button checked the APP BUNDLE, not the data, and nobody
+ * expected that from a button inside "Data & källor". The automatic hourly
+ * check and the update banner already cover the need. What must hold now:
+ * the button is gone, and the sheet does not pretend to offer it.
  */
 test.describe("Manual update check", () => {
-  test("the settings sheet offers a check and reports the result", async ({ page }) => {
+  test("the settings sheet no longer offers a manual update check", async ({ page }) => {
     await page.route("**/data/app.json", (route) => route.fulfill({ json: appData(false) }));
     await page.goto("/#/installningar");
-    const btn = page.getByTestId("check-update");
-    await expect(btn).toBeVisible();
-    await btn.click();
-    // The check is async (and raced against an 8s timeout), so wait for it to
-    // settle rather than reading the DOM mid-check. Either "you have the
-    // latest" or an update button must appear — never a silent no-op.
-    await expect(btn).toBeEnabled({ timeout: 15_000 });
-    const none = await page.getByTestId("update-none").count();
-    const apply = await page.getByTestId("update-apply").count();
-    expect(none + apply).toBeGreaterThan(0);
+    await expect(page.getByTestId("settings-sheet")).toBeVisible();
+    await expect(page.getByTestId("check-update")).toHaveCount(0);
+    await expect(page.getByTestId("update-none")).toHaveCount(0);
+    await expect(page.getByTestId("update-apply")).toHaveCount(0);
   });
 });

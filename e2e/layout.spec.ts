@@ -376,9 +376,14 @@ test.describe("Settings", () => {
     await expect(page).toHaveURL(/\u0023\/trupp$/);
   });
 
-  test("settings is hash-addressable and reports the current squad size", async ({ page }) => {
+  test("settings is hash-addressable and shows the data status", async ({ page }) => {
+    // RESTRUCTURED 2026-10-13: the squad headcount was REMOVED from the sheet
+    // (user: it duplicated the Trupp tab's own header count and answered no
+    // question this sheet exists for). What must hold instead: the sheet is
+    // hash-addressable and the Data section states the fetch time.
     await page.goto("/#/installningar");
     await expect(page.getByTestId("settings-sheet")).toBeVisible();
-    await expect(page.getByTestId("settings-squad")).toContainText("herrtrupp");
+    await expect(page.getByTestId("settings-updated")).toContainText("Hämtad");
+    await expect(page.getByTestId("settings-squad")).toHaveCount(0);
   });
 });

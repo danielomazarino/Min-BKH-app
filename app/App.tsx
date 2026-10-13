@@ -14,7 +14,7 @@ import { loadAppData, type AppDataState } from "./data";
 import { FloatingTabBar } from "./shared/FloatingTabBar";
 import { Sheet } from "./shared/Sheet";
 import { UpdateBanner } from "./shared/UpdateBanner";
-import { useAppUpdate, type AppUpdate } from "./shared/useAppUpdate";
+import { useAppUpdate } from "./shared/useAppUpdate";
 import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
@@ -177,7 +177,7 @@ function AppShell({ state }: { state: AppDataState }) {
           <Route path="/nyheter" element={<News state={state} />} />
           <Route path="/matcher" element={<Matches state={state} />} />
           <Route path="/trupp" element={<Squad state={state} />} />
-          <Route path="/spelare" element={<FormerPlayers />} />
+          <Route path="/spelare" element={<FormerPlayers squadNames={(state.status === "ready" ? state.data.squadStats ?? [] : []).map((p) => p.playerName)} />} />
           <Route path={SETTINGS_PATH} element={null} />
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -189,7 +189,7 @@ function AppShell({ state }: { state: AppDataState }) {
 
       {settingsOpen && (
         <Sheet title="Data & källor" onClose={closeSettings} testId="settings-sheet">
-          <SettingsPanel state={state} update={update} />
+          <SettingsPanel state={state} />
         </Sheet>
       )}
     </>
@@ -206,23 +206,13 @@ function AppShell({ state }: { state: AppDataState }) {
  * the counts), one technical block (only what the list does not already
  * say). Shorter texts throughout.
  */
-function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpdate }) {
+function SettingsPanel({ state }: { state: AppDataState }) {
   const data = state.status === "ready" ? state.data : null;
   const unavailable = data?.currentDataUnavailable;
   const source = data?.footballSource;
-  const squadCount = data?.squadStats?.length ?? null;
   const audit = data?.freshness.articleAudit;
   const { search } = useLocation();
   const auditOpen = idFromSearch(search) === "artiklar";
-  const [checking, setChecking] = useState(false);
-  const [checked, setChecked] = useState<"none" | "found">("none");
-
-  const onCheck = async () => {
-    setChecking(true);
-    const found = await update.checkNow();
-    setChecking(false);
-    setChecked(found ? "found" : "none");
-  };
 
   /**
    * A raw pipeline error string is not a sentence. The nightly records the
@@ -242,11 +232,32 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
     return "Aktuell matchdata kunde inte hämtas just nu. Datauppdateringen försöker igen i natt.";
   })();
 
+  /**
+   * WHICH source failed, named plainly (user, 2026-10-13: "no clear
+   * explanation to why and what source"). The reason string carries the
+   * failing step as its prefix ("Fixtures ej tillgängliga: …"), so the
+   * mapping is a lookup, not a guess. An unmapped reason renders nothing —
+   * an invented source name would be worse than none.
+   */
+  const unavailableStep = (() => {
+    if (!unavailable) return null;
+    if (/fixtures/i.test(unavailable.reason)) return "SportoMedia (matchlistan)";
+    if (/tabell/i.test(unavailable.reason)) return "SportoMedia (tabellen)";
+    return null;
+  })();
+
   return (
     <div className="stack-4">
-      {/* ---- DATA: the only section open by default. It answers the three
-              questions a supporter actually has: is the data fresh, is
-              anything broken, and is my app up to date. ---- */}
+      {/* ---- DATA: the only section open by default. REORDERED 2026-10-13
+              (user: "very unlogical information and order"): the reading
+              order is now (1) what data is this and when was it fetched,
+              (2) what is broken RIGHT NOW and why, (3) where the deeper
+              detail lives. The squad headcount is GONE — it duplicated the
+              Trupp tab's own header count and answered no question this
+              sheet exists for. The manual update check is GONE too — it
+              checked the APP BUNDLE, not the data, which nobody expected
+              from a button sitting inside "Data & källor"; the automatic
+              hourly check and the update banner already cover it. ---- */}
       <section>
         <div className="mod-label">Data</div>
         <p className="small muted" data-testid="settings-updated">
@@ -264,6 +275,14 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
             <p className="small muted" data-testid="current-unavailable">
               {unavailableHuman}
             </p>
+            {/* WHY IT BROKE, in one sentence, before any detail. The nightly
+                names the failing step; showing it here answers "what source
+                caused this" without making the reader open anything. */}
+            {unavailableStep && (
+              <p className="small dim" data-testid="current-unavailable-step">
+                Källan som misslyckades: {unavailableStep}.
+              </p>
+            )}
             {/* The raw reason, for the maintainer. The nightly's error string
                 can contain a whole JSON blob; it is collapsed behind a
                 disclosure and lives OUT of the supporter's reading path
@@ -283,39 +302,13 @@ function SettingsPanel({ state, update }: { state: AppDataState; update: AppUpda
             </details>
           </>
         )}
-        {squadCount != null && (
-          <p className="small muted" data-testid="settings-squad">
-            Aktuell herrtrupp: {squadCount} spelare. Spelarhistorik söks live mot Wikidata.
+        {!unavailable && (
+          <p className="small dim" data-testid="data-all-ok">
+            Alla datakällor svarade vid senaste nattkörningen.
           </p>
         )}
-        <div className="update-check">
-          <button
-            type="button"
-            className="btn-quiet"
-            onClick={onCheck}
-            disabled={checking}
-            data-testid="check-update"
-          >
-            {checking ? "Söker…" : "Sök efter uppdatering"}
-          </button>
-          {checked === "none" && !checking && (
-            <span className="small dim" data-testid="update-none">
-              Du har senaste versionen.
-            </span>
-          )}
-          {checked === "found" && (
-            <button type="button" className="btn-quiet" onClick={update.applyUpdate} data-testid="update-apply">
-              Ny version finns — uppdatera
-            </button>
-          )}
-        </div>
-        {/* WHAT THE BUTTON DOES (user, 2026-10-13). A button whose effect is
-            invisible invites repeated pressing; one sentence removes the
-            mystery. The app also checks for a new version in the background
-            every hour — this button is the manual version of that. */}
-        <p className="small dim" data-testid="update-check-note">
-          Kontrollerar om en nyare version av appen finns och laddar den i så
-          fall. Appen kollar också automatiskt en gång i timmen.
+        <p className="small dim">
+          Detaljer och mätvärden finns under <strong>Teknisk information</strong> nedan.
         </p>
       </section>
 

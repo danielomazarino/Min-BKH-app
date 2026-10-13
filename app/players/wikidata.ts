@@ -28,7 +28,7 @@
  *    look. It has its own state and its own message.
  */
 
-import { rankCandidates, scoreMatch } from "./playerSearch";
+import { normalizePlayerName, rankCandidates, scoreMatch } from "./playerSearch";
 
 const API = "https://www.wikidata.org/w/api.php";
 const ENTITY_BASE = "https://www.wikidata.org/wiki/Special:EntityPage";
@@ -261,7 +261,10 @@ export function buildBacklinksUrl(qid: string): string {
   u.searchParams.set("list", "backlinks");
   u.searchParams.set("bltitle", qid);
   u.searchParams.set("blnamespace", "0");
-  u.searchParams.set("bllimit", "50");
+  // 500, not 50: measured 2026-10-13 on Q21491321 (Doumbia) — 50 links
+  // truncated BEFORE the current squad player the fallback exists to find.
+  // 500 covers the whole list in one call (54 links, no continuation).
+  u.searchParams.set("bllimit", "500");
   u.searchParams.set("format", "json");
   u.searchParams.set("origin", "*");
   return u.toString();
@@ -634,6 +637,18 @@ export interface SearchDeps {
    * simply omit it.
    */
   onPhase?: (phase: SearchPhase) => void;
+  /**
+   * Names of the CURRENT squad players (user, 2026-10-13). A supporter who
+   * searches a bare surname is most often looking for a player in the squad
+   * they follow — but Wikidata's index ranks by article popularity, and a
+   * squad player's article can be newer and thinner than a famous namesake's
+   * (measured: "Doumbia" returned 8 other bearers and NOT Abdoulaye Doumbia,
+   * who was in the graph all along). When a candidate's name matches a squad
+   * name, that candidate leads the list. A name match is still only a HINT —
+   * the candidate is displayed with its own description, so a wrong namesake
+   * stays visible.
+   */
+  squadNames?: readonly string[];
 }
 
 /** The stages a search walks through, in order. */
@@ -761,7 +776,41 @@ export async function searchPlayersOnline(
     isFootballer,
   );
 
-  let chosen = ranked.ordered.slice(0, MAX_CANDIDATES);
+  // FOOTBALLERS LEAD, ALWAYS (user, 2026-10-13: searching "Doumbia" for the
+  // CURRENT squad player Abdoulaye Doumbia returned a singer and a deputy
+  // ahead of any footballer context). rankCandidates already sorts footballers
+  // first, but `ordered` still CONTAINS the non-footballers — and when there
+  // are fewer footballers than MAX_CANDIDATES they fill the remaining slots,
+  // presenting a singer as the 4th hit for a footballer query. The app is a
+  // football app: a person who is not a footballer is only shown when there
+  // is room after the footballers, never interleaved among them.
+  //
+  // SQUAD MEMBERS LEAD THE FOOTBALLERS. The squad list is the one piece of
+  // identity evidence the app owns outright, so a candidate whose name matches
+  // a squad name is placed ahead of the other footballers. Normalisation is
+  // the same one the scorer uses, so "Mikkel Rygaard Jensen" matches a
+  // candidate labelled "Mikkel Rygaard". Token-subset matching covers the
+  // token-order difference ("Doumbia Ibrahima" vs "Abdoulaye Doumbia" needs
+  // the shared token check, not exact equality).
+  const squadNorm = (deps.squadNames ?? []).map(normalizePlayerName).filter((n) => n.length > 0);
+  const isSquadName = (e: Entity) => {
+    const label = pickLabel(e, PREFERRED_LANGUAGES);
+    if (!label) return false;
+    const labelNorm = normalizePlayerName(label);
+    if (squadNorm.some((s) => s === labelNorm)) return true;
+    // Token-subset: every token of the candidate label appears in some squad
+    // name (or vice versa) — catches token-order and middle-name differences.
+    const labelTokens = labelNorm.split(" ");
+    return squadNorm.some((s) => {
+      const sTokens = s.split(" ");
+      return sTokens.every((t) => labelTokens.includes(t)) || labelTokens.every((t) => sTokens.includes(t));
+    });
+  };
+  const squadFirst = deps.squadNames && deps.squadNames.length > 0
+    ? ranked.footballers.filter(isSquadName)
+    : [];
+  const restFootballers = ranked.footballers.filter((e) => !squadFirst.includes(e));
+  let chosen = [...squadFirst, ...restFootballers, ...ranked.others].slice(0, MAX_CANDIDATES);
   let discarded = people.length - chosen.length;
 
   if (ranked.footballers.length === 0) {
@@ -830,6 +879,59 @@ export async function searchPlayersOnline(
       // labels were never collected above. Resolve them now, still in one call.
       phase("labels");
       index = await resolveLabels(collectLabelQids(viaSurname), deps, index);
+      labels = index.labels;
+    }
+  }
+
+  // ---- 5b. Surname completion for BARE-SURNAME queries -------------------
+  //
+  // MEASURED 2026-10-13, user report: searching "Doumbia" — the surname of
+  // the CURRENT squad player Abdoulaye Doumbia — returned four hits, none of
+  // them him. The mechanism, verified live:
+  //   - the prefix index has 9 hits for "Doumbia" but NOT Q139267264 (his
+  //     article is too new for the index),
+  //   - some hits ARE people (Seydou Doumbia, a singer, a deputy), so
+  //     `chosen.length > 0` and the surname fallback above NEVER FIRED,
+  //   - yet the surname entity's backlinks DO contain him (54 links, he is
+  //     among them — the old bllimit=50 truncated him out; see below).
+  //
+  // So when the query is a BARE SURNAME, the index hits are evidence of a
+  // surname, not evidence of completeness: there may be many more bearers of
+  // that surname than the index shows. For that query shape — and ONLY that
+  // shape, so "Seydou Doumbia" still costs two requests — the backlinks
+  // lookup runs even when people were found, and its footballers are MERGED
+  // ahead of the index people (they are strictly better evidenced: the graph
+  // says they bear this surname, and they are filtered to footballers).
+  //
+  // bllimit is 500, not 50: measured on Q21491321 (Doumbia), 50 links TRUNCATED
+  // before Abdoulaye — the exact player this fix exists to find. 500 covers
+  // all 54 in one call with no continuation.
+  if (chosen.length > 0 && query.indexOf(" ") === -1) {
+    const surnameEntities = indexEntities.filter(isNameEntity).map((e) => e.id);
+    const viaSurname = await peopleBySurname(surnameEntities, deps);
+    if (viaSurname.length > 0) {
+      // Rank the surname bearers the same way the index people were ranked:
+      // footballers first (they already are), then name match, then squad
+      // membership. Without the ranking, the merged list is in entity-id
+      // order and a current squad player can sit at position 13 of 15 —
+      // measured: Abdoulaye Doumbia was sliced out entirely.
+      const surnameRanked = rankCandidates(
+        viaSurname,
+        query,
+        (e) => pickLabel(e, PREFERRED_LANGUAGES) ?? e.id,
+        isFootballer,
+      );
+      const surnameSquadFirst = deps.squadNames && deps.squadNames.length > 0
+        ? surnameRanked.footballers.filter(isSquadName)
+        : [];
+      const surnameRest = surnameRanked.footballers.filter((e) => !surnameSquadFirst.includes(e));
+      const orderedSurname = [...surnameSquadFirst, ...surnameRest, ...surnameRanked.others];
+      const seen = new Set(orderedSurname.map((e) => e.id));
+      const merged = [...orderedSurname, ...chosen.filter((e) => !seen.has(e.id))];
+      chosen = merged.slice(0, MAX_CANDIDATES);
+      discarded = Math.max(0, people.length + viaSurname.length - chosen.length);
+      phase("labels");
+      index = await resolveLabels(collectLabelQids(chosen), deps, index);
       labels = index.labels;
     }
   }
@@ -914,11 +1016,22 @@ async function peopleBySurname(surnameQids: readonly string[], deps: SearchDeps)
   }
   if (found.size === 0) return [];
 
+  // Hydrate in batches of 50. wbgetentities REJECTS more than 50 ids with a
+  // `toomanyvalues` error (measured 2026-10-13: 54 backlink ids → HTTP 200
+  // with ZERO entities and an error body — a silent empty result that read
+  // exactly like "no bearers of this surname"). The bllimit raise to 500
+  // above is what made batches necessary: a common surname has far more
+  // bearers than one 50-id call can hydrate.
   try {
-    const res = await deps.fetch(buildEntitiesUrl([...found]), { headers: requestHeaders(), mode: "cors" });
-    if (!res.ok) return [];
-    const json = (await res.json()) as { entities?: Record<string, Entity> };
-    return Object.values(json.entities ?? {})
+    const ids = [...found];
+    const out: Entity[] = [];
+    for (let i = 0; i < ids.length; i += 50) {
+      const res = await deps.fetch(buildEntitiesUrl(ids.slice(i, i + 50)), { headers: requestHeaders(), mode: "cors" });
+      if (!res.ok) continue;
+      const json = (await res.json()) as { entities?: Record<string, Entity> };
+      out.push(...Object.values(json.entities ?? {}));
+    }
+    return out
       .filter(isPerson)
       .filter(isFootballer)
       .filter((e) => !isNameEntity(e));
