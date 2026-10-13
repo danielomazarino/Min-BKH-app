@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-13T16:58:40.883Z",
+    "generatedAt": "2026-10-13T17:13:20.713Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -470,6 +470,13 @@
         "verdict": "no Häcken relation"
       },
       {
+        "title": "Adrian von Heijne har sagt upp sig från Bajen – är detaljer från Sirius",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/adrian-von-heijne-har-sagt-upp-sig-fran-bajen-ar-detaljer-fran-sirius/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-13T17:02:16.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
         "title": "Johanna Rytting Kaneryd och Kosovare Asllani på plats under Sveriges match",
         "url": "https://www.expressen.se/sport/fotboll/landslaget/johanna-rytting-kaneryd-och-kosovare-asllani-pa-plats-under-sveriges-match/",
         "publisher": "Expressen",
@@ -601,13 +608,6 @@
         "publisher": "Expressen",
         "publishedAt": "2026-10-12T17:24:47.000Z",
         "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "PL-panelen: ”Uppriktigt chockad över det”",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/pl-panelen-pekar-ut-arets-svenskgaranti-i-vm-elvan-cmcvl/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-12T15:51:24.000Z",
-        "verdict": "no Häcken relation"
       },
       {
         "title": "Andreas Almgren: ”Jag kanske är naiv och blir satt på plats”",
@@ -1211,7 +1211,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-13T16:54:24.404Z",
+    "retrievedAt": "2026-10-13T17:10:00.418Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -2101,7 +2101,7 @@
   "cardMatchesInspected": 23,
   "news": [
     {
-      "id": "Expressen-1-https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
+      "id": "Expressen-2-https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
       "title": "Hammarbys sponsor kopplas till grov brottslighet",
       "url": "https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
       "summary": "Hammarbys huvudsponsor Revolut pekas ut av svensk polis. Verktyget ska ha använts i ryskorganiserad penningtvätt. – Vi ser självklart jätteallvarligt på det, säger Hammarbys försäljningschef Thomas Lindgren till Idrottsbranschen.",
@@ -2518,7 +2518,7 @@
   ],
   "newsEvents": [
     {
-      "id": "event-Expressen-1-https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
+      "id": "event-Expressen-2-https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
       "title": "Hammarbys sponsor kopplas till grov brottslighet",
       "summary": "Hammarbys huvudsponsor Revolut pekas ut av svensk polis. Verktyget ska ha använts i ryskorganiserad penningtvätt. – Vi ser självklart jätteallvarligt på det, säger Hammarbys försäljningschef Thomas Lindgren till Idrottsbranschen.",
       "publishedAt": "2026-10-13T16:46:27.000Z",
