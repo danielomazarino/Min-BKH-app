@@ -100,6 +100,21 @@ export function mergeAppData(prev: AppData, next: AppData): AppData {
     squadStats: next.squadStats?.length ? next.squadStats : prev.squadStats,
     squadEnrichment,
     disciplineRule: next.disciplineRule ?? prev.disciplineRule,
-    currentDataUnavailable: next.currentDataUnavailable ?? prev.currentDataUnavailable,
+    // The unavailability flag describes THE CURRENT RUN, not history.
+    //
+    // B-020 (2026-10-13): `next.currentDataUnavailable ?? prev.…` resurrected
+    // a stale failure forever. The 2026-10-11 nightly hit a SportoMedia
+    // INTERNAL_SERVER_ERROR, the flag was written, and every later SUCCESSFUL
+    // run left `next.currentDataUnavailable` undefined — so `??` fell back to
+    // the old flag and the app showed "Aktuell matchdata saknas just nu" for
+    // days while the match data itself was fresh and correct. A successful
+    // run (next has data) must CLEAR the flag; only a run that itself failed
+    // carries it.
+    currentDataUnavailable: next.currentDataUnavailable ?? (nextHasFootballData(next) ? undefined : prev.currentDataUnavailable),
   };
+}
+
+/** True when the run produced its own football data (fixtures fetch succeeded). */
+function nextHasFootballData(next: AppData): boolean {
+  return Boolean(next.nextMatch || next.lastResult || next.recent.length > 0);
 }

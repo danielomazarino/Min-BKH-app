@@ -147,4 +147,37 @@ describe("mergeAppData", () => {
     const merged = mergeAppData(prev, base());
     expect(merged.table).toHaveLength(1);
   });
+
+  // B-020 (2026-10-13): the unavailability flag must describe the CURRENT run.
+  it("clears a stale unavailability flag when the new run has football data", () => {
+    const prev = base();
+    prev.currentDataUnavailable = {
+      reason: "Fixtures ej tillgängliga: INTERNAL_SERVER_ERROR",
+      checkedAt: "2026-10-11T03:50:32.080Z",
+    };
+    const next = base();
+    next.nextMatch = { id: 1, date: "2026-10-18", homeTeam: "Malmö FF", awayTeam: "Häcken" } as never;
+    const merged = mergeAppData(prev, next);
+    expect(merged.currentDataUnavailable).toBeUndefined();
+  });
+
+  it("keeps the flag when the new run itself failed (no football data)", () => {
+    const prev = base();
+    prev.currentDataUnavailable = {
+      reason: "Fixtures ej tillgängliga: INTERNAL_SERVER_ERROR",
+      checkedAt: "2026-10-11T03:50:32.080Z",
+    };
+    const merged = mergeAppData(prev, base());
+    expect(merged.currentDataUnavailable?.checkedAt).toBe("2026-10-11T03:50:32.080Z");
+  });
+
+  it("carries a fresh flag from a run that itself failed", () => {
+    const next = base();
+    next.currentDataUnavailable = {
+      reason: "Fixtures ej tillgängliga: timeout",
+      checkedAt: "2026-10-13T03:50:00.000Z",
+    };
+    const merged = mergeAppData(base(), next);
+    expect(merged.currentDataUnavailable?.reason).toBe("Fixtures ej tillgängliga: timeout");
+  });
 });
