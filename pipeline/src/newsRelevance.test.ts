@@ -56,6 +56,80 @@ describe("classifyRelevance — regression against known false positives", () =>
     const r = cls("Viktor Andersson räddade poängen", "Målvakten Viktor Andersson var stor i mål för danska klubben.");
     expect(r.relevance).toBe("UNRELATED");
   });
+
+  it("chef Marcus Samuelsson (no Häcken context) is UNRELATED — surname-only collision with Olle Samuelsson", () => {
+    // Real false positive, GP 2026-10-13: the cooking-show article reached the
+    // men's feed because the surname-only pass matched "Samuelsson" against
+    // squad player Olle Samuelsson. "samuelsson" is a top-20 Swedish surname
+    // and is now in AMBIGUOUS_SURNAMES.
+    const known: KnownPersons = { currentPlayers: ["Olle Samuelsson"], formerPlayers: [] };
+    const r = classifyRelevance(
+      {
+        title: "Sex svenskar slåss om ett kockjobb i New York",
+        summary: "Marcus Samuelsson: ”En enorm utmaning” • Leder SVT:s jakt på Sveriges nästa stjärnkock.",
+        publisher: "Göteborgs-Posten",
+      },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("full-name match still works for non-ambiguous surnames (Olle Samuelsson named in full)", () => {
+    // The fix must not break genuine full-name matches: "Olle Samuelsson" as a
+    // FULL name is a pass-1 match (surnameOnly: false), which ignores
+    // AMBIGUOUS_SURNAMES entirely.
+    const known: KnownPersons = { currentPlayers: ["Olle Samuelsson"], formerPlayers: [] };
+    const r = classifyRelevance(
+      { title: "Olle Samuelsson tillbaka i truppen", summary: "Häcken möter Malmö på hemmaplan.", publisher: "Göteborgs-Posten" },
+      known,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("Olle Samuelsson");
+  });
+
+  it("Hanna Lundkvist (women's NT, no Häcken context) is UNRELATED — surname-only collision with Adam Lundkvist", () => {
+    // Real false positive, Expressen 2026-10-13: "Svensk kross – och Hanna
+    // Lundkvist slog till med drömmål" (women's World Cup qualifier, 15–0 vs
+    // Lithuania) reached the men's feed because "lundkvist" matched squad
+    // player Adam Lundkvist. The summary has no dam-keywords, so the surname
+    // pass was the ONLY thing that admitted it.
+    const known: KnownPersons = { currentPlayers: ["Adam Lundkvist"], formerPlayers: [] };
+    const r = classifyRelevance(
+      {
+        title: "Svensk kross – och Hanna Lundkvist slog till med drömmål",
+        summary: "Total överkörning. Sverige är ett steg närmare VM i Brasilien efter 15–0 i dubbelmötet mot Litauen. Nu väntar Skottland i playoffinal.",
+        publisher: "Expressen",
+      },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("Thomas Lindgren (Hammarby sponsor story) is UNRELATED — surname-only collision with Gustav Lindgren", () => {
+    // Real false positive, Expressen 2026-10-13: "Hammarbys sponsor kopplas
+    // till grov brottslighet" reached the men's feed because the sales chief's
+    // surname "Lindgren" matched squad player Gustav Lindgren.
+    const known: KnownPersons = { currentPlayers: ["Gustav Lindgren"], formerPlayers: [] };
+    const r = classifyRelevance(
+      {
+        title: "Hammarbys sponsor kopplas till grov brottslighet",
+        summary: "Hammarbys huvudsponsor Revolut pekas ut av svensk polis. Verktyget ska ha använts i ryskorganiserad penningtvätt. – Vi ser självklart jätteallvarligt på det, säger Hammarbys försäljningschef Thomas Lindgren till Idrottsbranschen.",
+        publisher: "Expressen",
+      },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("full-name Adam Lundkvist in a Häcken article still matches (ambiguous surname does not block pass 1)", () => {
+    const known: KnownPersons = { currentPlayers: ["Adam Lundkvist"], formerPlayers: [] };
+    const r = classifyRelevance(
+      { title: "Adam Lundkvist klar för Häcken-match", summary: "Häcken möter Djurgården på Bravida Arena.", publisher: "Göteborgs-Posten" },
+      known,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("Adam Lundkvist");
+  });
 });
 
 describe("classifyRelevance — multi-part surnames (measured 2026-10-08)", () => {

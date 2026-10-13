@@ -548,6 +548,12 @@ export default function FormerPlayers({ squadNames = [] }: { squadNames?: string
  * search, and a Wikidata outage. The Häcken badge is shown as it was
  * recorded at the time of starring and is explicitly not a filter: a player
  * without a recorded link is listed exactly like one with it.
+ *
+ * The unverified badge reads "EJ BEKRÄFTAT" (not "OKÄNT"): a tester
+ * (2026-10-13) read "HÄCKEN OKÄNT" as a squad/prospect status — as if the
+ * player were a future Häcken signing of unknown standing. "Ej bekräftat"
+ * states the actual fact — the Wikidata link is not verified — and cannot
+ * be misread as a roster claim.
  */
 function StarredRow({
   f,
@@ -564,7 +570,7 @@ function StarredRow({
         <span className="name">
           {f.name}
           {f.hackenTeam && <span className="tag">HÄCKEN{f.hackenTeam === "women" ? " DAM" : ""}</span>}
-          {!f.hackenTeam && <span className="tag tag-quiet">HÄCKEN OKÄNT</span>}
+          {!f.hackenTeam && <span className="tag tag-quiet">HÄCKEN EJ BEKRÄFTAT</span>}
         </span>
         <span className="sub">
           {f.dateOfBirth ? `f. ${f.dateOfBirth}` : "födelsedatum saknas"}

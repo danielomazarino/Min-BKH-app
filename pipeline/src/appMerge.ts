@@ -89,6 +89,9 @@ export function mergeAppData(prev: AppData, next: AppData): AppData {
     lastResult: next.lastResult ?? prev.lastResult,
     upcoming: next.upcoming.length ? next.upcoming : prev.upcoming,
     recent: next.recent.length ? next.recent : prev.recent,
+    // Full season fixture list (team-sheet head-to-head). Same last-known-good
+    // rule as recent/upcoming: an empty fetch must not erase the season.
+    seasonMatches: next.seasonMatches?.length ? next.seasonMatches : prev.seasonMatches,
     lastMatchDetail: next.lastMatchDetail ?? prev.lastMatchDetail,
     table: next.table.length ? next.table : prev.table,
     tablePosition: next.tablePosition ?? prev.tablePosition,

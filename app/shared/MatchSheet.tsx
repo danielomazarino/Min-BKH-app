@@ -16,8 +16,10 @@
  * the event list. Presenting "events per minute" as a football statistic
  * would be exactly that kind of invention, so it is done nowhere in this app.
  */
+import { useState } from "react";
 import type { MatchDetail } from "../../pipeline/src/types";
 import { Sheet } from "./Sheet";
+import { fetchLineupOnDemand, type LineupOutcome } from "../players/lineupLookup";
 import {
   buildTimeline,
   competitionLabel,
@@ -39,7 +41,6 @@ export function MatchSheet({ detail, onClose }: { detail: MatchDetail; onClose: 
   // `buildTimeline` also emits half-time dividers, which are not events.
   const scorers = items.filter((i): i is TimelineRowItem => i.kind === "goal");
   const stats = detail.playerStats ?? [];
-
   return (
     <Sheet
       title={`${teams.left} – ${teams.right}`}
@@ -99,7 +100,10 @@ export function MatchSheet({ detail, onClose }: { detail: MatchDetail; onClose: 
           </div>
         )}
 
-        {/* ---- 4. real statistics, or an honest gap ---- */}
+        {/* ---- 4. the starting eleven, ON DEMAND ---- */}
+        <LineupSection detail={detail} />
+
+        {/* ---- 5. real statistics, or an honest gap ---- */}
         <div>
           <div className="mod-label">Statistik</div>
           {stats.length > 0 ? (
@@ -152,6 +156,112 @@ function TimelineRow({ item }: { item: TlItem }) {
         <span className="who">{item.who}</span> <span className="dim xsmall">{label}</span>
         {item.assist && <span className="assist">assist {item.assist}</span>}
       </span>
+    </div>
+  );
+}
+
+/**
+ * The starting eleven — fetched ON DEMAND, never polled.
+ *
+ * Tester request (2026-10-13): an indicator when the eleven is released
+ * ("preliminär och sen slutlig elva", "det kan ske släpps på häckens
+ * hemsida"). The user's constraint is explicit: a lookup when the user taps
+ * is fine (the same pattern as the player Wikipedia lookup), but constant
+ * polling and notifications are NOT worth it.
+ *
+ * So this is a button, not a feed: one GraphQL query fires per tap, the
+ * result lives in component state only, and nothing runs in the background.
+ * Lineups are published close to kickoff, so before that the answer is the
+ * honest "inte publicerad än" — which is exactly the indicator the tester
+ * asked for, without any machinery to maintain.
+ */
+function LineupSection({ detail }: { detail: MatchDetail }) {
+  const [state, setState] = useState<
+    { phase: "idle" } | { phase: "loading" } | { phase: "done"; outcome: LineupOutcome }
+  >({ phase: "idle" });
+
+  const load = () => {
+    setState({ phase: "loading" });
+    void fetchLineupOnDemand(detail.id).then((outcome) => setState({ phase: "done", outcome }));
+  };
+
+  if (state.phase === "idle") {
+    return (
+      <div>
+        <div className="mod-label">Uppställning</div>
+        <button type="button" className="icon-btn" onClick={load} data-testid="lineup-fetch" style={{ width: "auto", padding: "6px 12px", fontSize: 13 }}>
+          Hämta uppställning
+        </button>
+      </div>
+    );
+  }
+
+  if (state.phase === "loading") {
+    return (
+      <div>
+        <div className="mod-label">Uppställning</div>
+        <p className="small dim" style={{ margin: "4px 0 0" }} aria-busy="true" data-testid="lineup-loading">
+          Hämtar…
+        </p>
+      </div>
+    );
+  }
+
+  const { outcome } = state;
+  if (outcome.kind === "error") {
+    return (
+      <div>
+        <div className="mod-label">Uppställning</div>
+        <p className="small dim" style={{ margin: "4px 0 0" }} data-testid="lineup-error">
+          Kunde inte hämta uppställningen ({outcome.message}). Försök igen senare.
+        </p>
+      </div>
+    );
+  }
+  if (outcome.kind === "not-published") {
+    return (
+      <div>
+        <div className="mod-label">Uppställning</div>
+        <p className="small dim" style={{ margin: "4px 0 0" }} data-testid="lineup-not-published">
+          Uppställningen är inte publicerad än. Den slås fast närmare avspark —
+          prova igen närmare matchen.
+        </p>
+      </div>
+    );
+  }
+
+  const l = outcome.lineups;
+  return (
+    <div>
+      <div className="mod-label">Uppställning</div>
+      <div className="stack-2" data-testid="lineup-content">
+        {[l.homeTeam, l.visitingTeam]
+          .filter((t): t is NonNullable<typeof t> => t != null)
+          .map((t) => (
+            <div key={t.abbrv}>
+              <p className="small" style={{ margin: "4px 0 2px", fontWeight: 600 }}>
+                {t.abbrv}{t.formation ? ` · ${t.formation}` : ""}
+              </p>
+              <p className="small dim" style={{ margin: "0 0 2px" }}>Startelva</p>
+              <ul className="plain-list" style={{ margin: 0 }}>
+                {t.starting.map((p, i) => (
+                  <li key={i}>
+                    {p.shirtNumber != null ? <b>{p.shirtNumber}</b> : null} {p.givenName} {p.surName}
+                    {p.position ? <span className="dim xsmall"> ({p.position})</span> : null}
+                  </li>
+                ))}
+              </ul>
+              {t.substitutes.length > 0 && (
+                <>
+                  <p className="small dim" style={{ margin: "6px 0 2px" }}>Avbytare</p>
+                  <p className="small" style={{ margin: 0 }}>
+                    {t.substitutes.map((p) => `${p.givenName} ${p.surName}`).join(", ")}
+                  </p>
+                </>
+              )}
+            </div>
+          ))}
+      </div>
     </div>
   );
 }

@@ -1670,22 +1670,16 @@ main {
   color: var(--text-3);
   margin-top: 1px;
 }
-.mrow .ven {
-  flex: none;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--text-3);
-  border: 1px solid var(--hairline);
-  border-radius: 3px;
-  padding: 1px 4px;
-}
 .mrow .res {
   flex: none;
   font-size: 10px;
   font-weight: 700;
   color: var(--text-3);
 }
+/* The .mrow .ven venue badge (H/B) was removed 2026-10-13: two adjacent
+   single-letter badges at the row's right edge read as cryptic pairs
+   ("S/H", "O/B", "F/H"). The venue is a word in the row's meta line now.
+   (.result .ven and .hero-tap .ven are the chevron icon and remain.) */
 
 /* ==========================================================================
    Match timeline — the last match's events, which the old UI never showed

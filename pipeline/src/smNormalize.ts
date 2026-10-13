@@ -89,6 +89,12 @@ export function normalizeSmStandings(rows: SmStandingsRow[]): LeagueTableRow[] {
       played: Number(stats.gp ?? 0),
       points: Number(stats.pts ?? 0),
       goalDiff: Number.isFinite(Number(stats.d)) ? Number(stats.d) : gf - ga,
+      // Season W/D/L record — shown in the team sheet as form context. The
+      // pipeline only ingests Häcken's fixtures, so a per-team last-5 form
+      // strip is NOT computable; the season record is what we can prove.
+      wins: Number(stats.w ?? 0),
+      draws: Number(stats.t ?? 0),
+      losses: Number(stats.l ?? 0),
     };
   });
 }

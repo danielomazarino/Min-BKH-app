@@ -128,6 +128,17 @@ const AMBIGUOUS_SURNAMES = new Set([
   // among the most common Swedish/Danish surnames
   "andersson", "johansson", "karlsson", "gustafson", "gustafsson", "nilsson",
   "eriksson", "larsson", "olsson", "persson", "svensson", "jansson", "jensen",
+  // "samuelsson" is a top-20 Swedish surname shared by non-football celebrities:
+  // the chef Marcus Samuelsson ("Sex svenskar slåss om ett kockjobb i New York",
+  // GP 2026-10-13) matched squad player Olle Samuelsson via the surname-only
+  // pass and a cooking show reached the men's feed as "men" news.
+  "samuelsson",
+  // Same class, same night (Expressen 2026-10-13): "Hanna Lundkvist" (women's
+  // national team, 15–0 vs Lithuania) matched Adam Lundkvist, and "Thomas
+  // Lindgren" (Hammarby's sales chief, sponsor story) matched Gustav Lindgren.
+  // "lindberg" is also top-20 (SCB) and shares the same risk with Julius
+  // Lindberg / Wilson Lindberg Uhrström.
+  "lundkvist", "lindgren", "lindberg",
 ]);
 
 /**

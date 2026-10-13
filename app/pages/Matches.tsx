@@ -16,13 +16,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import type { AppDataState } from "../data";
 import type { MatchRef } from "../../pipeline/src/types";
 import { MatchSheet } from "../shared/MatchSheet";
+import { TeamSheet } from "../shared/TeamSheet";
 import {
   competitionLabel,
   daysUntil,
   fmtDateTime,
   fmtDay,
   matchTeams,
-  RESULT_WORD,
   resultOf,
   scoreForHomeAway,
 } from "../shared/format";
@@ -46,6 +46,13 @@ export default function Matches({ state }: { state: AppDataState }) {
   // moment data arrived, and with it every e2e test that visited /matcher.
   // A hook may never sit behind a conditional return.
   const tableRef = useRef<HTMLElement | null>(null);
+  // Team sheet: tapping a league-table row opens that team's position, arena
+  // and fixtures against Häcken (tester request, 2026-10-13). Local state is
+  // enough — the sheet is derived from data already in memory, so there is no
+  // deep link to preserve and nothing to restore on reload.
+  // THIS HOOK SITS WITH THE OTHERS ABOVE THE EARLY RETURNS — see the #310
+  // warning below: a hook may never sit behind a conditional return.
+  const [openTeam, setOpenTeam] = useState<string | null>(null);
   const wantsTable = new URLSearchParams(search).get("section") === "tabellen";
   const tableRows = state.status === "ready" ? state.data.table.length : 0;
   useEffect(() => {
@@ -94,6 +101,8 @@ export default function Matches({ state }: { state: AppDataState }) {
   const openMatch = openId && detailId != null && String(detailId) === openId ? detail : null;
   const closeMatch = () => navigate("/matcher");
 
+  const openTeamRow = openTeam ? data.table.find((t) => t.team === openTeam) ?? null : null;
+
   return (
     <>
       <div className="layer" data-testid="matches-page">
@@ -140,7 +149,15 @@ export default function Matches({ state }: { state: AppDataState }) {
             {data.table.map((t) => {
               const self = t.team === "BK Häcken";
               return (
-                <div className="mrow" key={t.team} style={self ? { color: "var(--text)" } : undefined} data-testid="table-row">
+                <button
+                  type="button"
+                  className="mrow"
+                  key={t.team}
+                  style={self ? { color: "var(--text)" } : undefined}
+                  data-testid="table-row"
+                  onClick={() => setOpenTeam(t.team)}
+                  aria-label={`${t.team}, ${t.rank}. plats, ${t.points} poäng. Visa lagets uppgifter.`}
+                >
                   <span className="score" style={{ fontSize: 13, color: self ? "var(--yellow)" : "var(--text-3)" }}>
                     {t.rank}
                   </span>
@@ -154,13 +171,14 @@ export default function Matches({ state }: { state: AppDataState }) {
                     </span>
                   </span>
                   <span className="res">{t.points} p</span>
-                </div>
+                </button>
               );
             })}
           </section>
         )}
       </div>
       {openMatch && <MatchSheet detail={openMatch} onClose={closeMatch} />}
+      {openTeamRow && <TeamSheet team={openTeamRow} data={data} onClose={() => setOpenTeam(null)} />}
     </>
   );
 }
@@ -212,19 +230,23 @@ function MatchRow({ m, onOpen }: { m: MatchRef; onOpen?: () => void }) {
           {teams.left} – {teams.right}
         </span>
         <span className="meta">
-          {fmtDateTime(m.date)} · {competitionLabel(m.competition)}
+          {fmtDateTime(m.date)} · {isHome ? "Hemma" : "Borta"} · {competitionLabel(m.competition)}
         </span>
-      </span>
-      {res ? (
-        <span className="res" aria-hidden="true">
-          {RESULT_WORD[res]}
-        </span>
-      ) : null}
-      <span className="ven" aria-hidden="true">
-        {isHome ? "H" : "B"}
       </span>
     </>
   );
+
+  // Tester feedback (2026-10-13), two rounds:
+  //   1. The row used to end with TWO adjacent single-letter badges — the
+  //      result letter (S/O/F) and a venue badge (H/B) — which read as
+  //      cryptic pairs ("S/H", "O/B", "F/H") crowding the right edge. The
+  //      venue became a word in the meta line ("Hemma"/"Borta").
+  //   2. The result letter itself was then removed too: the coloured edge
+  //      (::before, w/d/l) and the score already state the result, so the
+  //      letter was a third redundant cue. The result REMAINS in the row's
+  //      accessible name ("seger"/"oavgjort"/"förlust"), so screen-reader
+  //      users keep the non-colour cue the a11y suite requires — it is only
+  //      the visible letter that is gone.
 
   const label = `${isHome ? "Hemma" : "Borta"}: ${teams.left} mot ${teams.right}, ${
     score ?? "inget resultat"

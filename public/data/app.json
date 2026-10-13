@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-13T21:29:53.747Z",
+    "generatedAt": "2026-10-13T23:56:32.004Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,13 +16,13 @@
     "sourceCounts": {
       "Göteborgs-Posten": {
         "fetched": 46,
-        "kept": 1,
-        "dropped": 45
+        "kept": 0,
+        "dropped": 46
       },
       "Sportbladet": {
         "fetched": 39,
-        "kept": 2,
-        "dropped": 37
+        "kept": 1,
+        "dropped": 38
       },
       "BK Häcken": {
         "fetched": 20,
@@ -31,13 +31,13 @@
       },
       "Expressen": {
         "fetched": 20,
-        "kept": 2,
-        "dropped": 18
+        "kept": 0,
+        "dropped": 20
       },
       "Fotbolltransfers": {
         "fetched": 20,
-        "kept": 15,
-        "dropped": 5
+        "kept": 19,
+        "dropped": 1
       },
       "SVT Sport": {
         "fetched": 20,
@@ -197,6 +197,34 @@
         "verdict": "men-excluded"
       },
       {
+        "title": "Dolde gåvor från Man City",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/mKVzL1/uppgifter-andy-burnham-dolde-gavorna-fran-man-city?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-13T22:47:24.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Attacken mot klubben: ”Jag kan inte säga mer”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OgaE51/lisandro-martinez-sagade-manchester-uniteds-ledning?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-13T22:10:20.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Rydén: Mitt i målfesten finns frågor",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/JrLlOR/ryden-mitt-i-malfesten-finns-fortfarande-fragor?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-13T21:55:06.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "IFK NORRKÖPING 2027: Så kan laget se ut i allsvenskan",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/0pabxG/ifk-norrkoping-2027-sa-kan-laget-se-ut-i-allsvenskan?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-13T21:53:35.000Z",
+        "verdict": "general allsvenskan, no Häcken relation"
+      },
+      {
         "title": "Extraöppet i Norrköping: ”Vi ska ut!”",
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OgakG3/sa-ska-ifk-norrkoping-fira-allsvenskt-avancemang?utm_medium=rss",
         "publisher": "Sportbladet",
@@ -237,13 +265,6 @@
         "publisher": "Sportbladet",
         "publishedAt": "2026-10-13T18:53:14.000Z",
         "verdict": "no Häcken relation"
-      },
-      {
-        "title": "IFK NORRKÖPING 2027: Så kan laget se ut i allsvenskan",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/0pabxG/ifk-norrkoping-2027-sa-kan-laget-se-ut-i-allsvenskan?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-13T18:51:43.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
       },
       {
         "title": "Diamant: Laget blir farligt i allsvenskan",
@@ -449,27 +470,6 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Galna firandet: ”Många skrattade – men baksidorna höll”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/WgkgpQ/christer-mattiasson-snabba-firande-nar-djurgarden-vann?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-11T21:05:45.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Asllani dök upp på landslagsträningen",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/rMdl70/kosovare-asllani-tranade-med-landslaget?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-11T18:10:18.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Gustafssons udda löfte: ”Då lämnar jag kortet i baren...”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-11T17:52:05.000Z",
-        "verdict": "kept"
-      },
-      {
         "title": "Gyökeres mållös – när Arsenal körde över Lille",
         "url": "https://www.expressen.se/sport/fotboll/champions-league/gyokeres-mallos-nar-arsenal-korde-over-lille/",
         "publisher": "Expressen",
@@ -537,7 +537,7 @@
         "url": "https://www.expressen.se/sport/fotboll/landslaget/svensk-kross-och-hanna-lundkvist-slog-till-med-drommal/",
         "publisher": "Expressen",
         "publishedAt": "2026-10-13T18:47:55.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Adrian von Heijne har sagt upp sig från Bajen – är detaljer från Sirius",
@@ -558,7 +558,7 @@
         "url": "https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
         "publisher": "Expressen",
         "publishedAt": "2026-10-13T16:46:26.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Omgångens lag – de var bäst i omgång 23",
@@ -608,6 +608,13 @@
         "publisher": "Expressen",
         "publishedAt": "2026-10-13T07:52:23.000Z",
         "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Lagkamraterna lyfter ”Totte” Nyman till skyarna: ”Statyn ska fram”",
+        "url": "https://www.svt.se/sport/fotboll/lagkamraterna-lyfter-totte-nyman-till-skyarna-statyn-ska-fram",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-13T21:24:43.000Z",
+        "verdict": "general allsvenskan, no Häcken relation"
       },
       {
         "title": "Marklund: Här är svenskorna som var bäst mot Litauen",
@@ -743,17 +750,10 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Isak Bjerkebo tvingades lämna återbud till landslaget: ”Otroligt tungt”",
-        "url": "https://www.svt.se/sport/fotboll/isak-bjerkebo-tvingades-lamna-aterbud-till-landslaget-otroligt-tungt",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-13T04:42:29.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "AC:s framtid styrs av MFF:s nya strategi – Rihter: &#8220;Över tid vill vi ha spelare som är tillgängliga hela säsongen&#8221;",
-        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=5943ef59-d807-f613-03f5-9fe0c16b7406",
+        "title": "Tyrén två gånger i ribban mot MFF – &#8220;Vi känner att vi spelar bra och skapar mängder av chanser &#8211; deras mål en slump&#8221;",
+        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=8761e725-b6b8-9a52-1a54-007c5592e120",
         "publisher": "Bollsvenskan",
-        "publishedAt": "2026-10-13T14:59:58.000Z",
+        "publishedAt": "2026-10-13T21:43:29.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -943,28 +943,28 @@
         "url": "https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-11T20:17:08.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "\"Jag hoppas verkligen att jag kan överbevisa dem\"",
         "url": "https://fotbolltransfers.com/nyheter/mads-agger-hacken-kandes-helt-ratt/221608",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-11T11:03:41.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "Allsvenska klubbar uppges jaga Nhome Daneyl",
         "url": "https://fotbolltransfers.com/nyheter/elfsborg-och-hacken-uppges-jaga-nhome-daneyl/221596",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-11T09:05:59.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "Officiellt: Edward Chilufya lånas ut",
         "url": "https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-07T09:42:12.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "Påven har lungcancer",
@@ -1083,7 +1083,7 @@
         "url": "https://www.gp.se/kultur/tv/har-ar-kraven-for-att-lyckas-som-stjarnkock-i-new-york.2a221bcb-36d5-58c5-837b-68a6f09e2236",
         "publisher": "Göteborgs-Posten",
         "publishedAt": "2026-10-13T15:21:32.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Göteborgaren Evelina fångade ”rymdmanet” på bild",
@@ -1295,7 +1295,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-13T21:26:26.615Z",
+    "retrievedAt": "2026-10-13T23:52:23.013Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -1517,6 +1517,390 @@
       "venue": "Nordic Wellness Arena"
     }
   ],
+  "seasonMatches": [
+    {
+      "id": 6519919,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-02-22T12:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "IK Oddevold",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6519921,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-03-01T14:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Västerås SK",
+      "status": "finished",
+      "scoreHome": 4,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6519923,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-03-09T18:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "AIK",
+      "status": "finished",
+      "scoreHome": 4,
+      "scoreAway": 0,
+      "venue": "Nationalarenan, Strawberry Arena"
+    },
+    {
+      "id": 6529833,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-06T12:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "IF Brommapojkarna",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529838,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-11T13:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IFK Göteborg",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 2,
+      "venue": "Gamla Ullevi "
+    },
+    {
+      "id": 6529848,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-19T14:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "GAIS",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529859,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-22T17:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Västerås SK",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 3,
+      "venue": "Hitachi Energy Arena"
+    },
+    {
+      "id": 6529865,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-27T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "IK Sirius",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529874,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-02T13:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Degerfors IF",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Stora Valla A-plan"
+    },
+    {
+      "id": 6529879,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-10T14:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "Malmö FF",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529889,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-17T14:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Mjällby AIF",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 1,
+      "venue": "Strandvallen A-plan"
+    },
+    {
+      "id": 6529897,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-25T17:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IF Elfsborg",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Borås Arena"
+    },
+    {
+      "id": 6529904,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-31T12:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Hammarby",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529910,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-06T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Djurgårdens IF",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 4,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529920,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-11T15:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Örgryte IS",
+      "status": "finished",
+      "scoreHome": 4,
+      "scoreAway": 3,
+      "venue": "Gamla Ullevi "
+    },
+    {
+      "id": 6529932,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-19T14:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Halmstads BK",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 2,
+      "venue": "Örjans Vall A"
+    },
+    {
+      "id": 6529934,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-27T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "AIK",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 0,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529945,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-01T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Kalmar FF",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529949,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-09T12:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Hammarby",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 0,
+      "venue": "3Arena "
+    },
+    {
+      "id": 6529959,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-17T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Halmstads BK",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 0,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529971,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-21T17:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IK Sirius",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 3,
+      "venue": "Studenternas"
+    },
+    {
+      "id": 6529977,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-29T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Västerås SK",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 3,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6529981,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-05T13:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "GAIS",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 0,
+      "venue": "Gamla Ullevi "
+    },
+    {
+      "id": 6529993,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-11T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Mjällby AIF",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530003,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-20T12:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Kalmar FF",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 5,
+      "venue": "Guldfågeln Arena, Kalmar"
+    },
+    {
+      "id": 6530009,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-11T14:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "Örgryte IS",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 0,
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530015,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-18T14:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Malmö FF",
+      "status": "scheduled",
+      "venue": "Eleda Stadion"
+    },
+    {
+      "id": 6530023,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-24T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Degerfors IF",
+      "status": "scheduled",
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530033,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-28T18:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IF Brommapojkarna",
+      "status": "scheduled",
+      "venue": "Grimsta IP 1"
+    },
+    {
+      "id": 6530039,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-01T15:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "IFK Göteborg",
+      "status": "scheduled",
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530045,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-08T15:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "AIK",
+      "status": "scheduled",
+      "venue": "Nationalarenan, Strawberry Arena"
+    },
+    {
+      "id": 6530057,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-22T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "IF Elfsborg",
+      "status": "scheduled",
+      "venue": "Nordic Wellness Arena"
+    },
+    {
+      "id": 6530061,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-11-29T14:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Djurgårdens IF",
+      "status": "scheduled",
+      "venue": "3Arena "
+    }
+  ],
   "lastMatchDetail": {
     "id": 6530009,
     "competition": "allsvenskan",
@@ -1645,112 +2029,160 @@
       "team": "IK Sirius",
       "played": 23,
       "points": 54,
-      "goalDiff": 25
+      "goalDiff": 25,
+      "wins": 17,
+      "draws": 3,
+      "losses": 3
     },
     {
       "rank": 2,
       "team": "Djurgården",
       "played": 23,
       "points": 44,
-      "goalDiff": 27
+      "goalDiff": 27,
+      "wins": 14,
+      "draws": 2,
+      "losses": 7
     },
     {
       "rank": 3,
       "team": "Hammarby",
       "played": 23,
       "points": 43,
-      "goalDiff": 28
+      "goalDiff": 28,
+      "wins": 13,
+      "draws": 4,
+      "losses": 6
     },
     {
       "rank": 4,
       "team": "IF Elfsborg",
       "played": 23,
       "points": 40,
-      "goalDiff": 13
+      "goalDiff": 13,
+      "wins": 11,
+      "draws": 7,
+      "losses": 5
     },
     {
       "rank": 5,
       "team": "BK Häcken",
       "played": 23,
       "points": 39,
-      "goalDiff": 12
+      "goalDiff": 12,
+      "wins": 10,
+      "draws": 9,
+      "losses": 4
     },
     {
       "rank": 6,
       "team": "Malmö FF",
       "played": 23,
       "points": 36,
-      "goalDiff": 5
+      "goalDiff": 5,
+      "wins": 11,
+      "draws": 3,
+      "losses": 9
     },
     {
       "rank": 7,
       "team": "Västerås SK",
       "played": 23,
       "points": 35,
-      "goalDiff": -2
+      "goalDiff": -2,
+      "wins": 10,
+      "draws": 5,
+      "losses": 8
     },
     {
       "rank": 8,
       "team": "IFK Göteborg",
       "played": 23,
       "points": 35,
-      "goalDiff": -9
+      "goalDiff": -9,
+      "wins": 10,
+      "draws": 5,
+      "losses": 8
     },
     {
       "rank": 9,
       "team": "AIK",
       "played": 23,
       "points": 33,
-      "goalDiff": -4
+      "goalDiff": -4,
+      "wins": 9,
+      "draws": 6,
+      "losses": 8
     },
     {
       "rank": 10,
       "team": "GAIS",
       "played": 23,
       "points": 30,
-      "goalDiff": 7
+      "goalDiff": 7,
+      "wins": 8,
+      "draws": 6,
+      "losses": 9
     },
     {
       "rank": 11,
       "team": "BP",
       "played": 23,
       "points": 30,
-      "goalDiff": -5
+      "goalDiff": -5,
+      "wins": 8,
+      "draws": 6,
+      "losses": 9
     },
     {
       "rank": 12,
       "team": "Mjällby AIF",
       "played": 23,
       "points": 23,
-      "goalDiff": -11
+      "goalDiff": -11,
+      "wins": 5,
+      "draws": 8,
+      "losses": 10
     },
     {
       "rank": 13,
       "team": "Degerfors IF",
       "played": 23,
       "points": 20,
-      "goalDiff": -15
+      "goalDiff": -15,
+      "wins": 5,
+      "draws": 5,
+      "losses": 13
     },
     {
       "rank": 14,
       "team": "Kalmar FF",
       "played": 23,
       "points": 19,
-      "goalDiff": -16
+      "goalDiff": -16,
+      "wins": 5,
+      "draws": 4,
+      "losses": 14
     },
     {
       "rank": 15,
       "team": "Örgryte IS",
       "played": 23,
       "points": 15,
-      "goalDiff": -27
+      "goalDiff": -27,
+      "wins": 3,
+      "draws": 6,
+      "losses": 14
     },
     {
       "rank": 16,
       "team": "Halmstads BK",
       "played": 23,
       "points": 14,
-      "goalDiff": -28
+      "goalDiff": -28,
+      "wins": 3,
+      "draws": 5,
+      "losses": 15
     }
   ],
   "tablePosition": {
@@ -1758,7 +2190,10 @@
     "team": "BK Häcken",
     "played": 23,
     "points": 39,
-    "goalDiff": 12
+    "goalDiff": 12,
+    "wins": 10,
+    "draws": 9,
+    "losses": 4
   },
   "warnings": {
     "competition": "allsvenskan",
@@ -2185,30 +2620,6 @@
   "cardMatchesInspected": 23,
   "news": [
     {
-      "id": "Expressen-9-https://www.expressen.se/sport/fotboll/landslaget/svensk-kross-och-hanna-lundkvist-slog-till-med-drommal/",
-      "title": "Svensk kross – och Hanna Lundkvist slog till med drömmål",
-      "url": "https://www.expressen.se/sport/fotboll/landslaget/svensk-kross-och-hanna-lundkvist-slog-till-med-drommal/",
-      "summary": "Total överkörning. Sverige är ett steg närmare VM i Brasilien efter 15–0 i dubbelmötet mot Litauen. Nu väntar Skottland i playoffinal.",
-      "publishedAt": "2026-10-13T18:47:55.000Z",
-      "publisher": "Expressen",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.expressen.se/sport/fotboll/landslaget/svensk-kross-och-hanna-lundkvist-slog-till-med-drommal/",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Expressen-12-https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
-      "title": "Hammarbys sponsor kopplas till grov brottslighet",
-      "url": "https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
-      "summary": "Hammarbys huvudsponsor Revolut pekas ut av svensk polis. Verktyget ska ha använts i ryskorganiserad penningtvätt. – Vi ser självklart jätteallvarligt på det, säger Hammarbys försäljningschef Thomas Lindgren till Idrottsbranschen.",
-      "publishedAt": "2026-10-13T16:46:26.000Z",
-      "publisher": "Expressen",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
-      "sourceRole": "secondary"
-    },
-    {
       "id": "BK Häcken-0-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
       "title": "Inmarschdagen mot Degerfors den 24 oktober",
       "url": "https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
@@ -2224,18 +2635,6 @@
         "Herr",
         "Ungdom"
       ]
-    },
-    {
-      "id": "Göteborgs-Posten-16-https://www.gp.se/kultur/tv/har-ar-kraven-for-att-lyckas-som-stjarnkock-i-new-york.2a221bcb-36d5-58c5-837b-68a6f09e2236",
-      "title": "Sex svenskar slåss om ett kockjobb i New York",
-      "url": "https://www.gp.se/kultur/tv/har-ar-kraven-for-att-lyckas-som-stjarnkock-i-new-york.2a221bcb-36d5-58c5-837b-68a6f09e2236",
-      "summary": "Marcus Samuelsson: ”En enorm utmaning” • Leder SVT:s jakt på Sveriges nästa stjärnkock.",
-      "publishedAt": "2026-10-13T15:21:32.000Z",
-      "publisher": "Göteborgs-Posten",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.gp.se/kultur/tv/har-ar-kraven-for-att-lyckas-som-stjarnkock-i-new-york.2a221bcb-36d5-58c5-837b-68a6f09e2236",
-      "sourceRole": "secondary"
     },
     {
       "id": "Fotbolltransfers-0-https://fotbolltransfers.com/nyheter/julius-lindberg-jag-vill-testa-mina-vingar-i-framtiden/222831",
@@ -2292,7 +2691,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Sportbladet-33-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
+      "id": "Sportbladet-36-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
       "title": "Petar U21-landslagsman i Häcken – själv petad i U21–landslaget",
       "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
       "summary": "Tränaren kritisk",
@@ -2345,7 +2744,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Sportbladet-38-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
+      "id": "Sportbladet-37-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
       "title": "Gustafssons udda löfte: ”Då lämnar jag kortet i baren...”",
       "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
       "summary": "Udda löftet ✓ Rygaard: ”Ska ta det dyraste”",
@@ -2600,42 +2999,6 @@
   ],
   "newsEvents": [
     {
-      "id": "event-Expressen-9-https://www.expressen.se/sport/fotboll/landslaget/svensk-kross-och-hanna-lundkvist-slog-till-med-drommal/",
-      "title": "Svensk kross – och Hanna Lundkvist slog till med drömmål",
-      "summary": "Total överkörning. Sverige är ett steg närmare VM i Brasilien efter 15–0 i dubbelmötet mot Litauen. Nu väntar Skottland i playoffinal.",
-      "publishedAt": "2026-10-13T18:47:55.000Z",
-      "latestPublishedAt": "2026-10-13T18:47:55.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "Expressen",
-          "url": "https://www.expressen.se/sport/fotboll/landslaget/svensk-kross-och-hanna-lundkvist-slog-till-med-drommal/",
-          "publishedAt": "2026-10-13T18:47:55.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Expressen-12-https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
-      "title": "Hammarbys sponsor kopplas till grov brottslighet",
-      "summary": "Hammarbys huvudsponsor Revolut pekas ut av svensk polis. Verktyget ska ha använts i ryskorganiserad penningtvätt. – Vi ser självklart jätteallvarligt på det, säger Hammarbys försäljningschef Thomas Lindgren till Idrottsbranschen.",
-      "publishedAt": "2026-10-13T16:46:26.000Z",
-      "latestPublishedAt": "2026-10-13T16:46:26.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "Expressen",
-          "url": "https://www.expressen.se/sport/fotboll/allsvenskan/hammarbys-sponsor-kopplas-till-grov-brottslighet/",
-          "publishedAt": "2026-10-13T16:46:26.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
       "id": "event-BK Häcken-0-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
       "title": "Inmarschdagen mot Degerfors den 24 oktober",
       "summary": "Lördagen den 24 oktober är det dags för BK Häckens traditionsenliga ungdomsinmarsch.",
@@ -2652,24 +3015,6 @@
           "role": "primary",
           "discoveredVia": "rss",
           "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/ef9b9298-77f1-4685-b9a0-011019e78707.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Göteborgs-Posten-16-https://www.gp.se/kultur/tv/har-ar-kraven-for-att-lyckas-som-stjarnkock-i-new-york.2a221bcb-36d5-58c5-837b-68a6f09e2236",
-      "title": "Sex svenskar slåss om ett kockjobb i New York",
-      "summary": "Marcus Samuelsson: ”En enorm utmaning” • Leder SVT:s jakt på Sveriges nästa stjärnkock.",
-      "publishedAt": "2026-10-13T15:21:32.000Z",
-      "latestPublishedAt": "2026-10-13T15:21:32.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "Göteborgs-Posten",
-          "url": "https://www.gp.se/kultur/tv/har-ar-kraven-for-att-lyckas-som-stjarnkock-i-new-york.2a221bcb-36d5-58c5-837b-68a6f09e2236",
-          "publishedAt": "2026-10-13T15:21:32.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
         }
       ],
       "summaryMethod": "rss-description"
@@ -2738,7 +3083,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Sportbladet-33-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
+      "id": "event-Sportbladet-36-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
       "title": "Petar U21-landslagsman i Häcken – själv petad i U21–landslaget",
       "summary": "Petar U21-landslagsman i Häcken – själv petad i U21–landslaget",
       "publishedAt": "2026-10-12T08:54:42.000Z",
@@ -2795,26 +3140,6 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791740488/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Sportbladet-38-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
-      "title": "Gustafssons udda löfte: ”Då lämnar jag kortet i baren...”",
-      "summary": "Udda löftet ✓ Rygaard: ”Ska ta det dyraste”",
-      "publishedAt": "2026-10-11T17:52:05.000Z",
-      "latestPublishedAt": "2026-10-11T17:52:05.000Z",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/11f9f6c9-6f18-3e67-a6bb-65b1556f0a62?format=auto&w=1000&s=9ccb15ac05536580543bfffeab924b79fb527c38",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
-          "publishedAt": "2026-10-11T17:52:05.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://akamai.vgc.no/v2/images/11f9f6c9-6f18-3e67-a6bb-65b1556f0a62?format=auto&w=1000&s=9ccb15ac05536580543bfffeab924b79fb527c38"
         }
       ],
       "summaryMethod": "rss-description"
@@ -3130,6 +3455,90 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789638135/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-16-https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
+      "title": "Officiellt: Zeidane Inoussa lånas ut av Swansea",
+      "summary": "Efter många turer lånar Swansea City ut Zeidane Inoussa. Det blir spel i den polska högstaligan för svensken.",
+      "publishedAt": "2026-09-11T20:17:08.000Z",
+      "latestPublishedAt": "2026-09-11T20:17:08.000Z",
+      "category": "former",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788174845/528x300.jpg",
+      "body": "BK Häcken sålde Zeidane Inoussa till Swansea City sommaren 2025.\n\nAffären gick loss på 66 miljoner kronor, och 24-åringen skrev på ett kontrakt fram till sommaren 2030.\n\nDet har däremot inte blivit någon succé för den offensiva yttern, och Championship-klubben har försökt låna ut honom i sommar.\n\nEn utlåning till Portsmouth FC sprack däremot på målsnöret, och i dagarna föll även en flytt till NK Osijek isär.\n\nDaniel Stiller / BILDBYRÅN\n\nAnledningen ska vara att 24-åringen inte klarar de obligatoriska läkarundersökningarna. Nu har han däremot hittat en klubb.\n\nGórnik Zabrze meddelar genom sina sociala medier att man lånar in Inoussa över resten av säsongen.\n\nLaget huserar i den polska högstaliga, och ligger trea efter sex omgångar.\n\nFredrik Aremyr / BILDBYRÅN\n\nDet ingår inte någon köpoption i avtalet, och Inoussa kommer återvända till Swansea nästa sommar.\n\nDet blev två assist på 25 matcher i Championship under debutsäsongen för Inoussa, varav tolv inleddes i startelvan.\n\nWzmacniamy skrzydła! Zeidane Inoussa nowym zawodnikiem Górnika Zabrze! #INOUSSA2027 pic.twitter.com/QW39Z9H13s — Górnik Zabrze (@GornikZabrzeSSA) September 11, 2026\n\nBK Häcken sålde Zeidane Inoussa till Swansea City sommaren 2025.\n\nAffären gick loss på 66 miljoner kronor, och 24-åringen skrev på ett kontrakt fram till sommaren 2030.\n\nDet har däremot inte blivit någon succé för den offensiva yttern, och Championship-klubben har försökt låna ut honom i sommar.\n\nEn utlåning till Portsmouth FC sprack däremot på målsnöret, och i dagarna föll även en flytt till NK Osijek isär.\n\nDaniel Stiller / BILDBYRÅN\n\nAnledningen ska vara att 24-åringen inte klarar de obligatoriska läkarundersökningarna. Nu har han däremot hittat en klubb.\n\nGórnik Zabrze meddelar genom sina sociala medier att man lånar in Inoussa över resten av säsongen.\n\nLaget huserar i den polska högstaliga, och ligger trea efter sex omgångar.\n\nFredrik Aremyr / BILDBYRÅN\n\nDet ingår inte någon köpoption i avtalet, och Inoussa kommer återvända till Sw",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
+          "publishedAt": "2026-09-11T20:17:08.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788174845/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-17-https://fotbolltransfers.com/nyheter/mads-agger-hacken-kandes-helt-ratt/221608",
+      "title": "\"Jag hoppas verkligen att jag kan överbevisa dem\"",
+      "summary": "Han har lämnat Pogoń Szczecin för Häcken. Dansken hoppas kunna imponera och bli kvar permanent.",
+      "publishedAt": "2026-09-11T11:03:41.000Z",
+      "latestPublishedAt": "2026-09-11T11:03:41.000Z",
+      "category": "men",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789117847/528x300.jpg",
+      "body": "Den polska klubben Pogoń Szczecin värvade Mads Agger från danska Sönderjyske i vintras.\n\nDen offensiva yttern har gjort mål på 13 tävlingsmatcher Pogoń Szczecin.\n\nStrax innan det svenska transferfönstret stängde skrev han på för BK Häcken.\n\nDen allsvenska klubben har lånat Agger resten av året med en köpoption.\n\n– Jag hade ett bra snack med den sportsliga ledningen. Vi var väldigt eniga om att jag behövde spela fotboll, och när Häcken dök upp kändes det helt rätt, säger han till Göteborgs-Posten.\n\n26-åringen hymlar inte om att han hoppas bli kvar i Häcken permanent.\n\nDen biten lämnar jag till dem.\n\n– Mitt mål är att göra det så bra som möjligt här, sedan får vi se om Häcken tycker att jag är tillräckligt intressant för att jag ska bli kvar. Den biten lämnar jag till dem, men jag hoppas verkligen att jag kan överbevisa dem, säger Agger till GP.\n\nHäcken har haft koll på spelaren en längre tid.\n\nJag har alltid gillat Sverige.\n\n– Första gången jag hörde om intresset var för några år sedan. Redan då kändes det spännande. Jag har alltid gillat Sverige. Personligen känns det väldigt bra att komma till en klubb som har följt mig under en längre tid, säger Agger till GP.\n\nHäcken ligger på fjärde plats i Allsvenskan efter 20 omgångar.\n\nDen polska klubben Pogoń Szczecin värvade Mads Agger från danska Sönderjyske i vintras.\n\nDen offensiva yttern har gjort mål på 13 tävlingsmatcher Pogoń Szczecin.\n\nStrax innan det svenska transferfönstret stängde skrev han på för BK Häcken.\n\nDen allsvenska klubben har lånat Agger resten av året med en köpoption.\n\n– Jag hade ett bra snack med den sportsliga ledningen. Vi var väldigt eniga om att jag behövde spela fotboll, och när Häcken dök upp kändes det helt rätt, säger han till Göteborgs-Posten.\n\n26-åringen hymlar inte om att han hoppas bli kvar i Häcken permanent.\n\nDen biten lämnar jag till dem.\n\n– Mitt mål är att göra det så bra som möjligt här, sedan får vi se om Häcken tycker att jag är tillräckligt intressant för att jag ska bli kvar. Den",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/mads-agger-hacken-kandes-helt-ratt/221608",
+          "publishedAt": "2026-09-11T11:03:41.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789117847/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-18-https://fotbolltransfers.com/nyheter/elfsborg-och-hacken-uppges-jaga-nhome-daneyl/221596",
+      "title": "Allsvenska klubbar uppges jaga Nhome Daneyl",
+      "summary": "Nordic Uniteds ytterback Nhome Daneyl drar till sig intresse från Allsvenskan, enligt uppgifter.",
+      "publishedAt": "2026-09-11T09:05:59.000Z",
+      "latestPublishedAt": "2026-09-11T09:05:59.000Z",
+      "category": "men",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789110760/528x300.jpg",
+      "body": "Nhome Daneyl har gjort två assist på 15 matcher i Superettan, varav 13 från start, i år.\n\nNordic United riskerar nu att tappa 18-åringen till Allsvenskan efter säsongen.\n\nFotbolldirekt.se skriver att IF Elfsborg och BK Häcken fått upp ögonen för den lovande ytterbacken.\n\nElfsborg ska ha visat intresse redan i somras, men valde till slut att värva Alexander Jensen.\n\nNordic United ligger på sjätte plats i Superettan efter 23 omgångar.\n\nNhome Daneyl har gjort två assist på 15 matcher i Superettan, varav 13 från start, i år.\n\nNordic United riskerar nu att tappa 18-åringen till Allsvenskan efter säsongen.\n\nFotbolldirekt.se skriver att IF Elfsborg och BK Häcken fått upp ögonen för den lovande ytterbacken.\n\nElfsborg ska ha visat intresse redan i somras, men valde till slut att värva Alexander Jensen.\n\nNordic United ligger på sjätte plats i Superettan efter 23 omgångar.",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/elfsborg-och-hacken-uppges-jaga-nhome-daneyl/221596",
+          "publishedAt": "2026-09-11T09:05:59.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789110760/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-19-https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
+      "title": "Officiellt: Edward Chilufya lånas ut",
+      "summary": "FC Midtjylland meddelar att man lånar ut Edward Chilufya.",
+      "publishedAt": "2026-09-07T09:42:12.000Z",
+      "latestPublishedAt": "2026-09-07T09:42:12.000Z",
+      "category": "former",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788767260/528x300.jpg",
+      "body": "Edward Chilufya, 26, spelade i Djurgårdens IF under säsongen 2021.\n\nEfter säsongen blev anfallaren såld till danska FC Midtjylland. Under 2023 och 2024 har han utlånad till BK Häcken.\n\nUnder sommaren 2025 skrev han på ett nytt kontrakt med FC Midtjylland. Han sitter nu på ett avtal till den 31 december 2028.\n\nUnder 2025/2026 gjorde Chilufya ett mål och en assist på tolv ligamatcher, varav fem starter.\n\nNu meddelar FC Midtjylland på sin officiella hemsida att man lånar ut 26-åringen till Hapoel Jerusalem FC.\n\nMiguel Vidal / BILDBYRÅN\n\nDen danska klubben skriver att det handlar om ett lån för resten av säsongen.\n\nSportchefen Kristian Bach Bak berättar om utlåningen.\n\nVi ser fram emot att följa honom.\n\n– Chilufya är otroligt professionell och har bidragit med mycket positivt till klubben. Trots den hårda konkurrensen om anfallspositionerna och den begränsade speltiden har han levererat när han har fått chansen. Vi tror att en låneövergång är en bra möjlighet för honom i jakten på fler spelminuter. Vi ser fram emot att följa honom, säger han till klubbens hemsida.\n\nEfter sex spelade omgångar ligger FC Midtjylland på andra plats i ligan.\n\n26-årige Edward Chilufya udlejes til Hapoel Jerusalem FC, hvor han vil spille resten af sæsonen. Læs mere på https://t.co/4TekMmSWop pic.twitter.com/9tbS1hHsCp — FC Midtjylland (@fcmidtjylland) September 7, 2026\n\nEdward Chilufya, 26, spelade i Djurgårdens IF under säsongen 2021.\n\nEfter säsongen blev anfallaren såld till danska FC Midtjylland. Under 2023 och 2024 har han utlånad till BK Häcken.\n\nUnder sommaren 2025 skrev han på ett nytt kontrakt med FC Midtjylland. Han sitter nu på ett avtal till den 31 december 2028.\n\nUnder 2025/2026 gjorde Chilufya ett mål och en assist på tolv ligamatcher, varav fem starter.\n\nNu meddelar FC Midtjylland på sin officiella hemsida att man lånar ut 26-åringen till Hapoel Jerusalem FC.\n\nMiguel Vidal / BILDBYRÅN\n\nDen danska klubben skriver att det handlar om ett lån för resten av säsongen.\n\nSportchefen Kris",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
+          "publishedAt": "2026-09-07T09:42:12.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788767260/528x300.jpg"
         }
       ],
       "summaryMethod": "rss-description"

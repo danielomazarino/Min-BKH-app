@@ -83,8 +83,18 @@ describe("SportoMedia standings parsing", () => {
   it("parses position, team, played, points and goal diff", () => {
     const table = normalizeSmStandings(rows as never);
     expect(table).toHaveLength(2);
-    expect(table[0]).toEqual({ rank: 1, team: "IK Sirius", played: 22, points: 51, goalDiff: 24 });
-    expect(table[1]).toEqual({ rank: 5, team: "BK Häcken", played: 22, points: 36, goalDiff: 9 });
+    expect(table[0]).toEqual({ rank: 1, team: "IK Sirius", played: 22, points: 51, goalDiff: 24, wins: 0, draws: 0, losses: 0 });
+    expect(table[1]).toEqual({ rank: 5, team: "BK Häcken", played: 22, points: 36, goalDiff: 9, wins: 9, draws: 9, losses: 4 });
+  });
+
+  it("carries the season W/D/L record for the team sheet (tester, 2026-10-14)", () => {
+    // The team sheet shows the season record as the closest honest form
+    // context: the pipeline only ingests Häcken's fixtures, so a per-team
+    // last-5 form strip is not computable.
+    const table = normalizeSmStandings(rows as never);
+    expect(table[1].wins).toBe(9);
+    expect(table[1].draws).toBe(9);
+    expect(table[1].losses).toBe(4);
   });
 
   it("falls back to gf-ga when diff stat is missing", () => {

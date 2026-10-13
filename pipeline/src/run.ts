@@ -801,6 +801,10 @@ async function main() {
     lastResult: last,
     upcoming,
     recent,
+    // Full season fixture list — the team sheet filters this for head-to-head.
+    // `recent` is a 10-match window and silently dropped early-season meetings
+    // (Örgryte away, tester report 2026-10-14).
+    seasonMatches: [...foot.matches].sort((a, b) => a.date.localeCompare(b.date)),
     lastMatchDetail: foot.lastMatchDetail,
     table: foot.table,
     tablePosition:

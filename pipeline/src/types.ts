@@ -201,6 +201,13 @@ export interface LeagueTableRow {
   played: number;
   points: number;
   goalDiff: number;
+  /** Season win/draw/loss record (SportoMedia standings stats w/t/l).
+   *  The team sheet shows this as the closest honest form context we have:
+   *  the pipeline only ingests Häcken's fixtures, so a per-team LAST-5 form
+   *  strip is not computable, but the season record is measured fact. */
+  wins?: number;
+  draws?: number;
+  losses?: number;
 }
 
 export type SourceRole = "primary" | "secondary" | "discovery" | "unknown";
@@ -411,6 +418,12 @@ export interface AppData {
   lastResult: MatchRef | null;
   upcoming: MatchRef[];
   recent: MatchRef[];
+  /** The FULL Häcken fixture list for the season, chronological.
+   *  `recent` is a 10-match window, so a team sheet filtering recent+upcoming
+   *  silently missed early-season meetings (Örgryte away, tester report
+   *  2026-10-14). ~30 matches ≈ 6 KB — cheap, and it makes head-to-head
+   *  complete. */
+  seasonMatches?: MatchRef[];
   lastMatchDetail: MatchDetail | null;
   table: LeagueTableRow[];
   tablePosition: LeagueTableRow | null;

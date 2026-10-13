@@ -180,4 +180,26 @@ describe("mergeAppData", () => {
     const merged = mergeAppData(base(), next);
     expect(merged.currentDataUnavailable?.reason).toBe("Fixtures ej tillgängliga: timeout");
   });
+
+  // seasonMatches (2026-10-14): the full season fixture list feeds the team
+  // sheet's head-to-head. Same last-known-good rule as recent/upcoming — an
+  // empty fetch must not erase the season.
+  it("empty next seasonMatches falls back to previous", () => {
+    const prev = base();
+    prev.seasonMatches = [
+      { id: 1, competition: "allsvenskan", season: "2026", date: "2026-07-11T17:30:00Z", homeAway: "away", opponent: "Örgryte IS", status: "finished", scoreHome: 4, scoreAway: 3 },
+    ] as never;
+    const merged = mergeAppData(prev, base());
+    expect(merged.seasonMatches).toHaveLength(1);
+  });
+
+  it("fresh next seasonMatches replace previous", () => {
+    const next = base();
+    next.seasonMatches = [
+      { id: 2, competition: "allsvenskan", season: "2026", date: "2026-10-11T16:30:00Z", homeAway: "home", opponent: "Örgryte IS", status: "finished", scoreHome: 3, scoreAway: 0 },
+    ] as never;
+    const merged = mergeAppData(base(), next);
+    expect(merged.seasonMatches).toHaveLength(1);
+    expect(merged.seasonMatches![0].id).toBe(2);
+  });
 });

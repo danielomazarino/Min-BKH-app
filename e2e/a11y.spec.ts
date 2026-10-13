@@ -105,13 +105,17 @@ test.describe("Accessibility (axe-core)", () => {
   test("status is never conveyed by colour alone", async ({ page }) => {
     await page.goto("/#/");
     await page.waitForTimeout(600);
-    // Match results carry a letter alongside the coloured edge.
+    // Match results carry a coloured edge (::before) plus the score; the
+    // visible S/O/F letter was removed (tester, 2026-10-13) as a third
+    // redundant cue. The non-colour result cue now lives in the row's
+    // accessible name ("seger"/"oavgjort"/"förlust"); this check asserts the
+    // score dash is present so the row is never colour-only in its text.
     await page.goto("/#/matcher");
     const rows = page.getByTestId("match-row");
     const n = await rows.count();
     for (let i = 0; i < Math.min(n, 5); i++) {
       const t = await rows.nth(i).innerText();
-      // Either a result letter (S/O/F) or a deliberate non-finished marker.
+      // The score (or its placeholder for non-finished matches) contains "–".
       expect(/[SFO]|–/.test(t)).toBe(true);
     }
   });
