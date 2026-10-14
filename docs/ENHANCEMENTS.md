@@ -559,7 +559,7 @@ is the only path.
 
 ## B-021 · Tester round 2026-10-13/14: three news false positives, cryptic match-row badges, team sheets, on-demand lineups — RESOLVED
 
-**Status:** RESOLVED (code + data verified locally; deploy pending) · **Sources:** five tester reports in one round
+**Status:** RESOLVED — deployed `3c27b1d`, byte-verified (served sha256 == committed; public build `3c27b1d.0fd54df`) · **Sources:** five tester reports in one round
 
 ### 1. Three news false positives — one shared root cause
 
@@ -657,7 +657,12 @@ notifications, no scheduled fetch, no persistence.
 - Browser-verified on the preview build: team sheet shows both Örgryte
   matches + Gamla Ullevi + season record; lineup button returns the real
   eleven; match rows show "Hemma/Borta" in meta with no letter badges.
-- Deploy + byte-verification: pending (this entry updated before push).
+- **Deployed and byte-verified:** CI + Deploy green on `3c27b1d` (a lint
+  follow-up — a dead `status` assignment in the discipline loop the rebase
+  exposed — was committed after the first CI failure); served
+  `data/app.json` sha256 `82a2d74f…` == committed; served build id
+  `3c27b1d.0fd54df`; served data shows 33 seasonMatches, both Örgryte
+  fixtures, W/D/L on table rows, and zero of the three false positives.
 
 ---
 
@@ -2364,7 +2369,7 @@ both linked in the sheet.
 | **B-017** | **FIXED 2026-10-09 — deployed `564eb31`, verified in production** | Three iPhone fixes: (1) a women's article leaked into the men's feed — `menRelevantNews`'s club fallback admitted a team-neutral item without consulting `classifyRelevance`, which had already returned UNKNOWN; SVT's Schröder piece (ex-Häcken women's player) showed as "Häcken herr". A club item must now also clear the relevance engine. (2) The sheet now runs to the SCREEN BOTTOM with a 12px gap under the header banner. (3) The floating nav's z-index was UNDER the sheet backdrop, so the menu vanished when a sheet opened — it now floats OVER the sheet ("the menu should still float above the card and the card float under it"). Plus `content-visibility` on the long lists for smoother scrolling. See the B-017 section |
 | **B-018** | **RESOLVED 2026-10-12 — deployed `b267cc9`, byte-verified** | Squad cards showed stale Wikidata / missing Wikipedia data while the search tab showed full data for the same player. Root cause measured live: (1) Wikimedia 429s User-Agent-less requests — the nightly's Node fetch sent no UA to the infobox/summary/translation endpoints, and the 429 was swallowed into `null` (19 of 26 players degraded across three nightlies; Rygaard flapped 11→2→11→2 career rows); (2) the per-player merge let degraded results overwrite good ones. Fix: shared `wikimediaHeaders()` on all Wikimedia-facing modules + `appMerge.ts` with a per-player quality guard. Verified: Wembangomo 7 rows + wiki, Helander 10 + wiki, Rygaard 11 + wiki; served sha256 == committed. See the B-018 section |
 | **B-019** | **RESOLVED 2026-10-13 — fix verified against real data, pending deploy** | The discipline engine reported Doumbia as "Avstängd nästa match" for weeks AFTER he had already served his second suspension. Root cause: the serve-check ran ONCE per player — a player who reaches the 3-warning threshold a second time in the same season was never re-checked. FotMob match-level evidence (lineups + the club's own announcement) proves both suspensions were served (round 9, 2026-05-25 and round 20, 2026-09-05). Fix: iterative serve detection + `servedSuspensions` audit field. 4 new regression tests; 669 unit tests green; regenerated ledger shows Doumbia `served` with both dates, all 17 other players unchanged. See the B-019 section |
-| **B-021** | **RESOLVED 2026-10-14 — code + data verified locally, deploy pending** | Tester round: 3 news false positives (surname-only collisions Samuelsson/Lundkvist/Lindgren — 4 surnames added to AMBIGUOUS_SURNAMES), "HÄCKEN OKÄNT" relabelled "EJ BEKRÄFTAT", match-row S/O/F + H/B badges removed (venue now a word in meta), team sheet on table-row tap (seasonMatches full fixture list + W/D/L record + arena), on-demand lineup lookup in the match sheet (one GraphQL query per tap, no polling). 680 unit tests green; e2e layout/a11y/navigation 130/130, news 51/51. See the B-021 section |
+| **B-021** | **RESOLVED 2026-10-14 — deployed `3c27b1d`, byte-verified** | Tester round: 3 news false positives (surname-only collisions Samuelsson/Lundkvist/Lindgren — 4 surnames added to AMBIGUOUS_SURNAMES), "HÄCKEN OKÄNT" relabelled "EJ BEKRÄFTAT", match-row S/O/F + H/B badges removed (venue now a word in meta), team sheet on table-row tap (seasonMatches full fixture list + W/D/L record + arena), on-demand lineup lookup in the match sheet (one GraphQL query per tap, no polling). 680 unit tests green; e2e layout/a11y/navigation 130/130, news 51/51. Served sha256 == committed. See the B-021 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |
