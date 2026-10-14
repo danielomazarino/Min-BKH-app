@@ -63,7 +63,12 @@ const PREFERRED_LANGS = ["sv", "en"] as const;
 const HOME_LANG_PRIORITY = [
   "nb", "nn", "no", "da", "fi", "is", // Nordic
   "de", "fr", "es", "it", "pt", "nl", // major European
-  "pl", "tr", "ru", "uk", "hr", "sr", "bs", "sl", "mk", "bg", "cs", "sk", "hu", "ro", "el", "sq",
+  // "ru" is deliberately ABSENT (user, 2026-10-14): a machine translation of
+  // a Russian stub reads as a wrong biography ("spelar för svenska Hekken")
+  // and the language label confuses supporters. When ru is the ONLY article,
+  // the honest answer is "no verified narrative" — the card shows the
+  // Wikidata facts without a Wikipedia paragraph.
+  "uk", "hr", "sr", "bs", "sl", "mk", "bg", "cs", "sk", "hu", "ro", "el", "sq",
   "ar", "fa", "he", "ka", "hy", "az", "kk", "uz",
   "ja", "ko", "zh", "id", "ms", "vi", "th",
   "ca", "gl", "eu", "et", "lv", "lt", "af", "sw",

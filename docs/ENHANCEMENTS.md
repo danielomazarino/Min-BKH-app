@@ -817,6 +817,59 @@ green; brief/news/layout/a11y/navigation e2e updated for the merged banner
 (the old "hero navigates to /matcher" test now asserts the sheet opens
 directly; the hint test asserts the match-day-only conditional).
 
+### Round 4 (2026-10-14, later) — historical match sheets + no Russian fallback
+
+Two user requests in one round:
+
+#### 4a. Every played match opens the timeline sheet
+
+The user asked whether the event data behind the last game's sheet exists
+for all historical games. Measured: the pipeline ALREADY fetches every
+finished match's detail each night — for the disciplinary ledger — and
+discarded everything except the cards. The data was there; only the
+storage was missing.
+
+Fix: `AppData.matchDetails` (keyed by match id) now stores the events of
+every finished match (~2 KB each, 23 stored ≈ 50 KB). Every played row in
+the Kommande/Spelade list now opens the same timeline sheet the last game
+has (goals with assists, cards, substitutions, on-demand lineup). The last
+match keeps its deep link (`?id=`); the others open from local state.
+Merge rule: union by match id — a partial fetch never erases history.
+
+**Honest gap:** 3 of 26 finished matches (6519919/21/23 — the February/
+March early-season games) return `INTERNAL_SERVER_ERROR` from SportoMedia
+for their detail query, verified across retries with backoffs up to
+5 minutes and different season configs. Those three rows stay
+non-clickable; the fixture data (date, score) is still shown. The upstream
+gap may resolve; the union merge will pick them up automatically when it
+does.
+
+**Verified in the browser:** the Västerås SK (29 aug) sheet opens with the
+full timeline — 4 goals with assists, 3 yellow cards, 10 substitutions.
+
+#### 4b. No Russian Wikipedia fallback for foreign players
+
+The tester saw Sabri Dahari Kondo's card read "spelar för svenska Hekken"
+— a machine translation of a Russian stub, labelled "ryska Wikipedia".
+Measured: Kondo's Wikidata entity (Q135973822) has ONLY a `ruwiki`
+sitelink — no sv/en/sw article exists, so the fallback chain reached `ru`
+and served a one-sentence stub as a biography.
+
+Fix, two layers:
+
+1. **The fallback chain no longer fetches `ru`** (`candidateLangs` in
+   `app/players/wikipedia.ts`). When Russian is the only article, the
+   honest answer is "no verified narrative" — the card shows the Wikidata
+   facts without a Wikipedia paragraph.
+2. **The merge strips already-stored Russian narratives**
+   (`BANNED_WIKI_LANGS` in `pipeline/src/appMerge.ts`), so the
+   last-known-good quality guard cannot resurrect the stored ru wiki from
+   previous builds. Verified: Kondo's card now shows no wiki extract and
+   no Russian text.
+
+3 new unit tests pin the strip (empty-next carry-over, next-entry
+stripping before the quality guard). 689 unit tests green.
+
 ---
 
 ## B-019 · The discipline engine reported a served suspension as still pending — RESOLVED 2026-10-13

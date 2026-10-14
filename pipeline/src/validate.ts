@@ -138,6 +138,14 @@ const AppData = z.object({
       .optional(),
     events: MatchEvents.optional(),
   }).nullable(),
+  matchDetails: z
+    .record(
+      z.string(),
+      MatchRef.extend({
+        events: MatchEvents.optional(),
+      }),
+    )
+    .optional(),
   table: z.array(
     z.object({
       rank: z.number(),

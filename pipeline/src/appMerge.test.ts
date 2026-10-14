@@ -101,9 +101,34 @@ describe("mergeSquadEnrichment", () => {
   });
 
   it("an empty next map keeps the whole previous map", () => {
+    // keptPrev counts only entries where a DEGRADED next result lost to a
+    // better previous one. With an empty next there is no comparison at all,
+    // so the count is 0 even though the previous map is carried over.
     const { merged, keptPrev } = mergeSquadEnrichment({ "fogis:1": good }, {});
     expect(Object.keys(merged)).toEqual(["fogis:1"]);
-    expect(keptPrev).toBe(1);
+    expect(keptPrev).toBe(0);
+  });
+
+  it("a stored banned-language narrative is stripped even when next is empty", () => {
+    // User, 2026-10-14: a Russian stub narrative must never be served. The
+    // strip applies to carried-over previous data too, so the last-known-good
+    // guard cannot resurrect it.
+    const ru = { ...good, wiki: { lang: "ru", extract: "Сабри…", pageUrl: "https://ru.wikipedia.org/wiki/x" } };
+    const { merged } = mergeSquadEnrichment({ "fogis:1": ru }, {});
+    expect(merged["fogis:1"].wiki).toBeUndefined();
+    expect(merged["fogis:1"].career).toHaveLength(3);
+  });
+
+  it("a banned-language narrative in NEXT is stripped before the quality guard", () => {
+    // The ru wiki would otherwise score 1 point and beat a wiki-less previous
+    // entry; stripping first means the honest "no narrative" result wins.
+    // The previous entry here has NO wiki, so the stripped next (equal score)
+    // still wins on freshness — but without the ru narrative.
+    const ru = enrichment({ ...good, wiki: { lang: "ru", extract: "Сабри…", pageUrl: "https://ru.wikipedia.org/wiki/x" } });
+    const prevNoWiki = enrichment({ career: good.career, usedInfobox: true });
+    const { merged } = mergeSquadEnrichment({ "fogis:1": prevNoWiki }, { "fogis:1": ru });
+    expect(merged["fogis:1"].wiki).toBeUndefined();
+    expect(merged["fogis:1"].career).toHaveLength(3);
   });
 
   it("a missing previous map just takes next", () => {

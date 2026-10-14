@@ -56,6 +56,9 @@ export default function Matches({ state }: { state: AppDataState }) {
   const [openTeam, setOpenTeam] = useState<string | null>(null);
   // Upcoming-match sheet state — ALSO above the early returns (see #310).
   const [openUpcomingId, setOpenUpcomingId] = useState<number | null>(null);
+  // Played-match sheet state for matches OTHER than the last one (which keeps
+  // its deep link). ALSO above the early returns — see #310.
+  const [openPlayedId, setOpenPlayedId] = useState<number | null>(null);
   const wantsTable = new URLSearchParams(search).get("section") === "tabellen";
   const tableRows = state.status === "ready" ? state.data.table.length : 0;
   useEffect(() => {
@@ -99,10 +102,19 @@ export default function Matches({ state }: { state: AppDataState }) {
   const detail = data.lastMatchDetail;
   const detailId = detail?.id;
 
-  // Deep link: only the match that actually has events can open a sheet.
+  // B-021 round 4 (user, 2026-10-14): EVERY finished match now carries its
+  // events in `matchDetails`, so every played row opens the same timeline
+  // sheet the last game has. The last match keeps its deep link
+  // (?id=<match-id>); the others open from local state.
   const openId = idFromSearch(search);
-  const openMatch = openId && detailId != null && String(detailId) === openId ? detail : null;
+  const openMatch =
+    openId != null
+      ? detailId != null && String(detailId) === openId
+        ? detail
+        : data.matchDetails?.[openId] ?? null
+      : null;
   const closeMatch = () => navigate("/matcher");
+  const openPlayed = openPlayedId != null ? data.matchDetails?.[String(openPlayedId)] ?? null : null;
 
   const openTeamRow = openTeam ? data.table.find((t) => t.team === openTeam) ?? null : null;
 
@@ -155,7 +167,9 @@ export default function Matches({ state }: { state: AppDataState }) {
                   tab === "spelade"
                     ? m.id === detailId && detail
                       ? () => navigate(`/matcher?id=${m.id}`)
-                      : undefined
+                      : data.matchDetails?.[String(m.id)]
+                        ? () => setOpenPlayedId(m.id)
+                        : undefined
                     : () => setOpenUpcomingId(m.id)
                 }
               />
@@ -200,6 +214,7 @@ export default function Matches({ state }: { state: AppDataState }) {
         )}
       </div>
       {openMatch && <MatchSheet detail={openMatch} onClose={closeMatch} />}
+      {openPlayed && <MatchSheet detail={openPlayed} onClose={() => setOpenPlayedId(null)} />}
       {openUpcoming && <UpcomingMatchSheet match={openUpcoming} onClose={() => setOpenUpcomingId(null)} />}
       {openTeamRow && <TeamSheet team={openTeamRow} data={data} onClose={() => setOpenTeam(null)} />}
     </>

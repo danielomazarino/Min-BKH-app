@@ -244,6 +244,8 @@ interface FootballData {
   matches: MatchRef[];
   table: LeagueTableRow[];
   lastMatchDetail: MatchDetail | null;
+  /** Event details for every finished match (see AppData.matchDetails). */
+  matchDetails: Record<string, MatchDetail>;
   warningEvents: WarningEvent[];
   /** Provenance metadata for the football dataset. */
   source: FootballSourceMeta | null;
@@ -280,7 +282,7 @@ function footballSourceMeta(retrievedAt: string, dataStatus: FootballSourceMeta[
  * fails, the dataset is marked unavailable and the UI must say so.
  */
 async function collectCurrentFootballData(): Promise<FootballData> {
-  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, warningEvents: [], source: null, unavailableReason: null, squadStats: [], discipline: [], cardMatchesInspected: 0 };
+  const empty: FootballData = { matches: [], table: [], lastMatchDetail: null, matchDetails: {}, warningEvents: [], source: null, unavailableReason: null, squadStats: [], discipline: [], cardMatchesInspected: 0 };
   const retrievedAt = generatedAt();
 
   // Identity guard: we query BKH and must never receive Hammarby data.
@@ -329,9 +331,12 @@ async function collectCurrentFootballData(): Promise<FootballData> {
     return resolveCanonicalId({ name: eventName });
   };
 
-  // 4) Match detail (events) for the most recent finished match + season-wide
-  //    card events for the disciplinary ledger.
+  // 4) Match detail (events) for EVERY finished match + season-wide card
+  //    events for the disciplinary ledger. The detail was already fetched per
+  //    match for the ledger; storing the events (user, 2026-10-14) lets every
+  //    historical match open the same timeline sheet the last game has.
   let lastMatchDetail: MatchDetail | null = null;
+  const matchDetails: Record<string, MatchDetail> = {};
   const warningEvents: WarningEvent[] = [];
   const finished = matches.filter((m) => m.status === "finished").sort((a, b) => a.date.localeCompare(b.date));
   const perMatchCards: Array<{ matchId: number; matchDate: string; häckenYellows: string[]; häckenReds: string[] }> = [];
@@ -351,11 +356,13 @@ async function collectCurrentFootballData(): Promise<FootballData> {
       häckenYellows: ev.yellowCards.filter((c) => c.teamName?.includes("Häcken")).map((c) => c.playerName),
       häckenReds: ev.redCards.filter((c) => c.teamName?.includes("Häcken")).map((c) => c.playerName),
     });
+    const detail: MatchDetail = {
+      ...m,
+      events: { goals: ev.goals, yellowCards: ev.yellowCards, redCards: ev.redCards, substitutions: ev.substitutions },
+    };
+    matchDetails[String(m.id)] = detail;
     if (last && m.id === last.id) {
-      lastMatchDetail = {
-        ...m,
-        events: { goals: ev.goals, yellowCards: ev.yellowCards, redCards: ev.redCards, substitutions: ev.substitutions },
-      };
+      lastMatchDetail = detail;
     }
     // Small delay to stay well under any rate limits (22 requests total).
     await new Promise((r) => setTimeout(r, 300));
@@ -397,6 +404,7 @@ async function collectCurrentFootballData(): Promise<FootballData> {
     matches,
     table,
     lastMatchDetail,
+    matchDetails,
     warningEvents,
     source: footballSourceMeta(retrievedAt, "current"),
     unavailableReason: null,
@@ -806,6 +814,8 @@ async function main() {
     // (Örgryte away, tester report 2026-10-14).
     seasonMatches: [...foot.matches].sort((a, b) => a.date.localeCompare(b.date)),
     lastMatchDetail: foot.lastMatchDetail,
+    // Every finished match's events — the match sheet for historical games.
+    matchDetails: foot.matchDetails,
     table: foot.table,
     tablePosition:
       foot.table.find((r) => normalizeSearch(r.team).includes(normalizeSearch("Häcken"))) ?? null,

@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-14T11:39:34.432Z",
+    "generatedAt": "2026-10-14T14:36:24.915Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -20,9 +20,9 @@
         "dropped": 39
       },
       "Göteborgs-Posten": {
-        "fetched": 22,
+        "fetched": 28,
         "kept": 0,
-        "dropped": 22
+        "dropped": 28
       },
       "BK Häcken": {
         "fetched": 20,
@@ -195,6 +195,34 @@
         "publisher": "BK Häcken",
         "publishedAt": "2026-09-22T07:56:00.000Z",
         "verdict": "men-excluded"
+      },
+      {
+        "title": "Boudri missar resten av säsongen",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/MAmGv5/boudri-missar-resten-av-sasongen?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-14T14:28:39.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Anklagas av agent i krisen ”Sa fuck you”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/QgEX38/kalmar-ff-skakas-av-internt-brak-i-allsvenskans-bottenstrid?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-14T13:23:06.000Z",
+        "verdict": "general allsvenskan, no Häcken relation"
+      },
+      {
+        "title": "Martinez sågas – efter attacken mot United",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/aOqWvA/martinez-sagas-efter-attacken-mot-united?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-14T12:47:27.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Arsenal varslar – 60 jobb försvinner",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/0BbOy0/arsenal-varslar-60-jobb-forsvinner?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-14T12:42:25.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Lien och Åslund saknades på Djurgårdens träning",
@@ -442,31 +470,31 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Stjärnornas vädjan till MFF om AC",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Pg0pXJ/stjarnornas-vadjar-till-mff-om-anders-christiansen?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-12T21:02:05.000Z",
+        "title": "Amin Boudri opererad – missar resten av säsongen",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/amin-boudri-opererad-missar-resten-av-sasongen/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T14:28:22.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Lahdo blev chockad när han fick se såret",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/31PpRM/mayckel-lahdo-chockad-over-saret-i-malmo-ff-s-seger?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-12T20:01:53.000Z",
+        "title": "Allsvenska kulisserna: Tvärvände om Rikard Norling • Därför lämnar von Heijne Bajen",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/allsvenska-kulisserna-tvarvande-om-rikard-norling--darfor-lamnar-von-heijne-bajen-/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T14:07:30.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "MFF avgjorde trots KFF:s anstormning",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/8GRnKE/allsvenskan-malmo-ff-avgjorde-trots-kalmar-ff-s-overtag?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-12T18:53:34.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
+        "title": "Elton John rasar – efter förfallet: ”Upprörd”",
+        "url": "https://www.expressen.se/sport/fotboll/elton-john-rasar--efter-forfallet-upprord/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T14:07:53.000Z",
+        "verdict": "no Häcken relation"
       },
       {
-        "title": "Körde över Halmstad – jagar Dif och Hammarby",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/p1roP1/korde-over-halmstad-jagar-dif-och-hammarby?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-12T18:49:54.000Z",
+        "title": "Panel: Varför togs inte Norling-beslutet under uppehållet?",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/panel-varfor-togs-inte-norling-beslutet-under-uppehallet/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T12:03:24.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -494,7 +522,7 @@
         "title": "Zlatko Tripic sågas efter Vikings skräll",
         "url": "https://www.expressen.se/sport/fotboll/champions-league/zlatko-tripic-sagas-efter-vikings-skrall/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-14T10:47:56.000Z",
+        "publishedAt": "2026-10-14T10:47:55.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -582,32 +610,18 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Stina Blackstenius rånad på hattrick: ”Helt sjukt”",
-        "url": "https://www.expressen.se/sport/fotboll/landslaget/stina-blackstenius-ranad-pa-hattrick-helt-sjukt/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-13T20:37:05.000Z",
+        "title": "Hammarbys besked: Amin Bodri missar resten av säsongen",
+        "url": "https://www.svt.se/sport/fotboll/hammarbys-besked-amin-bodri-missar-resten-av-sasongen",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-14T14:29:01.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Udda målgesten – fick kyss i pannan: ”Det var spontant”",
-        "url": "https://www.expressen.se/sport/fotboll/udda-malgesten-fick-kyss-i-pannan-det-var-spontant/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-13T19:49:50.000Z",
+        "title": "Kristoffer Jakobsens uråkningar ska bort – genom att backa i tiden",
+        "url": "https://www.svt.se/sport/alpint/kristoffer-jakobsens-urakningar-ska-bort-genom-att-backa-i-tiden",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-14T14:08:51.000Z",
         "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Norsk jätteknall i Champions League",
-        "url": "https://www.expressen.se/sport/fotboll/champions-league/norsk-jattechock-i-champions-league/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-13T20:56:57.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Gjort narr av hela serien – hörde inte hemma här",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/gjort-narr-av-hela-serien-horde-inte-hemma-har/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-13T19:26:30.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
       },
       {
         "title": "Kristian Karlsson/Stina Källberg säkrade första medaljen i pingis-EM: ”Utklassning”",
@@ -736,24 +750,10 @@
         "verdict": "general allsvenskan, no Häcken relation"
       },
       {
-        "title": "Nathalie Björn målskytt i landslaget igen: ”Så otroligt skönt”",
-        "url": "https://www.svt.se/sport/fotboll/nathalie-bjorn-malskytt-i-landslagscomebacken",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-13T17:21:53.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Andreas Almgren: ”Jag kanske är naiv och blir satt på plats”",
-        "url": "https://www.svt.se/sport/friidrott/andreas-almgren-jag-kanske-ar-naiv-och-blir-satt-pa-plats",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-13T16:29:05.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Bachner: IFK Norrköping alldeles för bra för Superettan – Abdulic nyckeln bakom lyftet",
-        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=f7924618-9f0d-f5bf-16cf-7446a5da0553",
+        "title": "CAS sätter datum för Riveiro–Al Ahly – förhandling 9 december 2026 efter Fifa-domen på 588 000 dollar",
+        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=97fb7779-3993-39e0-0580-02818f51a43d",
         "publisher": "Bollsvenskan",
-        "publishedAt": "2026-10-14T07:56:32.000Z",
+        "publishedAt": "2026-10-14T12:25:30.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -967,6 +967,48 @@
         "verdict": "over candidate cap"
       },
       {
+        "title": "Här styckas rått kött i skolans slöjdsal",
+        "url": "https://www.gp.se/nyheter/vastsverige/kott-styckades-i-slojdsal.b590c714-bb60-5939-92cb-88e7d81f9fd1",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T14:18:15.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Byggbolag i Bollebygd vinner i domstol över kommunen – slipper betala avgift på 370 000 kronor.",
+        "url": "https://www.gp.se/nyheter/storgoteborg/byggbolag-i-bollebygd-far-ratt-mot-kommunen.a02c1bc2-d21b-5785-81f5-10c0dab74421",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T12:43:41.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Bästa vännerna i slagsmål på Frölundas träning – två gånger",
+        "url": "https://www.gp.se/sport/ishockey/frolunda/basta-vannerna-linus-hogberg-och-max-lindholm-i-slagsmal-tva-ganger.798e4201-e180-55a5-bd03-55c3832d6119",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T12:13:54.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Han står inte ut med familjelyckan",
+        "url": "https://www.gp.se/kultur/film/filmrecension/recension-min-kara-i-regi-av-erik-poppe.cb8b7f79-05b6-5d70-9d0e-abf445858ef6",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T12:12:51.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Nord stream-rättegång inleds idag",
+        "url": "https://www.gp.se/nyheter/varlden/nord-stream-rattegang-inleddes-i-dag.8786cf28-c180-5061-afb0-5c188acf0310",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T12:11:04.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Tunnelbanetrubaduren bröt mot reglerna för att få genomslag – och lyckades",
+        "url": "https://www.gp.se/kultur/kommentar/tunnelbanetrubaduren-brot-mot-reglerna-for-att-fa-genomslag-det-lyckades.0f1dca5f-adf6-5cc8-8ab7-fe7386e96585",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T11:31:05.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
         "title": "Vincenzo Latronico om succéboken Perfektion: ”Handlar om ensamhet”",
         "url": "https://www.gp.se/livsstil/tva-dagar/vincenzo-latronico-om-perfektion-det-handlar-om-ensamhet.8c61b36b-d30e-5281-be53-d4b00f696aad",
         "publisher": "Göteborgs-Posten",
@@ -1127,7 +1169,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-14T11:34:54.619Z",
+    "retrievedAt": "2026-10-14T14:32:06.587Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -1908,6 +1950,2523 @@
       ]
     }
   },
+  "matchDetails": {
+    "6529833": {
+      "id": 6529833,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-06T12:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "IF Brommapojkarna",
+      "opponentAbbrv": "IFBP",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "88'",
+            "playerName": "Andreas Troelsen",
+            "teamName": "IF Brommapojkarna",
+            "assistPlayerName": "Oliver Zandén",
+            "forHäcken": false
+          },
+          {
+            "minute": "69'",
+            "playerName": "Jordan Simpson",
+            "teamName": "BK Häcken",
+            "assistPlayerName": null,
+            "forHäcken": true
+          },
+          {
+            "minute": "46'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Amor Layouni",
+            "forHäcken": true
+          },
+          {
+            "minute": "7'",
+            "playerName": "Lukas Björklund",
+            "teamName": "IF Brommapojkarna",
+            "assistPlayerName": "Mads Kristian Hansen",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "90'",
+            "playerName": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "77'",
+            "playerName": "Filip Helander",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "77'",
+            "playerName": "Lukas Björklund",
+            "teamName": "IF Brommapojkarna"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "93'",
+            "inPlayer": "Serge-Junior Martinsson Ngouali",
+            "outPlayer": "Lukas Björklund",
+            "teamName": "IF Brommapojkarna"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "David Seger",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "78'",
+            "inPlayer": "Sion Oppong",
+            "outPlayer": "Obilor Denzel Okeke",
+            "teamName": "IF Brommapojkarna"
+          },
+          {
+            "minute": "78'",
+            "inPlayer": "Simon Strand",
+            "outPlayer": "Kaare Brøckner Barslund",
+            "teamName": "IF Brommapojkarna"
+          },
+          {
+            "minute": "70'",
+            "inPlayer": "Mikkel Rygaard Jensen",
+            "outPlayer": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "70'",
+            "inPlayer": "Jeremy Agbonifo",
+            "outPlayer": "Amor Layouni",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "66'",
+            "inPlayer": "David Isso",
+            "outPlayer": "Oliver Berg",
+            "teamName": "IF Brommapojkarna"
+          },
+          {
+            "minute": "60'",
+            "inPlayer": "Gustav Lindgren",
+            "outPlayer": "Sanders Ngabo",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529838": {
+      "id": 6529838,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-11T13:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IFK Göteborg",
+      "opponentAbbrv": "GBG",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 2,
+      "venue": "Gamla Ullevi ",
+      "events": {
+        "goals": [
+          {
+            "minute": "83'",
+            "playerName": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Amor Layouni",
+            "forHäcken": true
+          },
+          {
+            "minute": "16'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Julius Lindberg",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "90'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "84'",
+            "playerName": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "78'",
+            "playerName": "Adam Wiberg",
+            "teamName": "IFK Göteborg"
+          },
+          {
+            "minute": "78'",
+            "playerName": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "74'",
+            "playerName": "Max Fenger",
+            "teamName": "IFK Göteborg"
+          },
+          {
+            "minute": "55'",
+            "playerName": "Saidou Alioum Moubarak",
+            "teamName": "IFK Göteborg"
+          },
+          {
+            "minute": "39'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "22'",
+            "playerName": "Filip Helander",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "0'",
+            "playerName": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "86'",
+            "inPlayer": "Sebastian Clemmensen",
+            "outPlayer": "Adam Wiberg",
+            "teamName": "IFK Göteborg"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "Sanders Ngabo",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "66'",
+            "inPlayer": "Max Fenger",
+            "outPlayer": "Saidou Alioum Moubarak",
+            "teamName": "IFK Göteborg"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Mikkel Rygaard Jensen",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "David Andersson",
+            "outPlayer": "Andreas Linde",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529848": {
+      "id": 6529848,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-19T14:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "GAIS",
+      "opponentAbbrv": "GAIS",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "79'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Mikkel Rygaard Jensen",
+            "forHäcken": true
+          },
+          {
+            "minute": "56'",
+            "playerName": "Róbert Frosti Þorkelsson",
+            "teamName": "GAIS",
+            "assistPlayerName": "Samuel Salter",
+            "forHäcken": false
+          },
+          {
+            "minute": "50'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken",
+            "assistPlayerName": null,
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "83'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "82'",
+            "playerName": "Henry Sletsjøe",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "59'",
+            "playerName": "Robin Frej",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "50'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "49'",
+            "playerName": "Amor Layouni",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "46'",
+            "playerName": "Joackim Fagerjord",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "45'",
+            "playerName": "William Milovanovic",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "45'",
+            "playerName": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "40'",
+            "playerName": "Robin Wendin Thomasson",
+            "teamName": "GAIS"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "87'",
+            "inPlayer": "Johan Hammar",
+            "outPlayer": "Amor Layouni",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "86'",
+            "inPlayer": "Jonas Lindberg",
+            "outPlayer": "William Milovanovic",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "86'",
+            "inPlayer": "Filip Beckman",
+            "outPlayer": "Oskar Ågren",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "86'",
+            "inPlayer": "Max Andersson",
+            "outPlayer": "Henry Sletsjøe",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "76'",
+            "inPlayer": "Sanders Ngabo",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "76'",
+            "inPlayer": "Gustav Lindgren",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Oscar Pettersson",
+            "outPlayer": "Rasmus Niklasson Petrovic",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "65'",
+            "inPlayer": "Shalom Ekong",
+            "outPlayer": "Samuel Salter",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "58'",
+            "inPlayer": "Mikkel Rygaard Jensen",
+            "outPlayer": "Jeremy Agbonifo",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529859": {
+      "id": 6529859,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-22T17:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Västerås SK",
+      "opponentAbbrv": "VSK",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 3,
+      "venue": "Hitachi Energy Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "83'",
+            "playerName": "Filip Helander",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Amor Layouni",
+            "forHäcken": true
+          },
+          {
+            "minute": "63'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Mikkel Rygaard Jensen",
+            "forHäcken": true
+          },
+          {
+            "minute": "57'",
+            "playerName": "Mikkel Ladefoged",
+            "teamName": "Västerås SK",
+            "assistPlayerName": "Jonathan Ring",
+            "forHäcken": false
+          },
+          {
+            "minute": "45'",
+            "playerName": "Mikkel Ladefoged",
+            "teamName": "Västerås SK",
+            "assistPlayerName": "Abdelrahman Boudah Saidi",
+            "forHäcken": false
+          },
+          {
+            "minute": "11'",
+            "playerName": "Jeremy Agbonifo",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adrian Svanbäck",
+            "forHäcken": true
+          },
+          {
+            "minute": "3'",
+            "playerName": "Mikkel Ladefoged",
+            "teamName": "Västerås SK",
+            "assistPlayerName": "Ismet Lushaku",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "82'",
+            "playerName": "Karl Gunnarsson",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "73'",
+            "playerName": "Herman Magnusson",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "63'",
+            "playerName": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "52'",
+            "playerName": "Mikkel Ladefoged",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "8'",
+            "playerName": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "88'",
+            "inPlayer": "Jonathan Karlsson",
+            "outPlayer": "Karl Gunnarsson",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "86'",
+            "inPlayer": "Jens Magnusson",
+            "outPlayer": "Ismet Lushaku",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "Brice Wembangomo",
+            "outPlayer": "Filip Öhman",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Sountonoma Axel Taonsa",
+            "outPlayer": "Mikkel Ladefoged",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Mamadou Ousmane Diagne",
+            "outPlayer": "Abdelrahman Boudah Saidi",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Julius Lindberg",
+            "outPlayer": "Bukuru Jack-Sanders Ngabo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Abdoulaye Doumbia",
+            "outPlayer": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Amor Layouni",
+            "outPlayer": "Jeremy Agbonifo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Philip Bonde",
+            "outPlayer": "Victor Wernersson",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "37'",
+            "inPlayer": "Olle Samuelsson",
+            "outPlayer": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529865": {
+      "id": 6529865,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-04-27T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "IK Sirius",
+      "opponentAbbrv": "IKS",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "85'",
+            "playerName": "Mohamed Soumah",
+            "teamName": "IK Sirius",
+            "assistPlayerName": "Neo Jönsson",
+            "forHäcken": false
+          },
+          {
+            "minute": "39'",
+            "playerName": "Robbie Philip Thomas Ure",
+            "teamName": "IK Sirius",
+            "assistPlayerName": "Oscar Krusnell",
+            "forHäcken": false
+          },
+          {
+            "minute": "36'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Brice Wembangomo",
+            "forHäcken": true
+          },
+          {
+            "minute": "24'",
+            "playerName": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adrian Svanbäck",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "88'",
+            "playerName": "Oscar Krusnell",
+            "teamName": "IK Sirius"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "76'",
+            "inPlayer": "Victor Svensson",
+            "outPlayer": "Joakim Persson",
+            "teamName": "IK Sirius"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Bukuru Jack-Sanders Ngabo",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "61'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "58'",
+            "inPlayer": "Neo Jönsson",
+            "outPlayer": "Matthias Nartey",
+            "teamName": "IK Sirius"
+          }
+        ]
+      }
+    },
+    "6529874": {
+      "id": 6529874,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-02T13:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Degerfors IF",
+      "opponentAbbrv": "DEIF",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Stora Valla A-plan",
+      "events": {
+        "goals": [
+          {
+            "minute": "70'",
+            "playerName": "Arman Taranis",
+            "teamName": "Degerfors IF",
+            "assistPlayerName": "Daniel Sundgren",
+            "forHäcken": false
+          },
+          {
+            "minute": "18'",
+            "playerName": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken",
+            "assistPlayerName": null,
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "59'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "48'",
+            "playerName": "Brice Wembangomo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "27'",
+            "playerName": "Yiriyon Gideon Yaw",
+            "teamName": "Degerfors IF"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "86'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "79'",
+            "inPlayer": "Danilo Al-Saed",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "71'",
+            "inPlayer": "Jeremy Agbonifo",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "70'",
+            "inPlayer": "Olle Leonardsson",
+            "outPlayer": "Elias Barsoum",
+            "teamName": "Degerfors IF"
+          },
+          {
+            "minute": "58'",
+            "inPlayer": "Dijan Vukojevic",
+            "outPlayer": "Nasiru Moro",
+            "teamName": "Degerfors IF"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Arman Taranis",
+            "outPlayer": "Nahom Girmai Netabay",
+            "teamName": "Degerfors IF"
+          }
+        ]
+      }
+    },
+    "6529879": {
+      "id": 6529879,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-10T14:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "Malmö FF",
+      "opponentAbbrv": "MFF",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "39'",
+            "playerName": "Erik Botheim",
+            "teamName": "Malmö FF",
+            "assistPlayerName": "Sead Haksabanovic",
+            "forHäcken": false
+          },
+          {
+            "minute": "36'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adam Lundkvist",
+            "forHäcken": true
+          },
+          {
+            "minute": "23'",
+            "playerName": "Gabriel Dal Toe Busanello",
+            "teamName": "Malmö FF",
+            "assistPlayerName": "Otto Rosengren",
+            "forHäcken": false
+          },
+          {
+            "minute": "19'",
+            "playerName": "Jens Stryger Larsen",
+            "teamName": "BK Häcken",
+            "assistPlayerName": null,
+            "forHäcken": true
+          },
+          {
+            "minute": "3'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adrian Svanbäck",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "73'",
+            "playerName": "Otto Rosengren",
+            "teamName": "Malmö FF"
+          },
+          {
+            "minute": "70'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "45'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "34'",
+            "playerName": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "88'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "88'",
+            "inPlayer": "Johan Hammar",
+            "outPlayer": "Amor Layouni",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "Stefano Holmquist Vecchia",
+            "outPlayer": "Gabriel Dal Toe Busanello",
+            "teamName": "Malmö FF"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "Johan Karlsson",
+            "outPlayer": "Jens Stryger Larsen",
+            "teamName": "Malmö FF"
+          },
+          {
+            "minute": "76'",
+            "inPlayer": "Jeremy Agbonifo",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "74'",
+            "inPlayer": "Emmanuel Ekong",
+            "outPlayer": "Adrian Skogmar",
+            "teamName": "Malmö FF"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Theodor Lundbergh",
+            "outPlayer": "Kenan Busuladzic",
+            "teamName": "Malmö FF"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Daniel Tristan Gudjohnsen",
+            "outPlayer": "Oscar Sjöstrand",
+            "teamName": "Malmö FF"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Julius Lindberg",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529889": {
+      "id": 6529889,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-17T14:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Mjällby AIF",
+      "opponentAbbrv": "MAIF",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 1,
+      "venue": "Strandvallen A-plan",
+      "events": {
+        "goals": [
+          {
+            "minute": "74'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Jeremy Agbonifo",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "94'",
+            "playerName": "Brice Wembangomo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "88'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "73'",
+            "playerName": "Jeremy Agbonifo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "61'",
+            "playerName": "Jesper Gustavsson",
+            "teamName": "Mjällby AIF"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "92'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Amor Layouni",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "75'",
+            "inPlayer": "Olle Lindberg",
+            "outPlayer": "Timo Stavitski",
+            "teamName": "Mjällby AIF"
+          },
+          {
+            "minute": "66'",
+            "inPlayer": "Ludwig Malachowski Thorell",
+            "outPlayer": "Jeppe Kjaer Jensen",
+            "teamName": "Mjällby AIF"
+          },
+          {
+            "minute": "60'",
+            "inPlayer": "Jeremy Agbonifo",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "60'",
+            "inPlayer": "Timo Stavitski",
+            "outPlayer": "Elliot Stroud",
+            "teamName": "Mjällby AIF"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Villiam Granath",
+            "outPlayer": "Romeo Leandersson",
+            "teamName": "Mjällby AIF"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Jesper Gustavsson",
+            "outPlayer": "Áki Samuelsen",
+            "teamName": "Mjällby AIF"
+          }
+        ]
+      }
+    },
+    "6529897": {
+      "id": 6529897,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-25T17:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IF Elfsborg",
+      "opponentAbbrv": "IFE",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Borås Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "66'",
+            "playerName": "Leo Östman",
+            "teamName": "IF Elfsborg",
+            "assistPlayerName": null,
+            "forHäcken": false
+          },
+          {
+            "minute": "41'",
+            "playerName": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Amor Layouni",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "89'",
+            "playerName": "Jeremy Agbonifo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "61'",
+            "playerName": "Filip Helander",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "55'",
+            "playerName": "Arber Zeneli",
+            "teamName": "IF Elfsborg"
+          },
+          {
+            "minute": "17'",
+            "playerName": "Amor Layouni",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "90'",
+            "inPlayer": "Buhari Ibrahim",
+            "outPlayer": "Niklas Hult",
+            "teamName": "IF Elfsborg"
+          },
+          {
+            "minute": "83'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Amor Layouni",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "Taylor Silverholt",
+            "outPlayer": "Leo Östman",
+            "teamName": "IF Elfsborg"
+          },
+          {
+            "minute": "69'",
+            "inPlayer": "Jeremy Agbonifo",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Rasmus Wikström",
+            "outPlayer": "Rufai Mohammed",
+            "teamName": "IF Elfsborg"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Frederik Dahl Ihler",
+            "outPlayer": "Julius Eskelund Beck",
+            "teamName": "IF Elfsborg"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Simon Hedlund",
+            "outPlayer": "Arber Zeneli",
+            "teamName": "IF Elfsborg"
+          }
+        ]
+      }
+    },
+    "6529904": {
+      "id": 6529904,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-05-31T12:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Hammarby",
+      "opponentAbbrv": "HAM",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 2,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "78'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Julius Lindberg",
+            "forHäcken": true
+          },
+          {
+            "minute": "54'",
+            "playerName": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adam Lundkvist",
+            "forHäcken": true
+          },
+          {
+            "minute": "47'",
+            "playerName": "Amor Layouni",
+            "teamName": "BK Häcken",
+            "assistPlayerName": null,
+            "forHäcken": true
+          },
+          {
+            "minute": "38'",
+            "playerName": "Victor Stange Lind",
+            "teamName": "Hammarby IF",
+            "assistPlayerName": null,
+            "forHäcken": false
+          },
+          {
+            "minute": "8'",
+            "playerName": "Victor Stange Lind",
+            "teamName": "Hammarby IF",
+            "assistPlayerName": "Paulos Abraham",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "93'",
+            "playerName": "Jeremy Agbonifo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "88'",
+            "playerName": "Andreas Linde",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "46'",
+            "playerName": "Victor Eriksson",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "27'",
+            "playerName": "Silas Sinan Erhen Thorup Andersen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "25'",
+            "playerName": "Hampus Skoglund",
+            "teamName": "Hammarby IF"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "89'",
+            "inPlayer": "Johan Hammar",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "89'",
+            "inPlayer": "Nikola Vasic",
+            "outPlayer": "Nahir Besara",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "89'",
+            "inPlayer": "Dennis Collander",
+            "outPlayer": "Hampus Skoglund",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "75'",
+            "inPlayer": "Jeremy Agbonifo",
+            "outPlayer": "Amor Layouni",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "74'",
+            "inPlayer": "Oliver Jordan Hagen",
+            "outPlayer": "Montader Madjed",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "68'",
+            "inPlayer": "Adrian Svanbäck",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Oscar Johansson Schellhas",
+            "outPlayer": "Tesfaldet Tekie",
+            "teamName": "Hammarby IF"
+          }
+        ]
+      }
+    },
+    "6529910": {
+      "id": 6529910,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-06T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Djurgårdens IF",
+      "opponentAbbrv": "DIF",
+      "status": "finished",
+      "scoreHome": 2,
+      "scoreAway": 4,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "85'",
+            "playerName": "Nino Zugelj",
+            "teamName": "Djurgårdens IF",
+            "assistPlayerName": "Bo Hegland",
+            "forHäcken": false
+          },
+          {
+            "minute": "82'",
+            "playerName": "Bamir Fierza Sadiku",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Julius Lindberg",
+            "forHäcken": true
+          },
+          {
+            "minute": "72'",
+            "playerName": "Kristian Lien",
+            "teamName": "Djurgårdens IF",
+            "assistPlayerName": "Matias Siltanen",
+            "forHäcken": false
+          },
+          {
+            "minute": "40'",
+            "playerName": "Kristian Lien",
+            "teamName": "Djurgårdens IF",
+            "assistPlayerName": "Max Larsson",
+            "forHäcken": false
+          },
+          {
+            "minute": "28'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adrian Svanbäck",
+            "forHäcken": true
+          },
+          {
+            "minute": "4'",
+            "playerName": "Oskar Fallenius",
+            "teamName": "Djurgårdens IF",
+            "assistPlayerName": null,
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "57'",
+            "playerName": "Jacob Une",
+            "teamName": "Djurgårdens IF"
+          },
+          {
+            "minute": "24'",
+            "playerName": "Miro Tenho",
+            "teamName": "Djurgårdens IF"
+          },
+          {
+            "minute": "23'",
+            "playerName": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "86'",
+            "inPlayer": "Mikael Marques de Pombal Vivar",
+            "outPlayer": "Miro Tenho",
+            "teamName": "Djurgårdens IF"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Daniel Stensson",
+            "outPlayer": "Hampus Finndell",
+            "teamName": "Djurgårdens IF"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Nino Zugelj",
+            "outPlayer": "Patric Åslund",
+            "teamName": "Djurgårdens IF"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Adam Ståhl",
+            "outPlayer": "Max Larsson",
+            "teamName": "Djurgårdens IF"
+          },
+          {
+            "minute": "63'",
+            "inPlayer": "David Seger",
+            "outPlayer": "Pontus Dahbo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "57'",
+            "inPlayer": "Jeppe Møldrup Okkels",
+            "outPlayer": "Oskar Fallenius",
+            "teamName": "Djurgårdens IF"
+          }
+        ]
+      }
+    },
+    "6529920": {
+      "id": 6529920,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-11T15:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Örgryte IS",
+      "opponentAbbrv": "OIS",
+      "status": "finished",
+      "scoreHome": 4,
+      "scoreAway": 3,
+      "venue": "Gamla Ullevi ",
+      "events": {
+        "goals": [
+          {
+            "minute": "86'",
+            "playerName": "Noah Christoffersson",
+            "teamName": "Örgryte IS",
+            "assistPlayerName": "Owen Parker-Price",
+            "forHäcken": false
+          },
+          {
+            "minute": "76'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Julius Lindberg",
+            "forHäcken": true
+          },
+          {
+            "minute": "74'",
+            "playerName": "Jerome Tibbling Ugwo",
+            "teamName": "Örgryte IS",
+            "assistPlayerName": "Adam Andersson",
+            "forHäcken": false
+          },
+          {
+            "minute": "69'",
+            "playerName": "Noah Christoffersson",
+            "teamName": "Örgryte IS",
+            "assistPlayerName": "Jerome Tibbling Ugwo",
+            "forHäcken": false
+          },
+          {
+            "minute": "40'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Julius Lindberg",
+            "forHäcken": true
+          },
+          {
+            "minute": "11'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adam Lundkvist",
+            "forHäcken": true
+          },
+          {
+            "minute": "4'",
+            "playerName": "Adam Andersson",
+            "teamName": "Örgryte IS",
+            "assistPlayerName": "Owen Parker-Price",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "70'",
+            "playerName": "Sebastian Lagerlund",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "57'",
+            "playerName": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "37'",
+            "playerName": "Tobias Sana",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "19'",
+            "playerName": "Filip Helander",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "90'",
+            "inPlayer": "Charlie Vindehall",
+            "outPlayer": "Noah Christoffersson",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "83'",
+            "inPlayer": "William Svensson",
+            "outPlayer": "Adam Andersson",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "82'",
+            "inPlayer": "David Seger",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "82'",
+            "inPlayer": "Olle Samuelsson",
+            "outPlayer": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "82'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Simen Hestnes",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "66'",
+            "inPlayer": "Bukuru Jack-Sanders Ngabo",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "66'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Jerome Tibbling Ugwo",
+            "outPlayer": "Benjamin Laturnus",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "William Hofvander",
+            "outPlayer": "Daniel Paulson",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Michael Parker",
+            "outPlayer": "Anton Andreasson",
+            "teamName": "Örgryte IS"
+          }
+        ]
+      }
+    },
+    "6529932": {
+      "id": 6529932,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-19T14:30:00.000Z",
+      "homeAway": "away",
+      "opponent": "Halmstads BK",
+      "opponentAbbrv": "HBK",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 2,
+      "venue": "Örjans Vall A",
+      "events": {
+        "goals": [
+          {
+            "minute": "56'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Brice Wembangomo",
+            "forHäcken": true
+          },
+          {
+            "minute": "49'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Mikkel Rygaard Jensen",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "92'",
+            "playerName": "Rocco Ascone",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "44'",
+            "playerName": "Omar Faraj",
+            "teamName": "Halmstads BK"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "88'",
+            "inPlayer": "Bukuru Jack-Sanders Ngabo",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "David Seger",
+            "outPlayer": "Simen Hestnes",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "81'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Malte Persson",
+            "outPlayer": "Hussein Carneil",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "61'",
+            "inPlayer": "Koudou Marvin Axel Illary",
+            "outPlayer": "Oliver Kapsimalis",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "61'",
+            "inPlayer": "Gabriel Wallentin",
+            "outPlayer": "Erko Tõugjas",
+            "teamName": "Halmstads BK"
+          }
+        ]
+      }
+    },
+    "6529934": {
+      "id": 6529934,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-07-27T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "AIK",
+      "opponentAbbrv": "AIK",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 0,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [],
+        "yellowCards": [
+          {
+            "minute": "79'",
+            "playerName": "Dino Besirovic",
+            "teamName": "AIK"
+          },
+          {
+            "minute": "69'",
+            "playerName": "Hervé Matthys",
+            "teamName": "AIK"
+          },
+          {
+            "minute": "36'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "83'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "83'",
+            "inPlayer": "Harun Ibrahim",
+            "outPlayer": "Brice Wembangomo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "83'",
+            "inPlayer": "Sixten Gustafsson",
+            "outPlayer": "Kevin Filling",
+            "teamName": "AIK"
+          },
+          {
+            "minute": "79'",
+            "inPlayer": "Bukuru Jack-Sanders Ngabo",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "70'",
+            "inPlayer": "Olle Samuelsson",
+            "outPlayer": "Filip Helander",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "51'",
+            "inPlayer": "Abdihakin Ali",
+            "outPlayer": "Taha Ayari",
+            "teamName": "AIK"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Linus Järeteg",
+            "outPlayer": "Amel Mujanic",
+            "teamName": "AIK"
+          },
+          {
+            "minute": "17'",
+            "inPlayer": "Victor Goncalves Andersson",
+            "outPlayer": "Axel Kouame",
+            "teamName": "AIK"
+          }
+        ]
+      }
+    },
+    "6529945": {
+      "id": 6529945,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-01T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Kalmar FF",
+      "opponentAbbrv": "KFF",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "23'",
+            "playerName": "Harry Hilvenius",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Mikkel Rygaard Jensen",
+            "forHäcken": true
+          },
+          {
+            "minute": "11'",
+            "playerName": "Aboubacar Keita",
+            "teamName": "Kalmar FF",
+            "assistPlayerName": "Carl Gustafsson",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "70'",
+            "playerName": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "56'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "51'",
+            "playerName": "Pontus Dahbo",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "90'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "84'",
+            "inPlayer": "Nassef Chourak",
+            "outPlayer": "Robert Gojani",
+            "teamName": "Kalmar FF"
+          },
+          {
+            "minute": "82'",
+            "inPlayer": "Filip Helander",
+            "outPlayer": "Harun Ibrahim",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "76'",
+            "inPlayer": "Bukuru Jack-Sanders Ngabo",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Melker Hallberg",
+            "outPlayer": "Abdussalam Magashy",
+            "teamName": "Kalmar FF"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Pontus Dahbo",
+            "outPlayer": "Brice Wembangomo",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529949": {
+      "id": 6529949,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-09T12:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Hammarby",
+      "opponentAbbrv": "HAM",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 0,
+      "venue": "3Arena ",
+      "events": {
+        "goals": [
+          {
+            "minute": "55'",
+            "playerName": "Paulos Abraham",
+            "teamName": "Hammarby IF",
+            "assistPlayerName": "Frank Junior Agyei",
+            "forHäcken": false
+          },
+          {
+            "minute": "37'",
+            "playerName": "Victor Stange Lind",
+            "teamName": "Hammarby IF",
+            "assistPlayerName": "Montader Madjed",
+            "forHäcken": false
+          },
+          {
+            "minute": "28'",
+            "playerName": "Waylon Ramon Renecke",
+            "teamName": "Hammarby IF",
+            "assistPlayerName": "Victor Stange Lind",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "80'",
+            "playerName": "Christ Ivan Alex Wawa",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "61'",
+            "playerName": "Frank Junior Agyei",
+            "teamName": "Hammarby IF"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "84'",
+            "inPlayer": "Oliver Jordan Hagen",
+            "outPlayer": "Montader Madjed",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "84'",
+            "inPlayer": "Suwaibou Kebbeh",
+            "outPlayer": "Paulos Abraham",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "75'",
+            "inPlayer": "David Seger",
+            "outPlayer": "Simen Hestnes",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "72'",
+            "inPlayer": "Oscar Steinke Brånby",
+            "outPlayer": "Noah Persson",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Tesfaldet Tekie",
+            "outPlayer": "Amin Boudri",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Oscar Johansson Schellhas",
+            "outPlayer": "Victor Stange Lind",
+            "teamName": "Hammarby IF"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Bukuru Jack-Sanders Ngabo",
+            "outPlayer": "Harun Ibrahim",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Leo Väisänen",
+            "outPlayer": "Brice Wembangomo",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Olle Samuelsson",
+            "outPlayer": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Christ Ivan Alex Wawa",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529959": {
+      "id": 6529959,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-17T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Halmstads BK",
+      "opponentAbbrv": "HBK",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 0,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "35'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Abdoulaye Doumbia",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "93'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "46'",
+            "playerName": "Pascal Gregor",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "22'",
+            "playerName": "Harun Ibrahim",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "20'",
+            "playerName": "David Seger",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "8'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "89'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "86'",
+            "inPlayer": "Rocco Ascone",
+            "outPlayer": "Niilo Mäenpää",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "86'",
+            "inPlayer": "Aleksander Damnjanovic Nilsson",
+            "outPlayer": "Erko Tõugjas",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "Koudou Marvin Axel Illary",
+            "outPlayer": "Hussein Carneil",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Markus Haaland",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "69'",
+            "inPlayer": "Oliver Kapsimalis",
+            "outPlayer": "Ludvig Arvidsson",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "69'",
+            "inPlayer": "Malte Persson",
+            "outPlayer": "Omar Faraj",
+            "teamName": "Halmstads BK"
+          },
+          {
+            "minute": "33'",
+            "inPlayer": "Brice Wembangomo",
+            "outPlayer": "Harun Ibrahim",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529971": {
+      "id": 6529971,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-21T17:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "IK Sirius",
+      "opponentAbbrv": "IKS",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 3,
+      "venue": "Studenternas",
+      "events": {
+        "goals": [
+          {
+            "minute": "80'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adrian Svanbäck",
+            "forHäcken": true
+          },
+          {
+            "minute": "61'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Julius Lindberg",
+            "forHäcken": true
+          },
+          {
+            "minute": "27'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Mikkel Rygaard Jensen",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "77'",
+            "playerName": "Mohamed Soumah",
+            "teamName": "IK Sirius"
+          },
+          {
+            "minute": "63'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "6'",
+            "playerName": "Melker Heier",
+            "teamName": "IK Sirius"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "86'",
+            "inPlayer": "Olle Samuelsson",
+            "outPlayer": "Leo Väisänen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "83'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "81'",
+            "inPlayer": "Simon Sandberg",
+            "outPlayer": "Melker Heier",
+            "teamName": "IK Sirius"
+          },
+          {
+            "minute": "81'",
+            "inPlayer": "Markus Haaland",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "72'",
+            "inPlayer": "Charlie Nildén",
+            "outPlayer": "Victor Svensson",
+            "teamName": "IK Sirius"
+          },
+          {
+            "minute": "72'",
+            "inPlayer": "August Ljungberg",
+            "outPlayer": "Joakim Persson",
+            "teamName": "IK Sirius"
+          },
+          {
+            "minute": "55'",
+            "inPlayer": "Odera Samuel Onuchukwu Adindu",
+            "outPlayer": "Noel Milleskog",
+            "teamName": "IK Sirius"
+          }
+        ]
+      }
+    },
+    "6529977": {
+      "id": 6529977,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-08-29T13:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Västerås SK",
+      "opponentAbbrv": "VSK",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 3,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "77'",
+            "playerName": "Christ Ivan Alex Wawa",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Abdoulaye Doumbia",
+            "forHäcken": true
+          },
+          {
+            "minute": "60'",
+            "playerName": "Mattias Hellisdal",
+            "teamName": "Västerås SK",
+            "assistPlayerName": null,
+            "forHäcken": false
+          },
+          {
+            "minute": "37'",
+            "playerName": "Bonaventure Lendambi",
+            "teamName": "Västerås SK",
+            "assistPlayerName": "Mattias Hellisdal",
+            "forHäcken": false
+          },
+          {
+            "minute": "33'",
+            "playerName": "Simon Gefvert",
+            "teamName": "Västerås SK",
+            "assistPlayerName": "Jonathan Karlsson",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "87'",
+            "playerName": "Etrit Berisha",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "32'",
+            "playerName": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "15'",
+            "playerName": "Bonaventure Lendambi",
+            "teamName": "Västerås SK"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "88'",
+            "inPlayer": "Musab Abdi Mohamud",
+            "outPlayer": "Mamadou Ousmane Diagne",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "84'",
+            "inPlayer": "Wilson Lindberg Uhrström",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "73'",
+            "inPlayer": "Christ Ivan Alex Wawa",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "67'",
+            "inPlayer": "Marcus Baggesen",
+            "outPlayer": "Jack Tagesson",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "67'",
+            "inPlayer": "Ismet Lushaku",
+            "outPlayer": "Mattias Hellisdal",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "67'",
+            "inPlayer": "Karl Gunnarsson",
+            "outPlayer": "Jens Magnusson",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Simen Hestnes",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Markus Haaland",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Abdelrahman Boudah Saidi",
+            "outPlayer": "Bonaventure Lendambi",
+            "teamName": "Västerås SK"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Adam Lundkvist",
+            "outPlayer": "David Seger",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6529981": {
+      "id": 6529981,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-05T13:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "GAIS",
+      "opponentAbbrv": "GAIS",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 0,
+      "venue": "Gamla Ullevi ",
+      "events": {
+        "goals": [],
+        "yellowCards": [
+          {
+            "minute": "93'",
+            "playerName": "William Milovanovic",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "64'",
+            "playerName": "Oskar Ågren",
+            "teamName": "GAIS"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "90'",
+            "inPlayer": "Jonas Lindberg",
+            "outPlayer": "Róbert Frosti Þorkelsson",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "Bamir Fierza Sadiku",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "Markus Haaland",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "Harun Ibrahim",
+            "outPlayer": "Simen Hestnes",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "William Milovanovic",
+            "outPlayer": "Joackim Fagerjord",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "80'",
+            "inPlayer": "Simon Jørgensen",
+            "outPlayer": "Nikola Vasic",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "75'",
+            "inPlayer": "Andreas Hermansen",
+            "outPlayer": "Mergim Krasniqi",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "68'",
+            "inPlayer": "Mads Agger",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "60'",
+            "inPlayer": "Mikkel Rygaard Jensen",
+            "outPlayer": "Wilson Lindberg Uhrström",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "56'",
+            "inPlayer": "Max Andersson",
+            "outPlayer": "Oscar Pettersson",
+            "teamName": "GAIS"
+          },
+          {
+            "minute": "56'",
+            "inPlayer": "Henry Sletsjøe",
+            "outPlayer": "Dennis Collander",
+            "teamName": "GAIS"
+          }
+        ]
+      }
+    },
+    "6529993": {
+      "id": 6529993,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-11T17:00:00.000Z",
+      "homeAway": "home",
+      "opponent": "Mjällby AIF",
+      "opponentAbbrv": "MAIF",
+      "status": "finished",
+      "scoreHome": 1,
+      "scoreAway": 1,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "55'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "David Seger",
+            "forHäcken": true
+          },
+          {
+            "minute": "16'",
+            "playerName": "Jacob Bergström",
+            "teamName": "Mjällby AIF",
+            "assistPlayerName": "Abdullah Iqbal",
+            "forHäcken": false
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "10'",
+            "playerName": "Jesper Gustavsson",
+            "teamName": "Mjällby AIF"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "85'",
+            "inPlayer": "Simen Hestnes",
+            "outPlayer": "David Seger",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "85'",
+            "inPlayer": "Wilson Lindberg Uhrström",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "74'",
+            "inPlayer": "Jeppe Kjaer Jensen",
+            "outPlayer": "Ali Youssef",
+            "teamName": "Mjällby AIF"
+          },
+          {
+            "minute": "70'",
+            "inPlayer": "Mads Agger",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "61'",
+            "inPlayer": "Áki Samuelsen",
+            "outPlayer": "Mads Enggård",
+            "teamName": "Mjällby AIF"
+          },
+          {
+            "minute": "35'",
+            "inPlayer": "Olle Samuelsson",
+            "outPlayer": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    },
+    "6530003": {
+      "id": 6530003,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-09-20T12:00:00.000Z",
+      "homeAway": "away",
+      "opponent": "Kalmar FF",
+      "opponentAbbrv": "KFF",
+      "status": "finished",
+      "scoreHome": 0,
+      "scoreAway": 5,
+      "venue": "Guldfågeln Arena, Kalmar",
+      "events": {
+        "goals": [
+          {
+            "minute": "63'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adrian Svanbäck",
+            "forHäcken": true
+          },
+          {
+            "minute": "55'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Brice Wembangomo",
+            "forHäcken": true
+          },
+          {
+            "minute": "47'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Olle Samuelsson",
+            "forHäcken": true
+          },
+          {
+            "minute": "34'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Julius Lindberg",
+            "forHäcken": true
+          },
+          {
+            "minute": "2'",
+            "playerName": "Gustav Lindgren",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Filip Helander",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "14'",
+            "playerName": "Olle Samuelsson",
+            "teamName": "BK Häcken"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "87'",
+            "inPlayer": "Sivert Engh Øverby",
+            "outPlayer": "Miska Ylitolva",
+            "teamName": "Kalmar FF"
+          },
+          {
+            "minute": "81'",
+            "inPlayer": "Philip Pawlowski",
+            "outPlayer": "Abdoulaye Doumbia",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "71'",
+            "inPlayer": "Markus Haaland",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "71'",
+            "inPlayer": "Harun Ibrahim",
+            "outPlayer": "Olle Samuelsson",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Wilson Lindberg Uhrström",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "64'",
+            "inPlayer": "Mads Agger",
+            "outPlayer": "Gustav Lindgren",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "56'",
+            "inPlayer": "Alexander Almqvist",
+            "outPlayer": "Aboubacar Keita",
+            "teamName": "Kalmar FF"
+          },
+          {
+            "minute": "51'",
+            "inPlayer": "Abdussalam Magashy",
+            "outPlayer": "Tobias Lauritsen",
+            "teamName": "Kalmar FF"
+          },
+          {
+            "minute": "51'",
+            "inPlayer": "Nassef Chourak",
+            "outPlayer": "Melker Hallberg",
+            "teamName": "Kalmar FF"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Eskild Munk Dall",
+            "outPlayer": "Noah Shamoun",
+            "teamName": "Kalmar FF"
+          }
+        ]
+      }
+    },
+    "6530009": {
+      "id": 6530009,
+      "competition": "allsvenskan",
+      "season": "2026",
+      "date": "2026-10-11T14:30:00.000Z",
+      "homeAway": "home",
+      "opponent": "Örgryte IS",
+      "opponentAbbrv": "OIS",
+      "status": "finished",
+      "scoreHome": 3,
+      "scoreAway": 0,
+      "venue": "Nordic Wellness Arena",
+      "events": {
+        "goals": [
+          {
+            "minute": "56'",
+            "playerName": "Adrian Svanbäck",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Gustav Lindgren",
+            "forHäcken": true
+          },
+          {
+            "minute": "45'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Abdoulaye Doumbia",
+            "forHäcken": true
+          },
+          {
+            "minute": "6'",
+            "playerName": "Julius Lindberg",
+            "teamName": "BK Häcken",
+            "assistPlayerName": "Adrian Svanbäck",
+            "forHäcken": true
+          }
+        ],
+        "yellowCards": [
+          {
+            "minute": "84'",
+            "playerName": "Johan Hammar",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "67'",
+            "playerName": "Tobias Sana",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "23'",
+            "playerName": "Benjamin Laturnus",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "4'",
+            "playerName": "Adam Andersson",
+            "teamName": "Örgryte IS"
+          }
+        ],
+        "redCards": [],
+        "substitutions": [
+          {
+            "minute": "88'",
+            "inPlayer": "Christoffer Styffe",
+            "outPlayer": "Daniel Paulson",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "83'",
+            "inPlayer": "Wilson Lindberg Uhrström",
+            "outPlayer": "Mikkel Rygaard Jensen",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "76'",
+            "inPlayer": "Liam Filip Andersson",
+            "outPlayer": "William Hofvander",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "75'",
+            "inPlayer": "Christ Ivan Alex Wawa",
+            "outPlayer": "Julius Lindberg",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "75'",
+            "inPlayer": "Olle Samuelsson",
+            "outPlayer": "Adam Lundkvist",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "62'",
+            "inPlayer": "Mads Agger",
+            "outPlayer": "Adrian Svanbäck",
+            "teamName": "BK Häcken"
+          },
+          {
+            "minute": "61'",
+            "inPlayer": "Michael Parker",
+            "outPlayer": "Adam Andersson",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "61'",
+            "inPlayer": "Marlon Ebietomere",
+            "outPlayer": "Owen Parker-Price",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "61'",
+            "inPlayer": "David-Aaron Gogreh Obou",
+            "outPlayer": "Anton Andreasson",
+            "teamName": "Örgryte IS"
+          },
+          {
+            "minute": "45'",
+            "inPlayer": "Harun Ibrahim",
+            "outPlayer": "Brice Wembangomo",
+            "teamName": "BK Häcken"
+          }
+        ]
+      }
+    }
+  },
   "table": [
     {
       "rank": 1,
@@ -2522,7 +5081,7 @@
   "cardMatchesInspected": 23,
   "news": [
     {
-      "id": "SVT Sport-7-https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
+      "id": "SVT Sport-9-https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
       "title": "Tkachuk-brödernas succé – låg bakom historiskt hattrick",
       "url": "https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
       "summary": "Floridas 7-3-seger mot Columbus blev en riktig familjefest. Brady Tkachuk gjorde hattrick – och till samtliga tre mål assisterade brorsan Matthew. – Det är ganska coolt. Det är någonting som man alltid drömmer om, säger den trippla målskytten efter matchen.",
@@ -2534,7 +5093,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "SVT Sport-9-https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
+      "id": "SVT Sport-11-https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
       "title": "Smilla Sundell klar för UFC efter seger",
       "url": "https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
       "summary": "Redan för 1,5 år sedan var planen klar: Supertalangen Smilla Sundell skulle lämna thaiboxning för MMA. Nu har hon nått hela vägen – svenskan har säkrat ett kontrakt i UFC. – Det känns väldigt, väldigt bra. Jag är jätteglad. Drömmen blev sann, säger svenskan till Sportbladet.",
@@ -2913,7 +5472,7 @@
   ],
   "newsEvents": [
     {
-      "id": "event-SVT Sport-7-https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
+      "id": "event-SVT Sport-9-https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
       "title": "Tkachuk-brödernas succé – låg bakom historiskt hattrick",
       "summary": "Floridas 7-3-seger mot Columbus blev en riktig familjefest. Brady Tkachuk gjorde hattrick – och till samtliga tre mål assisterade brorsan Matthew. – Det är ganska coolt. Det är någonting som man alltid drömmer om, säger den trippla målskytten efter matchen.",
       "publishedAt": "2026-10-14T05:02:36.000Z",
@@ -2931,7 +5490,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-SVT Sport-9-https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
+      "id": "event-SVT Sport-11-https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
       "title": "Smilla Sundell klar för UFC efter seger",
       "summary": "Redan för 1,5 år sedan var planen klar: Supertalangen Smilla Sundell skulle lämna thaiboxning för MMA. Nu har hon nått hela vägen – svenskan har säkrat ett kontrakt i UFC. – Det känns väldigt, väldigt bra. Jag är jätteglad. Drömmen blev sann, säger svenskan till Sportbladet.",
       "publishedAt": "2026-10-14T04:56:02.000Z",
@@ -4544,9 +7103,9 @@
             "title": "Ben Engdahl",
             "badges": []
           },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Энгдаль, Бен",
+          "jawiki": {
+            "site": "jawiki",
+            "title": "ベン・エングダール",
             "badges": []
           },
           "svwiki": {
@@ -4949,11 +7508,6 @@
             "title": "Olle Samuelsson",
             "badges": []
           },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Самуэльссон, Улле",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Olle Samuelsson",
@@ -5031,14 +7585,14 @@
             "title": "Filip Öhman",
             "badges": []
           },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Эман, Филип",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Filip Öhman",
+            "badges": []
+          },
+          "ukwiki": {
+            "site": "ukwiki",
+            "title": "Філіп Егман",
             "badges": []
           }
         },
@@ -5121,11 +7675,6 @@
             "title": "Harry Hilvenius",
             "badges": []
           },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Хильвениус, Харри",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Harry Hilvenius",
@@ -5190,11 +7739,6 @@
           "enwiki": {
             "site": "enwiki",
             "title": "Abdoulaye Doumbia",
-            "badges": []
-          },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Думбия, Абдулай",
             "badges": []
           },
           "svwiki": {
@@ -5869,11 +8413,6 @@
             "title": "Wilson Lindberg",
             "badges": []
           },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Урстрём, Вильсон",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Wilson Lindberg Uhrström",
@@ -5988,6 +8527,11 @@
         "nationalTeams": [],
         "position": "mittfältare",
         "sitelinks": {
+          "bgwiki": {
+            "site": "bgwiki",
+            "title": "Давид Сегер",
+            "badges": []
+          },
           "enwiki": {
             "site": "enwiki",
             "title": "David Seger",
@@ -5996,11 +8540,6 @@
           "itwiki": {
             "site": "itwiki",
             "title": "David Seger",
-            "badges": []
-          },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Сегер, Давид",
             "badges": []
           },
           "svwiki": {
@@ -6204,11 +8743,6 @@
         "career": [],
         "nationalTeams": [],
         "sitelinks": {
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Митрович, Никола (шведский футболист)",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Nikola Mitrovic",
@@ -6313,14 +8847,14 @@
             "title": "Gustav Lindgren",
             "badges": []
           },
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Линдгрен, Густав (футболист)",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Gustav Lindgren (fotbollsspelare)",
+            "badges": []
+          },
+          "ukwiki": {
+            "site": "ukwiki",
+            "title": "Густав Ліндгрен",
             "badges": []
           }
         },
@@ -6493,11 +9027,6 @@
         "career": [],
         "nationalTeams": [],
         "sitelinks": {
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Вава, Крист",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Christ Wawa",
@@ -6525,12 +9054,6 @@
       "career": [],
       "nationalTeams": [],
       "usedInfobox": false,
-      "wiki": {
-        "lang": "ru",
-        "extract": "Сабри Дахари Кондо — танзанийский футболист, нападающий шведского «Хеккена».",
-        "translated": "Sabri Dahari Kondo är en tanzanisk fotbollsspelare som spelar för svenska Hekken.",
-        "pageUrl": "https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%BD%D0%B4%D0%BE%2C_%D0%A1%D0%B0%D0%B1%D1%80%D0%B8"
-      },
       "candidate": {
         "qid": "Q135973822",
         "name": "Sabri Kondo",
@@ -6545,13 +9068,7 @@
         "clubs": [],
         "career": [],
         "nationalTeams": [],
-        "sitelinks": {
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Кондо, Сабри",
-            "badges": []
-          }
-        },
+        "sitelinks": {},
         "hackenClub": false,
         "hackenTeam": null,
         "gender": "male",
@@ -6602,11 +9119,6 @@
         "career": [],
         "nationalTeams": [],
         "sitelinks": {
-          "ruwiki": {
-            "site": "ruwiki",
-            "title": "Садику, Бамир",
-            "badges": []
-          },
           "svwiki": {
             "site": "svwiki",
             "title": "Bamir Sadiku",

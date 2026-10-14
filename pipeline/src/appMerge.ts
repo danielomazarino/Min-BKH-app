@@ -37,6 +37,24 @@ export function enrichmentQuality(e: SquadEnrichment | undefined): number {
 }
 
 /**
+ * Languages whose Wikipedia narrative must NEVER be served (user, 2026-10-14).
+ *
+ * A machine translation of a Russian stub read as a wrong biography ("spelar
+ * för svenska Hekken") and the "ryska Wikipedia" label confused supporters.
+ * The fallback chain no longer FETCHES these languages; this strip also
+ * removes any narrative already stored under a previous build, so the
+ * last-known-good merge guard cannot resurrect it.
+ */
+const BANNED_WIKI_LANGS = new Set(["ru"]);
+
+function stripBannedWiki(e: SquadEnrichment): SquadEnrichment {
+  if (!e.wiki || !BANNED_WIKI_LANGS.has(e.wiki.lang)) return e;
+  const rest = { ...e };
+  delete rest.wiki;
+  return rest;
+}
+
+/**
  * Merge the previous and next enrichment maps per player.
  *
  * A next entry wins when:
@@ -54,14 +72,20 @@ export function mergeSquadEnrichment(
   next: Record<string, SquadEnrichment> | undefined,
 ): { merged: Record<string, SquadEnrichment>; keptPrev: number } {
   if (!next || Object.keys(next).length === 0) {
-    return { merged: { ...(prev ?? {}) }, keptPrev: Object.keys(prev ?? {}).length };
+    // Even with no fresh enrichment, the banned-language strip applies to the
+    // carried-over previous data — a stored ru narrative must not survive.
+    const strippedPrev: Record<string, SquadEnrichment> = {};
+    for (const [id, e] of Object.entries(prev ?? {})) strippedPrev[id] = stripBannedWiki(e);
+    return { merged: strippedPrev, keptPrev: 0 };
   }
-  const merged: Record<string, SquadEnrichment> = { ...(prev ?? {}) };
+  const merged: Record<string, SquadEnrichment> = {};
   let keptPrev = 0;
+  for (const [id, e] of Object.entries(prev ?? {})) merged[id] = stripBannedWiki(e);
   for (const [id, e] of Object.entries(next)) {
+    const stripped = stripBannedWiki(e);
     const prevQuality = enrichmentQuality(merged[id]);
-    if (enrichmentQuality(e) >= prevQuality) {
-      merged[id] = e;
+    if (enrichmentQuality(stripped) >= prevQuality) {
+      merged[id] = stripped;
     } else {
       keptPrev += 1;
     }
@@ -93,6 +117,11 @@ export function mergeAppData(prev: AppData, next: AppData): AppData {
     // rule as recent/upcoming: an empty fetch must not erase the season.
     seasonMatches: next.seasonMatches?.length ? next.seasonMatches : prev.seasonMatches,
     lastMatchDetail: next.lastMatchDetail ?? prev.lastMatchDetail,
+    // Per-match event details: union by match id. A new run adds the newest
+    // finished matches; older entries are kept so a partial fetch (one match
+    // erroring) never erases history. Entries are never removed — the season
+    // only grows.
+    matchDetails: { ...(prev.matchDetails ?? {}), ...(next.matchDetails ?? {}) },
     table: next.table.length ? next.table : prev.table,
     tablePosition: next.tablePosition ?? prev.tablePosition,
     warnings: next.warnings ?? prev.warnings,

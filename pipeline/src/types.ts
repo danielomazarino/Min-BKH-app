@@ -437,6 +437,13 @@ export interface AppData {
    *  complete. */
   seasonMatches?: MatchRef[];
   lastMatchDetail: MatchDetail | null;
+  /** Event details for EVERY finished match this season, keyed by match id.
+   *  The pipeline already fetches each finished match's detail for the
+   *  disciplinary ledger; storing the events here (user, 2026-10-14) lets
+   *  every historical match open the same timeline sheet the last game has.
+   *  ~2 KB per match, ~26 finished matches ≈ 50 KB — acceptable for the
+   *  completeness it buys. */
+  matchDetails?: Record<string, MatchDetail>;
   table: LeagueTableRow[];
   tablePosition: LeagueTableRow | null;
   warnings: WarningsReport | null;
