@@ -207,8 +207,9 @@ export function computeSeasonDiscipline(
             // the next match in this competition. The pending warnings stay
             // counted (established semantics: `warningsUntilSuspension`
             // reports the count that triggered the suspension; the status
-            // carries the "out" fact).
-            status = "suspended_next";
+            // carries the "out" fact). No assignment here: `remaining` is
+            // untouched, so the post-loop logic below derives
+            // `suspended_next` from `pending >= threshold` on its own.
             break;
           }
           const servedDate = finishedAfter[0];
