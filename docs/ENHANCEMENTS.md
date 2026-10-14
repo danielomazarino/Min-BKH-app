@@ -557,6 +557,60 @@ is the only path.
 
 ---
 
+## B-022 · SVT sport false positives ("seger" noun collision) + starred squad players showed "HÄCKEN EJ BEKRÄFTAT" — RESOLVED
+
+**Status:** RESOLVED 2026-10-14. Deployed `6ec1f38` + follow-up `911e54d`, byte-verified (served sha256 `f55b8d0d…` == committed; public build `911e54d.52e9b00`). CI green after one rerun (the known webkit former-players flake — different tests each run, 423 passed). · **Sources:** user report, two bugs in one round
+
+### 1. Two SVT articles in the men's feed: NHL ice hockey and a UFC fighter
+
+| Article | Why it passed |
+| --- | --- |
+| SVT: "Tkachuk-brödernas succé – låg bakom historiskt hattrick" (NHL) | summary "Floridas **7-3-seger** mot Columbus" — the hyphenated score compound satisfies `\b`, and the different-person guard found no letter-token pair before "seger" (a hyphen is not in `[a-zåäöéü0-9]+`) |
+| SVT: "Smilla Sundell klar för UFC efter seger" (MMA) | "**efter seger**" — "efter" is a FUNCTION_WORD, so the guard exempted the pair (correctly, for "till Rygaard"-type true positives) |
+
+Both matched squad player **David Seger** — "seger" is also the Swedish word
+for *win*, so any article about a win collides with his bare surname. Two
+structural fixes in `newsRelevance.ts`, no blocklists:
+
+1. **Non-football sport veto** (`isNonFootballSport`): a secondary-source
+   article positively about another sport — URL path `/sport/ishockey/`,
+   `/sport/mma/` (SVT files every article under its sport) or text
+   NHL/UFC/MMA/… — is UNRELATED before any person matching. The official club
+   feed is exempt (it is authoritative and never files another sport).
+2. **Score-compound guard**: a surname directly preceded by a digit-hyphen
+   score ("7-3-seger") is a result line, never a person.
+
+Both real articles added verbatim as regression tests. True positives verified
+still working: bare "Seger" headline in a football context, full name,
+Rygaard/Sadiku surname forms, "Häckens seger" possessive.
+
+### 2. Two starred squad players showed "HÄCKEN EJ BEKRÄFTAT"
+
+The user's starred list showed Brice Wembangomo and Adrian Svanbäck — both
+CURRENT squad players — with the unverified badge. Root cause **measured live
+on Wikidata 2026-10-14**: the badge came from Wikidata P54 only, and Wikidata
+is stale for exactly these players — Wembangomo's P54 lists only Kvik Halden
+FK (his Häcken stint 2025– is missing), Svanbäck has no P54 at all.
+
+Fix in `app/players/wikidata.ts`: a search candidate matching a current squad
+player (normalized name, same token-subset rule as the squad-first ranking) is
+marked `hackenTeam="men"`. The squad list is the club's own roster — 27
+club-verified names — so Wikidata's silence is not a refutation. Positive
+Wikidata evidence is never overwritten (a verified women's-team player keeps
+"women"). A non-squad namesake does not inherit the badge (test).
+
+**Follow-up `911e54d` — two gaps on the refresh paths:** `updateFavoriteSnapshot`
+updated the stored card but not the row's `hackenTeam` field (a player starred
+BEFORE the fix kept the stale badge forever), and the auto/manual refresh
+searches did not pass `squadNames` (a refresh would strip the badge it just
+recomputed). Both fixed; the badge now heals itself the first time the player
+is opened or refreshed.
+
+**Data regenerated:** both SVT articles withdrawn from the served feed — 25
+events, all men/former. They remain visible only in `freshness.articleAudit`
+with verdict "no Häcken relation" (the observability trail, by design).
+696 unit tests green (+7), former-players/news/brief e2e green.
+
 ## B-021 · Tester round 2026-10-13/14: three news false positives, cryptic match-row badges, team sheets, on-demand lineups — RESOLVED
 
 **Status:** RESOLVED in two rounds. Round 1 deployed `3c27b1d`, byte-verified (served sha256 == committed; public build `3c27b1d.0fd54df`). Round 2 (2026-10-14, below) covers the tester follow-ups: the surname-blocklist design challenge, the Hemma/Borta clutter, the upcoming-match sheet, and the BP missing-games bug. · **Sources:** five tester reports in one round, plus a follow-up round
