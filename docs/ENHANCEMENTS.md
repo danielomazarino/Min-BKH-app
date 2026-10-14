@@ -557,6 +557,45 @@ is the only path.
 
 ---
 
+## B-023 · Player search padded the list with non-footballers ("Norling" → 6 wrong people) — RESOLVED
+
+**Status:** RESOLVED 2026-10-14. Deployed `11589e1`, byte-verified (public build `11589e1.4843d16`), CI green first run. · **Source:** user report — "when searching on Norling i wanted to find Rikard Norling, but seem to have 6 hits on already dead persons who likely have never played fotball"
+
+### What actually happened
+
+The ranking was never wrong: Rikard Norling (Q331151, occupation
+fotbollsspelare + fotbollstränare) was returned **first**. The defect was the
+PADDING: the search rule since the Doumbia fix was "footballers lead, and
+non-footballers fill the remaining slots when there is room". For a surname
+with exactly one footballer and many other bearers, "room" meant 7 of 8 slots
+went to people who never played football.
+
+Measured live on Wikidata 2026-10-14 — the index for "norling" holds exactly
+ONE footballer (Rikard); the cirrus fallback (`norling*
+haswbstatement:P106=Q937857`) and the surname backlink graph (53 bearers of
+Q27877648) both confirm no second Norling footballer exists. The other hits
+were Bengt/Herman/Anton/Nils Norling (politicians, several deceased), Bie
+Norling (sculptor) and Gunilla Norling (actress) — the header read
+"7 träffar · 1 andra ignorerades", which reads as six wrong people.
+
+### The rule change
+
+In `searchPlayersOnline` (app/players/wikidata.ts):
+
+- **When at least one footballer was found, the result list is footballers
+  ONLY.** This is a football app; a supporter searching a name wants players,
+  not every Wikidata bearer of the surname.
+- **When zero footballers were found, non-footballers still stand** — better
+  than an empty page, and the cirrus fallback may still rescue a player on
+  that path.
+- The same rule is applied to the surname-backlinks merge path (it appends
+  index people behind the surname results; those are now footballers-only
+  when any surname footballer exists).
+
+"Norling" now returns exactly one card: Rikard Norling. 2 new tests (the
+Norling case with the real QIDs and occupations; the zero-footballers
+fallback). 698 unit tests green, former-players e2e 41 green.
+
 ## B-022 · SVT sport false positives ("seger" noun collision) + starred squad players showed "HÄCKEN EJ BEKRÄFTAT" — RESOLVED
 
 **Status:** RESOLVED 2026-10-14. Deployed `6ec1f38` + follow-up `911e54d`, byte-verified (served sha256 `f55b8d0d…` == committed; public build `911e54d.52e9b00`). CI green after one rerun (the known webkit former-players flake — different tests each run, 423 passed). · **Sources:** user report, two bugs in one round
