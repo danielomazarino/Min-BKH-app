@@ -1060,3 +1060,96 @@ describe("searchPlayersOnline — squad membership is Häcken evidence (2026-10-
     expect(c!.hackenTeam).toBe("women");
   });
 });
+
+describe("searchPlayersOnline — footballers only when any were found (2026-10-14)", () => {
+  // User report: searching "Norling" for Rikard Norling returned him FIRST
+  // (the ranking worked) but the other 7 slots were padded with a politician,
+  // a sculptor and an actress — the header read "7 träffar · 1 andra
+  // ignorerades", which reads as six wrong people. Measured live: Wikidata's
+  // index for "norling" holds exactly ONE footballer; the cirrus fallback and
+  // the surname graph both confirm no other Norling footballer exists.
+  const RIKARD = {
+    id: "Q331151",
+    labels: { sv: { value: "Rikard Norling" }, en: { value: "Rikard Norling" } },
+    descriptions: { sv: { value: "svensk fotbollstränare" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [
+        { mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } },
+        { mainsnak: { datavalue: { value: { id: "Q628099" } } } }, // manager
+      ],
+      P54: [{ mainsnak: { datavalue: { value: { id: "Q754339" } } } }],
+    },
+  };
+  // The non-footballers the index really returns (measured 2026-10-14).
+  const POLITICIAN = {
+    id: "Q6017016",
+    labels: { sv: { value: "Bengt Norling" } },
+    descriptions: { sv: { value: "svensk politiker" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: "Q82955" } } } }], // politician
+    },
+  };
+  const SCULPTOR = {
+    id: "Q857039",
+    labels: { sv: { value: "Bie Norling" } },
+    descriptions: { sv: { value: "svensk skulptör" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: "Q1281618" } } } }], // sculptor
+    },
+  };
+  const SURNAME = {
+    id: "Q27877648",
+    labels: { sv: { value: "Norling" } },
+    claims: { P31: [{ mainsnak: { datavalue: { value: { id: "Q101352" } } } }] },
+  };
+
+  function norlingFetch() {
+    return stubFetch((url) => {
+      if (url.includes("wbsearchentities")) {
+        return indexResponse([
+          { id: "Q27877648", label: "Norling" },
+          { id: "Q331151", label: "Rikard Norling" },
+          { id: "Q6017016", label: "Bengt Norling" },
+          { id: "Q857039", label: "Bie Norling" },
+        ]);
+      }
+      return entitiesResponse({ Q27877648: SURNAME, Q331151: RIKARD, Q6017016: POLITICIAN, Q857039: SCULPTOR });
+    });
+  }
+
+  it("a search with one footballer shows ONLY footballers (the Norling case)", async () => {
+    const state = (await searchPlayersOnline("norling", { fetch: norlingFetch() })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    expect(state.status).toBe("results");
+    expect(state.candidates).toHaveLength(1);
+    expect(state.candidates[0].qid).toBe("Q331151");
+    expect(state.candidates[0].name).toBe("Rikard Norling");
+  });
+
+  it("when NO footballer is found, non-footballers still stand (no empty page)", async () => {
+    // Remove Rikard's footballer occupation — the index then has zero
+    // footballers, and the near-miss people are better than an empty page
+    // (the cirrus fallback may still rescue a player on the live path).
+    const noFootballer = { ...RIKARD, claims: { ...RIKARD.claims, P106: [{ mainsnak: { datavalue: { value: { id: "Q628099" } } } }] } };
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("wbsearchentities")) {
+        return indexResponse([
+          { id: "Q331151", label: "Rikard Norling" },
+          { id: "Q6017016", label: "Bengt Norling" },
+        ]);
+      }
+      return entitiesResponse({ Q331151: noFootballer, Q6017016: POLITICIAN });
+    });
+    const state = (await searchPlayersOnline("norling", { fetch: fetchMock })) as Extract<
+      SearchState,
+      { status: "results" }
+    >;
+    expect(state.status).toBe("results");
+    expect(state.candidates.length).toBe(2);
+  });
+});

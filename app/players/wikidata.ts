@@ -776,14 +776,18 @@ export async function searchPlayersOnline(
     isFootballer,
   );
 
-  // FOOTBALLERS LEAD, ALWAYS (user, 2026-10-13: searching "Doumbia" for the
-  // CURRENT squad player Abdoulaye Doumbia returned a singer and a deputy
-  // ahead of any footballer context). rankCandidates already sorts footballers
-  // first, but `ordered` still CONTAINS the non-footballers — and when there
-  // are fewer footballers than MAX_CANDIDATES they fill the remaining slots,
-  // presenting a singer as the 4th hit for a footballer query. The app is a
-  // football app: a person who is not a footballer is only shown when there
-  // is room after the footballers, never interleaved among them.
+  // FOOTBALLERS ONLY, WHEN ANY WERE FOUND (user, 2026-10-14: searching
+  // "Norling" for Rikard Norling returned him FIRST — the ranking worked —
+  // but the other 7 slots were padded with a politician, a sculptor and an
+  // actress, and the header read "7 träffar · 1 andra ignorerades", which
+  // reads as six wrong people). The previous rule let non-footballers fill
+  // the remaining slots "when there is room"; the user's verdict is that
+  // there is never room: this is a football app, and a supporter searching a
+  // name wants players, not every Wikidata bearer of the surname.
+  //
+  // Non-footballers are still shown when ZERO footballers were found — that
+  // is the "no player exists" case, where a near-miss person is better than
+  // an empty page (and the cirrus fallback below may still rescue a player).
   //
   // SQUAD MEMBERS LEAD THE FOOTBALLERS. The squad list is the one piece of
   // identity evidence the app owns outright, so a candidate whose name matches
@@ -810,7 +814,10 @@ export async function searchPlayersOnline(
     ? ranked.footballers.filter(isSquadName)
     : [];
   const restFootballers = ranked.footballers.filter((e) => !squadFirst.includes(e));
-  let chosen = [...squadFirst, ...restFootballers, ...ranked.others].slice(0, MAX_CANDIDATES);
+  // When at least one footballer exists, the list is footballers ONLY. When
+  // none exists, non-footballers stand (better than an empty page).
+  const withFootballers = ranked.footballers.length > 0;
+  let chosen = [...squadFirst, ...restFootballers, ...(withFootballers ? [] : ranked.others)].slice(0, MAX_CANDIDATES);
   let discarded = people.length - chosen.length;
 
   if (ranked.footballers.length === 0) {
@@ -925,9 +932,22 @@ export async function searchPlayersOnline(
         ? surnameRanked.footballers.filter(isSquadName)
         : [];
       const surnameRest = surnameRanked.footballers.filter((e) => !surnameSquadFirst.includes(e));
-      const orderedSurname = [...surnameSquadFirst, ...surnameRest, ...surnameRanked.others];
+      // Same footballers-only rule as the primary path above: when the
+      // surname graph found footballers, non-footballer bearers of the
+      // surname (the politicians, the sculptor) do not fill the remaining
+      // slots. The index people merged in behind are footballers-only too
+      // when any surname footballer exists.
+      const surnameHasFootballers = surnameRanked.footballers.length > 0;
+      const orderedSurname = [
+        ...surnameSquadFirst,
+        ...surnameRest,
+        ...(surnameHasFootballers ? [] : surnameRanked.others),
+      ];
       const seen = new Set(orderedSurname.map((e) => e.id));
-      const merged = [...orderedSurname, ...chosen.filter((e) => !seen.has(e.id))];
+      const indexTail = surnameHasFootballers
+        ? chosen.filter((e) => !seen.has(e.id) && isFootballer(e))
+        : chosen.filter((e) => !seen.has(e.id));
+      const merged = [...orderedSurname, ...indexTail];
       chosen = merged.slice(0, MAX_CANDIDATES);
       discarded = Math.max(0, people.length + viaSurname.length - chosen.length);
       phase("labels");
