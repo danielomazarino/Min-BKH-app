@@ -138,7 +138,22 @@ export function toggleFavorite(player: Omit<StarredPlayer, "starredAt">): Starre
  */
 export function updateFavoriteSnapshot(qid: string, snapshot: PlayerCandidate, now = Date.now()): StarredPlayer[] {
   const cur = loadFavorites();
-  const next = cur.map((p) => (p.qid === qid ? { ...p, snapshot, snapshotAt: now } : p));
+  const next = cur.map((p) =>
+    p.qid === qid
+      ? {
+          ...p,
+          snapshot,
+          snapshotAt: now,
+          // The badge is refreshed WITH the snapshot. Without this, a player
+          // starred before the squad-membership fix kept "HÄCKEN EJ BEKRÄFTAT"
+          // forever — the snapshot updated but the row's badge field did not
+          // (2026-10-14). The snapshot's own hackenTeam is authoritative: the
+          // search path now grants squad membership, so a fresh card carries
+          // the corrected value.
+          hackenTeam: snapshot.hackenTeam ?? null,
+        }
+      : p,
+  );
   saveFavorites(next);
   return next.sort((a, b) => b.starredAt - a.starredAt);
 }

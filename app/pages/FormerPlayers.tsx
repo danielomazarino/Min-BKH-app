@@ -278,7 +278,10 @@ export default function FormerPlayers({ squadNames = [] }: { squadNames?: string
     if (!fromSnapshot) return; // live results are already current
     let cancelled = false;
     void (async () => {
-      const result = await searchPlayersOnline(openQid, { fetch: window.fetch.bind(window) });
+      // squadNames is REQUIRED here, not optional: the auto-refresh re-runs
+      // the search, and without the squad list the fresh candidate would lose
+      // the squad-membership badge the original search granted (2026-10-14).
+      const result = await searchPlayersOnline(openQid, { fetch: window.fetch.bind(window), squadNames });
       if (cancelled) return;
       if (result.status === "results") {
         const fresh = result.candidates.find((c) => c.qid === openQid);
@@ -299,6 +302,8 @@ export default function FormerPlayers({ squadNames = [] }: { squadNames?: string
     // OPEN ID changes, not every time the card object is rebuilt. (This
     // project's ESLint config does not register react-hooks/exhaustive-deps,
     // so there is no directive to silence — the comment is the record.)
+    // `squadNames` is stable per app state (squad roster) and read at call
+    // time inside the async body; it is not a trigger for re-running.
   }, [openQid]);
 
   /**
@@ -319,7 +324,10 @@ export default function FormerPlayers({ squadNames = [] }: { squadNames?: string
       clearCache();
       clearWikiCache();
       clearInfoboxCache();
-      const result = await searchPlayersOnline(qid, { fetch: window.fetch.bind(window) });
+      // squadNames for the same reason as the auto-refresh above: a manual
+      // refresh must not strip the squad-membership badge it just cleared the
+      // caches to recompute.
+      const result = await searchPlayersOnline(qid, { fetch: window.fetch.bind(window), squadNames });
       if (result.status === "results") {
         const fresh = result.candidates.find((c) => c.qid === qid);
         if (fresh) {
