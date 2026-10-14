@@ -31,12 +31,19 @@ test.describe("Brief (dashboard)", () => {
     expect(await page.locator(".strip-tap").count()).toBe(1);
   });
 
-  test("the banner makes the lineup affordance visible", async ({ page }) => {
-    // The tester could not tell the banner was tappable or that a lineup
-    // exists there. The hint text must be on the banner itself.
+  test("the banner shows the lineup affordance on match day only", async ({ page }) => {
+    // User correction (2026-10-14): the "klicka för startelva" text belongs
+    // on MATCH DAY, not as a permanent hint. Assert the conditional: when
+    // the countdown says "Matchdag" the click affordance must be there;
+    // otherwise the banner must NOT carry it.
     const banner = page.getByTestId("next-match");
     if ((await banner.count()) === 0) test.skip(true, "no next match in data");
-    await expect(banner.getByTestId("lineup-hint-strip")).toContainText(/startelva/i);
+    const countdown = await banner.getByTestId("countdown").innerText();
+    if (/Matchdag/.test(countdown)) {
+      await expect(banner).toContainText(/klicka för startelva/i);
+    } else {
+      await expect(banner).not.toContainText(/klicka för startelva/i);
+    }
   });
 
   test("last result shows the score in HOME–AWAY order (Swedish convention)", async ({ page }) => {

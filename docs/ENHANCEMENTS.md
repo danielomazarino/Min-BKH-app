@@ -800,20 +800,22 @@ renders the banner in BOTH places (Brief and Matcher), replacing the old
 - Tapping opens the **upcoming-match sheet directly** — the same sheet the
   Kommande list opens, with the on-demand "Hämta uppställning" section. No
   navigation hop; the lineup is one tap from the banner.
-- The hint **"Klicka för startelva"** is always visible on the banner; on
-  match day itself the countdown reads **"Matchdag"** and the hint reads
-  **"Matchdag, klicka för startelva"** (the user's requested wording).
+- The click affordance appears **on match day only** (user correction after
+  the first version showed it permanently): the countdown line then reads
+  **"Matchdag, klicka för startelva"**. On other days the banner is a plain
+  fixture line ("Om N dagar" + date + teams) with no hint text.
 - No "Hemma"/"Borta" on the banner: the team order states it.
 - The Home form strip (S/O/F dots) went with the hero — the banner is a
   pointer to the match, not a dashboard; the form lives in the match
   context.
 
 **Verified in the browser (preview build):** identical banner on `#/` and
-`#/matcher` (same class, same height, same hint); tapping it on Home opens
-the upcoming sheet with the lineup hint and fetch button; no Hemma/Borta
-anywhere on the banner. Unit tests 687 green; brief/news/layout/a11y/
-navigation e2e updated for the merged banner (the old "hero navigates to
-/matcher" test now asserts the sheet opens directly).
+`#/matcher` (same class, same height); tapping it on Home opens the
+upcoming sheet with the lineup hint and fetch button; no Hemma/Borta
+anywhere on the banner; no "klicka"-hint outside match day. Unit tests 687
+green; brief/news/layout/a11y/navigation e2e updated for the merged banner
+(the old "hero navigates to /matcher" test now asserts the sheet opens
+directly; the hint test asserts the match-day-only conditional).
 
 ---
 

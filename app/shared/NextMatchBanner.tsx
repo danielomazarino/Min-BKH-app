@@ -13,10 +13,10 @@
  *   on-demand "Hämta uppställning" section) — the same sheet the Kommande
  *   list opens. No navigation to /matcher any more: the sheet IS the
  *   destination, so the lineup affordance is one tap from the banner.
- * - The countdown line reads "Matchdag, klicka för startelva" on match day
- *   itself (user's requested wording); on other days it reads "Om N dagar"
- *   plus a persistent hint "Klicka för startelva" so the affordance is
- *   always visible, not only on match day.
+ * - The lineup affordance text appears ONLY on match day (user correction,
+ *   2026-10-14): the countdown line then reads "Matchdag, klicka för
+ *   startelva". On other days the banner is a plain fixture line — no
+ *   persistent hint, no clutter.
  * - "Hemma"/"Borta" is NOT printed: the team order (Häcken left = home,
  *   Swedish convention) already states it — same rule as the match rows.
  */
@@ -39,13 +39,19 @@ export function NextMatchBanner({
       className="strip strip-tap"
       onClick={onOpen}
       data-testid="next-match"
-      aria-label={`Nästa match ${teams.left} mot ${teams.right}, ${fmtDay(next.date)}. ${
-        matchDay ? "Matchdag, klicka för startelva" : "Klicka för startelva"
+      aria-label={`Nästa match ${teams.left} mot ${teams.right}, ${fmtDay(next.date)}.${
+        matchDay ? " Matchdag, klicka för startelva." : ""
       }`}
     >
       <span className="strip-when">
         <b data-testid="countdown">
-          {matchDay ? "Matchdag" : days === 1 ? "Imorgon" : days != null ? `Om ${days} dagar` : "—"}
+          {matchDay
+            ? "Matchdag, klicka för startelva"
+            : days === 1
+              ? "Imorgon"
+              : days != null
+                ? `Om ${days} dagar`
+                : "—"}
         </b>
         <span>{fmtDay(next.date)}</span>
       </span>
@@ -54,9 +60,6 @@ export function NextMatchBanner({
         <b>
           {teams.left} – {teams.right}
         </b>
-        <span className="strip-hint" data-testid="lineup-hint-strip">
-          {matchDay ? "Matchdag, klicka för startelva" : "Klicka för startelva"}
-        </span>
       </span>
     </button>
   );
