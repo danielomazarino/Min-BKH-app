@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-13T23:56:32.004Z",
+    "generatedAt": "2026-10-14T03:48:13.114Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -15,9 +15,9 @@
     },
     "sourceCounts": {
       "Göteborgs-Posten": {
-        "fetched": 46,
+        "fetched": 50,
         "kept": 0,
-        "dropped": 46
+        "dropped": 50
       },
       "Sportbladet": {
         "fetched": 39,
@@ -967,6 +967,34 @@
         "verdict": "kept"
       },
       {
+        "title": "De unga får betala för en allt äldre värld",
+        "url": "https://www.gp.se/asikt-och-debatt/ledare/de-unga-far-betala-for-en-allt-aldre-varld.d0e9cb54-ff43-5cd3-8cd0-b4829cb0fe9f",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T03:00:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Jag är chockad över hur slappt det är att plugga på Humaniste",
+        "url": "https://www.gp.se/asikt-och-debatt/fria-ord/jag-ar-chockad-over-hur-slappt-det-ar-att-plugga-pa-humanisten.36177729-9075-5f33-989f-8201730da4a8",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T03:00:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Hur försvarar ni Jonathan Conricus medverkan på Bokmässan?",
+        "url": "https://www.gp.se/asikt-och-debatt/debatt/conricus-uttalanden-strider-mot-bokmassans-egen-uppforandekod.e05bd044-029b-5482-8192-55c2be8eb803",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T03:00:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "En välfungerande demokratisk process ger inget frikort för förhalning",
+        "url": "https://www.gp.se/asikt-och-debatt/debatt/en-valfungerande-demokratisk-process-ger-inget-frikort-for-forhalning.a85576c7-46eb-562c-b235-88e4f64ef0af",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T02:55:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
         "title": "Påven har lungcancer",
         "url": "https://www.gp.se/nyheter/varlden/paven-har-lungcancer.debc97da-040b-5c75-8139-939c14c5fa0a",
         "publisher": "Göteborgs-Posten",
@@ -1295,7 +1323,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-13T23:52:23.013Z",
+    "retrievedAt": "2026-10-14T03:44:35.480Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -2208,10 +2236,10 @@
     {
       "playerId": "fogis:1564471",
       "playerName": "Abdoulaye Doumbia",
-      "warningCount": 6,
-      "warningsUntilSuspension": 0,
+      "warningCount": 5,
+      "warningsUntilSuspension": 2,
       "redCards": 0,
-      "status": "served",
+      "status": "at_risk",
       "relevantWarnings": [
         {
           "matchId": 6529838,
@@ -2220,10 +2248,6 @@
         {
           "matchId": 6529848,
           "date": "2026-04-19T14:30:00.000Z"
-        },
-        {
-          "matchId": 6529889,
-          "date": "2026-05-17T14:30:00.000Z"
         },
         {
           "matchId": 6529945,
@@ -2238,10 +2262,9 @@
           "date": "2026-08-29T13:00:00.000Z"
         }
       ],
-      "servedAt": "2026-05-25T17:00:00.000Z",
+      "servedAt": "2026-08-09T12:00:00.000Z",
       "servedSuspensions": [
-        "2026-05-25T17:00:00.000Z",
-        "2026-09-05T13:00:00.000Z"
+        "2026-08-09T12:00:00.000Z"
       ],
       "incomplete": false
     },
@@ -2398,34 +2421,6 @@
       "incomplete": false
     },
     {
-      "playerId": "name:jeremy agbonifo",
-      "playerName": "Jeremy Agbonifo",
-      "warningCount": 3,
-      "warningsUntilSuspension": 0,
-      "redCards": 0,
-      "status": "served",
-      "relevantWarnings": [
-        {
-          "matchId": 6529889,
-          "date": "2026-05-17T14:30:00.000Z"
-        },
-        {
-          "matchId": 6529897,
-          "date": "2026-05-25T17:00:00.000Z"
-        },
-        {
-          "matchId": 6529904,
-          "date": "2026-05-31T12:00:00.000Z"
-        }
-      ],
-      "servedAt": "2026-07-06T17:00:00.000Z",
-      "servedSuspensions": [
-        "2026-07-06T17:00:00.000Z"
-      ],
-      "incomplete": false,
-      "departed": true
-    },
-    {
       "playerId": "fogis:705320",
       "playerName": "Julius Lindberg",
       "warningCount": 3,
@@ -2492,23 +2487,24 @@
       "departed": true
     },
     {
-      "playerId": "fogis:1499101",
-      "playerName": "Brice Wembangomo",
+      "playerId": "name:jeremy agbonifo",
+      "playerName": "Jeremy Agbonifo",
       "warningCount": 2,
       "warningsUntilSuspension": 2,
       "redCards": 0,
-      "status": "at_risk",
+      "status": "departed",
       "relevantWarnings": [
         {
-          "matchId": 6529874,
-          "date": "2026-05-02T13:00:00.000Z"
+          "matchId": 6529897,
+          "date": "2026-05-25T17:00:00.000Z"
         },
         {
-          "matchId": 6529889,
-          "date": "2026-05-17T14:30:00.000Z"
+          "matchId": 6529904,
+          "date": "2026-05-31T12:00:00.000Z"
         }
       ],
-      "incomplete": false
+      "incomplete": false,
+      "departed": true
     },
     {
       "playerId": "fogis:480798",
@@ -2521,6 +2517,21 @@
         {
           "matchId": 6529904,
           "date": "2026-05-31T12:00:00.000Z"
+        }
+      ],
+      "incomplete": false
+    },
+    {
+      "playerId": "fogis:1499101",
+      "playerName": "Brice Wembangomo",
+      "warningCount": 1,
+      "warningsUntilSuspension": 1,
+      "redCards": 0,
+      "status": "none",
+      "relevantWarnings": [
+        {
+          "matchId": 6529874,
+          "date": "2026-05-02T13:00:00.000Z"
         }
       ],
       "incomplete": false
@@ -2617,7 +2628,7 @@
       "incomplete": false
     }
   ],
-  "cardMatchesInspected": 23,
+  "cardMatchesInspected": 22,
   "news": [
     {
       "id": "BK Häcken-0-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
