@@ -60,8 +60,9 @@ describe("classifyRelevance — regression against known false positives", () =>
   it("chef Marcus Samuelsson (no Häcken context) is UNRELATED — surname-only collision with Olle Samuelsson", () => {
     // Real false positive, GP 2026-10-13: the cooking-show article reached the
     // men's feed because the surname-only pass matched "Samuelsson" against
-    // squad player Olle Samuelsson. "samuelsson" is a top-20 Swedish surname
-    // and is now in AMBIGUOUS_SURNAMES.
+    // squad player Olle Samuelsson. The structural guard now rejects it: the
+    // article names a DIFFERENT full person ("Marcus Samuelsson") with the
+    // same surname — no surname blocklist involved.
     const known: KnownPersons = { currentPlayers: ["Olle Samuelsson"], formerPlayers: [] };
     const r = classifyRelevance(
       {
@@ -74,10 +75,9 @@ describe("classifyRelevance — regression against known false positives", () =>
     expect(r.relevance).toBe("UNRELATED");
   });
 
-  it("full-name match still works for non-ambiguous surnames (Olle Samuelsson named in full)", () => {
-    // The fix must not break genuine full-name matches: "Olle Samuelsson" as a
-    // FULL name is a pass-1 match (surnameOnly: false), which ignores
-    // AMBIGUOUS_SURNAMES entirely.
+  it("full-name match still works for any surname (Olle Samuelsson named in full)", () => {
+    // Full-name matches are pass 1 (surnameOnly: false) and never touch the
+    // different-person guard — a full name is specific evidence on its own.
     const known: KnownPersons = { currentPlayers: ["Olle Samuelsson"], formerPlayers: [] };
     const r = classifyRelevance(
       { title: "Olle Samuelsson tillbaka i truppen", summary: "Häcken möter Malmö på hemmaplan.", publisher: "Göteborgs-Posten" },
@@ -121,7 +121,7 @@ describe("classifyRelevance — regression against known false positives", () =>
     expect(r.relevance).toBe("UNRELATED");
   });
 
-  it("full-name Adam Lundkvist in a Häcken article still matches (ambiguous surname does not block pass 1)", () => {
+  it("full-name Adam Lundkvist in a Häcken article still matches (pass 1 is unconditional)", () => {
     const known: KnownPersons = { currentPlayers: ["Adam Lundkvist"], formerPlayers: [] };
     const r = classifyRelevance(
       { title: "Adam Lundkvist klar för Häcken-match", summary: "Häcken möter Djurgården på Bravida Arena.", publisher: "Göteborgs-Posten" },
@@ -129,6 +129,76 @@ describe("classifyRelevance — regression against known false positives", () =>
     );
     expect(r.relevance).toBe("CURRENT_HACKEN");
     expect(r.matchedPerson).toBe("Adam Lundkvist");
+  });
+});
+
+describe("the different-person guard — surname-only matching without a surname list", () => {
+  // The structural rule (2026-10-14): a bare-surname match for player P is
+  // rejected when the article names a DIFFERENT full person "<first> <P's
+  // surname>". No surname blocklist — works for every surname, and it also
+  // covers the former-player list, which previously needed its own rule.
+  const guard = (players: string[]) => (title: string, summary = "") =>
+    classifyRelevance({ title, summary, publisher: "Göteborgs-Posten" }, { currentPlayers: players, formerPlayers: [] });
+
+  it("bare surname with no full name in the text still matches", () => {
+    const r = guard(["Olle Samuelsson"])("Samuelsson tillbaka i träning", "Anfallaren är redo igen.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("a first token ending in 's' is a NAME, not a possessive (the Marcus trap)", () => {
+    // "marcus" ends in s. The guard's possessive exclusion is limited to
+    // club nouns ("Häckens Rygaard"), so "Marcus Samuelsson" is correctly
+    // read as a different person.
+    const r = guard(["Olle Samuelsson"])("Marcus Samuelsson: En enorm utmaning", "Leder SVT:s jakt på Sveriges nästa stjärnkock.");
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("a club-noun possessive does NOT read as a different person", () => {
+    // "Häckens Rygaard" means OUR Rygaard — the possessive is excluded via
+    // the closed POSSESSIVE_CLUB_WORDS list.
+    const r = guard(["Mikkel Rygaard Jensen"])("Häckens Rygaard är osäker inför söndag", "Tränaren utvärderar honom på fredag.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("a function word before the surname is grammar, not a first name", () => {
+    // "till Rygaard" / "och Sadiku" must not read as a person named "Till"
+    // or "Och".
+    const g = guard(["Mikkel Rygaard Jensen", "Bamir Fierza Sadiku"]);
+    expect(g("Besked väntas till Rygaard inom kort").relevance).toBe("CURRENT_HACKEN");
+    expect(g("Startplats till Sadiku i söderbytet").relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("the player's own press name (name prefix) does not conflict", () => {
+    // "Mikkel Rygaard" is the press form of "Mikkel Rygaard Jensen" — the
+    // first token is the player's own, so no different-person conflict.
+    const r = guard(["Mikkel Rygaard Jensen"])("Mikkel Rygaard är tillbaka i truppen", "Rygaard missade höstens matcher.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
+  it("covers the former-player list too (Roger Ljung vs Jesper Ljung)", () => {
+    // Real false positive from 2026-10-09, previously handled by requiring
+    // full names for former players. The guard now rejects it structurally:
+    // the text names "Roger Ljung" — a different person than Jesper Ljung.
+    const known: KnownPersons = { currentPlayers: [], formerPlayers: ["Jesper Ljung"] };
+    const r = classifyRelevance(
+      { title: "VM 94-hjälten Roger Ljung skiljer sig", summary: "Fotbollsexperten berättar om skilsmässan.", publisher: "Expressen" },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("a bare former-player surname stays conservative (unchanged rule)", () => {
+    // The former-player list (~294 names) keeps its stricter rule: bare
+    // surnames never match it, even with a Häcken mention — that
+    // conservatism was measured in the 2026-10-09 false positives and is
+    // deliberate. The different-person guard ADDS protection (the Roger
+    // Ljung case above); it does not loosen this.
+    const known: KnownPersons = { currentPlayers: [], formerPlayers: ["Jesper Ljung"] };
+    const r = classifyRelevance(
+      { title: "Ljung om Häckens chanser i cupen", summary: "Experten lutar sig mot statistiken.", publisher: "Göteborgs-Posten" },
+      known,
+    );
+    expect(r.relevance).toBe("UNKNOWN");
   });
 });
 
@@ -308,9 +378,10 @@ describe("classifyRelevance — URL slug evidence", () => {
     expect(slugText("")).toBe("");
   });
 
-  it("a slug-only surname match does NOT fire for ambiguous surnames", () => {
-    // "andersson" is ambiguous — a slug mentioning an Andersson must not make
-    // the article a Häcken article just because a squad player shares it.
+  it("a slug-only surname match does NOT fire when the slug names a different person", () => {
+    // The slug names "viktor andersson" IN FULL — a different person than
+    // squad player David Andersson. The different-person guard rejects it;
+    // no surname blocklist involved.
     const known: KnownPersons = { currentPlayers: ["David Andersson"], formerPlayers: [] };
     const r = classifyRelevance(
       { title: "Bokar upp landslagskollen", summary: "", publisher: "Sportbladet", url: "https://x.com/viktor-andersson-bokar/1" },

@@ -163,6 +163,13 @@ export interface MatchRef {
   date: string;
   homeAway: "home" | "away";
   opponent: string;
+  /** The provider's canonical team abbreviation for the opponent
+   *  (SportoMedia `teamAbbrv`). The display name differs between the
+   *  provider's standings ("BP", "Djurgården") and its fixtures
+   *  ("IF Brommapojkarna", "Djurgårdens IF") — the abbreviation is the
+   *  stable key both sides share, so team-level joins (the team sheet's
+   *  head-to-head) match on this, never on the display name. */
+  opponentAbbrv?: string;
   status: "scheduled" | "finished" | "postponed" | "other";
   scoreHome?: number;
   scoreAway?: number;
@@ -198,6 +205,11 @@ export interface MatchDetail extends MatchRef {
 export interface LeagueTableRow {
   rank: number;
   team: string;
+  /** The provider's canonical team abbreviation (SportoMedia `teamAbbrv`).
+   *  The standings display name ("BP", "Djurgården") differs from the
+   *  fixture opponent name ("IF Brommapojkarna", "Djurgårdens IF"); joins
+   *  between the table and fixtures MUST use the abbreviation. */
+  teamAbbrv?: string;
   played: number;
   points: number;
   goalDiff: number;

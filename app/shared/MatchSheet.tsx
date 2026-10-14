@@ -101,7 +101,7 @@ export function MatchSheet({ detail, onClose }: { detail: MatchDetail; onClose: 
         )}
 
         {/* ---- 4. the starting eleven, ON DEMAND ---- */}
-        <LineupSection detail={detail} />
+        <LineupSection matchId={detail.id} />
 
         {/* ---- 5. real statistics, or an honest gap ---- */}
         <div>
@@ -171,24 +171,34 @@ function TimelineRow({ item }: { item: TlItem }) {
  *
  * So this is a button, not a feed: one GraphQL query fires per tap, the
  * result lives in component state only, and nothing runs in the background.
- * Lineups are published close to kickoff, so before that the answer is the
- * honest "inte publicerad än" — which is exactly the indicator the tester
- * asked for, without any machinery to maintain.
+ * The idle state says IN WORDS what the button does and when the lineup is
+ * expected — the tester's follow-up (2026-10-14) was that a bare button
+ * gives no clue the lineup exists or when it will appear. Lineups are
+ * published close to kickoff, so before that the answer is the honest
+ * "inte publicerad än".
+ *
+ * Takes the match ID only — it works for BOTH played matches (the match
+ * sheet) and upcoming ones (the upcoming-match sheet), which have no
+ * MatchDetail yet but do have an id.
  */
-function LineupSection({ detail }: { detail: MatchDetail }) {
+export function LineupSection({ matchId }: { matchId: number }) {
   const [state, setState] = useState<
     { phase: "idle" } | { phase: "loading" } | { phase: "done"; outcome: LineupOutcome }
   >({ phase: "idle" });
 
   const load = () => {
     setState({ phase: "loading" });
-    void fetchLineupOnDemand(detail.id).then((outcome) => setState({ phase: "done", outcome }));
+    void fetchLineupOnDemand(matchId).then((outcome) => setState({ phase: "done", outcome }));
   };
 
   if (state.phase === "idle") {
     return (
       <div>
         <div className="mod-label">Uppställning</div>
+        <p className="small dim" style={{ margin: "0 0 6px" }} data-testid="lineup-hint">
+          Startelvan släpps normalt strax före avspark. Hämta senaste läget när
+          du vill — appen frågar inte efter den av sig själv.
+        </p>
         <button type="button" className="icon-btn" onClick={load} data-testid="lineup-fetch" style={{ width: "auto", padding: "6px 12px", fontSize: 13 }}>
           Hämta uppställning
         </button>

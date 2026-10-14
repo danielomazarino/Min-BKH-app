@@ -17,6 +17,7 @@ import type { AppDataState } from "../data";
 import type { MatchRef } from "../../pipeline/src/types";
 import { MatchSheet } from "../shared/MatchSheet";
 import { TeamSheet } from "../shared/TeamSheet";
+import { UpcomingMatchSheet } from "../shared/UpcomingMatchSheet";
 import {
   competitionLabel,
   daysUntil,
@@ -53,6 +54,8 @@ export default function Matches({ state }: { state: AppDataState }) {
   // THIS HOOK SITS WITH THE OTHERS ABOVE THE EARLY RETURNS — see the #310
   // warning below: a hook may never sit behind a conditional return.
   const [openTeam, setOpenTeam] = useState<string | null>(null);
+  // Upcoming-match sheet state — ALSO above the early returns (see #310).
+  const [openUpcomingId, setOpenUpcomingId] = useState<number | null>(null);
   const wantsTable = new URLSearchParams(search).get("section") === "tabellen";
   const tableRows = state.status === "ready" ? state.data.table.length : 0;
   useEffect(() => {
@@ -103,6 +106,13 @@ export default function Matches({ state }: { state: AppDataState }) {
 
   const openTeamRow = openTeam ? data.table.find((t) => t.team === openTeam) ?? null : null;
 
+  // Upcoming matches open a sheet too (tester, 2026-10-14: "the upcoming game
+  // is not a button, and there is no info about how to know that the start
+  // lineup is to be shown"). The sheet shows the fixture and the on-demand
+  // lineup section — the discoverable path to the eleven. Local state: the
+  // sheet is derived from the MatchRef already in memory, no deep link needed.
+  const openUpcoming = openUpcomingId != null ? list.find((m) => m.id === openUpcomingId) ?? null : null;
+
   return (
     <>
       <div className="layer" data-testid="matches-page">
@@ -135,7 +145,13 @@ export default function Matches({ state }: { state: AppDataState }) {
               <MatchRow
                 key={m.id}
                 m={m}
-                onOpen={tab === "spelade" && m.id === detailId && detail ? () => navigate(`/matcher?id=${m.id}`) : undefined}
+                onOpen={
+                  tab === "spelade"
+                    ? m.id === detailId && detail
+                      ? () => navigate(`/matcher?id=${m.id}`)
+                      : undefined
+                    : () => setOpenUpcomingId(m.id)
+                }
               />
             ))
           )}
@@ -178,6 +194,7 @@ export default function Matches({ state }: { state: AppDataState }) {
         )}
       </div>
       {openMatch && <MatchSheet detail={openMatch} onClose={closeMatch} />}
+      {openUpcoming && <UpcomingMatchSheet match={openUpcoming} onClose={() => setOpenUpcomingId(null)} />}
       {openTeamRow && <TeamSheet team={openTeamRow} data={data} onClose={() => setOpenTeam(null)} />}
     </>
   );
@@ -230,23 +247,23 @@ function MatchRow({ m, onOpen }: { m: MatchRef; onOpen?: () => void }) {
           {teams.left} – {teams.right}
         </span>
         <span className="meta">
-          {fmtDateTime(m.date)} · {isHome ? "Hemma" : "Borta"} · {competitionLabel(m.competition)}
+          {fmtDateTime(m.date)} · {competitionLabel(m.competition)}
         </span>
       </span>
     </>
   );
 
-  // Tester feedback (2026-10-13), two rounds:
+  // Tester feedback (2026-10-13/14), three rounds:
   //   1. The row used to end with TWO adjacent single-letter badges — the
   //      result letter (S/O/F) and a venue badge (H/B) — which read as
-  //      cryptic pairs ("S/H", "O/B", "F/H") crowding the right edge. The
-  //      venue became a word in the meta line ("Hemma"/"Borta").
-  //   2. The result letter itself was then removed too: the coloured edge
-  //      (::before, w/d/l) and the score already state the result, so the
-  //      letter was a third redundant cue. The result REMAINS in the row's
-  //      accessible name ("seger"/"oavgjort"/"förlust"), so screen-reader
-  //      users keep the non-colour cue the a11y suite requires — it is only
-  //      the visible letter that is gone.
+  //      cryptic pairs ("S/H", "O/B", "F/H") crowding the right edge.
+  //   2. The result letter was removed: the coloured edge (::before, w/d/l)
+  //      and the score already state the result.
+  //   3. The "Hemma"/"Borta" word was removed from the meta line too: the
+  //      team ORDER already conveys the venue (home team listed first, the
+  //      same Swedish presentation rule that orders the score). The venue
+  //      REMAINS in the row's accessible name, so screen-reader users keep
+  //      the explicit cue; sighted readers read it off the team order.
 
   const label = `${isHome ? "Hemma" : "Borta"}: ${teams.left} mot ${teams.right}, ${
     score ?? "inget resultat"

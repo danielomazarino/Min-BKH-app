@@ -559,7 +559,7 @@ is the only path.
 
 ## B-021 · Tester round 2026-10-13/14: three news false positives, cryptic match-row badges, team sheets, on-demand lineups — RESOLVED
 
-**Status:** RESOLVED — deployed `3c27b1d`, byte-verified (served sha256 == committed; public build `3c27b1d.0fd54df`) · **Sources:** five tester reports in one round
+**Status:** RESOLVED in two rounds. Round 1 deployed `3c27b1d`, byte-verified (served sha256 == committed; public build `3c27b1d.0fd54df`). Round 2 (2026-10-14, below) covers the tester follow-ups: the surname-blocklist design challenge, the Hemma/Borta clutter, the upcoming-match sheet, and the BP missing-games bug. · **Sources:** five tester reports in one round, plus a follow-up round
 
 ### 1. Three news false positives — one shared root cause
 
@@ -647,7 +647,7 @@ starting eleven with shirt numbers, substitutes), "inte publicerad än"
 Örgryte sheet returned the real BKH 4-2-3-1 eleven. No polling, no
 notifications, no scheduled fetch, no persistence.
 
-### Verification state
+### Round 1 verification state
 
 - 680 unit tests green (4 surname + 1 standings + 2 merge new).
 - e2e layout + a11y + navigation: 130/130. news.spec: 51/51 after one
@@ -663,6 +663,113 @@ notifications, no scheduled fetch, no persistence.
   `data/app.json` sha256 `82a2d74f…` == committed; served build id
   `3c27b1d.0fd54df`; served data shows 33 seasonMatches, both Örgryte
   fixtures, W/D/L on table rows, and zero of the three false positives.
+
+### Round 2 (2026-10-14) — tester follow-ups
+
+#### 2a. The surname blocklist was the wrong design — replaced with a structural rule
+
+The user challenged the round-1 fix directly: a hand-maintained list of
+"ambiguous" surnames means every new false positive requires a new list
+entry, and every new squad player with a common surname is a latent false
+negative. The list was a treadmill.
+
+**The blocklist is deleted entirely.** In its place, the surname-only pass
+now applies a *structural different-person guard* that needs no surname
+knowledge at all. When a squad player P (surname S) is matched by a bare
+surname occurrence, the guard looks at the token immediately BEFORE the
+surname in the text and rejects the match if that token is a *different
+person's given name* — i.e. a token that is not one of P's own name tokens,
+not a Swedish function word ("till", "och", "mot", "efter", …), and not a
+club-noun possessive ("Häckens", "lagets", "truppens", …).
+
+Why this works without a list: in Swedish sports prose, a bare surname
+almost always appears either alone ("Rygaard missade…") or after its
+owner's given name ("Marcus Samuelsson"). If the preceding token is a
+given name that is not P's, the text is naming a *different* Samuelsson —
+structurally, regardless of which surname it is.
+
+Three implementation traps were found and fixed while building it:
+
+1. **The possessive check swallowed given names.** The first version
+   treated any preceding token ending in `s` as a possessive ("Häckens
+   Rygaard" → club, fine) — but "Marcus" also ends in `s`, so "Marcus
+   Samuelsson" was misread as a possessive and the guard never fired. The
+   possessive exemption is now restricted to the closed club-noun list.
+2. **Phantom cross-boundary pairs.** The evidence text joined fields with
+   a single space, so a title ending "…i truppen" plus a summary starting
+   "Rygaard missade…" produced the bigram "truppen rygaard" — a fake
+   preceding token. Fields are now joined with `" . "`, which cannot form
+   a name pair across the boundary.
+3. **Unnormalized possessives.** The club-noun list must be stored in the
+   same normalized form as the text ("hackens", not "häckens"), since the
+   matcher runs on diacritic-stripped text.
+
+Measured outcome: all five known false positives (Marcus Samuelsson, Hanna
+Lundkvist, Thomas Lindgren, Viktor Andersson, Roger Ljung) are rejected,
+and all known true positives (Rygaard, Rygaards, Sadiku, Kondo, the slug
+`mikkel-rygaard`) still match — with **zero surname entries**. 7 new tests
+in a dedicated describe block encode each rule, including the Marcus trap
+and the "Häckens Rygaard" club-possessive case.
+
+#### 2b. Hemma/Borta removed from the match-row meta line
+
+Round 1 moved the venue badge into the meta line as the words
+"Hemma"/"Borta". The tester then found that line cluttered: the team order
+("Häcken – Degerfors") already states who is home, per Swedish convention.
+The words are removed from the visible meta line (now
+`date · competition` only). They remain in the row's accessible name, so
+screen-reader users keep the explicit cue.
+
+#### 2c. Upcoming matches are now buttons with a discoverable lineup
+
+The tester could not tell that upcoming rows were tappable or that a
+lineup would be available there. Upcoming rows are now real buttons
+(played rows already were) and open a dedicated **upcoming-match sheet**:
+fixture display (teams in Swedish order, date, competition, venue) plus
+the same on-demand **Uppställning** section as played matches. Before any
+fetch, the section states plainly: *"Startelvan släpps normalt strax före
+avspark. Hämta senaste läget när du vill — appen frågar inte efter den av
+sig själv."* — so the affordance is discoverable without guessing.
+
+#### 2d. BP team sheet showed only one of two meetings — canonical team abbreviations
+
+The user caught this before deploy: the BP team sheet listed the away
+fixture (28 okt) but not the home 2–2 from 6 April. Root cause: the sheet
+joined season fixtures to the table row by **display name**, and the names
+do not agree — the standings call the team "BP" while fixtures call it
+"IF Brommapojkarna" (same for "Djurgården" vs "Djurgårdens IF").
+
+Fix: the pipeline now emits **`teamAbbrv`** on every standings row and
+**`opponentAbbrv`** on every fixture (SportoMedia provides both; BP=IFBP,
+Djurgården=DIF). The team sheet joins on the abbreviation, with a
+name-comparison fallback for older cached payloads. This is structural —
+no name-mapping table to maintain. Verified in the browser: the BP sheet
+now lists both meetings (2–2 home, 6 apr; away, 28 okt), as does
+Djurgården's.
+
+#### 2e. Opponent last-5 form — DEFERRED by user decision
+
+The tester wanted each opponent's last five results in the team sheet to
+read their form. Not computable from current data: the pipeline ingests
+only Häcken's fixtures (`matchesForTeam abbrv: BKH`), so an opponent's
+results against other teams are not in our payload. Deriving a form strip
+from Häcken's matches alone would be an invention. The season W/D/L
+record (already shown) is the honest substitute. **The user deferred the
+last-5 requirement — documented as a future potential rebuild only**
+(it would require ingesting the full league fixture/result set, a
+meaningful pipeline change).
+
+### Round 2 verification state
+
+- 687 unit tests green (7 new guard tests + abbrv normalization tests).
+- Typecheck clean; `npm run build` clean.
+- Browser-verified on the preview build: match-row meta shows
+  `date · competition` with no Hemma/Borta; upcoming rows are buttons
+  opening the upcoming sheet with fixture meta, the lineup hint text and
+  the "Hämta uppställning" button; BP sheet lists both meetings via the
+  abbrv join.
+- Deploy: pending at time of writing — see the status line above for the
+  final commit and byte-verification result.
 
 ---
 

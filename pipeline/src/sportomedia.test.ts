@@ -80,11 +80,14 @@ describe("SportoMedia standings parsing", () => {
     { position: 5, teamName: "BK Häcken", teamAbbrv: "BKH", stats: [{ name: "gp", value: "22" }, { name: "w", value: "9" }, { name: "t", value: "9" }, { name: "l", value: "4" }, { name: "gf", value: "39" }, { name: "ga", value: "30" }, { name: "d", value: "9" }, { name: "pts", value: "36" }] },
   ];
 
-  it("parses position, team, played, points and goal diff", () => {
+  it("parses position, team, abbrv, played, points and goal diff", () => {
     const table = normalizeSmStandings(rows as never);
     expect(table).toHaveLength(2);
-    expect(table[0]).toEqual({ rank: 1, team: "IK Sirius", played: 22, points: 51, goalDiff: 24, wins: 0, draws: 0, losses: 0 });
-    expect(table[1]).toEqual({ rank: 5, team: "BK Häcken", played: 22, points: 36, goalDiff: 9, wins: 9, draws: 9, losses: 4 });
+    // teamAbbrv is the canonical join key: the standings display name ("BP")
+    // differs from the fixture opponent name ("IF Brommapojkarna"), so the
+    // team sheet must join on the abbreviation, never the name.
+    expect(table[0]).toEqual({ rank: 1, team: "IK Sirius", teamAbbrv: "IKS", played: 22, points: 51, goalDiff: 24, wins: 0, draws: 0, losses: 0 });
+    expect(table[1]).toEqual({ rank: 5, team: "BK Häcken", teamAbbrv: "BKH", played: 22, points: 36, goalDiff: 9, wins: 9, draws: 9, losses: 4 });
   });
 
   it("carries the season W/D/L record for the team sheet (tester, 2026-10-14)", () => {

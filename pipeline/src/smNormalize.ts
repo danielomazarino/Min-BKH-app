@@ -61,6 +61,7 @@ export function normalizeSmMatch(m: SmMatch): MatchRef {
   assertMatchBelongsToHäcken(m.homeTeamAbbrv, m.visitingTeamAbbrv);
   const homeAway: MatchRef["homeAway"] = m.homeTeamAbbrv === BKH_ABBRV ? "home" : "away";
   const opponent = homeAway === "home" ? m.visitingTeamName : m.homeTeamName;
+  const opponentAbbrv = homeAway === "home" ? m.visitingTeamAbbrv : m.homeTeamAbbrv;
   const finished = m.status === "FINISHED";
   return {
     id: m.id,
@@ -69,6 +70,7 @@ export function normalizeSmMatch(m: SmMatch): MatchRef {
     date: m.startDate,
     homeAway,
     opponent,
+    opponentAbbrv,
     status: smStatusToMatchStatus(m.status),
     scoreHome: finished ? m.homeTeamScore : undefined,
     scoreAway: finished ? m.visitingTeamScore : undefined,
@@ -86,6 +88,7 @@ export function normalizeSmStandings(rows: SmStandingsRow[]): LeagueTableRow[] {
     return {
       rank: r.position,
       team: r.teamName,
+      teamAbbrv: r.teamAbbrv,
       played: Number(stats.gp ?? 0),
       points: Number(stats.pts ?? 0),
       goalDiff: Number.isFinite(Number(stats.d)) ? Number(stats.d) : gf - ga,

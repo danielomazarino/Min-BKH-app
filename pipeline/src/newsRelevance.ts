@@ -97,7 +97,13 @@ function evidenceText(item: {
   bodyText?: string;
 }): string {
   return norm(
-    [item.title ?? "", item.summary ?? "", slugText(item.url ?? ""), item.bodyText ?? ""].join(" "),
+    // Joined with a SEPARATOR, not a space: the different-person guard reads
+    // two-word pairs ("<first> <surname>"), and a plain-space join created
+    // phantom pairs across field boundaries — title "… i truppen" + summary
+    // "Rygaard missade …" produced "truppen rygaard", which read as a person
+    // named "Truppen Rygaard". A period is a word boundary for \b but cannot
+    // be part of a name pair.
+    [item.title ?? "", item.summary ?? "", slugText(item.url ?? ""), item.bodyText ?? ""].join(" . "),
   );
 }
 
@@ -115,33 +121,6 @@ export function mentionsHäcken(
 }
 
 /**
- * Surnames that are too ambiguous for surname-only matching: common Swedish
- * words ("Seger" = victory, "Sten" = stone) and the most common Nordic
- * surnames ("Viktor Andersson" must never match squad player "David
- * Andersson"). "jensen" is here because it is the single most common Danish
- * surname and would otherwise make "Mikkel Rygaard Jensen" match every
- * unrelated Jensen article.
- */
-const AMBIGUOUS_SURNAMES = new Set([
-  // common Swedish words
-  "seger", "sten", "berg", "lund", "mark", "wall", "dahl", "holm", "borg", "gren",
-  // among the most common Swedish/Danish surnames
-  "andersson", "johansson", "karlsson", "gustafson", "gustafsson", "nilsson",
-  "eriksson", "larsson", "olsson", "persson", "svensson", "jansson", "jensen",
-  // "samuelsson" is a top-20 Swedish surname shared by non-football celebrities:
-  // the chef Marcus Samuelsson ("Sex svenskar slåss om ett kockjobb i New York",
-  // GP 2026-10-13) matched squad player Olle Samuelsson via the surname-only
-  // pass and a cooking show reached the men's feed as "men" news.
-  "samuelsson",
-  // Same class, same night (Expressen 2026-10-13): "Hanna Lundkvist" (women's
-  // national team, 15–0 vs Lithuania) matched Adam Lundkvist, and "Thomas
-  // Lindgren" (Hammarby's sales chief, sponsor story) matched Gustav Lindgren.
-  // "lindberg" is also top-20 (SCB) and shares the same risk with Julius
-  // Lindberg / Wilson Lindberg Uhrström.
-  "lundkvist", "lindgren", "lindberg",
-]);
-
-/**
  * The name parts usable for surname-only matching, in the order to try them.
  *
  * WHY EVERY TOKEN AFTER THE FIRST, NOT JUST THE LAST (measured 2026-10-08)
@@ -157,6 +136,17 @@ const AMBIGUOUS_SURNAMES = new Set([
  * MIDDLE tokens get a longer minimum (5 chars, vs 4 for the final token)
  * because a middle name is more likely to be a given name: "Christ Ivan Wawa"
  * must not make every article about a person called Ivan a Häcken article.
+ *
+ * There is deliberately NO blocklist of "ambiguous" surnames here. An earlier
+ * version maintained one (common Swedish words + top-20 surnames), but it was
+ * whack-a-mole: every new squad player with a common surname was a future
+ * false positive (chef Marcus Samuelsson → Olle Samuelsson, women's NT Hanna
+ * Lundkvist → Adam Lundkvist, Hammarby's sales chief Thomas Lindgren →
+ * Gustav Lindgren — all three on the SAME night, 2026-10-13), and every
+ * addition risked silently dropping real Häcken news. The structural fix
+ * lives in `mentionsKnownPerson` instead: a surname-only match is rejected
+ * when the article names a DIFFERENT full person with the same surname —
+ * see the pass-2 comment there. Works for every surname, present or future.
  */
 function surnameCandidates(normalizedName: string): string[] {
   const parts = normalizedName.split(" ").filter(Boolean);
@@ -164,7 +154,7 @@ function surnameCandidates(normalizedName: string): string[] {
   const after = parts.slice(1);
   return after.filter((t, i) => {
     const isLast = i === after.length - 1;
-    return t.length >= (isLast ? 4 : 5) && !AMBIGUOUS_SURNAMES.has(t);
+    return t.length >= (isLast ? 4 : 5);
   });
 }
 
@@ -212,20 +202,97 @@ export function mentionsKnownPerson(
 
   if (!surnameOnly) return null;
 
-  // PASS 2 — surname-only match: headlines often use just the surname ("Falk
-  // utvisad", "Rygaard om Häckens väntan"). Word-boundary match, with an
-  // optional possessive "s" so "Rygaards gläds …" matches too. Substring
-  // matching is deliberately NOT used: "Lindelöf" contains "linde",
-  // "Ibrahimovic" contains "ibrahim".
+  // PASS 2 — surname-only match, with a STRUCTURAL different-person guard.
+  //
+  // Headlines often use just the surname ("Rygaard om Häckens väntan"), and
+  // word-boundary matching (with an optional possessive "s" so "Rygaards
+  // gläds …" matches too) finds them. Substring matching is deliberately NOT
+  // used: "Lindelöf" contains "linde", "Ibrahimovic" contains "ibrahim".
+  //
+  // THE GUARD (2026-10-14 — replaces the old AMBIGUOUS_SURNAMES blocklist,
+  // which was whack-a-mole): a bare surname is accepted UNLESS the article
+  // itself names a DIFFERENT full person with that same surname — i.e. the
+  // text contains "<first> <surname>" where <first> is none of this
+  // player's own name tokens. Every measured false positive has this shape:
+  //   "Marcus Samuelsson" (chef)  vs squad player Olle Samuelsson
+  //   "Hanna Lundkvist" (women NT) vs squad player Adam Lundkvist
+  //   "Thomas Lindgren" (Hammarby) vs squad player Gustav Lindgren
+  //   "Viktor Andersson" (GK)      vs squad player David Andersson
+  //   "Roger Ljung" (VM-94 hero)   vs former player Jesper Ljung
+  // and every measured true positive lacks it — the article uses the bare
+  // surname only ("Rygaard om Häckens väntan", "Sadiku tillbaka i träning").
+  // The guard needs no surname knowledge at all, so it works for any player
+  // the squad will ever list, and it also covers the former-player list,
+  // which previously needed its own stricter rule.
+  //
+  // `<first>` is excluded when it is one of the player's OWN tokens ("Mikkel
+  // Rygaard" is the press form of "Mikkel Rygaard Jensen", not another
+  // person), when it ends in "s" (a possessive or genitive — "Häckens
+  // Rygaard" means OUR Rygaard), or when it is a Swedish function word
+  // ("till Rygaard", "och Sadiku" — grammar, not a name). The function-word
+  // list is CLOSED — Swedish grammar does not grow — which is what separates
+  // it from the open surname list it replaces.
   for (const p of persons) {
     const key = norm(p);
     if (key.length < 4) continue;
+    const tokens = key.split(" ");
     for (const surname of surnameCandidates(key)) {
-      if (new RegExp(`\\b${surname}s?\\b`).test(text)) return p;
+      if (!new RegExp(`\\b${surname}s?\\b`).test(text)) continue;
+      // The surname appears. Does the text also name a DIFFERENT person
+      // with it? If so, this player's surname match is not evidence.
+      const pairRe = new RegExp(`\\b([a-zåäöéü0-9]+) ${surname}\\b`, "g");
+      let conflicted = false;
+      for (const m of text.matchAll(pairRe)) {
+        const first = m[1];
+        if (tokens.includes(first)) continue; // the player's own name
+        // A first token ending in "s" is NOT automatically a possessive:
+        // Marcus, Thomas, Anders, Mats and Niklas all end in s, and "Marcus
+        // Samuelsson" was exactly one of the false positives this guard
+        // exists for. Only a club/football noun in possessive form
+        // ("Häckens Rygaard" = OUR Rygaard) is excluded, from the closed
+        // POSSESSIVE_CLUB_WORDS set below.
+        if (first.endsWith("s") && POSSESSIVE_CLUB_WORDS.has(first)) continue;
+        if (FUNCTION_WORDS.has(first)) continue; // grammar, not a name
+        conflicted = true; // a different "<first> <surname>" person is named
+        break;
+      }
+      if (conflicted) continue;
+      return p;
     }
   }
   return null;
 }
+
+/**
+ * Club/football nouns in possessive form — a CLOSED list. "Häckens Rygaard"
+ * means OUR Rygaard, so such a pair must not read as a different person
+ * named "Häckens". Deliberately narrow: a first token ending in "s" is only
+ * a possessive when it is one of these football nouns — Marcus, Thomas,
+ * Anders and Mats are NAMES that end in s, and "Marcus Samuelsson" is
+ * precisely the different-person evidence this guard exists to catch.
+ */
+// Stored NORMALIZED (norm() strips å/ä/ö → a/a/o): the text is always
+// normalized before matching, so "Häckens" arrives here as "hackens".
+const POSSESSIVE_CLUB_WORDS = new Set([
+  "hackens", "klubbens", "lagets", "truppens", "tranarens", "matchens",
+  "sasonens", "bravidas", "guldfagelns", "publikens", "supportrarnas",
+  "anfallarens", "mittfaltarens", "backens", "malvaktens", "kaptens",
+]);
+
+/**
+ * Swedish function words — a CLOSED list. Used only to stop the
+ * different-person guard from reading grammar ("till Rygaard") as a first
+ * name. Unlike the surname list it replaces, this can never need maintenance:
+ * Swedish function words are fixed by the language, not by who plays for us.
+ */
+const FUNCTION_WORDS = new Set([
+  "i", "på", "av", "för", "till", "mot", "med", "om", "efter", "före", "under",
+  "över", "vid", "från", "hos", "ur", "ut", "in", "att", "den", "det", "de",
+  "dem", "en", "ett", "och", "eller", "men", "som", "är", "var", "har", "ha",
+  "hade", "inte", "också", "ju", "väl", "nu", "så", "men", "när", "då",
+  "sin", "sitt", "sina", "hans", "hennes", "deras", "vår", "vår", "er",
+  "jag", "du", "han", "hon", "vi", "ni", "de", "man", "kvar", "mer", "mest",
+]);
 
 /** Is the article about Allsvenskan generally (not Häcken-specific)? */
 export function isGeneralAllsvenskan(

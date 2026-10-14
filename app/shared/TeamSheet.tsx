@@ -44,8 +44,17 @@ export function TeamSheet({
 }) {
   // Every Häcken fixture against this team, this season, chronological —
   // from the FULL season list, not the 10-match `recent` window.
+  //
+  // MATCH ON THE ABBREVIATION, not the display name (tester bug report,
+  // 2026-10-14: BP's April 2–2 was invisible). The provider's standings call
+  // the team "BP" while its fixtures call it "IF Brommapojkarna" — likewise
+  // "Djurgården" vs "Djurgårdens IF". `teamAbbrv`/`opponentAbbrv` are the
+  // same provider key on both sides, so the join is exact. The name
+  // comparison is only a fallback for data generated before the abbrv fields
+  // existed; it can be dropped once every served payload carries abbrv.
+  const abbrv = team.teamAbbrv;
   const against = (data.seasonMatches ?? [...data.recent, ...data.upcoming])
-    .filter((m) => m.opponent === team.team)
+    .filter((m) => (abbrv ? m.opponentAbbrv === abbrv : m.opponent === team.team))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   // The arena: the venue of the away fixture at this team (their home
