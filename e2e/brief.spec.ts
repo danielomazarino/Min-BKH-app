@@ -24,9 +24,19 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("Brief (dashboard)", () => {
-  test("opens with the next match as the single hero", async ({ page }) => {
+  test("opens with the next match as the single banner", async ({ page }) => {
     await expect(page.getByTestId("next-match")).toBeVisible();
-    expect(await page.locator(".hero").count()).toBe(1);
+    // B-021 round 3: Brief and Matcher share ONE banner component. The old
+    // large hero card is gone — the banner is the compact strip layout.
+    expect(await page.locator(".strip-tap").count()).toBe(1);
+  });
+
+  test("the banner makes the lineup affordance visible", async ({ page }) => {
+    // The tester could not tell the banner was tappable or that a lineup
+    // exists there. The hint text must be on the banner itself.
+    const banner = page.getByTestId("next-match");
+    if ((await banner.count()) === 0) test.skip(true, "no next match in data");
+    await expect(banner.getByTestId("lineup-hint-strip")).toContainText(/startelva/i);
   });
 
   test("last result shows the score in HOME–AWAY order (Swedish convention)", async ({ page }) => {
@@ -130,12 +140,15 @@ test.describe("Brief (dashboard)", () => {
     await expect(page.getByTestId("squad-card-state")).toBeVisible();
   });
 
-  test("the next match is tappable and leads to the match section", async ({ page }) => {
+  test("the next match banner opens the upcoming-match sheet directly", async ({ page }) => {
+    // B-021 round 3: the banner no longer navigates to /matcher — it opens
+    // the same upcoming-match sheet the Kommande list opens, with the
+    // on-demand lineup section one tap away.
     const hero = page.getByTestId("next-match");
     if ((await hero.count()) === 0) test.skip(true, "no next match in data");
     await hero.click();
-    await expect(page).toHaveURL(/\u0023\/matcher/);
-    await expect(page.getByTestId("matches-page")).toBeAttached();
+    await expect(page.getByTestId("upcoming-sheet")).toBeVisible();
+    await expect(page.getByTestId("lineup-hint")).toBeVisible();
   });
 
   test("Brief is a vertical scroll surface, not a horizontal layer", async ({ page }) => {

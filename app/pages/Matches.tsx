@@ -16,11 +16,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import type { AppDataState } from "../data";
 import type { MatchRef } from "../../pipeline/src/types";
 import { MatchSheet } from "../shared/MatchSheet";
+import { NextMatchBanner } from "../shared/NextMatchBanner";
 import { TeamSheet } from "../shared/TeamSheet";
 import { UpcomingMatchSheet } from "../shared/UpcomingMatchSheet";
 import {
   competitionLabel,
-  daysUntil,
   fmtDateTime,
   fmtDay,
   matchTeams,
@@ -119,9 +119,15 @@ export default function Matches({ state }: { state: AppDataState }) {
         <h1 className="sr-only">Matcher — BK Häcken</h1>
 
         {/* Next match is repeated here deliberately: "when do we play" is the
-            first question this destination must answer. It is the only piece
-            of information duplicated from Brief, and it is one line. */}
-        {data.nextMatch && <NextMatchStrip next={data.nextMatch} />}
+            first question this destination must answer. Same shared banner as
+            Brief (B-021 round 3) — one component, one layout, and the tap
+            opens the upcoming-match sheet with the lineup section. */}
+        {data.nextMatch && (
+          <NextMatchBanner
+            next={data.nextMatch}
+            onOpen={() => setOpenUpcomingId(data.nextMatch!.id)}
+          />
+        )}
 
         <div className="match-tabs" style={{ paddingTop: 12 }}>
           <div className="seg" role="tablist" aria-label="Matchtyp">
@@ -197,34 +203,6 @@ export default function Matches({ state }: { state: AppDataState }) {
       {openUpcoming && <UpcomingMatchSheet match={openUpcoming} onClose={() => setOpenUpcomingId(null)} />}
       {openTeamRow && <TeamSheet team={openTeamRow} data={data} onClose={() => setOpenTeam(null)} />}
     </>
-  );
-}
-
-function NextMatchStrip({ next }: { next: MatchRef }) {
-  const days = daysUntil(next.date);
-  // Swedish presentation rule: HOME team first, then the away team — for
-  // played and coming games alike (user, 2026-10-07). The data is stored in
-  // provider order; matchTeams() renders the fixture order and
-  // scoreForHomeAway() the score in that same order.
-  const teams = matchTeams(next);
-  return (
-    <section className="module" data-testid="matcher-next">
-      <h2 className="mod-label">Nästa match</h2>
-      <div className="strip">
-        <span className="strip-when">
-          <b>{days != null ? (days === 0 ? "Idag" : days === 1 ? "Imorgon" : `Om ${days} dagar`) : "—"}</b>
-          <span>
-            {fmtDay(next.date)} · {next.homeAway === "home" ? "Hemma" : "Borta"}
-          </span>
-        </span>
-        <span className="strip-teams">
-          <span className="dim">{competitionLabel(next.competition)}</span>
-          <b>
-            {teams.left} – {teams.right}
-          </b>
-        </span>
-      </div>
-    </section>
   );
 }
 

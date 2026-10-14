@@ -10,22 +10,21 @@
  * actually matter, a one-line table position and a small news preview. The
  * full lists live in their own destinations.
  */
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import type { AppDataState } from "../data";
 import type { AppData, MatchRef, PlayerDiscipline } from "../../pipeline/src/types";
+import { NextMatchBanner } from "../shared/NextMatchBanner";
+import { UpcomingMatchSheet } from "../shared/UpcomingMatchSheet";
 import {
   competitionLabel,
   cstatFor,
   currentSquadDiscipline,
-  daysUntil,
   fmtDateTime,
   fmtDay,
-  formGuide,
   groupDiscipline,
   matchTeams,
-  RESULT_WORD,
   resultOf,
   scoreForHomeAway,
   urgentDiscipline,
@@ -57,7 +56,10 @@ export default function Brief({ state }: { state: AppDataState }) {
 
 function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
   const navigate = useNavigate();
-  const form = formGuide(data.recent, 5);
+  // The shared next-match banner opens the upcoming-match sheet directly
+  // (B-021 round 3): the lineup affordance lives one tap from the banner,
+  // not behind a navigation to /matcher.
+  const [bannerSheet, setBannerSheet] = useState<MatchRef | null>(null);
 
   // Discipline is scoped to the current squad AND sorted by urgency. Every
   // qualifying player is rendered — the old UI capped at 2 suspended + 3
@@ -88,13 +90,24 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
         </p>
       )}
 
-      {/* 1 — next match. The single most important thing on the screen. */}
+      {/* 1 — next match. The single most important thing on the screen.
+          Shared banner with Matcher (B-021 round 3): same layout, same
+          logic, and the tap opens the upcoming-match sheet directly — the
+          lineup affordance is one tap away instead of a page hop. */}
       <section className="module">
-        <NextMatchHero
-          next={data.nextMatch}
-          form={form}
-          onOpen={() => data.nextMatch && navigate("/matcher")}
-        />
+        {data.nextMatch ? (
+          <NextMatchBanner
+            next={data.nextMatch}
+            onOpen={() => setBannerSheet(data.nextMatch!)}
+          />
+        ) : (
+          <div className="strip" data-testid="next-match">
+            <span className="strip-when">
+              <b>—</b>
+              <span>Ingen kommande match är inlagd just nu.</span>
+            </span>
+          </div>
+        )}
       </section>
 
       {/* 2 — last result, with the scorers the old UI never showed */}
@@ -197,64 +210,10 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
           </div>
         </section>
       )}
-    </>
-  );
-}
-
-function NextMatchHero({
-  next,
-  form,
-  onOpen,
-}: {
-  next: MatchRef | null;
-  form: Array<"w" | "d" | "l">;
-  onOpen: () => void;
-}) {
-  if (!next) {
-    return (
-      <div className="hero" data-testid="next-match">
-        <div className="hero-top">
-          <span className="hero-comp">Nästa match</span>
-        </div>
-        <p className="muted small">Ingen kommande match är inlagd just nu.</p>
-      </div>
-    );
-  }
-  const days = daysUntil(next.date);
-  const isHome = next.homeAway === "home";
-  return (
-    <button type="button" className="hero hero-tap" onClick={onOpen} data-testid="next-match" aria-label={`Nästa match mot ${next.opponent}. Visa matcher.`}>
-      <div className="hero-top">
-        <span className="hero-comp">{competitionLabel(next.competition)}</span>
-        <span className="hero-countdown" data-testid="countdown">
-          {days != null ? (days === 0 ? "Idag" : days === 1 ? "Imorgon" : `Om ${days} dagar`) : "—"}
-        </span>
-      </div>
-      <div className="hero-teams">
-        <div className={`hero-team${isHome ? "" : " opponent"}`}>
-          <div className="name">{isHome ? "Häcken" : next.opponent}</div>
-        </div>
-        <div className="hero-score" aria-hidden="true">
-          <span className="v">–</span>
-        </div>
-        <div className={`hero-team${isHome ? " opponent" : " hacken"}`}>
-          <div className="name">{isHome ? next.opponent : "Häcken"}</div>
-        </div>
-      </div>
-      <div className="hero-when">
-        {fmtDateTime(next.date)} · {isHome ? "Hemma" : "Borta"}
-        {next.venue ? ` · ${next.venue}` : ""}
-      </div>
-      {form.length > 0 && (
-        // role="img" gives the bar an accessible name; a bare div with
-        // aria-label is an aria-prohibited-attr violation.
-        <div className="form" role="img" aria-label={`Senaste ${form.length} matcher: ${form.map((f) => RESULT_WORD[f]).join(", ")}`}>
-          {form.map((f, i) => (
-            <span key={i} className={`r ${f}`} />
-          ))}
-        </div>
+      {bannerSheet && (
+        <UpcomingMatchSheet match={bannerSheet} onClose={() => setBannerSheet(null)} />
       )}
-    </button>
+    </>
   );
 }
 

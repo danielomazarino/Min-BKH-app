@@ -2849,6 +2849,26 @@ details.disc .disc-body {
   text-overflow: ellipsis;
 }
 
+/* B-021 round 3: the banner is now a BUTTON shared by Brief and Matcher.
+   Same visual as the old div strip, plus the tap affordance and the
+   always-visible lineup hint. */
+.strip-tap {
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  border: none;
+}
+.strip-hint {
+  color: var(--banner-ink-2);
+  font-size: var(--t-meta);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ==========================================================================
    Brief — small additions
    ========================================================================== */

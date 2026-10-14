@@ -145,8 +145,10 @@ test.describe("Matches archive", () => {
   });
 
   test("the next match is answered on this screen", async ({ page }) => {
-    if ((await page.getByTestId("matcher-next").count()) === 0) test.skip(true, "no next match");
-    await expect(page.getByTestId("matcher-next")).toContainText("Nästa match");
+    // B-021 round 3: the banner is shared with Brief and carries the
+    // next-match testid directly (no wrapping matcher-next section).
+    if ((await page.getByTestId("next-match").count()) === 0) test.skip(true, "no next match");
+    await expect(page.getByTestId("next-match")).toBeVisible();
   });
 
   test("both played and upcoming lists exist and switch", async ({ page }) => {

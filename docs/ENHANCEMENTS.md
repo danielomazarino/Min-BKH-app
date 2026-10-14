@@ -763,6 +763,8 @@ meaningful pipeline change).
 
 - 687 unit tests green (7 new guard tests + abbrv normalization tests).
 - Typecheck clean; `npm run build` clean.
+- e2e layout + a11y + navigation + news: 177 passed, 1 known webkit flake
+  (news collapse, passes on retry), 4 skipped.
 - Browser-verified on the preview build: match-row meta shows
   `date · competition` with no Hemma/Borta; upcoming rows are buttons
   opening the upcoming sheet with fixture meta, the lineup hint text and
@@ -770,6 +772,48 @@ meaningful pipeline change).
   abbrv join.
 - Deploy: pending at time of writing — see the status line above for the
   final commit and byte-verification result.
+
+### Round 3 (2026-10-14, same day) — the next-match banner
+
+The user tested round 2 and reported: the next-game banner on Home opens
+nothing, and nothing on it says a lineup can be found there. The request:
+
+1. On match day, the banner's top-left should read **"Matchdag, klicka för
+   startelva"** so users learn the banner is tappable and what it gives.
+2. **Merge the Home and Matches banner layouts** — one component, one
+   logic, and the Home one smaller (like the Matches strip).
+3. Remove "Borta"/"Hemma" from these banners too — the team order already
+   states it.
+
+**What was actually wrong.** The Home hero WAS a button, but it navigated
+to `/matcher` — a page hop that looks like "nothing happened" if you
+expect a card, and it never mentioned the lineup. The Matches strip was a
+plain `div` — genuinely not tappable. Two different components, two
+different behaviours, neither discoverable.
+
+**The fix — one shared component.** `app/shared/NextMatchBanner.tsx` now
+renders the banner in BOTH places (Brief and Matcher), replacing the old
+`NextMatchHero` (large card + form strip) and `NextMatchStrip` (div):
+
+- Layout is the compact strip (~76 px, was ~200 px on Home): countdown +
+  date left, competition + teams right, in Swedish home-first order.
+- Tapping opens the **upcoming-match sheet directly** — the same sheet the
+  Kommande list opens, with the on-demand "Hämta uppställning" section. No
+  navigation hop; the lineup is one tap from the banner.
+- The hint **"Klicka för startelva"** is always visible on the banner; on
+  match day itself the countdown reads **"Matchdag"** and the hint reads
+  **"Matchdag, klicka för startelva"** (the user's requested wording).
+- No "Hemma"/"Borta" on the banner: the team order states it.
+- The Home form strip (S/O/F dots) went with the hero — the banner is a
+  pointer to the match, not a dashboard; the form lives in the match
+  context.
+
+**Verified in the browser (preview build):** identical banner on `#/` and
+`#/matcher` (same class, same height, same hint); tapping it on Home opens
+the upcoming sheet with the lineup hint and fetch button; no Hemma/Borta
+anywhere on the banner. Unit tests 687 green; brief/news/layout/a11y/
+navigation e2e updated for the merged banner (the old "hero navigates to
+/matcher" test now asserts the sheet opens directly).
 
 ---
 

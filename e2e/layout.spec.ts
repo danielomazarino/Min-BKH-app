@@ -124,7 +124,7 @@ test.describe("Layout", () => {
         const nav = document.querySelector(".fabnav") as HTMLElement;
         layer.scrollTop = layer.scrollHeight;
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-        const children = [...layer.querySelectorAll("h2, .mrow, .news-row, .srow, [data-testid='matcher-next']")];
+        const children = [...layer.querySelectorAll("h2, .mrow, .news-row, .srow, [data-testid='next-match']")];
         const last = children[children.length - 1];
         if (!last) return null;
         const lr = last.getBoundingClientRect();
