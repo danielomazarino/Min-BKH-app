@@ -130,6 +130,69 @@ describe("classifyRelevance — regression against known false positives", () =>
     expect(r.relevance).toBe("CURRENT_HACKEN");
     expect(r.matchedPerson).toBe("Adam Lundkvist");
   });
+
+  // ---- 2026-10-14: two SVT false positives via squad player David Seger ----
+  //
+  // "Seger" is also the Swedish word for "win", so any article about a win
+  // collides with squad player David Seger's bare surname. Two real SVT Sport
+  // articles reached the men's feed through exactly this collision:
+  it("SVT Tkachuk ice-hockey article is UNRELATED — score compound + non-football sport", () => {
+    // Verbatim from the served feed, 2026-10-14. Two mechanisms fired at once:
+    //   1. "7-3-seger" — the hyphenated score compound satisfies \b, and the
+    //      different-person guard found no letter-token pair before "seger".
+    //   2. The URL path /sport/ishockey/ — SVT files every article under its
+    //      sport, and a football article is never filed under a hockey path.
+    const known: KnownPersons = { currentPlayers: ["David Seger"], formerPlayers: [] };
+    const r = classifyRelevance(
+      {
+        title: "Tkachuk-brödernas succé – låg bakom historiskt hattrick",
+        summary: "Floridas 7-3-seger mot Columbus blev en riktig familjefest. Brady Tkachuk gjorde hattrick – och till samtliga tre mål assisterade brorsan Matthew.",
+        url: "https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
+        publisher: "SVT Sport",
+      },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("SVT Smilla Sundell UFC article is UNRELATED — non-football sport veto", () => {
+    // Verbatim from the served feed, 2026-10-14. "efter seger" passed the
+    // different-person guard because "efter" is a function word (grammar, not
+    // a name) — correct for "till Rygaard", but here the article is simply not
+    // football. The URL path /sport/mma/ vetoes it structurally.
+    const known: KnownPersons = { currentPlayers: ["David Seger"], formerPlayers: [] };
+    const r = classifyRelevance(
+      {
+        title: "Smilla Sundell klar för UFC efter seger",
+        summary: "Redan för 1,5 år sedan var planen klar: Supertalangen Smilla Sundell skulle lämna thaiboxning för MMA. Nu har hon nått hela vägen – svenskan har säkrat ett kontrakt i UFC.",
+        url: "https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
+        publisher: "SVT Sport",
+      },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("a Häcken article about David Seger still matches (the veto never fires on football)", () => {
+    const known: KnownPersons = { currentPlayers: ["David Seger"], formerPlayers: [] };
+    const r = classifyRelevance(
+      { title: "David Seger gör mål för Häcken", summary: "Häcken vann med 2-1 efter en stark andrahalvlek.", publisher: "Göteborgs-Posten" },
+      known,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("David Seger");
+  });
+
+  it("a bare 'Seger' headline in a football context still matches", () => {
+    // The score-compound guard must reject ONLY the digit-hyphen compound
+    // ("7-3-seger"), never a normal headline use of the surname.
+    const known: KnownPersons = { currentPlayers: ["David Seger"], formerPlayers: [] };
+    const r = classifyRelevance(
+      { title: "Seger stark i träningsmatchen", summary: "Mittfältaren imponerade i Häckens vinst mot Djurgården.", publisher: "Göteborgs-Posten" },
+      known,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
 });
 
 describe("the different-person guard — surname-only matching without a surname list", () => {

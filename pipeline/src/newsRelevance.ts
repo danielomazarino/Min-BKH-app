@@ -238,6 +238,18 @@ export function mentionsKnownPerson(
     const tokens = key.split(" ");
     for (const surname of surnameCandidates(key)) {
       if (!new RegExp(`\\b${surname}s?\\b`).test(text)) continue;
+
+      // SCORE-COMPOUND GUARD (2026-10-14, real false positive): a surname that
+      // is also a Swedish noun ("Seger" = win) appears inside hyphenated score
+      // lines — "Floridas 7-3-seger mot Columbus". The hyphen satisfies \b, so
+      // the bare-surname regex matches, and the different-person guard below
+      // finds no letter-token pair before the surname (a hyphen is not in
+      // `[a-zåäöéü0-9]+`) — so nothing rejects it. A result compound is never a
+      // person: reject the match when the surname is directly preceded by a
+      // digit-hyphen score pattern ("7-3-", "2-1-", "0-0-"). A real surname
+      // mention is never written that way.
+      if (new RegExp(`\\b\\d+-\\d+-${surname}s?\\b`).test(text)) continue;
+
       // The surname appears. Does the text also name a DIFFERENT person
       // with it? If so, this player's surname match is not evidence.
       const pairRe = new RegExp(`\\b([a-zåäöéü0-9]+) ${surname}\\b`, "g");
@@ -302,6 +314,90 @@ export function isGeneralAllsvenskan(
 ): boolean {
   const text = evidenceText({ title, summary, url: extra?.url, bodyText: extra?.bodyText });
   return /allsvenskan/.test(text) && !mentionsHäcken(title, summary, extra);
+}
+
+/**
+ * NON-FOOTBALL SPORT VETO (2026-10-14, two real false positives).
+ *
+ * SVT Sport's front-page RSS carries every sport. Two articles reached the
+ * men's feed purely through surname collisions with squad player David Seger
+ * ("seger" is also the Swedish word for "win"):
+ *   - "Tkachuk-brödernas succé…" — NHL ice hockey, URL path /sport/ishockey/
+ *   - "Smilla Sundell klar för UFC efter seger" — MMA, URL path /sport/mma/
+ *
+ * The URL PATH is the strongest signal: SVT files every article under its
+ * sport (/sport/ishockey/, /sport/mma/, /sport/basket/…), and a football
+ * article is never filed under a non-football sport path. The text signals
+ * are the backup for sources that do not expose the sport in the URL.
+ *
+ * Deliberately a veto, not a positive filter: it only removes articles that
+ * are POSITIVELY about another sport. A Häcken article that merely mentions
+ * another sport ("Häcken möter Djurgården i ishockeyhallen" — hypothetical)
+ * still passes, because the veto is checked only when there is no Häcken
+ * mention to outweigh it.
+ *
+ * The list is CLOSED in kind (recognised non-football sports) but open in
+ * membership — new sports are added as they appear, which is cheap because a
+ * miss only costs one false positive, never a lost Häcken article.
+ */
+const NON_FOOTBALL_URL_SPORTS = [
+  "ishockey",
+  "hockey",
+  "mma",
+  "ufc",
+  "boxning",
+  "basket",
+  "handboll",
+  "innebandy",
+  "friidrott",
+  "alpint",
+  "skidor",
+  "skidskytte",
+  "tennis",
+  "golf",
+  "cykel",
+  "motorsport",
+  "formel-1",
+  "formel1",
+  "speedway",
+  "trav",
+  "hastssport",
+  "simning",
+  "bordtennis",
+  "badminton",
+  "volleyboll",
+  "beachvolley",
+  "rugby",
+  "baseball",
+  "amerikansk-fotboll",
+  "curling",
+  "konstakning",
+  "konståkning",
+  "taekwondo",
+  "judo",
+  "brottning",
+  "thaiboxning",
+  "kickboxning",
+  "gymnastik",
+];
+
+const NON_FOOTBALL_TEXT_RE =
+  /\b(nhl|khl|shl|hockeyallsvenskan|sdhl|ufc|mma|thaiboxning|kickboxning|boxning|nba|handbollsligan|innebandy|sm-guld i (ishockey|basket|handboll|innebandy|friidrott|skidor|alpint|tennis|golf|simning))\b/i;
+
+/** True when the article is positively about a non-football sport. */
+export function isNonFootballSport(
+  title: string,
+  summary: string,
+  extra?: { url?: string; bodyText?: string },
+): boolean {
+  // URL path first — the strongest, most structural signal.
+  const url = (extra?.url ?? "").toLowerCase();
+  for (const sport of NON_FOOTBALL_URL_SPORTS) {
+    if (new RegExp(`/sport/${sport}(/|$)`).test(url)) return true;
+  }
+  // Text signals as backup.
+  const text = evidenceText({ title, summary, url, bodyText: extra?.bodyText });
+  return NON_FOOTBALL_TEXT_RE.test(text);
 }
 
 /**
@@ -382,6 +478,18 @@ export function classifyRelevance(
     mentionsKnownPerson(title, summary, known.womenPlayers ?? [], extra) !== null ||
     (known.womenContextTerms ?? []).some((t) => text.includes(norm(t)));
   const youthContext = /akademi|u19|u17|pojkar|flickor|junior|p05|p07/.test(text);
+
+  // NON-FOOTBALL SPORT VETO — for SECONDARY sources only. The official club
+  // feed (branch 1) is authoritative and never files another sport's article;
+  // a secondary feed (SVT Sport's front page carries every sport) can, and
+  // both measured false positives came from there. The veto runs BEFORE the
+  // person match so a surname collision inside a hockey/MMA article never
+  // reaches the men's feed. A Häcken mention does not override it either:
+  // "ishockey" in the URL path is structural evidence about what the article
+  // IS, and no Häcken article is filed under /sport/ishockey/.
+  if (publisher !== "BK Häcken" && isNonFootballSport(title, summary, extra)) {
+    return { relevance: "UNRELATED", category: "unknown", reason: "non-football sport (hockey/MMA/etc.), not Häcken men" };
+  }
 
   // 1) Official club source: relevance established by source metadata.
   if (publisher === "BK Häcken") {

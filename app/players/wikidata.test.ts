@@ -981,3 +981,82 @@ describe("searchPlayersOnline — bare-surname searches (the Doumbia regression)
     expect(urls.some((u) => u.includes("list=backlinks"))).toBe(false);
   });
 });
+
+describe("searchPlayersOnline — squad membership is Häcken evidence (2026-10-14)", () => {
+  // User report: two starred squad players showed "HÄCKEN EJ BEKRÄFTAT".
+  // Root cause, measured live on Wikidata 2026-10-14: the badge comes from
+  // P54 only, and Wikidata is stale for exactly these players — Brice
+  // Wembangomo's P54 lists only Kvik Halden FK, Adrian Svanbäck has no P54
+  // at all. The squad list is the club's own roster and must win.
+
+  // Wembangomo as Wikidata actually has him: NO Häcken P54 claim.
+  const WEMBANGOMO_STALE = {
+    id: "Q81206122",
+    labels: { sv: { value: "Brice Wembangomo" }, en: { value: "Brice Wembangomo" } },
+    descriptions: { sv: { value: "norsk fotbollsspelare" } },
+    claims: {
+      P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+      P106: [{ mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } }],
+      P54: [{ mainsnak: { datavalue: { value: { id: "Q962844" } } } }], // Kvik Halden FK only
+    },
+  };
+
+  function wembangomoFetch() {
+    return stubFetch((url) => {
+      if (url.includes("wbsearchentities")) return indexResponse([{ id: "Q81206122", label: "Brice Wembangomo" }]);
+      return entitiesResponse({ Q81206122: WEMBANGOMO_STALE, Q962844: { id: "Q962844", labels: { sv: { value: "Kvik Halden FK" } } } });
+    });
+  }
+
+  it("a squad player with a stale Wikidata P54 is still marked HÄCKEN", async () => {
+    const state = (await searchPlayersOnline("Brice Wembangomo", {
+      fetch: wembangomoFetch(),
+      squadNames: ["Brice Wembangomo"],
+    })) as Extract<SearchState, { status: "results" }>;
+    expect(state.status).toBe("results");
+    const c = state.candidates.find((x) => x.qid === "Q81206122");
+    expect(c).toBeDefined();
+    expect(c!.hackenTeam).toBe("men");
+    expect(c!.hackenClub).toBe(true);
+  });
+
+  it("a NON-squad player with no Häcken P54 stays unverified", async () => {
+    // The same stale entity, but the squad list does not contain him — the
+    // badge must not be granted on a name that the club's roster does not
+    // back. (A namesake search must not inherit the badge.)
+    const state = (await searchPlayersOnline("Brice Wembangomo", {
+      fetch: wembangomoFetch(),
+      squadNames: ["Abdoulaye Doumbia", "David Seger"],
+    })) as Extract<SearchState, { status: "results" }>;
+    const c = state.candidates.find((x) => x.qid === "Q81206122");
+    expect(c).toBeDefined();
+    expect(c!.hackenTeam).toBeNull();
+  });
+
+  it("a Wikidata-verified women's player keeps 'women' (never overwritten to men)", async () => {
+    // If Wikidata DOES verify a P54 link, it is kept as-is — including the
+    // women's team. The squad override only fills the gap, never rewrites
+    // positive evidence.
+    const WOMEN_PLAYER = {
+      id: "Q999001",
+      labels: { sv: { value: "Test Damspelare" } },
+      descriptions: { sv: { value: "svensk fotbollsspelare" } },
+      claims: {
+        P31: [{ mainsnak: { datavalue: { value: { id: "Q5" } } } }],
+        P106: [{ mainsnak: { datavalue: { value: { id: FOOTBALLER_QID } } } }],
+        P54: [{ mainsnak: { datavalue: { value: { id: "Q1337348" } } } }], // BK Häcken dam
+      },
+    };
+    const fetchMock = stubFetch((url) => {
+      if (url.includes("wbsearchentities")) return indexResponse([{ id: "Q999001", label: "Test Damspelare" }]);
+      return entitiesResponse({ Q999001: WOMEN_PLAYER, Q1337348: { id: "Q1337348", labels: { sv: { value: "BK Häcken dam" } } } });
+    });
+    const state = (await searchPlayersOnline("Test Damspelare", {
+      fetch: fetchMock,
+      squadNames: ["Test Damspelare"],
+    })) as Extract<SearchState, { status: "results" }>;
+    const c = state.candidates.find((x) => x.qid === "Q999001");
+    expect(c).toBeDefined();
+    expect(c!.hackenTeam).toBe("women");
+  });
+});

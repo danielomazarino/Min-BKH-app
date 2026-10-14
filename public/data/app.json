@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-14T14:36:24.915Z",
+    "generatedAt": "2026-10-14T18:29:26.039Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -20,9 +20,9 @@
         "dropped": 39
       },
       "Göteborgs-Posten": {
-        "fetched": 28,
+        "fetched": 33,
         "kept": 0,
-        "dropped": 28
+        "dropped": 33
       },
       "BK Häcken": {
         "fetched": 20,
@@ -36,13 +36,13 @@
       },
       "Fotbolltransfers": {
         "fetched": 20,
-        "kept": 18,
-        "dropped": 2
+        "kept": 19,
+        "dropped": 1
       },
       "SVT Sport": {
         "fetched": 20,
-        "kept": 2,
-        "dropped": 18
+        "kept": 0,
+        "dropped": 20
       },
       "Allsvenskan": {
         "fetched": 10,
@@ -197,7 +197,28 @@
         "verdict": "men-excluded"
       },
       {
-        "title": "Boudri missar resten av säsongen",
+        "title": "Stjärnan stängs av – missar El Clasico",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/ylKvwK/vinicius-junior-stangs-av-missar-el-clasico?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-14T17:52:19.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Uppsala Fotboll lägger ner efter säsongen",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/R5E3W8/uppsala-lagger-ner-efter-sasongen?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-14T17:26:15.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Udda scenerna på Mjällbys presskonferens",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/aOqxq2/udda-scenerna-pa-mjallbys-presskonferens?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-14T15:18:13.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Amin Boudri missar resten av säsongen",
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/MAmGv5/boudri-missar-resten-av-sasongen?utm_medium=rss",
         "publisher": "Sportbladet",
         "publishedAt": "2026-10-14T14:28:39.000Z",
@@ -267,7 +288,7 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Rikard Norling får sparken av Örebro",
+        "title": "Rikard Norling får sparken från Örebro",
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/58yBEm/urikard-norling-far-sparken-av-orebro?utm_medium=rss",
         "publisher": "Sportbladet",
         "publishedAt": "2026-10-14T07:59:54.000Z",
@@ -449,31 +470,38 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Vill att City straffas hårt: ”Låt dem lida”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Elvv9j/steven-gerrard-vill-att-manchester-city-ska-lida?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-13T08:57:49.000Z",
+        "title": "Vinicius Junior straffas stenhårt – får fyra matchers avstängning",
+        "url": "https://www.expressen.se/sport/fotboll/vinicius-junior-straffas-stenhart-far-fyra-matchers-avstangning/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T17:54:04.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Jubel i Coventry – första på 25 år",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Jr7l88/coventry-tog-forsta-hemmasegern-i-pl-pa-25-ar?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-12T21:50:34.000Z",
+        "title": "IK Uppsala läggs ner – på grund av ekonomiska problem",
+        "url": "https://www.expressen.se/sport/fotboll/damallsvenskan/ik-uppsala-laggs-ner-pa-grund-av-ekonomiska-problem/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T18:10:56.000Z",
+        "verdict": "general allsvenskan, no Häcken relation"
+      },
+      {
+        "title": "Viktor Gyökeres närmar sig miljonregn – efter blodiga bilderna",
+        "url": "https://www.expressen.se/sport/fotboll/landslaget/viktor-gyokeres-narmar-sig-miljonregn-efter-blodiga-bilderna/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T15:47:32.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Premiärministern deltog i exorcism",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/64WwyW/gordon-brown-deltog-i-exorcism-for-att-varva-spelare?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-12T21:50:31.000Z",
+        "title": "Sjukdomsoro i Djurgården – Lien och Åslund saknades",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/sjukdomsoro-i-djurgarden--lien-och-aslund-saknades/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-14T15:08:15.000Z",
         "verdict": "no Häcken relation"
       },
       {
         "title": "Amin Boudri opererad – missar resten av säsongen",
         "url": "https://www.expressen.se/sport/fotboll/allsvenskan/amin-boudri-opererad-missar-resten-av-sasongen/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-14T14:28:22.000Z",
+        "publishedAt": "2026-10-14T15:51:24.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -487,7 +515,7 @@
         "title": "Elton John rasar – efter förfallet: ”Upprörd”",
         "url": "https://www.expressen.se/sport/fotboll/elton-john-rasar--efter-forfallet-upprord/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-14T14:07:53.000Z",
+        "publishedAt": "2026-10-14T16:31:42.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -582,35 +610,35 @@
         "verdict": "advertisement"
       },
       {
-        "title": "Bryter mot oskrivna regeln: ”Vi får lära oss av det”",
-        "url": "https://www.expressen.se/sport/fotboll/landslaget/bryter-mot-oskrivna-regeln-vi-far-lara-oss-av-det-/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-14T04:41:54.000Z",
+        "title": "Otäcka bilder på Kalmar-spelaren – fick puck i ansiktet",
+        "url": "https://www.svt.se/sport/ishockey/otacka-bilder-pa-kalmar-spelaren-fick-puck-i-ansiktet",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-14T18:18:01.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Gyökeres mållös – när Arsenal körde över Lille",
-        "url": "https://www.expressen.se/sport/fotboll/champions-league/gyokeres-mallos-nar-arsenal-korde-over-lille/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-13T21:15:03.000Z",
+        "title": "IK Uppsala lägger ned klubben efter säsongen",
+        "url": "https://www.svt.se/sport/fotboll/ik-uppsala-lagger-ner-klubben-efter-sasongen",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-14T17:26:13.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Rio Ferdinand rasar mot Glenn Nyberg: ”Vilket skitbeslut”",
-        "url": "https://www.expressen.se/sport/fotboll/champions-league/rio-ferdinand-rasar-mot-glenn-nyberg-vilket-skitbeslut/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-13T21:00:52.000Z",
+        "title": "Här brister Truls Möregårdh ut i skratt – efter jättemissen",
+        "url": "https://www.svt.se/sport/bordtennis/har-brister-truls-moregardh-ut-i-skratt-efter-jattemissen",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-14T15:36:03.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Inter chockat av Club Brugge – efter tyskt hattrick",
-        "url": "https://www.expressen.se/sport/fotboll/inter-chockat-av-club-brugge-efter-tyskt-hattrick/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-13T20:58:52.000Z",
+        "title": "Anton Källberg vidare i EM – efter rysare mot ryss",
+        "url": "https://www.svt.se/sport/bordtennis/anton-kallberg-vidare-pa-em-efter-rysare-mot-ryss",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-14T15:10:18.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Hammarbys besked: Amin Bodri missar resten av säsongen",
+        "title": "Hammarbys besked: Amin Boudri missar resten av säsongen",
         "url": "https://www.svt.se/sport/fotboll/hammarbys-besked-amin-bodri-missar-resten-av-sasongen",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-14T14:29:01.000Z",
@@ -677,7 +705,7 @@
         "url": "https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-14T05:02:36.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Bauhausgalan skräddarsyr lopp – för Andreas Almgren: ”Kan gå till historien”",
@@ -691,7 +719,7 @@
         "url": "https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-14T04:56:02.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Bella Andersson snuvad på första landslagsmålet: ”Inget det ska blåsas för”",
@@ -722,38 +750,10 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Sanslöst målkalas när Sverige krossade Litauen i VM-playoff",
-        "url": "https://www.svt.se/sport/fotboll/sanslost-malkalas-nar-sverige-krossade-litauen-i-vm-playoff",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-13T18:47:31.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Truls Möregårdh pikar SVT:s expert efter segern: ”Vad mer ska vi göra?”",
-        "url": "https://www.svt.se/sport/bordtennis/truls-moregardh-pikar-svts-expert-efter-segern-vad-mer-ska-vi-gora",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-13T18:28:10.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Kosovare Asllani om spel i VM nästa år: ”Sverige är där”",
-        "url": "https://www.svt.se/sport/fotboll/kosovare-asllani-om-spel-i-vm-nasta-ar-sverige-ar-dar",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-13T18:14:46.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Norrköping tillbaka i allsvenskan – Christoffer Nyman bakom allt",
-        "url": "https://www.svt.se/sport/fotboll/christoffer-nyman-skjuter-norrkoping-mot-allsvenskan",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-13T17:55:27.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "CAS sätter datum för Riveiro–Al Ahly – förhandling 9 december 2026 efter Fifa-domen på 588 000 dollar",
-        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=97fb7779-3993-39e0-0580-02818f51a43d",
+        "title": "Uppgifter: von Heijne sade upp sig i Hammarby – saknat inflytande, oense om Lind/Boudri och Rydström",
+        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=b28bf02c-8237-4e76-46a2-ce2bfadf4bb2",
         "publisher": "Bollsvenskan",
-        "publishedAt": "2026-10-14T12:25:30.000Z",
+        "publishedAt": "2026-10-14T18:01:41.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -964,7 +964,42 @@
         "url": "https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-07T09:42:12.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
+      },
+      {
+        "title": "Rockjätten lovar ”största showen på jorden”",
+        "url": "https://www.gp.se/kultur/u2-lockar-med-turneslapp-under-torsdagen-storsta-showen-pa-jorden.25060d64-6ef1-5649-b0c5-4e4fd3c6c8fa",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T17:19:47.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Shanti Roneys Jävla karlar till Göteborg: ”Lär dröja innan jag gör det här igen”",
+        "url": "https://www.gp.se/kultur/shanti-roney-ensam-pa-scen-en-san-javla-kamp.4196c7b1-9488-5148-b4d8-dd2dfb7b57e9",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T17:15:23.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "SD i Göteborg vill stoppa Ukrainaflyktingar – eller?",
+        "url": "https://www.gp.se/politik/forvirringen-vill-sd-i-goteborg-sluta-ta-emot-flyktingar-fran-ukraina.44f839d1-80fc-5d4c-96f1-329912c42609",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T16:18:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Michelle växte upp på en cirkus",
+        "url": "https://www.gp.se/livsstil/michelle-vaxte-upp-pa-en-cirkus.d9e11d33-46f8-55c3-9b40-d9d120802130",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T15:53:17.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Faktorn som kan rädda elräkningen i vinter",
+        "url": "https://www.gp.se/ekonomi/rakna-med-fortsatt-hoga-elpriser.4ed69012-7ec1-52f9-899f-ca2d0d1174bc",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-14T14:30:47.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Här styckas rått kött i skolans slöjdsal",
@@ -1169,7 +1204,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-14T14:32:06.587Z",
+    "retrievedAt": "2026-10-14T18:24:57.431Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -5081,30 +5116,6 @@
   "cardMatchesInspected": 23,
   "news": [
     {
-      "id": "SVT Sport-9-https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
-      "title": "Tkachuk-brödernas succé – låg bakom historiskt hattrick",
-      "url": "https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
-      "summary": "Floridas 7-3-seger mot Columbus blev en riktig familjefest. Brady Tkachuk gjorde hattrick – och till samtliga tre mål assisterade brorsan Matthew. – Det är ganska coolt. Det är någonting som man alltid drömmer om, säger den trippla målskytten efter matchen.",
-      "publishedAt": "2026-10-14T05:02:36.000Z",
-      "publisher": "SVT Sport",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "SVT Sport-11-https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
-      "title": "Smilla Sundell klar för UFC efter seger",
-      "url": "https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
-      "summary": "Redan för 1,5 år sedan var planen klar: Supertalangen Smilla Sundell skulle lämna thaiboxning för MMA. Nu har hon nått hela vägen – svenskan har säkrat ett kontrakt i UFC. – Det känns väldigt, väldigt bra. Jag är jätteglad. Drömmen blev sann, säger svenskan till Sportbladet.",
-      "publishedAt": "2026-10-14T04:56:02.000Z",
-      "publisher": "SVT Sport",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
-      "sourceRole": "secondary"
-    },
-    {
       "id": "BK Häcken-1-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
       "title": "Inmarschdagen mot Degerfors den 24 oktober",
       "url": "https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
@@ -5454,59 +5465,9 @@
       "dedupeKey": "https://fotbolltransfers.com/nyheter/bk-hacken-varslar-personal-handlingsutrymme-for-framtida-investeringar/222278",
       "clubScoped": true,
       "sourceRole": "secondary"
-    },
-    {
-      "id": "Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
-      "title": "Rygaards gläds över transfern: \"Alla tänkte wow\"",
-      "url": "https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
-      "summary": "Efter den dyra övergången hyllas han av sin före detta lagkamrat Mikkel Rygaard.",
-      "publishedAt": "2026-09-23T17:15:23.000Z",
-      "publisher": "Fotbolltransfers",
-      "category": "men",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
-      "clubScoped": true,
-      "sourceRole": "secondary"
     }
   ],
   "newsEvents": [
-    {
-      "id": "event-SVT Sport-9-https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
-      "title": "Tkachuk-brödernas succé – låg bakom historiskt hattrick",
-      "summary": "Floridas 7-3-seger mot Columbus blev en riktig familjefest. Brady Tkachuk gjorde hattrick – och till samtliga tre mål assisterade brorsan Matthew. – Det är ganska coolt. Det är någonting som man alltid drömmer om, säger den trippla målskytten efter matchen.",
-      "publishedAt": "2026-10-14T05:02:36.000Z",
-      "latestPublishedAt": "2026-10-14T05:02:36.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "SVT Sport",
-          "url": "https://www.svt.se/sport/ishockey/tkachuk-brodernas-succe-lag-bakom-historiskt-hattrick",
-          "publishedAt": "2026-10-14T05:02:36.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-SVT Sport-11-https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
-      "title": "Smilla Sundell klar för UFC efter seger",
-      "summary": "Redan för 1,5 år sedan var planen klar: Supertalangen Smilla Sundell skulle lämna thaiboxning för MMA. Nu har hon nått hela vägen – svenskan har säkrat ett kontrakt i UFC. – Det känns väldigt, väldigt bra. Jag är jätteglad. Drömmen blev sann, säger svenskan till Sportbladet.",
-      "publishedAt": "2026-10-14T04:56:02.000Z",
-      "latestPublishedAt": "2026-10-14T04:56:02.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "SVT Sport",
-          "url": "https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc-efter-seger",
-          "publishedAt": "2026-10-14T04:56:02.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
     {
       "id": "event-BK Häcken-1-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
       "title": "Inmarschdagen mot Degerfors den 24 oktober",
@@ -6007,6 +5968,27 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789110760/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-19-https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
+      "title": "Officiellt: Edward Chilufya lånas ut",
+      "summary": "FC Midtjylland meddelar att man lånar ut Edward Chilufya.",
+      "publishedAt": "2026-09-07T09:42:12.000Z",
+      "latestPublishedAt": "2026-09-07T09:42:12.000Z",
+      "category": "former",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788767260/528x300.jpg",
+      "body": "Edward Chilufya, 26, spelade i Djurgårdens IF under säsongen 2021.\n\nEfter säsongen blev anfallaren såld till danska FC Midtjylland. Under 2023 och 2024 har han utlånad till BK Häcken.\n\nUnder sommaren 2025 skrev han på ett nytt kontrakt med FC Midtjylland. Han sitter nu på ett avtal till den 31 december 2028.\n\nUnder 2025/2026 gjorde Chilufya ett mål och en assist på tolv ligamatcher, varav fem starter.\n\nNu meddelar FC Midtjylland på sin officiella hemsida att man lånar ut 26-åringen till Hapoel Jerusalem FC.\n\nMiguel Vidal / BILDBYRÅN\n\nDen danska klubben skriver att det handlar om ett lån för resten av säsongen.\n\nSportchefen Kristian Bach Bak berättar om utlåningen.\n\nVi ser fram emot att följa honom.\n\n– Chilufya är otroligt professionell och har bidragit med mycket positivt till klubben. Trots den hårda konkurrensen om anfallspositionerna och den begränsade speltiden har han levererat när han har fått chansen. Vi tror att en låneövergång är en bra möjlighet för honom i jakten på fler spelminuter. Vi ser fram emot att följa honom, säger han till klubbens hemsida.\n\nEfter sex spelade omgångar ligger FC Midtjylland på andra plats i ligan.\n\n26-årige Edward Chilufya udlejes til Hapoel Jerusalem FC, hvor han vil spille resten af sæsonen. Læs mere på https://t.co/4TekMmSWop pic.twitter.com/9tbS1hHsCp — FC Midtjylland (@fcmidtjylland) September 7, 2026\n\nEdward Chilufya, 26, spelade i Djurgårdens IF under säsongen 2021.\n\nEfter säsongen blev anfallaren såld till danska FC Midtjylland. Under 2023 och 2024 har han utlånad till BK Häcken.\n\nUnder sommaren 2025 skrev han på ett nytt kontrakt med FC Midtjylland. Han sitter nu på ett avtal till den 31 december 2028.\n\nUnder 2025/2026 gjorde Chilufya ett mål och en assist på tolv ligamatcher, varav fem starter.\n\nNu meddelar FC Midtjylland på sin officiella hemsida att man lånar ut 26-åringen till Hapoel Jerusalem FC.\n\nMiguel Vidal / BILDBYRÅN\n\nDen danska klubben skriver att det handlar om ett lån för resten av säsongen.\n\nSportchefen Kris",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-edward-chilufya-lanas-ut-till-hapoel-jerusalem-fc/221393",
+          "publishedAt": "2026-09-07T09:42:12.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788767260/528x300.jpg"
         }
       ],
       "summaryMethod": "rss-description"

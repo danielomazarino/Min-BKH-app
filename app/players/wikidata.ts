@@ -967,6 +967,48 @@ export async function searchPlayersOnline(
   }
 
   const candidates = chosen.map((e) => toCandidate(e, { query, labels, classes: index.classes }));
+
+  // SQUAD MEMBERSHIP IS HÄCKEN EVIDENCE (2026-10-14, user report: two starred
+  // squad players showed "HÄCKEN EJ BEKRÄFTAT").
+  //
+  // The badge above comes from Wikidata P54 only, and Wikidata is stale for
+  // exactly the players a supporter stars: measured 2026-10-14 — Brice
+  // Wembangomo's P54 lists only Kvik Halden FK (his Häcken stint, 2025–, is
+  // missing) and Adrian Svanbäck has no P54 at all. Meanwhile the squad list
+  // is the one identity evidence the app owns outright: 27 club-verified
+  // names from the club's own data.
+  //
+  // So when a candidate matches a current squad player — by QID (the
+  // pipeline's enrichment stores the QID) or by normalized name (the same
+  // matching the squad-first ranking already uses) — the candidate IS a
+  // Häcken men's player regardless of what Wikidata's P54 says. The squad
+  // list wins; Wikidata's silence is not a refutation.
+  //
+  // A name match is still only a HINT for RANKING (a wrong namesake stays
+  // visible with its own description), but for the BADGE it is decisive:
+  // the squad list has no namesakes — it is the club's own roster.
+  // `squadNorm` is the list built for the squad-first ranking above.
+  if (squadNorm.length > 0) {
+    for (const c of candidates) {
+      if (c.hackenTeam) continue; // Wikidata already verified it — keep "men"/"women" as-is
+      const labelNorm = normalizePlayerName(c.name);
+      const matchesSquad =
+        squadNorm.some((s) => s === labelNorm) ||
+        // Token-subset, same rule as the squad-first ranking: catches
+        // "Mikkel Rygaard" (Wikidata label) vs "Mikkel Rygaard Jensen"
+        // (squad spelling) and token-order differences.
+        squadNorm.some((s) => {
+          const sTokens = s.split(" ");
+          const cTokens = labelNorm.split(" ");
+          return sTokens.every((t) => cTokens.includes(t)) || cTokens.every((t) => sTokens.includes(t));
+        });
+      if (matchesSquad) {
+        c.hackenTeam = "men";
+        c.hackenClub = true;
+      }
+    }
+  }
+
   return { status: "results", query, candidates, discarded };
 }
 
