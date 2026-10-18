@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-17T03:45:51.495Z",
+    "generatedAt": "2026-10-18T03:43:46.619Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -10,29 +10,29 @@
       "rss:Allsvenskan": "ok",
       "rss:Fotbolltransfers": "ok",
       "rss:Göteborgs-Posten": "ok",
-      "sportomedia": "ok",
+      "sportomedia": "failed",
       "gemini": "failed"
     },
     "sourceCounts": {
       "Sportbladet": {
         "fetched": 39,
-        "kept": 0,
-        "dropped": 39
+        "kept": 1,
+        "dropped": 38
       },
       "BK Häcken": {
         "fetched": 20,
-        "kept": 6,
-        "dropped": 14
+        "kept": 8,
+        "dropped": 12
       },
       "Expressen": {
         "fetched": 20,
-        "kept": 0,
-        "dropped": 20
+        "kept": 1,
+        "dropped": 19
       },
       "Fotbolltransfers": {
         "fetched": 20,
-        "kept": 18,
-        "dropped": 2
+        "kept": 15,
+        "dropped": 5
       },
       "SVT Sport": {
         "fetched": 20,
@@ -45,9 +45,9 @@
         "dropped": 9
       },
       "Göteborgs-Posten": {
-        "fetched": 4,
+        "fetched": 2,
         "kept": 0,
-        "dropped": 4
+        "dropped": 2
       },
       "Bollsvenskan": {
         "fetched": 1,
@@ -56,6 +56,34 @@
       }
     },
     "articleAudit": [
+      {
+        "title": "Anna Anvegård: \"En match som man har längtat efter väldigt länge”",
+        "url": "https://bkhacken.se/nyhet/anna-anvegard-en-match-som-man-har-langtat-efter-valdigt-lange",
+        "publisher": "BK Häcken",
+        "publishedAt": "2026-10-17T12:00:00.000Z",
+        "verdict": "men-excluded"
+      },
+      {
+        "title": "Truppen mot Malmö FF",
+        "url": "https://bkhacken.se/nyhet/truppen-mot-malmo-ff-1",
+        "publisher": "BK Häcken",
+        "publishedAt": "2026-10-17T11:48:01.000Z",
+        "verdict": "kept"
+      },
+      {
+        "title": "Seriefinal i OBOS Damallsvenskan – här är allt du behöver veta",
+        "url": "https://bkhacken.se/nyhet/seriefinal-i-obos-damallsvenskan-har-ar-allt-du-behover-veta",
+        "publisher": "BK Häcken",
+        "publishedAt": "2026-10-17T10:00:00.000Z",
+        "verdict": "men-excluded"
+      },
+      {
+        "title": "Årets säsong blir Mikkel Rygaards sista i BK Häcken",
+        "url": "https://bkhacken.se/nyhet/arets-sasong-blir-mikkel-rygaards-sista-i-bk-hacken",
+        "publisher": "BK Häcken",
+        "publishedAt": "2026-10-17T08:00:00.000Z",
+        "verdict": "kept"
+      },
       {
         "title": "BK Häcken skriver akademikontrakt med trio",
         "url": "https://bkhacken.se/nyhet/bk-hacken-skriver-akademikontrakt-med-trio",
@@ -169,32 +197,102 @@
         "verdict": "men-excluded"
       },
       {
-        "title": "6–0-seger och många glädjeämnen i Norrköping: \"Så glad\"",
-        "url": "https://bkhacken.se/nyhet/6-0-seger-och-manga-gladjeamnen-i-norrkoping",
-        "publisher": "BK Häcken",
-        "publishedAt": "2026-09-26T16:30:09.000Z",
-        "verdict": "men-excluded"
+        "title": "Gjorde drömmål och blev skallad",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/b8wgmd/barcelonas-lamine-yamal-gjorde-drommal-ochblevskallad-mot-betis?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T21:08:41.000Z",
+        "verdict": "no Häcken relation"
       },
       {
-        "title": "Truppen mot Norrköping – Stine Sandbech tillbaka",
-        "url": "https://bkhacken.se/nyhet/truppen-mot-norrkoping-stine-sandbech-tillbaka",
-        "publisher": "BK Häcken",
-        "publishedAt": "2026-09-25T14:10:07.000Z",
-        "verdict": "men-excluded"
+        "title": "Talangen uppges jagas av storklubbar: ”Kul med intresse”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/KrKn37/uppgifter-arsenal-och-chelsea-jagar-goteborgs-mansson?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T19:50:33.000Z",
+        "verdict": "no Häcken relation"
       },
       {
-        "title": "Tuff Champions League-premiär mot Inter",
-        "url": "https://bkhacken.se/nyhet/tuff-champions-league-premiar-mot-inter",
-        "publisher": "BK Häcken",
-        "publishedAt": "2026-09-22T20:15:00.000Z",
-        "verdict": "men-excluded"
+        "title": "”Gav tillbaka” efter hat-banderollen",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/eGvEly/carlstrand-gav-tillbaka-efter-blavitts-hat-banderoll?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T19:25:06.000Z",
+        "verdict": "no Häcken relation"
       },
       {
-        "title": "Matchguide: Champions League-premiär borta mot FC Inter",
-        "url": "https://bkhacken.se/nyhet/matchguide-champions-league-premiar-borta-mot-fc-inter",
-        "publisher": "BK Häcken",
-        "publishedAt": "2026-09-22T07:56:00.000Z",
-        "verdict": "men-excluded"
+        "title": "Bank: Har slutat se ut som ett haveri",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/1o05kX/bank-aik-har-slutat-se-ut-som-ett-haveri?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T19:01:11.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Plusbetyg: AIK-IFK Göteborg",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/vlGMLX/allsvenskan-plusbetyg-i-aik-mot-ifk-goteborg?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T18:37:05.000Z",
+        "verdict": "general allsvenskan, no Häcken relation"
+      },
+      {
+        "title": "AIK räddade kryss i klassikermötet",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/31K4ae/axel-kouame-raddade-kryss-for-aik-mot-ifk-goteborg?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T18:05:18.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Succén: Gjort mål i åtta raka",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/X93GGx/erling-haaland-sankte-ipswich-mal-i-atta-raka?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T16:03:11.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Avsparken sköts upp två gånger",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/64emBQ/uppvarmningen-fick-avbrytas?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T15:06:32.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Arsenal i kris – sämsta starten på tolv år",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/lKaxRG/arsenal-i-kris-samsta-starten-pa-tolv-ar?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T13:53:08.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Otäcka bilder – förd till sjukhus",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/JrX8xR/emiliano-martinez-ut-pa-bar-efter-otack-small?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T13:09:23.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Alexander Isak målskytt direkt",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/PgXxwe/alexander-isak-tillbaka-fran-skadan-startar?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T12:54:16.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "AIK 2027: Spelarna som lämnar i vinter – och de kan värvas",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/PgqK3b/aik-2027-kuppen-forsoker-varva-fran-konkurrent-de-kan-lamna?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T08:42:20.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Mikkel Rygaard lämnar Häcken: ”Gör lite ont”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/jvxQln/mikkel-rygaard-lamnar-hacken-gor-lite-ont?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T08:10:04.000Z",
+        "verdict": "kept"
+      },
+      {
+        "title": "Sänktes av kompisen i debuten: ”Sa förlåt”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/77Jlx3/djurgardens-alexander-andersson-sanktes-i-debuten?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-10-17T05:55:37.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Känslosamma bilderna – bröt ihop på planen",
@@ -372,388 +470,290 @@
         "verdict": "general allsvenskan, no Häcken relation"
       },
       {
-        "title": "Officiellt: Oscar Jansson lägger av",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/GrqPAJ/oscar-jansson-avslutar-karriaren?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-15T09:05:07.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Tränarikonen Bo Johansson är död",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/zlbLRw/tranarikonen-bo-bosse-johansson-ar-dod?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-15T06:15:06.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Tillbaka efter fyra år – buades ut",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/jvp3nz/mason-greenwood-buades-ut-nar-fenerbahce-gastade-aston-villa-i-champions-league?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T20:57:29.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Galen vändning – efter tre hörnmål",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/b8aXle/real-madrid-vande-mot-roma-i-champions-league?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T20:54:35.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Guardiolas vändning − dök upp på arenan",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/2VX5R4/guardiolas-vandning-dokupp-pa-arenan?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T19:46:06.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Vill ändra regeln – sågas av kollegor",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/2VyLqq/fifa-vill-andra-regel-efter-skandalen-i-vm-2026?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T18:54:23.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Efter kritiken – gjorde hattrick",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/1oXnme/champions-league-barcola-gjorde-hattrick-liverpool-krossade-lask?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T18:35:53.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Stjärnan stängs av – missar El Clasico",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/ylKvwK/vinicius-junior-stangs-av-missar-el-clasico?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T17:52:19.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Uppsala Fotboll lägger ner efter säsongen",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/R5E3W8/uppsala-lagger-ner-efter-sasongen?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T17:26:15.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Udda scenerna på Mjällbys presskonferens",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/aOqxq2/udda-scenerna-pa-mjallbys-presskonferens?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T15:18:13.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Amin Boudri missar resten av säsongen",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/MAmGv5/boudri-missar-resten-av-sasongen?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T14:28:39.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Anklagas av agent i krisen ”Sa fuck you”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/QgEX38/kalmar-ff-skakas-av-internt-brak-i-allsvenskans-bottenstrid?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T13:23:06.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "Martinez sågas – efter attacken mot United",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/aOqWvA/martinez-sagas-efter-attacken-mot-united?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T12:47:27.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Arsenal varslar – 60 jobb försvinner",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/0BbOy0/arsenal-varslar-60-jobb-forsvinner?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-10-14T12:42:25.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Strand om duellen med Stensson: ”Öppnade min armbåge”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/strand-om-duellen-med-stensson-oppnade-min-armbage/",
+        "title": "Felicia Schröder målskytt för Real Madrid",
+        "url": "https://www.expressen.se/sport/fotboll/felicia-schroder-malskytt-for-real-madrid/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T21:06:27.000Z",
+        "publishedAt": "2026-10-17T21:53:08.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Stensson om samtalet med Rydström: ”Ganska klar”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/stensson-om-samtalet-med-rydstrom-ganska-klar/",
+        "title": "Efter orden i TV4: ”Skulle inte sagt något”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/efter-orden-i-tv4-skulle-inte-sagt-nagot/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T20:20:53.000Z",
+        "publishedAt": "2026-10-17T20:29:48.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Analysen efter BP–Djurgården: ”Har de knäckt koden?”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/analysen-efter-bp-djurgarden-har-de-knackt-koden/",
+        "title": "Dramat efter slutsignalen: ”Fick så jävla ont”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/dramat-efter-slutsignalen-fick-sa-javla-ont/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T19:00:43.000Z",
+        "publishedAt": "2026-10-17T19:44:13.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Djurgården sätter press på Sirius efter derbyseger",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/djurgarden-satter-press-pa-sirius-efter-derbyseger/",
+        "title": "Oliver Månsson, 17, om Premier League-ryktena",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/oliver-mansson-17-om-premier-league-ryktena/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T20:33:06.000Z",
+        "publishedAt": "2026-10-17T19:25:36.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Jämfördes med Goebbels – Real Madrid rasar",
-        "url": "https://www.expressen.se/sport/fotboll/jamfordes-med-goebbels-real-madrid-rasar/",
+        "title": "Linus Carlstrand om Blåvitt-banderollen: ”Behöver man inte skriva”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/linus-carlstrand-om-blavitt-banderollen-behover-man-inte-skriva/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T16:15:45.000Z",
+        "publishedAt": "2026-10-17T19:02:22.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "AIK köper mark – närmar sig ny anläggning: ”Inflyttning hösten 2028”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/aik-koper-mark-narmar-sig-ny-anlaggning-inflyttning-hosten-2028/",
+        "title": "Experten rasar efter tilltaget mot Yamal",
+        "url": "https://www.expressen.se/sport/fotboll/la-liga/experten-rasar-efter-tilltaget-mot-yamal/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T15:05:09.000Z",
+        "publishedAt": "2026-10-17T18:36:17.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Bo Heglands derbyfacit: ”Tror inte han känner pressen”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/bo-heglands-derbyfacit-tror-inte-han-kanner-pressen/",
+        "title": "Analysen efter AIK–IFK Göteborg: ”Något är fel”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/analysen-efter-aik-ifk-goteborg-nagot-ar-fel/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T12:52:06.000Z",
+        "publishedAt": "2026-10-17T18:12:07.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Felix Eriksson möter bästa vännen Carlstrand: ”Jättespeciellt”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/erkanner-kommer-kannas-jattespeciellt/",
+        "title": "AIK:s mörka svit intakt – oavgjort mot IFK Göteborg",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/aiks-morka-svit-intakt-oavgjort-mot-ifk-goteborg/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T12:30:44.000Z",
+        "publishedAt": "2026-10-17T18:36:28.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Warren Kamanzi bryter tystnaden om sin skada",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/warren-kamanzi-bryter-tystnaden-om-sin-skada/",
+        "title": "FC Stockholm är klart för superettan",
+        "url": "https://www.expressen.se/sport/fotboll/superettan/fc-stockholm-ar-klart-for-superettan/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T12:12:57.000Z",
+        "publishedAt": "2026-10-17T18:08:07.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Johan Hove avbröt träningen efter smäll mot huvudet",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/johan-hove-avbrot-traningen-efter-small-mot-huvudet/",
+        "title": "AIK–IFK Göteborg skjuts upp efter kaos",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/aik-ifk-goteborg-skjuts-upp-efter-kaos/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T12:10:11.000Z",
+        "publishedAt": "2026-10-17T15:36:12.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Flera MFF-spelare riskerar att missa helgens match",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/flera-mff-spelare-riskerar-att-missa-helgens-match-/",
+        "title": "Johan Mjällbys ilska: ”Det är patetiskt”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/johan-mjallbys-ilska-det-ar-patetiskt/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T11:55:28.000Z",
+        "publishedAt": "2026-10-17T15:23:55.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Daryl Tschoumy-Nana: ”Jag har insett att jag är en gymkille”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/daryl-tschoumy-nana-jag-har-insett-att-jag-ar-en-gymkille/",
+        "title": "Uppgifter: Viktor Gyökeres vill lämna Arsenal – pushar för flytt",
+        "url": "https://www.expressen.se/sport/fotboll/premier-league/uppgifter-viktor-gyokeres-vill-lamna-arsenal--pushar-for-flytt/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T12:57:32.000Z",
+        "publishedAt": "2026-10-17T16:39:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Jag känner att jag inte vill titta",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/tips/jag-kanner-att-jag-inte-vill-titta/",
+        "title": "AIK föll mot Malmö FF: ”Mycket märkliga misstag”",
+        "url": "https://www.expressen.se/sport/fotboll/damallsvenskan/aik-foll-mot-malmo-ff-mycket-markliga-misstag/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T09:47:09.000Z",
+        "publishedAt": "2026-10-17T13:49:54.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Polisen misstänker försök till spelfusk i division 2",
-        "url": "https://www.expressen.se/sport/fotboll/polisen-misstanker-forsok-till-spelfusk-i-division-2/",
+        "title": "Det är helt absurt – precis som hela hans liv varit",
+        "url": "https://www.expressen.se/sport/kronikorer/therese-stromberg/det-ar-helt-absurt-precis-som-hela-hans-liv-varit/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T10:07:18.000Z",
+        "publishedAt": "2026-10-17T13:23:55.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Baksmälla efter derbyt för Djurgården?",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/tips/baksmalla-efter-derbyt-for-djurgarden/",
+        "title": "Otäcka scener i Premier League – Emiliano Martinez ut på bår",
+        "url": "https://www.expressen.se/sport/fotboll/premier-league/otacka-scener-i-premier-league-emiliano-martinez-ut-pa-bar/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T07:38:06.000Z",
+        "publishedAt": "2026-10-17T13:55:53.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Får det jobbigt utan sin stjärna",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/tips/far-det-jobbigt-utan-sin-stjarna/",
+        "title": "Alexander Isak målskytt – blev hjälte",
+        "url": "https://www.expressen.se/sport/fotboll/premier-league/alexander-isak-fran-start-i-liverpool/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-16T05:00:00.000Z",
-        "verdict": "advertisement"
+        "publishedAt": "2026-10-17T16:06:06.000Z",
+        "verdict": "no Häcken relation"
       },
       {
-        "title": "Separerade tre veckor innan bröllopet – ex-flickvännen öppnar upp",
-        "url": "https://www.expressen.se/sport/fotboll/separerade-tre-veckor-innan-brollopet-ex-flickvannen-oppnar-upp/",
+        "title": "Släppte in sex mål – tränaren: ”Ingen defensiv kris”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/slappte-in-sex-mal-tranaren-ingen-defensiv-kris/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-15T21:07:53.000Z",
+        "publishedAt": "2026-10-17T11:05:16.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Alexander Lundin kunde hamnat i division fyra",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/alexander-lundin-kunde-hamnat-i-division-fyra/",
+        "title": "Taha Ayari tillbaka från skada – som pappa: ”Lugnande”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/taha-ayari-tillbaka-fran-skada-som-pappa-lugnande/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-15T20:38:33.000Z",
+        "publishedAt": "2026-10-17T11:00:18.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Mjällby har vunnit en fotbollsmatch – första på två månader",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/mjallby-har-vunnit-en-fotbollsmatch-forsta-pa-tva-manader/",
+        "title": "Tobias Heintz kamp i det tysta: ”Frustrerande”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/tobias-heintz-kamp-i-det-tysta-frustrerande/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-15T19:26:36.000Z",
-        "verdict": "no Häcken relation"
+        "publishedAt": "2026-10-17T10:32:44.000Z",
+        "verdict": "kept"
       },
       {
-        "title": "Miro Tenho förlänger med Djurgården",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/miro-tenho-forlanger-med-djurgarden/",
+        "title": "Marika Domanski Lyfors: ”Jag kommer att dö”",
+        "url": "https://www.expressen.se/sport/fotboll/landslaget/marika-domanski-lyfors-jag-kommer-att-do-/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-15T16:40:19.000Z",
+        "publishedAt": "2026-10-17T08:59:37.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Djurgårdens intränade (?) variant bakom segern mot BP",
-        "url": "https://www.svt.se/sport/fotboll/djurgardens-intranade-variant-bakom-segern-mot-bp",
+        "title": "Alexis Lebruns hyllning till Kristian Karlsson: ”En legend”",
+        "url": "https://www.svt.se/sport/bordtennis/alexis-lebruns-hyllning-till-kristian-karlsson-en-legend",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T21:27:23.000Z",
+        "publishedAt": "2026-10-17T19:57:13.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Efter övergången – Edlunds Sandviken krossat av Villa",
-        "url": "https://www.svt.se/sport/bandy/efter-overgangen-edlunds-sandviken-krossat-av-villa",
+        "title": "AIK:s målskytt efter gesten: ”Gör jag aldrig om”",
+        "url": "https://www.svt.se/sport/fotboll/aiks-malskytt-efter-gesten-gor-jag-aldrig-om",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T20:36:22.000Z",
+        "publishedAt": "2026-10-17T19:48:24.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Alexander Andersson om startdebuten: ”Inte sovit så mycket”",
-        "url": "https://www.svt.se/sport/fotboll/alexander-andersson-om-startdebuten-inte-sovit-sa-mycket",
+        "title": "Frölunda-målvakten efter straffräddningarna: ”Kattens lek med musen”",
+        "url": "https://www.svt.se/sport/ishockey/frolunda-malvakten-efter-straffraddningarna-kattens-lek-med-musen",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T20:13:02.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "Stopp för Leksands segertåg – efter grova misstag",
-        "url": "https://www.svt.se/sport/ishockey/stopp-for-leksands-segertag-efter-grova-misstag",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T20:11:19.000Z",
+        "publishedAt": "2026-10-17T19:23:27.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Här kommenterar SVT:s kommentatorer tre matcher samtidigt",
-        "url": "https://www.svt.se/sport/bordtennis/har-kommenterar-svts-kommentatorer-tre-matcher-samtidigt",
+        "title": "Här hamnar domaren mitt i slagsmålet – åker på en snyting",
+        "url": "https://www.svt.se/sport/ishockey/har-hamnar-domaren-mitt-i-slagsmalet-aker-pa-en-snyting",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T19:15:29.000Z",
+        "publishedAt": "2026-10-17T18:59:28.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Lien med 17:e målet när Djurgården slog BP",
-        "url": "https://www.svt.se/sport/fotboll/lien-med-17e-malet-nar-djurgarden-slog-bp",
+        "title": "Källberg och Karlsson förlorade EM-finalen – efter femsetsrysare",
+        "url": "https://www.svt.se/sport/bordtennis/kallberg-och-karlsson-forlorade-em-finalen-efter-femsetrysare",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T18:59:00.000Z",
+        "publishedAt": "2026-10-17T18:12:23.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Regerande mästaren nära premiär-förlust: ”Knall”",
-        "url": "https://www.svt.se/sport/bandy/regerande-mastaren-nara-premiar-forlust-knall",
+        "title": "Taha Ayari missade öppet mål när AIK kryssade mot IFK Göteborg",
+        "url": "https://www.svt.se/sport/fotboll/taha-ayari-missade-oppet-mal-nar-aik-kryssade-mot-ifk-goteborg",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T18:08:04.000Z",
+        "publishedAt": "2026-10-17T18:05:59.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Truls Möregårdh utslagen ur bordtennis-EM – rasade på domaren",
-        "url": "https://www.svt.se/sport/bordtennis/truls-moregardh-utslagen-pa-bordtennis-em-rasande-pa-domaren",
+        "title": "Henrik Zetterbergs tröja hissad: ”Ni är ovärderliga”",
+        "url": "https://www.svt.se/sport/ishockey/henrik-zetterbergs-troja-hissad-ni-ar-ovarderliga",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T17:42:50.000Z",
+        "publishedAt": "2026-10-17T17:51:08.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Elvira Öberg i toppform inför tävling i München: ”Haft en jättebra sommar”",
-        "url": "https://www.svt.se/sport/skidskytte/elvira-oberg-i-toppform-infor-tavling-i-munchen-haft-en-jattebra-sommar",
+        "title": "Dubbla svenska EM-guld i truppgymnastik. ”Efterlängtat”",
+        "url": "https://www.svt.se/sport/gymnastik/dubbla-svenska-em-guld-i-truppgymnastik",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T17:27:34.000Z",
+        "publishedAt": "2026-10-17T16:56:41.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Carlsbogårds ord efter landslagsnobben: ”Förtjänar chansen”",
-        "url": "https://www.svt.se/sport/handboll/carlsbogards-ord-efter-landslagsnobben-fortjanar-chansen",
+        "title": "Här tappar Linköpings tränare det – kastar vattenflaska",
+        "url": "https://www.svt.se/sport/ishockey/har-tappar-linkopings-tranare-det-kastar-vattenflaska",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T16:07:15.000Z",
+        "publishedAt": "2026-10-17T16:22:56.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Linus Carlstrand ställs mot sitt förra lag: ”Folk har blivit utbuade för mindre”",
-        "url": "https://www.svt.se/sport/fotboll/linus-carlstrand-stalls-mot-sitt-forra-lag-folk-har-blivit-utbuade-for-mindre",
+        "title": "Frölunda vann mot Skellefteå – efter straffdrama",
+        "url": "https://www.svt.se/sport/ishockey/frolunda-vann-mot-skelleftea-efter-straffdrama",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T15:25:52.000Z",
+        "publishedAt": "2026-10-17T16:15:25.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Elias Ranefur förlorar efter stjärnans vädjan: ”Hade jag käftat emot...”",
-        "url": "https://www.svt.se/sport/bordtennis/elias-ranefur-forlorar-efter-stjarnans-vadjan-hade-jag-kaftat-emot",
+        "title": "Alexander Isak målskytt i comebacken",
+        "url": "https://www.svt.se/sport/fotboll/alexander-isak-malskytt-i-comebacken",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T15:11:42.000Z",
+        "publishedAt": "2026-10-17T15:50:59.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Damallsvenska klubbarna larmar efter Uppsalas besked: ”Vi behöver varandra”",
-        "url": "https://www.svt.se/sport/fotboll/damallsvenska-klubbarna-larmar-efter-uppsalas-besked-vi-behover-varandra",
+        "title": "Malmö FF tog tung seger mot AIK – efter målvaktsgroda",
+        "url": "https://www.svt.se/sport/fotboll/malmo-ff-tog-tung-seger-mot-aik-efter-malvaktsgroda",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T14:11:18.000Z",
+        "publishedAt": "2026-10-17T15:27:55.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kris i damallsvenskan: ”Många får det tufft 2027”",
-        "url": "https://www.svt.se/sport/fotboll/kris-i-damallsvenskan-manga-far-det-tufft-2027",
+        "title": "Martin Ponsiluoma vann i München – efter målfotogranskning",
+        "url": "https://www.svt.se/sport/skidskytte/martin-ponsiluoma-vann-i-munchen-efter-malfotogranskning",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T13:46:59.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "Mads Thychosens stenhårda självkritik: ”Tar allt ansvar”",
-        "url": "https://www.svt.se/sport/fotboll/mads-thychosens-stenharda-sjalvkritik-tar-allt-ansvar",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T13:17:29.000Z",
+        "publishedAt": "2026-10-17T15:02:32.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kristian Karlsson förlorade efter kantbollsgate: ”Den jäveln”",
-        "url": "https://www.svt.se/sport/bordtennis/kristian-karlsson-forlorade-efter-kantbollsgate",
+        "title": "Svensk succé – Elvira Öberg och Anna Magnusson på pallen i München",
+        "url": "https://www.svt.se/sport/rullskidskytte/svensk-succe-elvira-oberg-och-anna-magnusson-pa-pallen-i-munchen",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T12:49:44.000Z",
+        "publishedAt": "2026-10-17T14:19:27.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Polisens larm: Misstänker spelfusk i division 2",
-        "url": "https://www.svt.se/sport/fotboll/polisens-larm-misstanker-spelfusk-i-division-2-or4a31",
+        "title": "Arsenals trevande start fortsätter – delad pott mot Birmingham",
+        "url": "https://www.svt.se/sport/fotboll/arsenals-trevande-start-fortsatter-delad-pott-mot-birmingham",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T11:49:05.000Z",
+        "publishedAt": "2026-10-17T13:49:58.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Jakub Vrana är en gåta för Hockeykväll: ”Det har blivit precis tvärtom”",
-        "url": "https://www.svt.se/sport/ishockey/jakub-vrana-ar-en-gata-for-hockeykvall-det-har-blivit-precis-tvartom",
+        "title": "Otäck smäll i Premier League – Chelseamålvakten Emiliano Martinez ut på bår",
+        "url": "https://www.svt.se/sport/fotboll/otack-small-i-premier-league-chelseamalvakten-emiliano-martinez-ut-pa-bar",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T11:41:57.000Z",
+        "publishedAt": "2026-10-17T13:44:21.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Därför kommer Björklöven dala i tabellen: ”Det är omöjligt”",
-        "url": "https://www.svt.se/sport/ishockey/darfor-kommer-bjorkloven-dala-i-tabellen-det-ar-omojligt",
+        "title": "Joel Lundqvists tröja hissad i Scandinavium: ”Tack för allt”",
+        "url": "https://www.svt.se/sport/ishockey/joel-lundqvists-troja-hissad-i-scandinavium-tack-for-allt",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T11:41:07.000Z",
+        "publishedAt": "2026-10-17T13:39:03.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kristian Karlsson reagerar på bortdömda bollen: ”Herregud”",
-        "url": "https://www.svt.se/sport/bordtennis/kristian-karlsson-reagerar-pa-bortdomda-bollen-herregud",
+        "title": "Anton Källberg klar för EM-semifinal – slog norrmannen",
+        "url": "https://www.svt.se/sport/bordtennis/anton-kallberg-klar-for-em-semifinal-slog-norrmannen",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-10-16T10:32:29.000Z",
+        "publishedAt": "2026-10-17T12:19:47.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Uneland: MFF måste fortsätta rensa i truppen i vinter – pekar ut Djuric, Gudjohnsen och Ekong",
-        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=a996ade4-c47f-2650-2a3b-3292633ceb81",
+        "title": "Charlie Paveys förändring: ”Annars går kroppen sönder”",
+        "url": "https://www.svt.se/sport/fotboll/charlie-paveys-forandring-annars-gar-kroppen-sonder",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-17T09:17:32.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Se supersprinten i rullskidskytte från München",
+        "url": "https://www.svt.se/sport/skidskytte/se-supersprinten-i-rullskidskytte-fran-munchen",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-17T09:09:57.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Priske vände måltorkan i Birmingham – tre mål på två matcher: &#8220;Championship är sinnessjukt fysiskt &#8211; det är försvararnas liga&#8221;",
+        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=1f5b1779-9dfe-718d-ba76-c046ec2807d7",
         "publisher": "Bollsvenskan",
-        "publishedAt": "2026-10-16T11:35:48.000Z",
+        "publishedAt": "2026-10-17T20:38:08.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -825,6 +825,20 @@
         "publisher": "Allsvenskan",
         "publishedAt": "2026-09-08T12:14:23.000Z",
         "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Mikkel Rygaard: \"Jag blev förvånad\"",
+        "url": "https://fotbolltransfers.com/nyheter/rygaard-om-att-bli-dumpad-av-bk-hacken-gor-lite-ont-faktiskt/223012",
+        "publisher": "Fotbolltransfers",
+        "publishedAt": "2026-10-17T14:20:12.000Z",
+        "verdict": "kept"
+      },
+      {
+        "title": "Officiellt: BK Häckens besked om Mikkel Rygaard",
+        "url": "https://fotbolltransfers.com/nyheter/officiellt-mikkel-rygaard-lamnar-bk-hacken/223004",
+        "publisher": "Fotbolltransfers",
+        "publishedAt": "2026-10-17T10:14:42.000Z",
+        "verdict": "kept"
       },
       {
         "title": "Officiellt: Ex-allsvensk målvakt avslutar karriären",
@@ -915,7 +929,7 @@
         "url": "https://fotbolltransfers.com/nyheter/lista-allsvenska-klubbar-har-salt-for-over-1-miljard-kronor/222079",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-10-01T07:30:00.000Z",
-        "verdict": "kept"
+        "verdict": "men-excluded"
       },
       {
         "title": "\"Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga\"",
@@ -936,62 +950,34 @@
         "url": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-22T20:31:57.000Z",
-        "verdict": "kept"
+        "verdict": "over candidate cap"
       },
       {
         "title": "LISTA: Kontraktsläget i BK Häcken",
         "url": "https://fotbolltransfers.com/nyheter/lista-kontraktslaget-i-bk-hacken/221471",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-17T12:15:00.000Z",
-        "verdict": "kept"
+        "verdict": "over candidate cap"
       },
       {
         "title": "Officiellt: Zeidane Inoussa lånas ut av Swansea",
         "url": "https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-09-11T20:17:08.000Z",
-        "verdict": "kept"
-      },
-      {
-        "title": "\"Jag hoppas verkligen att jag kan överbevisa dem\"",
-        "url": "https://fotbolltransfers.com/nyheter/mads-agger-hacken-kandes-helt-ratt/221608",
-        "publisher": "Fotbolltransfers",
-        "publishedAt": "2026-09-11T11:03:41.000Z",
-        "verdict": "kept"
-      },
-      {
-        "title": "Allsvenska klubbar uppges jaga Nhome Daneyl",
-        "url": "https://fotbolltransfers.com/nyheter/elfsborg-och-hacken-uppges-jaga-nhome-daneyl/221596",
-        "publisher": "Fotbolltransfers",
-        "publishedAt": "2026-09-11T09:05:59.000Z",
         "verdict": "over candidate cap"
       },
       {
-        "title": "Brand på Coop i Gamlestan",
-        "url": "https://www.gp.se/nyheter/goteborg/brand-pa-coop-i-gamlestan.61e49cea-7173-5a51-86e0-4f02490a67ca",
+        "title": "Inte förvånande att Göteborg får bottenbetyg igen – problemen är enorma",
+        "url": "https://www.gp.se/asikt-och-debatt/debatt/inte-forvanande-att-goteborg-far-lagt-betyg-igen-problemen-ar-enorma.4af575bb-61db-5ab3-8c88-0f5d2a31ac0a",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-17T03:12:52.000Z",
+        "publishedAt": "2026-10-18T03:00:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Vi kan inte stoppa AI – men vi kan bestämma vad vi ska ha AI till",
-        "url": "https://www.gp.se/asikt-och-debatt/debatt/vi-kan-inte-stoppa-ai-men-vi-kan-bestamma-vad-vi-ska-ha-ai-till.87f43f2d-ee2d-5ea0-a974-b755fdaa2364",
+        "title": "Det är dags för Europa att vakna",
+        "url": "https://www.gp.se/asikt-och-debatt/ledare/det-ar-dags-for-europa-att-vakna.fd061ac2-9f47-5c53-a01c-c1ef42e1b8e7",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-17T03:00:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Valet i Israel handlar om 7 oktober",
-        "url": "https://www.gp.se/asikt-och-debatt/ledare/valet-i-israel-handlar-om-7-oktober.f4843e6d-0349-5d05-8318-1c20f7dd6599",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-17T03:00:00.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "I år firar svenskt skriftspråk 500 år",
-        "url": "https://www.gp.se/asikt-och-debatt/debatt/i-ar-firar-svenskt-skriftsprak-500-ar.b5d4187d-9843-5ab8-b1b6-342467378fa3",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-10-17T02:55:00.000Z",
+        "publishedAt": "2026-10-18T03:00:00.000Z",
         "verdict": "no Häcken relation"
       }
     ]
@@ -4913,6 +4899,91 @@
   "cardMatchesInspected": 23,
   "news": [
     {
+      "id": "Fotbolltransfers-0-https://fotbolltransfers.com/nyheter/rygaard-om-att-bli-dumpad-av-bk-hacken-gor-lite-ont-faktiskt/223012",
+      "title": "Mikkel Rygaard: \"Jag blev förvånad\"",
+      "url": "https://fotbolltransfers.com/nyheter/rygaard-om-att-bli-dumpad-av-bk-hacken-gor-lite-ont-faktiskt/223012",
+      "summary": "BK Häcken kommer inte erbjuda Mikkel Rygaard ett nytt kontrakt. I en intervju med Göteborgs-Posten berättar lagkaptenen om vilka samtal som förts bakom kulisserna.",
+      "publishedAt": "2026-10-17T14:20:12.000Z",
+      "publisher": "Fotbolltransfers",
+      "category": "former",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792240157/528x300.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://fotbolltransfers.com/nyheter/rygaard-om-att-bli-dumpad-av-bk-hacken-gor-lite-ont-faktiskt/223012",
+      "clubScoped": true,
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "BK Häcken-1-https://bkhacken.se/nyhet/truppen-mot-malmo-ff-1",
+      "title": "Truppen mot Malmö FF",
+      "url": "https://bkhacken.se/nyhet/truppen-mot-malmo-ff-1",
+      "summary": "Imorgon eftermiddag möter BK Häcken Malmö FF på bortaplan i Allsvenskan. Huvudtränare Jens Gustafsson har valt ut sin matchtrupp.",
+      "publishedAt": "2026-10-17T11:48:01.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/f77d2808-dc04-41cb-85d5-249e543ec138.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/truppen-mot-malmo-ff-1",
+      "sourceRole": "primary",
+      "sourceTags": [
+        "Herr"
+      ]
+    },
+    {
+      "id": "Expressen-18-https://www.expressen.se/sport/fotboll/allsvenskan/tobias-heintz-kamp-i-det-tysta-frustrerande/",
+      "title": "Tobias Heintz kamp i det tysta: ”Frustrerande”",
+      "url": "https://www.expressen.se/sport/fotboll/allsvenskan/tobias-heintz-kamp-i-det-tysta-frustrerande/",
+      "summary": "IFK Göteborg flyger fram med fem raka segrar – men för stjärnan Tobias Heintz, 28, har säsongen varit en ständig kamp. Nu berättar norrmannen om den tuffa tiden. Heintz räknar inte med att bli helt återställd i år. – Det har varit en jobbig säsong för mig – det är frustrerande att inte få ut hela si",
+      "publishedAt": "2026-10-17T10:32:44.000Z",
+      "publisher": "Expressen",
+      "category": "former",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.expressen.se/sport/fotboll/allsvenskan/tobias-heintz-kamp-i-det-tysta-frustrerande/",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "Fotbolltransfers-1-https://fotbolltransfers.com/nyheter/officiellt-mikkel-rygaard-lamnar-bk-hacken/223004",
+      "title": "Officiellt: BK Häckens besked om Mikkel Rygaard",
+      "url": "https://fotbolltransfers.com/nyheter/officiellt-mikkel-rygaard-lamnar-bk-hacken/223004",
+      "summary": "Mikkel Rygaard har varit en viktig kugge för BK Häcken. Nu bekräftar klubben på sin officiella hemsida att man tagit ett beslut med mittfältaren om framtiden tillsammans.",
+      "publishedAt": "2026-10-17T10:14:42.000Z",
+      "publisher": "Fotbolltransfers",
+      "category": "former",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://fotbolltransfers.com/nyheter/officiellt-mikkel-rygaard-lamnar-bk-hacken/223004",
+      "clubScoped": true,
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "Sportbladet-12-https://www.aftonbladet.se/sportbladet/fotboll/a/jvxQln/mikkel-rygaard-lamnar-hacken-gor-lite-ont?utm_medium=rss",
+      "title": "Mikkel Rygaard lämnar Häcken: ”Gör lite ont”",
+      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/jvxQln/mikkel-rygaard-lamnar-hacken-gor-lite-ont?utm_medium=rss",
+      "summary": "Kaptenen får inte förlängt",
+      "publishedAt": "2026-10-17T08:10:04.000Z",
+      "publisher": "Sportbladet",
+      "category": "former",
+      "imageUrl": "https://akamai.vgc.no/v2/images/49d04810-2f07-3bf8-befb-74700b5df041?format=auto&w=1000&s=b8ee40793a199b9ef89f5d378a0e4b2688ff95d0",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/jvxQln/mikkel-rygaard-lamnar-hacken-gor-lite-ont?utm_medium=rss",
+      "sourceRole": "secondary"
+    },
+    {
+      "id": "BK Häcken-3-https://bkhacken.se/nyhet/arets-sasong-blir-mikkel-rygaards-sista-i-bk-hacken",
+      "title": "Årets säsong blir Mikkel Rygaards sista i BK Häcken",
+      "url": "https://bkhacken.se/nyhet/arets-sasong-blir-mikkel-rygaards-sista-i-bk-hacken",
+      "summary": "35-åringen fick bärga ett SM-guld, två cupguld och spelat klubben till två europeiska gruppspel.",
+      "publishedAt": "2026-10-17T08:00:00.000Z",
+      "publisher": "BK Häcken",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/e5e4e152-0afd-47b4-9ae3-ed40bec74e85.jpg",
+      "discoveredVia": "rss",
+      "dedupeKey": "https://bkhacken.se/nyhet/arets-sasong-blir-mikkel-rygaards-sista-i-bk-hacken",
+      "sourceRole": "primary",
+      "sourceTags": [
+        "Herr"
+      ]
+    },
+    {
       "id": "Allsvenskan-0-https://allsvenskan.se/nyheter/det-blev-manadens-mal-i-september-en-delikat-chipp/",
       "title": "Det blev Månadens Mål i september: &#8221;En delikat chipp&#8221;",
       "url": "https://allsvenskan.se/nyheter/det-blev-manadens-mal-i-september-en-delikat-chipp/",
@@ -4926,7 +4997,7 @@
       "sourceRole": "primary"
     },
     {
-      "id": "Fotbolltransfers-0-https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
+      "id": "Fotbolltransfers-2-https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
       "title": "Officiellt: Ex-allsvensk målvakt avslutar karriären",
       "url": "https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
       "summary": "Han representerade BK Häcken, Djurgårdens IF, IFK Norrköping och Örebro SK. Nu är karriären över.",
@@ -4940,7 +5011,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "BK Häcken-1-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
+      "id": "BK Häcken-5-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
       "title": "Inmarschdagen mot Degerfors den 24 oktober",
       "url": "https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
       "summary": "Lördagen den 24 oktober är det dags för BK Häckens traditionsenliga ungdomsinmarsch.",
@@ -4957,13 +5028,13 @@
       ]
     },
     {
-      "id": "Fotbolltransfers-1-https://fotbolltransfers.com/nyheter/julius-lindberg-jag-vill-testa-mina-vingar-i-framtiden/222831",
+      "id": "Fotbolltransfers-3-https://fotbolltransfers.com/nyheter/julius-lindberg-jag-vill-testa-mina-vingar-i-framtiden/222831",
       "title": "Jagas utomlands: \"Han är en av våra bästa spelare\"",
       "url": "https://fotbolltransfers.com/nyheter/julius-lindberg-jag-vill-testa-mina-vingar-i-framtiden/222831",
       "summary": "Han har bytt agent och drar till sig intresse från utlandet. Häckens kugge medger att han vill komma ut i Europa.",
       "publishedAt": "2026-10-13T00:17:17.000Z",
       "publisher": "Fotbolltransfers",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791843462/528x300.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/julius-lindberg-jag-vill-testa-mina-vingar-i-framtiden/222831",
@@ -4971,13 +5042,13 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-2-https://fotbolltransfers.com/nyheter/etrit-berisha-jag-spelar-med-smartstillande/222811",
+      "id": "Fotbolltransfers-4-https://fotbolltransfers.com/nyheter/etrit-berisha-jag-spelar-med-smartstillande/222811",
       "title": "Häcken-kuggen: \"Jag spelar med smärtstillande\"",
       "url": "https://fotbolltransfers.com/nyheter/etrit-berisha-jag-spelar-med-smartstillande/222811",
       "summary": "En sak som är problematisk för Häckenspelaren är konstgräset på hemmaarenan.",
       "publishedAt": "2026-10-12T14:54:11.000Z",
       "publisher": "Fotbolltransfers",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791807069/528x300.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/etrit-berisha-jag-spelar-med-smartstillande/222811",
@@ -4991,13 +5062,13 @@
       "summary": "Mikkel Rygaard såg ut att vara förlorad för Häcken – kan nu bli kvar på Hisingen.",
       "publishedAt": "2026-10-12T11:58:53.000Z",
       "publisher": "Göteborgs-Posten",
-      "category": "men",
+      "category": "former",
       "discoveredVia": "rss",
       "dedupeKey": "https://www.gp.se/sport/fotboll/bk-hacken/mikkel-rygaards-vandning-oppnar-for-att-stanna-i-hacken.cfd910c0-33ec-50aa-a9a4-6a970636e9f6",
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-3-https://fotbolltransfers.com/nyheter/gustafsson-hilvenius-kommer-spela-pa-valdigt-hog-niva-framover/222799",
+      "id": "Fotbolltransfers-5-https://fotbolltransfers.com/nyheter/gustafsson-hilvenius-kommer-spela-pa-valdigt-hog-niva-framover/222799",
       "title": "\"Han kommer spela på väldigt hög nivå framöver\"",
       "url": "https://fotbolltransfers.com/nyheter/gustafsson-hilvenius-kommer-spela-pa-valdigt-hog-niva-framover/222799",
       "summary": "Han fick inte plats i senaste U21-landslagstruppen. Det är något som förvånar BK Häckens tränare.",
@@ -5011,26 +5082,13 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Sportbladet-36-https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
-      "title": "Petar U21-landslagsman i Häcken – själv petad i U21–landslaget",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
-      "summary": "Tränaren kritisk",
-      "publishedAt": "2026-10-12T08:54:42.000Z",
-      "publisher": "Sportbladet",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/ce38a496-e37a-3f07-be17-797adcd5c5d6?format=auto&w=1000&s=3cc787799a196e1528a27666b1a9e82934dce89a",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/n94J7d/harry-hilvenius-petades-i-u21-landslaget-gustafsson-kritisk?utm_medium=rss",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Fotbolltransfers-4-https://fotbolltransfers.com/nyheter/gustafsson-hyllar-rygaard-han-ar-fantastisk/222786",
+      "id": "Fotbolltransfers-6-https://fotbolltransfers.com/nyheter/gustafsson-hyllar-rygaard-han-ar-fantastisk/222786",
       "title": "Jens Gustafsson: \"Är fantastisk - älskar honom\"",
       "url": "https://fotbolltransfers.com/nyheter/gustafsson-hyllar-rygaard-han-ar-fantastisk/222786",
       "summary": "Jens Gustafsson berömmer kuggen - som nu inlett en dialog med BK Häcken om ett nytt kontrakt.",
       "publishedAt": "2026-10-11T22:30:25.000Z",
       "publisher": "Fotbolltransfers",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791750751/528x300.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/gustafsson-hyllar-rygaard-han-ar-fantastisk/222786",
@@ -5038,30 +5096,17 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-5-https://fotbolltransfers.com/nyheter/julius-lindberg-efter-derbyt-mycket-folk-har-i-dag-sa-det-ar-javligt-kul/222780",
+      "id": "Fotbolltransfers-7-https://fotbolltransfers.com/nyheter/julius-lindberg-efter-derbyt-mycket-folk-har-i-dag-sa-det-ar-javligt-kul/222780",
       "title": "Julius Lindberg: \"Mycket folk här i dag så det är jävligt kul\"",
       "url": "https://fotbolltransfers.com/nyheter/julius-lindberg-efter-derbyt-mycket-folk-har-i-dag-sa-det-ar-javligt-kul/222780",
       "summary": "Julius Lindberg gjorde två mål och berättar att det var en skön derbyvinst.",
       "publishedAt": "2026-10-11T19:37:52.000Z",
       "publisher": "Fotbolltransfers",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791740488/528x300.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/julius-lindberg-efter-derbyt-mycket-folk-har-i-dag-sa-det-ar-javligt-kul/222780",
       "clubScoped": true,
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Sportbladet-37-https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
-      "title": "Gustafssons udda löfte: ”Då lämnar jag kortet i baren...”",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
-      "summary": "Udda löftet ✓ Rygaard: ”Ska ta det dyraste”",
-      "publishedAt": "2026-10-11T17:52:05.000Z",
-      "publisher": "Sportbladet",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/11f9f6c9-6f18-3e67-a6bb-65b1556f0a62?format=auto&w=1000&s=9ccb15ac05536580543bfffeab924b79fb527c38",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvQ0RB/gustafsons-udda-lofte-da-lamnar-jag-kortet-i-baren?utm_medium=rss",
       "sourceRole": "secondary"
     },
     {
@@ -5071,7 +5116,7 @@
       "summary": "Jens Gustafsson, 47, vill inte gärna prata om sin deklarerade mångmiljoninkomst. Men efter storsegern mot Örgryte ger Häckentränaren ett löfte. – Det där gillar jag att höra, säger mittbacken Harry Hilvenius med ett skratt. – Då vet jag vad jag ska beställa, säger lagkaptenen Mikkel Rygaard.",
       "publishedAt": "2026-10-11T17:48:33.000Z",
       "publisher": "Expressen",
-      "category": "men",
+      "category": "former",
       "discoveredVia": "rss",
       "dedupeKey": "https://www.expressen.se/sport/fotboll/allsvenskan/jens-gustafssons-jattelon-rojd-toppar-listan/",
       "sourceRole": "secondary"
@@ -5083,7 +5128,7 @@
       "summary": "Nytt allsvenskt derby. Då smällde Julius Lindberg in två mål och blev derbyhjälte mot Örgryte. – Han har mognat som person, säger Häckens tränare Jens Gustafsson. – Det gör ont, säger den tidigare Häckenspelaren Johan Hammar om storförlusten.",
       "publishedAt": "2026-10-11T17:10:54.000Z",
       "publisher": "Expressen",
-      "category": "men",
+      "category": "former",
       "discoveredVia": "rss",
       "dedupeKey": "https://www.expressen.se/sport/fotboll/allsvenskan/hacken-korde-over-orgryte-i-derbyt/",
       "sourceRole": "secondary"
@@ -5095,13 +5140,13 @@
       "summary": "Häcken körde över Örgryte i Göteborgsderbyt. Julius Lindberg smällde in dubbla kassar i 3–0-segern. – Vi dominerar totalt, säger Lindberg i TV4.",
       "publishedAt": "2026-10-11T16:20:58.000Z",
       "publisher": "SVT Sport",
-      "category": "men",
+      "category": "former",
       "discoveredVia": "rss",
       "dedupeKey": "https://www.svt.se/sport/fotboll/julius-lindberg-tvamalsskytt-nar-hacken-vann-goteborgsderbyt",
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-6-https://fotbolltransfers.com/nyheter/gustav-lindgren-bekraftar-intresse-jag-har-hort-lite/222768",
+      "id": "Fotbolltransfers-8-https://fotbolltransfers.com/nyheter/gustav-lindgren-bekraftar-intresse-jag-har-hort-lite/222768",
       "title": "Gustav Lindgren: \"Jag har hört lite\"",
       "url": "https://fotbolltransfers.com/nyheter/gustav-lindgren-bekraftar-intresse-jag-har-hort-lite/222768",
       "summary": "Gustav Lindgren har gjort succé i BK Häcken sedan han återvände till svensk fotboll. Anfallaren berättar för Sportbladet om hur han ser på sin utveckling.",
@@ -5115,7 +5160,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "BK Häcken-2-https://bkhacken.se/nyhet/julius-lindberg-tvamalsskytt-i-derbyt-jag-tycker-att-vi-dominerar-hela-matchen",
+      "id": "BK Häcken-6-https://bkhacken.se/nyhet/julius-lindberg-tvamalsskytt-i-derbyt-jag-tycker-att-vi-dominerar-hela-matchen",
       "title": "Julius Lindberg tvåmålsskytt i derbyt: ”Jag tycker att vi dominerar hela matchen”",
       "url": "https://bkhacken.se/nyhet/julius-lindberg-tvamalsskytt-i-derbyt-jag-tycker-att-vi-dominerar-hela-matchen",
       "summary": "BK Häcken tog en 3–0-seger mot Örgryte IS i Allsvenskan.",
@@ -5131,7 +5176,7 @@
       ]
     },
     {
-      "id": "BK Häcken-3-https://bkhacken.se/nyhet/allsvensk-aterstart-har-ar-allt-du-behover-veta-infor-goteborgsderbyt",
+      "id": "BK Häcken-7-https://bkhacken.se/nyhet/allsvensk-aterstart-har-ar-allt-du-behover-veta-infor-goteborgsderbyt",
       "title": "Allsvensk återstart – här är allt du behöver veta inför Göteborgsderbyt",
       "url": "https://bkhacken.se/nyhet/allsvensk-aterstart-har-ar-allt-du-behover-veta-infor-goteborgsderbyt",
       "summary": "I dag, klockan 16.30, ställs BK Häcken mot Örgryte IS i Allsvenskan.",
@@ -5147,7 +5192,7 @@
       ]
     },
     {
-      "id": "BK Häcken-4-https://bkhacken.se/nyhet/goteborgsderby-i-den-allsvenska-aterstarten-har-ar-matchtruppen",
+      "id": "BK Häcken-8-https://bkhacken.se/nyhet/goteborgsderby-i-den-allsvenska-aterstarten-har-ar-matchtruppen",
       "title": "Göteborgsderby i den allsvenska återstarten – här är matchtruppen",
       "url": "https://bkhacken.se/nyhet/goteborgsderby-i-den-allsvenska-aterstarten-har-ar-matchtruppen",
       "summary": "I morgon, klockan 16.30, ställs BK Häcken mot Örgryte IS i Allsvenskan.",
@@ -5175,7 +5220,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-7-https://fotbolltransfers.com/nyheter/simen-hestnes-oppnar-upp-det-har-varit-en-valdigt-jobbig-tid/222649",
+      "id": "Fotbolltransfers-9-https://fotbolltransfers.com/nyheter/simen-hestnes-oppnar-upp-det-har-varit-en-valdigt-jobbig-tid/222649",
       "title": "Häckens nyförvärv: \"Det har varit en väldigt jobbig tid\"",
       "url": "https://fotbolltransfers.com/nyheter/simen-hestnes-oppnar-upp-det-har-varit-en-valdigt-jobbig-tid/222649",
       "summary": "Mittfältarens första tid i BK Häcken har präglats av sorgen efter sin mammas bortgång.",
@@ -5189,7 +5234,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-8-https://fotbolltransfers.com/nyheter/jens-gusafsson-vi-har-verkligen-lyft-var-formaga/222640",
+      "id": "Fotbolltransfers-10-https://fotbolltransfers.com/nyheter/jens-gusafsson-vi-har-verkligen-lyft-var-formaga/222640",
       "title": "Allsvenske tränaren: \"Vi har verkligen lyft vår förmåga\"",
       "url": "https://fotbolltransfers.com/nyheter/jens-gusafsson-vi-har-verkligen-lyft-var-formaga/222640",
       "summary": "Enligt huvudtränaren har den allsvenska klubben blivit bättre på att hantera motgångar.",
@@ -5203,7 +5248,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-9-https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
+      "id": "Fotbolltransfers-11-https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
       "title": "Silas Andersen: \"Jag skulle älska det\"",
       "url": "https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
       "summary": "Silas Andersen hoppas få chansen att spela tillsammans med Cristiano Ronaldo i Sporting CP.",
@@ -5217,13 +5262,13 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-11-https://fotbolltransfers.com/nyheter/mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan/222574",
+      "id": "Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan/222574",
       "title": "Öppnar för flytt inom Allsvenskan",
       "url": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan/222574",
       "summary": "Han är inte längre given och sitter på ett utgående avtal. Nu öppnar dansken för att skriva på för en konkurrent.",
       "publishedAt": "2026-10-06T12:04:31.000Z",
       "publisher": "Fotbolltransfers",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg",
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan/222574",
@@ -5231,7 +5276,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "BK Häcken-7-https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
+      "id": "BK Häcken-11-https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
       "title": "Biljettsläpp hemma mot IFK Göteborg",
       "url": "https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
       "summary": "Tisdagen den 6 oktober klockan 13.00, öppnar förturen till hemmaderbyt mot IFK Göteborg.",
@@ -5247,7 +5292,7 @@
       ]
     },
     {
-      "id": "BK Häcken-11-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "id": "BK Häcken-15-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
       "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
@@ -5263,21 +5308,7 @@
       ]
     },
     {
-      "id": "Fotbolltransfers-12-https://fotbolltransfers.com/nyheter/lista-allsvenska-klubbar-har-salt-for-over-1-miljard-kronor/222079",
-      "title": "LISTA: Allsvenska klubbar har sålt för över 1 miljard kronor",
-      "url": "https://fotbolltransfers.com/nyheter/lista-allsvenska-klubbar-har-salt-for-over-1-miljard-kronor/222079",
-      "summary": "Det var en hektisk sommar på den svenska transfermarknaden. Allsvenska klubbar sålde för mer än någonsin.",
-      "publishedAt": "2026-10-01T07:30:00.000Z",
-      "publisher": "Fotbolltransfers",
-      "category": "men",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01790806037/528x300.png",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://fotbolltransfers.com/nyheter/lista-allsvenska-klubbar-har-salt-for-over-1-miljard-kronor/222079",
-      "clubScoped": true,
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/bk-hacken-varslar-personal-handlingsutrymme-for-framtida-investeringar/222278",
+      "id": "Fotbolltransfers-15-https://fotbolltransfers.com/nyheter/bk-hacken-varslar-personal-handlingsutrymme-for-framtida-investeringar/222278",
       "title": "\"Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga\"",
       "url": "https://fotbolltransfers.com/nyheter/bk-hacken-varslar-personal-handlingsutrymme-for-framtida-investeringar/222278",
       "summary": "BK Häcken noterar minskade intäkter och varslar nu personal. Klubbchefen Marcus Jodin berättar för Göteborgs-Posten om beslutet.",
@@ -5292,6 +5323,128 @@
     }
   ],
   "newsEvents": [
+    {
+      "id": "event-Fotbolltransfers-0-https://fotbolltransfers.com/nyheter/rygaard-om-att-bli-dumpad-av-bk-hacken-gor-lite-ont-faktiskt/223012",
+      "title": "Mikkel Rygaard: \"Jag blev förvånad\"",
+      "summary": "BK Häcken kommer inte erbjuda Mikkel Rygaard ett nytt kontrakt. I en intervju med Göteborgs-Posten berättar lagkaptenen om vilka samtal som förts bakom kulisserna.",
+      "publishedAt": "2026-10-17T14:20:12.000Z",
+      "latestPublishedAt": "2026-10-17T14:20:12.000Z",
+      "category": "former",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792240157/528x300.jpg",
+      "body": "Tidigare under lördagen gick BK Häcken ut med att man inte kommer erbjuda Mikkel Rygaard, 35, ett nytt kontrakt.\n\nKuggen kommer alltså lämna klubben efter säsongens slut, och i en intervju med Göteborgs-Posten ger han sin syn på klubbens beslut.\n\n– Jag blev förvånad över att det inte blev något alls och att de kände att det var bäst att gå varsitt håll. Jag hade hoppats att vi skulle sätta oss ner och prata om hur en fortsättning skulle se ut, men det kändes som att de ville ta en annan väg, säger dansken.\n\nMichael Erichsen / BILDBYRÅN\n\nLagkaptenen har gjort två mål och fem assist på 22 allsvenska matcher i år, varav 18 inletts i startelvan.\n\n– Om jag skulle fått ett nytt kontrakt visste jag att det kunde bli lite mer 50/50 när det kommer till speltid, men att det inte blev något alls förvånar mig. Att de tackade nej till mig som fotbollsspelare … det gör lite ont faktiskt, säger han till GP.\n\nDe kunde se mig stanna i någon annan roll.\n\n35-åringen berättar att klubben erbjöd honom en annan roll inom föreningen.\n\n– De frågade om jag var redo att sluta spela fotboll, vilket jag absolut inte är. De kunde se mig stanna i någon annan roll. De sa inte vilken, så jag vet inte om det var som vaktmästare eller tränare. Jag är såklart tacksam för det, men ändå lite besviken över att de inte ville att jag skulle stanna som fotbollsspelare, säger Rygaard.\n\nMichael Erichsen / BILDBYRÅN\n\nMittfältaren berättar att det finns ett erbjudande i Danmark, men exakt klubbadress framgår inte. Han ska absolut fortsätta spela.\n\n– Jag brinner till. När jag får ett nej som fotbollsspelare ger det mig mycket motivation att bevisa att jag fortfarande är en toppspelare. Det är inte så att jag bara chillar och tar en kaffe nu, jag försöker fortsätta att bevisa mitt värde, säger han till GP.\n\nUnder karriären så här långt har Rygaard hunnit med spel i bland annat FC Nordsjälland, Lyngby BK och LKS Lodz.\n\nTidigare under lördagen gick BK Häcken ut med att man inte kommer erbjuda Mikkel Rygaard, 35, e",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/rygaard-om-att-bli-dumpad-av-bk-hacken-gor-lite-ont-faktiskt/223012",
+          "publishedAt": "2026-10-17T14:20:12.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792240157/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-1-https://bkhacken.se/nyhet/truppen-mot-malmo-ff-1",
+      "title": "Truppen mot Malmö FF",
+      "summary": "Imorgon eftermiddag möter BK Häcken Malmö FF på bortaplan i Allsvenskan. Huvudtränare Jens Gustafsson har valt ut sin matchtrupp.",
+      "publishedAt": "2026-10-17T11:48:01.000Z",
+      "latestPublishedAt": "2026-10-17T11:48:01.000Z",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/f77d2808-dc04-41cb-85d5-249e543ec138.jpg",
+      "body": "Imorgon eftermiddag möter BK Häcken Malmö FF på bortaplan i Allsvenskan. Huvudtränare Jens Gustafsson har valt ut sin matchtrupp.\n\nLäget i truppen: Filip Öhman och Ben Engdahl är i fortsatt rehabilitering efter axeloperation respektive underkroppsskada.",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/truppen-mot-malmo-ff-1",
+          "publishedAt": "2026-10-17T11:48:01.000Z",
+          "role": "primary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/f77d2808-dc04-41cb-85d5-249e543ec138.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Expressen-18-https://www.expressen.se/sport/fotboll/allsvenskan/tobias-heintz-kamp-i-det-tysta-frustrerande/",
+      "title": "Tobias Heintz kamp i det tysta: ”Frustrerande”",
+      "summary": "IFK Göteborg flyger fram med fem raka segrar – men för stjärnan Tobias Heintz, 28, har säsongen varit en ständig kamp. Nu berättar norrmannen om den tuffa tiden. Heintz räknar inte med att bli helt återställd i år. – Det har varit en jobbig säsong för mig – det är frustrerande att inte få ut hela si",
+      "publishedAt": "2026-10-17T10:32:44.000Z",
+      "latestPublishedAt": "2026-10-17T10:32:44.000Z",
+      "category": "former",
+      "sources": [
+        {
+          "publisher": "Expressen",
+          "url": "https://www.expressen.se/sport/fotboll/allsvenskan/tobias-heintz-kamp-i-det-tysta-frustrerande/",
+          "publishedAt": "2026-10-17T10:32:44.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-1-https://fotbolltransfers.com/nyheter/officiellt-mikkel-rygaard-lamnar-bk-hacken/223004",
+      "title": "Officiellt: BK Häckens besked om Mikkel Rygaard",
+      "summary": "Mikkel Rygaard har varit en viktig kugge för BK Häcken. Nu bekräftar klubben på sin officiella hemsida att man tagit ett beslut med mittfältaren om framtiden tillsammans.",
+      "publishedAt": "2026-10-17T10:14:42.000Z",
+      "latestPublishedAt": "2026-10-17T10:14:42.000Z",
+      "category": "former",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg",
+      "body": "Mikkel Rygaard, 35, har tillhört BK Häcken sedan februari 2022.\n\nUnder debutsäsongen i klubben var dansken en central bit i Göteborgsklubbens resa till SM-guld.\n\nDen här säsongen har det blivit två mål och fem assist på 22 allsvenska matcher, varav 18 inletts i startelvan.\n\nNu meddelar Häcken på sin officiella hemsida att Rygaard inte kommer erbjudas ett nytt avtal. Det nuvarande löper ut efter säsongen.\n\nMichael Erichsen / BILDBYRÅN\n\n– Att det nu lider mot sitt slut är vemodigt, men också fint. Fint på det sättet att Mikkel får avsluta på topp och fortsatt göra avtryck på planen, och att vi alla får gott om tid på oss att tacka för allt vi fått uppleva tillsammans, säger fotbollschefen Martin Ericsson till Häckens hemsida.\n\nLagkaptenen kommenterar även själv beskedet.\n\nVåra vägar skiljs efter fem fantastiska år.\n\nMichael Erichsen / BILDBYRÅN\n\n– Våra vägar skiljs efter fem fantastiska år, då klubben beslutade att inte erbjuda mig ett nytt kontrakt. Jag hoppas att jag genom mina prestationer på planen har gett mycket glädje och bra upplevelser till våra fans och de som har följt mig under min tid här, säger Rygaard.\n\n35-åringen hoppas kunna avsluta med flaggan i topp.\n\n– Nu har vi sju matcher kvar där vi ska göra allt för att avsluta så bra som möjligt, vi tränar med hög kvalitet och har stor tilltro till de saker vi gör just nu. Jag hoppas att fansen kommer och hjälper till med samma stöd som de har visat hela året, säger Rygaard.\n\nHäcken ligger femma i Allsvenskan efter 23 spelade omgångar.\n\nMikkel Rygaard, 35, har tillhört BK Häcken sedan februari 2022.\n\nUnder debutsäsongen i klubben var dansken en central bit i Göteborgsklubbens resa till SM-guld.\n\nDen här säsongen har det blivit två mål och fem assist på 22 allsvenska matcher, varav 18 inletts i startelvan.\n\nNu meddelar Häcken på sin officiella hemsida att Rygaard inte kommer erbjudas ett nytt avtal. Det nuvarande löper ut efter säsongen.\n\nMichael Erichsen / BILDBYRÅN\n\n– Att det nu lider mot sitt slut är vemodig",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/officiellt-mikkel-rygaard-lamnar-bk-hacken/223004",
+          "publishedAt": "2026-10-17T10:14:42.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Sportbladet-12-https://www.aftonbladet.se/sportbladet/fotboll/a/jvxQln/mikkel-rygaard-lamnar-hacken-gor-lite-ont?utm_medium=rss",
+      "title": "Mikkel Rygaard lämnar Häcken: ”Gör lite ont”",
+      "summary": "Kaptenen får inte förlängt",
+      "publishedAt": "2026-10-17T08:10:04.000Z",
+      "latestPublishedAt": "2026-10-17T08:10:04.000Z",
+      "category": "former",
+      "imageUrl": "https://akamai.vgc.no/v2/images/49d04810-2f07-3bf8-befb-74700b5df041?format=auto&w=1000&s=b8ee40793a199b9ef89f5d378a0e4b2688ff95d0",
+      "sources": [
+        {
+          "publisher": "Sportbladet",
+          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/jvxQln/mikkel-rygaard-lamnar-hacken-gor-lite-ont?utm_medium=rss",
+          "publishedAt": "2026-10-17T08:10:04.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://akamai.vgc.no/v2/images/49d04810-2f07-3bf8-befb-74700b5df041?format=auto&w=1000&s=b8ee40793a199b9ef89f5d378a0e4b2688ff95d0"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-3-https://bkhacken.se/nyhet/arets-sasong-blir-mikkel-rygaards-sista-i-bk-hacken",
+      "title": "Årets säsong blir Mikkel Rygaards sista i BK Häcken",
+      "summary": "35-åringen fick bärga ett SM-guld, två cupguld och spelat klubben till två europeiska gruppspel.",
+      "publishedAt": "2026-10-17T08:00:00.000Z",
+      "latestPublishedAt": "2026-10-17T08:00:00.000Z",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/e5e4e152-0afd-47b4-9ae3-ed40bec74e85.jpg",
+      "body": "Guldhjälten lämnar efter fem år i klubben där han spelat sig in i allas gulsvarta hjärtan. – Vi står med öppna armar den dagen Mikkel slutar spela, säger fotbollschef Martin Ericsson inför avskedet.\n\nMikkel Rygaard kom till BK Häcken inför säsongen 2022, efter en mindre lyckad tid i Polen. Få svenskar kände till den då 31-årige mittfältaren men med sin fina vänsterfot gjorde han snabbt avtryck i Allsvenskan. Han var en av nyckelspelarna till det historiska SM-guldet 2022 och prisades själv som Allsvenskans bästa mittfältare under guldsäsongen. Sedan dess har han vunnit två cupguld och spelat klubben till två europeiska gruppspel. Med stor passion på planen och ett lika stort hjärta utanför den, blev Mikkel Rygaard snabbt en favorit hos supportrarna och i samband med Allsvenskans 100-årsjubileum, röstades han in i supportrarnas drömelva över de bästa spelarna genom tiderna i Bollklubben Häcken. Med sju matcher kvar att spela i år, står Mikkel Rygaard på 215 spelade matcher i den gulsvarta tröjan, med 41 mål och 49 assists. Nu står det också klart att den allsvenska avslutningen blir hans sista i BK Häcken, då klubben inte förlänger avtalet när det går ut vid årsskiftet. – Mikkel är en spelare som under sina fem år i klubben kontinuerligt bidragit med mål och assist, genom vår mest framgångsrika period i historien. Med sin vänsterfot har han varit ett ständigt hot för våra motståndare, och en spelare vi älskar att titta på. Att det nu lider mot sitt slut är vemodigt, men också fint. Fint på det sättet att Mikkel får avsluta på topp och fortsatt göra avtryck på planen, och att vi alla får gott om tid på oss att tacka för allt vi fått uppleva tillsammans, säger BK Häckens fotbollschef Martin Ericsson. Att det är ett vemodigt avsked för alla parter, skriver Mikkel Rygaard under på. Han summerar en fin tid i karriären och livet, där han gett mycket av sig själv och fått mycket tillbaka. – Våra vägar skiljs efter fem fantastiska år, då klubben beslutade att inte erbjuda mi",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/arets-sasong-blir-mikkel-rygaards-sista-i-bk-hacken",
+          "publishedAt": "2026-10-17T08:00:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/e5e4e152-0afd-47b4-9ae3-ed40bec74e85.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
     {
       "id": "event-Allsvenskan-0-https://allsvenskan.se/nyheter/det-blev-manadens-mal-i-september-en-delikat-chipp/",
       "title": "Det blev Månadens Mål i september: &#8221;En delikat chipp&#8221;",
@@ -5313,7 +5466,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-0-https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
+      "id": "event-Fotbolltransfers-2-https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
       "title": "Officiellt: Ex-allsvensk målvakt avslutar karriären",
       "summary": "Han representerade BK Häcken, Djurgårdens IF, IFK Norrköping och Örebro SK. Nu är karriären över.",
       "publishedAt": "2026-10-15T10:19:05.000Z",
@@ -5334,7 +5487,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-1-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
+      "id": "event-BK Häcken-5-https://bkhacken.se/nyhet/inmarschdagen-mot-degerfors-den-24-oktober",
       "title": "Inmarschdagen mot Degerfors den 24 oktober",
       "summary": "Lördagen den 24 oktober är det dags för BK Häckens traditionsenliga ungdomsinmarsch.",
       "publishedAt": "2026-10-13T16:00:00.000Z",
@@ -5355,12 +5508,12 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-1-https://fotbolltransfers.com/nyheter/julius-lindberg-jag-vill-testa-mina-vingar-i-framtiden/222831",
+      "id": "event-Fotbolltransfers-3-https://fotbolltransfers.com/nyheter/julius-lindberg-jag-vill-testa-mina-vingar-i-framtiden/222831",
       "title": "Jagas utomlands: \"Han är en av våra bästa spelare\"",
       "summary": "Han har bytt agent och drar till sig intresse från utlandet. Häckens kugge medger att han vill komma ut i Europa.",
       "publishedAt": "2026-10-13T00:17:17.000Z",
       "latestPublishedAt": "2026-10-13T00:17:17.000Z",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791843462/528x300.jpg",
       "body": "Julius Lindberg, 27, lämnade GAIS för lokalkonkurrenten BK Häcken som bosman inför säsongen 2024.\n\nDen offensiva spelaren har imponerat stort i år. Lindberg har gjort nio mål och sju assist på 21 allsvenska matcher.\n\nI somras valde Lindberg att förlänga sitt avtal över 2030. Han planerar dock att lämna innan dess.\n\n– Min tanke är inte att vara i Häcken hela mitt liv utan jag vill testa mina vingar i framtiden. När det väl blir får vi se, säger 27-åringen till Göteborgs-Posten.\n\nLindberg bekräftar att han brutit med agenten Fredrik Risp, men vill inte gå in på varför.\n\nHäckens sportchef Erik Friberg medger att det finns intresse för Lindberg.\n\n– Han är en av våra bästa spelare. Vi får väl se vad som händer. Det är klart att det finns intresse och någon gång kommer han att lämna oss. Men jag hoppas att den dagen är en bit bort, säger han till GP.\n\nMichael Erichsen / BILDBYRÅN\n\nSamtidigt berättar Häckens mittfältare Mikkel Rygaard, 35, att han inlett diskussioner med Häcken om en möjlig förlängning.\n\n– Det är inget konkret ännu. Det är lite dialog och vi känner på varandra, säger dansken till Göteborgs-Posten och fortsätter:\n\n– Jag fattar att jag inte får ett treårskontrakt i min ålder. Jag fattar att det blir ett år och det är mest i min ålder att man får se om det blir något här eller om jag får testa på något annat. Jag ser det mer som respekt mellan oss båda att vi har en dialog nu. Sedan får vi se hur det går.\n\nMichael Erichsen / BILDBYRÅN\n\nJulius Lindberg, 27, lämnade GAIS för lokalkonkurrenten BK Häcken som bosman inför säsongen 2024.\n\nDen offensiva spelaren har imponerat stort i år. Lindberg har gjort nio mål och sju assist på 21 allsvenska matcher.\n\nI somras valde Lindberg att förlänga sitt avtal över 2030. Han planerar dock att lämna innan dess.\n\n– Min tanke är inte att vara i Häcken hela mitt liv utan jag vill testa mina vingar i framtiden. När det väl blir får vi se, säger 27-åringen till Göteborgs-Posten.\n\nLindberg bekräftar att han brutit med agenten Fred",
       "sources": [
@@ -5376,12 +5529,12 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-2-https://fotbolltransfers.com/nyheter/etrit-berisha-jag-spelar-med-smartstillande/222811",
+      "id": "event-Fotbolltransfers-4-https://fotbolltransfers.com/nyheter/etrit-berisha-jag-spelar-med-smartstillande/222811",
       "title": "Häcken-kuggen: \"Jag spelar med smärtstillande\"",
       "summary": "En sak som är problematisk för Häckenspelaren är konstgräset på hemmaarenan.",
       "publishedAt": "2026-10-12T14:54:11.000Z",
       "latestPublishedAt": "2026-10-12T14:54:11.000Z",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791807069/528x300.jpg",
       "body": "BK Häcken ligger för tillfället på en stabil fjärdeplats i den allsvenska tabellen. Efter 23 spelade omgångar har man endast fyra poäng upp till Hammarby IF på den sista Europaplatsen.\n\nIgår kom den andra raka segern mot Örgryte IS vilket gör att Häcken nu har fyra raka matcher utan förlust.\n\nTrots den fina formen finns det saker som inte fungerar bra för Göteborgslaget. En sak som stör målvakten Etrit Berisha är konstgräset på hemmaarenan.\n\nDet känns inte bra alls.\n\n– Det är framför allt när vi tränar på konstgräs här på arenan som det inte känns bra alls. För det är inget gräs här, det är bara platt. Så jag kan inte göra mina grejer på samma sätt som på vanligt gräs vilket påverkat min rygg mycket, säger han till Fotbollskanalen.\n\nBK Häcken tränar vanligtvis endast på naturgräs och omställningen till konstgräset på arenan har blivit problematisk för Berisha.\n\nNu tvingas målvakten hitta tillfälliga lösningar för att genomföra matcherna så bra som möjligt.\n\n– Ibland har jag mycket smärta, så då hjälper det mig mycket under matcherna att ta smärtstillande. Idag (igår) tog jag det mest för att vara helt säker. Nu efteråt känns det väldigt bra, säger han till Fotbollskanalen.\n\nMichael Erichsen / BILDBYRÅN\n\nBerisha anslöt till BK Häcken under våren 2025. Han kom då från en karriärpaus och spelade innan dess i italienska FC Empoli.\n\nHan har ett kontrakt som sträcker sig fram till slutet av 2027. Om skadeproblematiken kan påverka framtiden är osäkert.\n\nI framtiden får vi se hur det blir.\n\n– Just nu har vi hittat en lösning som fungerar och jag hoppas ju inte att jag ska ha ont permanent. Det viktigaste är att vi har en lösning som fungerar för mig och för Häcken. I framtiden får vi se hur det blir, berättar han för Fotbollskanalen.\n\nNu återstår endast sju omgångar i Allsvenskan. Nästa match för BK Häcken är på söndag, då står Malmö FF för motståndet.\n\nBK Häcken ligger för tillfället på en stabil fjärdeplats i den allsvenska tabellen. Efter 23 spelade omgångar har man enda",
       "sources": [
@@ -5397,7 +5550,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-3-https://fotbolltransfers.com/nyheter/gustafsson-hilvenius-kommer-spela-pa-valdigt-hog-niva-framover/222799",
+      "id": "event-Fotbolltransfers-5-https://fotbolltransfers.com/nyheter/gustafsson-hilvenius-kommer-spela-pa-valdigt-hog-niva-framover/222799",
       "title": "\"Han kommer spela på väldigt hög nivå framöver\"",
       "summary": "Han fick inte plats i senaste U21-landslagstruppen. Det är något som förvånar BK Häckens tränare.",
       "publishedAt": "2026-10-12T11:03:49.000Z",
@@ -5418,12 +5571,12 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-4-https://fotbolltransfers.com/nyheter/gustafsson-hyllar-rygaard-han-ar-fantastisk/222786",
+      "id": "event-Fotbolltransfers-6-https://fotbolltransfers.com/nyheter/gustafsson-hyllar-rygaard-han-ar-fantastisk/222786",
       "title": "Jens Gustafsson: \"Är fantastisk - älskar honom\"",
       "summary": "Jens Gustafsson berömmer kuggen - som nu inlett en dialog med BK Häcken om ett nytt kontrakt.",
       "publishedAt": "2026-10-11T22:30:25.000Z",
       "latestPublishedAt": "2026-10-11T22:30:25.000Z",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791750751/528x300.jpg",
       "body": "BK Häcken värvade Mikkel Rygaard, 35, från polska LKS Lodz inför säsongen 2022.\n\nHan blev snabbt en nyckelspelare i klubben. I år har han gjort två mål och fem assist på 22 allsvenska matcher, varav 18 från start.\n\nDen danske mittfältaren sitter på ett utgående kontrakt. Han berättade tidigare i veckan att han inte blivit erbjuden en förlängning.\n\nHäcken besegrade Örgryte IS med 3-0 på söndagen. Nu avslöjar Rygaard att en dialog inletts med klubbledningen.\n\nVi har börjat prata lite grann.\n\n– Från senast har vi haft en liten dialog. Vi har börjat prata lite grann. Ingenting är konkret. Vi känner på läget liksom, så det är väl där vi är just nu, säger han till Expressen.\n\nMichael Erichsen / BILDBYRÅN\n\nHäckens tränare Jens Gustafsson är tydlig med att han verkligen uppskattar Rygaard.\n\n– Mikkel är en spelare jag uppskattar och jag älskar att se honom spela fotboll på den här nivån. Han har gjort så mycket för Häcken, så vi får väl se vart det tar vägen. Mikkel är fantastisk, jag älskar honom, säger han till Expressen.\n\nRygaard var petad i början av säsongen. Gustafsson berömmer kuggens mentala styrka.\n\n– Han ger aldrig upp utan han kör. Det är imponerande, säger tränaren till Expressen.\n\nHäcken ligger på fjärde plats i Allsvenskan efter 23 omgångar.\n\nBK Häcken värvade Mikkel Rygaard, 35, från polska LKS Lodz inför säsongen 2022.\n\nHan blev snabbt en nyckelspelare i klubben. I år har han gjort två mål och fem assist på 22 allsvenska matcher, varav 18 från start.\n\nDen danske mittfältaren sitter på ett utgående kontrakt. Han berättade tidigare i veckan att han inte blivit erbjuden en förlängning.\n\nHäcken besegrade Örgryte IS med 3-0 på söndagen. Nu avslöjar Rygaard att en dialog inletts med klubbledningen.\n\nVi har börjat prata lite grann.\n\n– Från senast har vi haft en liten dialog. Vi har börjat prata lite grann. Ingenting är konkret. Vi känner på läget liksom, så det är väl där vi är just nu, säger han till Expressen.\n\nMichael Erichsen / BILDBYRÅN\n\nHäckens tränare Jens Gu",
       "sources": [
@@ -5439,12 +5592,12 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-5-https://fotbolltransfers.com/nyheter/julius-lindberg-efter-derbyt-mycket-folk-har-i-dag-sa-det-ar-javligt-kul/222780",
+      "id": "event-Fotbolltransfers-7-https://fotbolltransfers.com/nyheter/julius-lindberg-efter-derbyt-mycket-folk-har-i-dag-sa-det-ar-javligt-kul/222780",
       "title": "Julius Lindberg: \"Mycket folk här i dag så det är jävligt kul\"",
       "summary": "Julius Lindberg gjorde två mål och berättar att det var en skön derbyvinst.",
       "publishedAt": "2026-10-11T19:37:52.000Z",
       "latestPublishedAt": "2026-10-11T19:37:52.000Z",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791740488/528x300.jpg",
       "body": "Julius Lindberg, 27, anslöt till BK Häcken inför säsongen 2024. Just nu gör han sin tredje säsong i klubben.\n\nDen gångna säsongen gjorde han två mål och en assist på 23 allsvenska matcher, varav 18 starter.\n\nUnder söndagen spelade Häcken derby mot Örgryte IS och vann med 3-0. Lindberg blev hjälte med två mål.\n\nI en intervju på Häckens hemsida berättar den offensive mittfältaren om matchen och derbyinramningen.\n\n– Starka som alltid tycker jag. Det var mycket folk här i dag så det är jävligt kul, säger han till hemsidan.\n\nMichael Erichsen / BILDBYRÅN\n\n27-åringen sitter på ett långtidskontrakt med Häcken som sträcker sig över säsongen 2030.\n\nLindberg har imponerat denna säsongen med sina nio mål och sju assist på 21 allsvenska matcher. Häcken fick in fin inledning med ett tidigt mål.\n\n– Det är viktigt, speciellt mot lag som har det lite tufft. Det blir mentalt jobbigt för dem direkt att de känner att det här kan bli tufft, säger han till hemsidan och fortsätter:\n\n– Det är ett skönt resultat att fortsätta på poängformen som jag har. Det är gött.\n\nEfter 23 spelade omgångar ligger Häcken en fjärdeplats i Allsvenskan med 39 poäng.\n\nJulius Lindberg, 27, anslöt till BK Häcken inför säsongen 2024. Just nu gör han sin tredje säsong i klubben.\n\nDen gångna säsongen gjorde han två mål och en assist på 23 allsvenska matcher, varav 18 starter.\n\nUnder söndagen spelade Häcken derby mot Örgryte IS och vann med 3-0. Lindberg blev hjälte med två mål.\n\nI en intervju på Häckens hemsida berättar den offensive mittfältaren om matchen och derbyinramningen.\n\n– Starka som alltid tycker jag. Det var mycket folk här i dag så det är jävligt kul, säger han till hemsidan.\n\nMichael Erichsen / BILDBYRÅN\n\n27-åringen sitter på ett långtidskontrakt med Häcken som sträcker sig över säsongen 2030.\n\nLindberg har imponerat denna säsongen med sina nio mål och sju assist på 21 allsvenska matcher. Häcken fick in fin inledning med ett tidigt mål.\n\n– Det är viktigt, speciellt mot lag som har det lite tufft. Det ",
       "sources": [
@@ -5460,7 +5613,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-6-https://fotbolltransfers.com/nyheter/gustav-lindgren-bekraftar-intresse-jag-har-hort-lite/222768",
+      "id": "event-Fotbolltransfers-8-https://fotbolltransfers.com/nyheter/gustav-lindgren-bekraftar-intresse-jag-har-hort-lite/222768",
       "title": "Gustav Lindgren: \"Jag har hört lite\"",
       "summary": "Gustav Lindgren har gjort succé i BK Häcken sedan han återvände till svensk fotboll. Anfallaren berättar för Sportbladet om hur han ser på sin utveckling.",
       "publishedAt": "2026-10-11T14:34:00.000Z",
@@ -5481,7 +5634,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-2-https://bkhacken.se/nyhet/julius-lindberg-tvamalsskytt-i-derbyt-jag-tycker-att-vi-dominerar-hela-matchen",
+      "id": "event-BK Häcken-6-https://bkhacken.se/nyhet/julius-lindberg-tvamalsskytt-i-derbyt-jag-tycker-att-vi-dominerar-hela-matchen",
       "title": "Julius Lindberg tvåmålsskytt i derbyt: ”Jag tycker att vi dominerar hela matchen”",
       "summary": "BK Häcken tog en 3–0-seger mot Örgryte IS i Allsvenskan.",
       "publishedAt": "2026-10-11T12:00:00.000Z",
@@ -5502,7 +5655,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-3-https://bkhacken.se/nyhet/allsvensk-aterstart-har-ar-allt-du-behover-veta-infor-goteborgsderbyt",
+      "id": "event-BK Häcken-7-https://bkhacken.se/nyhet/allsvensk-aterstart-har-ar-allt-du-behover-veta-infor-goteborgsderbyt",
       "title": "Allsvensk återstart – här är allt du behöver veta inför Göteborgsderbyt",
       "summary": "I dag, klockan 16.30, ställs BK Häcken mot Örgryte IS i Allsvenskan.",
       "publishedAt": "2026-10-10T22:00:00.000Z",
@@ -5523,7 +5676,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-4-https://bkhacken.se/nyhet/goteborgsderby-i-den-allsvenska-aterstarten-har-ar-matchtruppen",
+      "id": "event-BK Häcken-8-https://bkhacken.se/nyhet/goteborgsderby-i-den-allsvenska-aterstarten-har-ar-matchtruppen",
       "title": "Göteborgsderby i den allsvenska återstarten – här är matchtruppen",
       "summary": "I morgon, klockan 16.30, ställs BK Häcken mot Örgryte IS i Allsvenskan.",
       "publishedAt": "2026-10-10T12:00:00.000Z",
@@ -5544,7 +5697,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-7-https://fotbolltransfers.com/nyheter/simen-hestnes-oppnar-upp-det-har-varit-en-valdigt-jobbig-tid/222649",
+      "id": "event-Fotbolltransfers-9-https://fotbolltransfers.com/nyheter/simen-hestnes-oppnar-upp-det-har-varit-en-valdigt-jobbig-tid/222649",
       "title": "Häckens nyförvärv: \"Det har varit en väldigt jobbig tid\"",
       "summary": "Mittfältarens första tid i BK Häcken har präglats av sorgen efter sin mammas bortgång.",
       "publishedAt": "2026-10-08T10:55:35.000Z",
@@ -5565,7 +5718,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-8-https://fotbolltransfers.com/nyheter/jens-gusafsson-vi-har-verkligen-lyft-var-formaga/222640",
+      "id": "event-Fotbolltransfers-10-https://fotbolltransfers.com/nyheter/jens-gusafsson-vi-har-verkligen-lyft-var-formaga/222640",
       "title": "Allsvenske tränaren: \"Vi har verkligen lyft vår förmåga\"",
       "summary": "Enligt huvudtränaren har den allsvenska klubben blivit bättre på att hantera motgångar.",
       "publishedAt": "2026-10-08T09:20:53.000Z",
@@ -5586,7 +5739,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-9-https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
+      "id": "event-Fotbolltransfers-11-https://fotbolltransfers.com/nyheter/silas-andersen-det-vore-toppen-att-spela-med-ronaldo/222604",
       "title": "Silas Andersen: \"Jag skulle älska det\"",
       "summary": "Silas Andersen hoppas få chansen att spela tillsammans med Cristiano Ronaldo i Sporting CP.",
       "publishedAt": "2026-10-07T09:45:41.000Z",
@@ -5607,12 +5760,12 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-11-https://fotbolltransfers.com/nyheter/mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan/222574",
+      "id": "event-Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan/222574",
       "title": "Öppnar för flytt inom Allsvenskan",
       "summary": "Han är inte längre given och sitter på ett utgående avtal. Nu öppnar dansken för att skriva på för en konkurrent.",
       "publishedAt": "2026-10-06T12:04:31.000Z",
       "latestPublishedAt": "2026-10-06T12:04:31.000Z",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg",
       "body": "Mikkel Rygaard, 35, lämnade LKS Lodz för BK Häcken inför säsongen 2022.\n\nHan blev snabbt en nyckelspelare i Hisingsklubben. I år har han gjort två mål och fem assist på 21 allsvenska matcher, varav 17 från start.\n\nDen danske mittfältaren sitter på ett utgående kontrakt med Häcken - som ännu inte erbjudit en förlängning.\n\nI en intervju med Fotbollskanalen berättar Rygaard att det inte är optimalt att framtiden är oviss.\n\nJag hoppas såklart det finns en klubb där ute som vill ha mina kvaliteter.\n\n– Att inte veta när det är två månader kvar känns lite märkligt. Speciellt eftersom jag har en liten kille där hemma att tänka på också. Så det hade varit skönt att ha framtiden på plats sedan tidigare. Jag hoppas såklart det finns en klubb där ute som vill ha mina kvaliteter, säger han.\n\nRygaard, som blir 36 år i december, har inga planer på att lägga skorna på hyllan.\n\n– När man är över 30 så börjar klubbar tänka i andra banor. Man blir långsamt satt i en box utan att man vill det. Men jag förstår det. Så om Häcken eller andra klubbar vill gå för yngre spelare så blir det så, säger han till Fotbollskanalen.\n\nMittfältaren bekräftar att det finns kontakt med en dansk klubb, men det är ännu inte konkret.\n\nRygaard utesluter inte en flytt inom Sverige, om Häcken inte erbjuder ett nytt kontrakt.\n\n– Alltså… så länge jag är här så är jag här. Och jag kommer lyssna om Häcken kommer med något. Men om de inte kommer med något är jag öppen för alla andra klubbar i Sverige. Om Häcken tackar av mig är det klart jag är öppen för alla andra klubbar, säger han till Fotbollskanalen.\n\nMichael Erichsen / BILDBYRÅN\n\nMikkel Rygaard, 35, lämnade LKS Lodz för BK Häcken inför säsongen 2022.\n\nHan blev snabbt en nyckelspelare i Hisingsklubben. I år har han gjort två mål och fem assist på 21 allsvenska matcher, varav 17 från start.\n\nDen danske mittfältaren sitter på ett utgående kontrakt med Häcken - som ännu inte erbjudit en förlängning.\n\nI en intervju med Fotbollskanalen berättar Rygaard att det int",
       "sources": [
@@ -5628,7 +5781,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-7-https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
+      "id": "event-BK Häcken-11-https://bkhacken.se/nyhet/infor-biljettslappet-hemma-mot-ifk-goteborg-fortur-till-gulsvarta-supportrar",
       "title": "Biljettsläpp hemma mot IFK Göteborg",
       "summary": "Tisdagen den 6 oktober klockan 13.00, öppnar förturen till hemmaderbyt mot IFK Göteborg.",
       "publishedAt": "2026-10-06T09:50:00.000Z",
@@ -5649,7 +5802,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-BK Häcken-11-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "id": "event-BK Häcken-15-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
       "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
       "publishedAt": "2026-10-01T13:35:00.000Z",
@@ -5670,28 +5823,7 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-12-https://fotbolltransfers.com/nyheter/lista-allsvenska-klubbar-har-salt-for-over-1-miljard-kronor/222079",
-      "title": "LISTA: Allsvenska klubbar har sålt för över 1 miljard kronor",
-      "summary": "Det var en hektisk sommar på den svenska transfermarknaden. Allsvenska klubbar sålde för mer än någonsin.",
-      "publishedAt": "2026-10-01T07:30:00.000Z",
-      "latestPublishedAt": "2026-10-01T07:30:00.000Z",
-      "category": "men",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01790806037/528x300.png",
-      "body": "Charlie Rosenqvist blev den dyraste värvningen någonsin mellan två allsvenska klubbar.\n\nZadok Yohanna blev den dyraste försäljningen någonsin från Allsvenskan.\n\nDet var en händelserik sommar för de allsvenska klubbarna. De har aldrig sålt för mer under ett transferfönster.\n\nDe har tillsammans sålt för över 1 miljard kronor de senaste månaderna, inklusive bonusar. Prisuppgifterna är baserade på medieuppgifter, det är inte bekräftade övergångssummor.\n\nFotbolltransfers.com listar alla försäljningar som har gjorts i sommar:\n\nZadok Yohanna, 19, ytteranfallare Från: AIK Till: Brighton & Hove Albion Pris: 273 miljoner kronor + bonusar.\n\nRobbie Ure, 22, anfallare Från: IK Sirius Till: Sevilla FC Pris: 100 miljoner kronor, inklusive bonusar.\n\nSilas Andersen, 22, mittfältare Från: BK Häcken Till: Sporting CP Pris: 79 miljoner kronor + 30 miljoner kronor i bonusar (Sporting har bekräftat summorna).\n\nMikkel Ladefoged, 23, anfallare Från: Västerås SK Till: Lincoln City Pris: 45 miljoner kronor + 10 miljoner kronor i bonusar.\n\nSion Oppong, 19, ytteranfallare Från: IF Brommapojkarna Till: Toulouse FC Pris: 44 miljoner kronor.\n\nErik Botheim, 26, anfallare Från: Malmö FF Till: Viking FK Pris: 41 miljoner kronor + 10 miljoner kronor i bonusar.\n\nRockson Yeboah, 22, mittback Från: IFK Göteborg Till: CA Osasuna Pris: 33,1 miljoner kronor plus vidareförsäljningsklausul på 30 procent (bekräftat av Osasuna)\n\nCharlie Rosenqvist, 19, anfallare Från: Kalmar FF Till: Djurgårdens IF Pris: 27,8 miljoner kronor + 11 miljoner kronor i bonusar.\n\nLudwig Malachowski Thorell, 21, mittfältare Från: Mjällby AIF Till: FC Basel Pris: 27,5 miljoner kronor + 5,5 miljoner kronor i bonusar.\n\nElliot Stroud, 24, ytter Från: Mjällby AIF Till: Hull City Pris: 27 miljoner kronor + 22 miljoner kronor i bonusar.\n\nTaha Ali, 28, ytteranfallare Från: Malmö FF Till: PAOK Thessaloniki Pris: 22 miljoner kronor.\n\nBenjamin Brantlind, 18, offensiv mittfältare Från: IFK Göteborg Till: RC Strasbourg Alsace Pris: 20 miljoner kr",
-      "sources": [
-        {
-          "publisher": "Fotbolltransfers",
-          "url": "https://fotbolltransfers.com/nyheter/lista-allsvenska-klubbar-har-salt-for-over-1-miljard-kronor/222079",
-          "publishedAt": "2026-10-01T07:30:00.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01790806037/528x300.png"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Fotbolltransfers-13-https://fotbolltransfers.com/nyheter/bk-hacken-varslar-personal-handlingsutrymme-for-framtida-investeringar/222278",
+      "id": "event-Fotbolltransfers-15-https://fotbolltransfers.com/nyheter/bk-hacken-varslar-personal-handlingsutrymme-for-framtida-investeringar/222278",
       "title": "\"Krävs för att BK Häcken ska fortsätta vara konkurrenskraftiga\"",
       "summary": "BK Häcken noterar minskade intäkter och varslar nu personal. Klubbchefen Marcus Jodin berättar för Göteborgs-Posten om beslutet.",
       "publishedAt": "2026-09-28T20:45:24.000Z",
@@ -5712,12 +5844,12 @@
       "summaryMethod": "rss-description"
     },
     {
-      "id": "event-Fotbolltransfers-14-https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
+      "id": "event-Fotbolltransfers-16-https://fotbolltransfers.com/nyheter/rygaard-hyllar-andersen-jag-ar-otroligt-glad-for-hans-skull/222074",
       "title": "Rygaards gläds över transfern: \"Alla tänkte wow\"",
       "summary": "Efter den dyra övergången hyllas han av sin före detta lagkamrat Mikkel Rygaard.",
       "publishedAt": "2026-09-23T17:15:23.000Z",
       "latestPublishedAt": "2026-09-23T17:15:23.000Z",
-      "category": "men",
+      "category": "former",
       "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg",
       "body": "Silas Andersen, 22, anslöt till Allsvenskan och BK Häcken från FC Utrecht i början av året 2025.\n\nUnder sin tid i Göteborgslaget blev han snabbt en av de viktigaste kuggarna. Prestationerna gjorde att han drog till sig uppmärksamhet från flera håll.\n\nDärför blev det en även flytt för mittfältaren den gångna sommaren. Han lämnade Häcken för portugisiska storklubben Sporting CP med en övergångssumma på över 110 miljoner kronor, inklusive bonusar.\n\nEn som imponerades över övergången var lagkamraten i Häcken och landsmannen Mikkel Rygaard, 35.\n\n– Jag visste att Silas var bra och att det fanns stort intresse kring honom, men steget från Häcken och Allsvenskan till Sporting - till den nivån - ja, jag tror att alla bara tänkte “Wow, det är verkligen imponerande”, säger han till Tipsbladet.\n\nRodrigo Antunes / BILDBYRÅN\n\nUtöver Andersen har Häcken lyckats sälja flera andra spelare för dyra pengar. Över de senaste tre åren har man gjort försäljningar värda över 550 miljoner kronor.\n\nFörsäljningen av Silas Andersen och klubbens förmåga att få dyra pengar för spelare är något Rygaard gläds över.\n\nDet börjar bli mer och mer normalt.\n\n– Häcken har faktiskt genomfört några riktigt bra försäljningar på sistone, där spelare gått till storklubbar, så det börjar bli mer och mer normalt, säger han och fortsätter:\n\n– Men jag är otroligt glad för Silas skull eftersom han är en bra kille och verkligen förtjänar det; han är verkligen dedikerad till fotbollen - det måste man ge honom kredd för - så det är jättekul för honom.\n\nAndersen gjorde 57 matchframträdanden i Häcken-tröjan och noterades för nio mål och tre assist.\n\nDanskens kontrakt med Sporting sträcker sig fram till sommaren 2031.\n\nSilas Andersen, 22, anslöt till Allsvenskan och BK Häcken från FC Utrecht i början av året 2025.\n\nUnder sin tid i Göteborgslaget blev han snabbt en av de viktigaste kuggarna. Prestationerna gjorde att han drog till sig uppmärksamhet från flera håll.\n\nDärför blev det en även flytt för mittfältaren den gång",
       "sources": [
@@ -5728,90 +5860,6 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01787292400/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Fotbolltransfers-15-https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
-      "title": "Rygaard: \"Primära intresset ligger i att komma hem till Danmark\"",
-      "summary": "Mikkel Rygaard sitter på ett utgående kontrakt och berättar att han kan återvända till Danmark.",
-      "publishedAt": "2026-09-22T20:31:57.000Z",
-      "latestPublishedAt": "2026-09-22T20:31:57.000Z",
-      "category": "men",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789638135/528x300.jpg",
-      "body": "Mikkel Rygaard, 35, har spelat i allsvenska BK Häcken sedan säsongen 2022.\n\nDen gångna säsongen gjorde mittfältaren fyra mål och sex assist på 24 ligamatcher för klubben.\n\nUnder 2026 har han gjort två mål och fem assist på 21 allsvenska matcher, varav 17 starter.\n\nDen 35-årige dansken sitter på ett kontrakt med Häcken som går ut efter säsongen.\n\nI en intervju med Tipsbladet berättar Rygaard att han ser ut att lämna Häcken efter säsongen.\n\nDet kan ändras snabbt.\n\n– Rent praktiskt har jag bara några månader kvar på mitt kontrakt, och just nu har jag inte fått något konkret från klubben, så på det sättet börjar det nästan gå mot sitt slut, eller hur? Man vet ju också att saker kan hända väldigt snabbt inom fotbollen, och helt plötsligt kan man ha ett erbjudande från klubben, så det kan ändras snabbt, men som det ser ut just nu ser det ut som att min tid i Häcken börjar gå mot sitt slut, säger han till Tipsbladet.\n\nMichael Erichsen / BILDBYRÅN\n\nEfter 22 spelade omgångar ligger Häcken på en femteplats i Allsvenskan. Man har tagit 36 poäng.\n\n– Inom fotboll ska man aldrig utesluta några möjligheter, men som jag känner just nu tror jag att det primära intresset ligger i att komma hem till Danmark. Det är nog där vi försöker se vilka möjligheter som finns först, säger han till Tipsbladet.\n\nDen danske mittfältaren berättar att han ska träffa sin agent under veckan och göra upp planer. Han säger även att man ska se över vilka möjligheter som finns och att han pratat med en dansk klubb.\n\n– Ja, det var allt, vi får nog låta resten vara lite okänt för tillfället, säger han till Tipsbladet.\n\nMikkel Rygaard, 35, har spelat i allsvenska BK Häcken sedan säsongen 2022.\n\nDen gångna säsongen gjorde mittfältaren fyra mål och sex assist på 24 ligamatcher för klubben.\n\nUnder 2026 har han gjort två mål och fem assist på 21 allsvenska matcher, varav 17 starter.\n\nDen 35-årige dansken sitter på ett kontrakt med Häcken som går ut efter säsongen.\n\nI en intervju med Tipsbladet berättar Rygaard at",
-      "sources": [
-        {
-          "publisher": "Fotbolltransfers",
-          "url": "https://fotbolltransfers.com/nyheter/mikkel-rygaard-primara-intresset-ligger-i-att-komma-hem-till-danmark/222045",
-          "publishedAt": "2026-09-22T20:31:57.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789638135/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Fotbolltransfers-16-https://fotbolltransfers.com/nyheter/lista-kontraktslaget-i-bk-hacken/221471",
-      "title": "LISTA: Kontraktsläget i BK Häcken",
-      "summary": "Det finns några spelare som sitter på utgående kontrakt. Här går vi igenom kontraktsläget i BK Häcken.",
-      "publishedAt": "2026-09-17T12:15:00.000Z",
-      "latestPublishedAt": "2026-09-17T12:15:00.000Z",
-      "category": "men",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789638135/528x300.jpg",
-      "body": "Spelare i BK Häcken med kontrakt till 31 december 2026:\n\nMikkel Rygaard, 35, mittfältare Andreas Linde, 33, målvakt Kristan Marinkovic, 18, målvakt Adam Lundkvist, 32, vänsterback David Seger, 27, mittfältare Harun Ibrahim, 23, mittfältare Markus Haaland, 21, ytteranfallare (Låneperioden löper ut, men det finns en option att köpa loss spelaren) Mads Agger, 26, ytteranfallare (Låneperioden löper ut, men det finns en option att köpa loss spelaren)\n\nSpelare i BK Häcken med kontrakt till 31 december 2027:\n\nEtrit Berisha, 37, målvakt Ben Engdahl, 22, högerback Nikola Zecevic, 22, mittback (utlånad till FK Radnicki Nis)\n\nSpelare i BK Häcken med kontrakt till 31 december 2028:\n\nFilip Helander, 33, mittback Brice Wembangomo, 29, högerback (kontrakt till 2028-06-30) Leo Väisänen, 29, mittback (kontrakt till 2028-06-30) Pontus Dahbo, 20, offensiv mittfältare (kontrakt till 2028-06-30 och just nu utlånad till Vitesse Arnhem) Simen Hestnes, 30, mittfältare Malte Ljungkull, 19, mittfältare Danilo Al-Saed, 27, ytteranfallare (utlånad till HamKam)\n\nSpelare i BK Häcken med kontrakt till 31 december 2029:\n\nAdrian Svanbäck, 22, anfallare Olle Samuelsson, 22, mittback Johannes Engvall, 21, mittback Sanders Ngabo, 22, mittfältare (utlånad till Lyngby BK) Sabri Kondo, 20, ytteranfallare Gustav Lindgren, 25, anfallare\n\nSpelare i BK Häcken med kontrakt till 31 december 2030:\n\nAbdoulaye Doumbia, 18, mittfältare David Andersson, 22, målvakt Harry Hilvenius, 18, mittback Wilson Lindberg Uhrström, 20, mittfältare Julius Lindberg, 27, ytter Moustapha Mouhamadou Mbengue, 18, mittfältare Christ Wawa, 19, ytteranfallare (kontrakt till 2030-06-30)\n\nSpelare i BK Häcken med kontrakt till sommaren 2031:\n\nBamir Sadiku, 19, anfallare\n\nSpelare i BK Häcken med kontrakt till 31 december 2026:\n\nMikkel Rygaard, 35, mittfältare Andreas Linde, 33, målvakt Kristan Marinkovic, 18, målvakt Adam Lundkvist, 32, vänsterback David Seger, 27, mittfältare Harun Ibrahim, 23, mittfältare Markus Haaland, 21, ytteranfalla",
-      "sources": [
-        {
-          "publisher": "Fotbolltransfers",
-          "url": "https://fotbolltransfers.com/nyheter/lista-kontraktslaget-i-bk-hacken/221471",
-          "publishedAt": "2026-09-17T12:15:00.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789638135/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Fotbolltransfers-17-https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
-      "title": "Officiellt: Zeidane Inoussa lånas ut av Swansea",
-      "summary": "Efter många turer lånar Swansea City ut Zeidane Inoussa. Det blir spel i den polska högstaligan för svensken.",
-      "publishedAt": "2026-09-11T20:17:08.000Z",
-      "latestPublishedAt": "2026-09-11T20:17:08.000Z",
-      "category": "former",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788174845/528x300.jpg",
-      "body": "BK Häcken sålde Zeidane Inoussa till Swansea City sommaren 2025.\n\nAffären gick loss på 66 miljoner kronor, och 24-åringen skrev på ett kontrakt fram till sommaren 2030.\n\nDet har däremot inte blivit någon succé för den offensiva yttern, och Championship-klubben har försökt låna ut honom i sommar.\n\nEn utlåning till Portsmouth FC sprack däremot på målsnöret, och i dagarna föll även en flytt till NK Osijek isär.\n\nDaniel Stiller / BILDBYRÅN\n\nAnledningen ska vara att 24-åringen inte klarar de obligatoriska läkarundersökningarna. Nu har han däremot hittat en klubb.\n\nGórnik Zabrze meddelar genom sina sociala medier att man lånar in Inoussa över resten av säsongen.\n\nLaget huserar i den polska högstaliga, och ligger trea efter sex omgångar.\n\nFredrik Aremyr / BILDBYRÅN\n\nDet ingår inte någon köpoption i avtalet, och Inoussa kommer återvända till Swansea nästa sommar.\n\nDet blev två assist på 25 matcher i Championship under debutsäsongen för Inoussa, varav tolv inleddes i startelvan.\n\nWzmacniamy skrzydła! Zeidane Inoussa nowym zawodnikiem Górnika Zabrze! #INOUSSA2027 pic.twitter.com/QW39Z9H13s — Górnik Zabrze (@GornikZabrzeSSA) September 11, 2026\n\nBK Häcken sålde Zeidane Inoussa till Swansea City sommaren 2025.\n\nAffären gick loss på 66 miljoner kronor, och 24-åringen skrev på ett kontrakt fram till sommaren 2030.\n\nDet har däremot inte blivit någon succé för den offensiva yttern, och Championship-klubben har försökt låna ut honom i sommar.\n\nEn utlåning till Portsmouth FC sprack däremot på målsnöret, och i dagarna föll även en flytt till NK Osijek isär.\n\nDaniel Stiller / BILDBYRÅN\n\nAnledningen ska vara att 24-åringen inte klarar de obligatoriska läkarundersökningarna. Nu har han däremot hittat en klubb.\n\nGórnik Zabrze meddelar genom sina sociala medier att man lånar in Inoussa över resten av säsongen.\n\nLaget huserar i den polska högstaliga, och ligger trea efter sex omgångar.\n\nFredrik Aremyr / BILDBYRÅN\n\nDet ingår inte någon köpoption i avtalet, och Inoussa kommer återvända till Sw",
-      "sources": [
-        {
-          "publisher": "Fotbolltransfers",
-          "url": "https://fotbolltransfers.com/nyheter/officiellt-gornik-zabrze-lanar-zeidane-inoussa/221633",
-          "publishedAt": "2026-09-11T20:17:08.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01788174845/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Fotbolltransfers-18-https://fotbolltransfers.com/nyheter/mads-agger-hacken-kandes-helt-ratt/221608",
-      "title": "\"Jag hoppas verkligen att jag kan överbevisa dem\"",
-      "summary": "Han har lämnat Pogoń Szczecin för Häcken. Dansken hoppas kunna imponera och bli kvar permanent.",
-      "publishedAt": "2026-09-11T11:03:41.000Z",
-      "latestPublishedAt": "2026-09-11T11:03:41.000Z",
-      "category": "men",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789117847/528x300.jpg",
-      "body": "Den polska klubben Pogoń Szczecin värvade Mads Agger från danska Sönderjyske i vintras.\n\nDen offensiva yttern har gjort mål på 13 tävlingsmatcher Pogoń Szczecin.\n\nStrax innan det svenska transferfönstret stängde skrev han på för BK Häcken.\n\nDen allsvenska klubben har lånat Agger resten av året med en köpoption.\n\n– Jag hade ett bra snack med den sportsliga ledningen. Vi var väldigt eniga om att jag behövde spela fotboll, och när Häcken dök upp kändes det helt rätt, säger han till Göteborgs-Posten.\n\n26-åringen hymlar inte om att han hoppas bli kvar i Häcken permanent.\n\nDen biten lämnar jag till dem.\n\n– Mitt mål är att göra det så bra som möjligt här, sedan får vi se om Häcken tycker att jag är tillräckligt intressant för att jag ska bli kvar. Den biten lämnar jag till dem, men jag hoppas verkligen att jag kan överbevisa dem, säger Agger till GP.\n\nHäcken har haft koll på spelaren en längre tid.\n\nJag har alltid gillat Sverige.\n\n– Första gången jag hörde om intresset var för några år sedan. Redan då kändes det spännande. Jag har alltid gillat Sverige. Personligen känns det väldigt bra att komma till en klubb som har följt mig under en längre tid, säger Agger till GP.\n\nHäcken ligger på fjärde plats i Allsvenskan efter 20 omgångar.\n\nDen polska klubben Pogoń Szczecin värvade Mads Agger från danska Sönderjyske i vintras.\n\nDen offensiva yttern har gjort mål på 13 tävlingsmatcher Pogoń Szczecin.\n\nStrax innan det svenska transferfönstret stängde skrev han på för BK Häcken.\n\nDen allsvenska klubben har lånat Agger resten av året med en köpoption.\n\n– Jag hade ett bra snack med den sportsliga ledningen. Vi var väldigt eniga om att jag behövde spela fotboll, och när Häcken dök upp kändes det helt rätt, säger han till Göteborgs-Posten.\n\n26-åringen hymlar inte om att han hoppas bli kvar i Häcken permanent.\n\nDen biten lämnar jag till dem.\n\n– Mitt mål är att göra det så bra som möjligt här, sedan får vi se om Häcken tycker att jag är tillräckligt intressant för att jag ska bli kvar. Den",
-      "sources": [
-        {
-          "publisher": "Fotbolltransfers",
-          "url": "https://fotbolltransfers.com/nyheter/mads-agger-hacken-kandes-helt-ratt/221608",
-          "publishedAt": "2026-09-11T11:03:41.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01789117847/528x300.jpg"
         }
       ],
       "summaryMethod": "rss-description"
@@ -8944,5 +8992,9 @@
     "ruleSourceUrl": "https://www.svenskfotboll.se/for-klubben/om-organisationen/dokument-och-regler/",
     "threshold": 3,
     "suspensionMatches": 1
+  },
+  "currentDataUnavailable": {
+    "reason": "Fixtures ej tillgängliga: [{\"message\":\"Unexpected error.\",\"locations\":[{\"line\":2,\"column\":3}],\"path\":[\"matchesForTeam\"],\"extensions\":{\"code\":\"INTERNAL_SERVER_ERROR\"}}]",
+    "checkedAt": "2026-10-18T03:43:46.619Z"
   }
 }
