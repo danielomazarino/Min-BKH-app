@@ -557,6 +557,38 @@ is the only path.
 
 ---
 
+## B-026 · Stale navigation handover archived — DONE
+
+**Status:** DONE 2026-10-20. · **Source:** user question — "what is in the
+liquid-glass-navigation-handover.md that is not in the code"
+
+`liquid-glass-navigation-handover.md` sat untracked in the repo root. It is a
+technical review package describing the working tree as it stood on
+**2026-10-04 23:24**, and it had drifted from the shipped code in three ways:
+
+1. **It described uncommitted work that is now committed.** Its `git status`
+   listed 8 modified + 4 untracked files; all are now committed and clean. Its
+   warning *"checking out `1eefb71` will not reproduce this code"* is obsolete.
+2. **Its quoted code is the pre-fix state.** 589 lines vs 616 today, and it
+   contains neither fix from `c109164`: no `a.inset`/`pillInset` (the
+   pill-overshoot fix) and no 24-unit icon (the blurry-icon fix).
+3. **Its CSS values are from an older design.** `--fabnav-h` 58px → 78px,
+   `--fabnav-w` 260px → 480px, `--fabnav-top` removed entirely. It also
+   contains an unfilled placeholder: *"NaN of 2466 lines extracted"*.
+
+**Action:** moved to `docs/archive/liquid-glass-navigation-handover-2026-10-04.md`
+with a staleness banner at the top listing exactly what changed, so a reviewer
+cannot mistake it for current code. The banner also records the findings that
+**are** still accurate (verified against current code): `isSwipeCommit` and its
+constants are exported but never called by the component; `.fabnav[data-lifted]`
+is dead CSS; no `prefers-reduced-transparency` handling exists; `d.dx` is
+written and never read.
+
+The archive is a frozen record — do not edit the body, only the banner if the
+drift list needs extending.
+
+---
+
 ## B-025 · Article body shown twice, second copy cut off mid-sentence — FIXED
 
 **Status:** FIXED 2026-10-20. Unit 708/708, typecheck and lint green. · **Source:**
@@ -2800,7 +2832,8 @@ both linked in the sheet.
 | **B-019** | **RESOLVED 2026-10-13 — fix verified against real data, pending deploy** | The discipline engine reported Doumbia as "Avstängd nästa match" for weeks AFTER he had already served his second suspension. Root cause: the serve-check ran ONCE per player — a player who reaches the 3-warning threshold a second time in the same season was never re-checked. FotMob match-level evidence (lineups + the club's own announcement) proves both suspensions were served (round 9, 2026-05-25 and round 20, 2026-09-05). Fix: iterative serve detection + `servedSuspensions` audit field. 4 new regression tests; 669 unit tests green; regenerated ledger shows Doumbia `served` with both dates, all 17 other players unchanged. See the B-019 section |
 | **B-021** | **RESOLVED 2026-10-14 — deployed `3c27b1d`, byte-verified** | Tester round: 3 news false positives (surname-only collisions Samuelsson/Lundkvist/Lindgren — 4 surnames added to AMBIGUOUS_SURNAMES), "HÄCKEN OKÄNT" relabelled "EJ BEKRÄFTAT", match-row S/O/F + H/B badges removed (venue now a word in meta), team sheet on table-row tap (seasonMatches full fixture list + W/D/L record + arena), on-demand lineup lookup in the match sheet (one GraphQL query per tap, no polling). 680 unit tests green; e2e layout/a11y/navigation 130/130, news 51/51. Served sha256 == committed. See the B-021 section |
 | **B-024** | **FIXED 2026-10-20 — NOT YET DEPLOYED** | Two news defects found by verifying the served feed (the deployment chain itself was healthy: served sha256 == `origin/main`, build `03dc392` = data commit). (1) Raw numeric HTML entities reached the screen — `&#8221;` rendered literally — because the RSS strip handled only named entities and deleted them rather than decoding. (2) A Premier League article (Kulusevski/Tottenham) was published as Häcken news: the B-022 score-compound guard matched only an ASCII hyphen, and Swedish feeds typeset scores with an EN DASH (`3–1-seger`), so "seger" matched squad player David Seger. Both fixed with regression tests; 705 unit tests, typecheck and lint green. Former-player relevance (Kalmar/Ohlsson) investigated and deliberately left unchanged — only 3 former-player items exist across 54 snapshots, too thin to tune on. See the B-024 section |
-| **B-025** | **FIXED 2026-10-20 — NOT YET DEPLOYED** | The article sheet showed the story twice, the second copy cut off mid-sentence at the 2000-char cap. fotbolltransfers renders the body twice in one document — once inside `fresnel-greaterThanOrEqual-md` (desktop) and once inside `fresnel-lessThan-md` (mobile); CSS hides one, but `extractContainer` joined every match. Fix: `dropRepeatedCopy` keeps the first run when the paragraph list repeats, tolerating a truncated second copy. Verified live: 25 → 12 paragraphs on fotbolltransfers; bkhacken.se's lead+body pair (different text) preserved. 708 unit tests green. See the B-025 section |
+| **B-025** | **FIXED 2026-10-20 — DEPLOYED, byte-verified** | The article sheet showed the story twice, the second copy cut off mid-sentence at the 2000-char cap. fotbolltransfers renders the body twice in one document — once inside `fresnel-greaterThanOrEqual-md` (desktop) and once inside `fresnel-lessThan-md` (mobile); CSS hides one, but `extractContainer` joined every match. Fix: `dropRepeatedCopy` keeps the first run when the paragraph list repeats, tolerating a truncated second copy. Verified live: 25 → 12 paragraphs on fotbolltransfers; bkhacken.se's lead+body pair (different text) preserved. Served body now 1412 chars, one copy, ends on the real last line. 708 unit tests green. See the B-025 section |
+| **B-026** | **DONE 2026-10-20** | `liquid-glass-navigation-handover.md` sat untracked in the repo root describing the 2026-10-04 working tree. It had drifted: quoted code was the pre-fix state (589 vs 616 lines, missing both `c109164` fixes), CSS values were from an older design (`--fabnav-h` 58→78px, `--fabnav-w` 260→480px, `--fabnav-top` removed), and it contained an unfilled "NaN of 2466 lines" placeholder. Moved to `docs/archive/` with a staleness banner listing the drift and the findings that are still accurate. See the B-026 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |
