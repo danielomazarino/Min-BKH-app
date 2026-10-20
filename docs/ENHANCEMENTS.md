@@ -557,6 +557,136 @@ is the only path.
 
 ---
 
+## B-025 · Article body shown twice, second copy cut off mid-sentence — FIXED
+
+**Status:** FIXED 2026-10-20. Unit 708/708, typecheck and lint green. · **Source:**
+user report with a screenshot of the Rygaard article sheet
+
+### What the supporter saw
+
+Opening a news article showed the full story, then the **same story again**,
+ending abruptly mid-sentence ("– Det är fantastiskt att få den uppbackningen
+från f"). The second copy was cut at exactly 2000 characters — the
+`MAX_BODY_CHARS` cap.
+
+### Root cause (measured on the live page)
+
+fotbolltransfers renders the article body **twice in the same document**, once
+per responsive breakpoint:
+
+| Copy | Ancestor chain |
+| --- | --- |
+| 1st | `fresnel-container fresnel-greaterThanOrEqual-md` → `mx-4` → `container` → … |
+| 2nd | `fresnel-container fresnel-lessThan-md` → `mx-4` → `container` → `mt-5` |
+
+Both copies are in the DOM; CSS hides one. `extractContainer` collected **every**
+`div.article-text` match and joined them, so the body became
+`copy1 + "\n\n" + copy2`, and the 2000-char cap then sliced the second copy
+mid-sentence. Reproduced locally: 25 paragraphs, where 0–12 and 13–24 were
+identical.
+
+### Fix
+
+`dropRepeatedCopy` in `articleText.ts`: if the paragraph list is an exact
+repetition of an earlier run, keep the first run. Two properties make it safe:
+
+- It compares **paragraph runs**, not characters, so a story that legitimately
+  repeats a sentence is untouched.
+- The second copy may be **shorter** than the first (the cap truncates it), so
+  the remainder only has to be a *prefix* of the first run.
+
+It runs inside `extractContainer` (after boilerplate removal — a house-promo
+line appears in only one copy and would otherwise make them look different), so
+the invariant holds for the exported raw extractors too, not just
+`extractArticleBody`.
+
+**Verified on the live pages:** fotbolltransfers 25 → 12 paragraphs, one copy,
+ends on the real last line. bkhacken.se still yields its lead + body pair
+(2 paragraphs, 2148 chars) — those two containers are *different* text, not
+duplicates, and are correctly preserved.
+
+---
+
+## B-024 · Two news defects found by verifying the served feed (raw HTML entities + en-dash score collision) — FIXED, NOT YET DEPLOYED
+
+**Status:** FIXED 2026-10-20, **not deployed** — both fixes are in the generation
+path, so they reach production only after the next nightly run. Unit 705/705,
+typecheck and lint green locally. · **Source:** user request — "open the
+production site and check if the latest news are correctly shown"
+
+### What was verified first (the deployment chain was healthy)
+
+| Check | Result |
+| --- | --- |
+| Served `data/app.json` sha256 | `494c41b6…` — **identical** to `origin/main` |
+| `freshness.generatedAt` | `2026-10-20T03:49:09Z` (today's nightly) |
+| Deploy pinning | public build `03dc392.a519739` = data commit `03dc392` |
+| Workflow lineage | Data update `03dc392` → Deploy `03dc392`, both success |
+
+So this was **not** a stale-deployment incident. The data was fresh and
+correctly published; the defects were in the content the pipeline produced.
+
+### 1. Raw HTML entities rendered to the supporter
+
+The news list showed, literally:
+
+> `Det blev Månadens Mål i september: &#8221;En delikat chipp&#8221;`
+
+`stripHtml` in `rss.ts` stripped only NAMED entities (`&[a-z]+;`) and replaced
+them with a **space**, so numeric entities passed through untouched — and any
+named entity it did recognise was silently deleted rather than decoded.
+
+Fix: `decodeEntities` in `articleText.ts` is now exported and used by the RSS
+path. It decodes numeric (decimal and hex) and a closed set of named entities,
+and **leaves an unknown entity verbatim** instead of eating it. Decoding runs
+after tag stripping, so a decoded `<` cannot be mistaken for markup.
+
+### 2. A Premier League article published as Häcken news (B-022 regression)
+
+The top item in the feed was:
+
+> `Dejan Kulusevski tillbaka i spel – efter 526 dagar` (Tottenham)
+
+It matched squad player **David Seger** through the Swedish word *seger*
+("win") in `Tottenhams 3–1-seger`. The score-compound guard added in B-022
+matched only an **ASCII hyphen**:
+
+```ts
+new RegExp(`\\b\\d+-\\d+-${surname}s?\\b`)   // misses U+2013 en dash
+```
+
+Measured directly: `3-1-seger` → `UNRELATED`, `3–1-seger` → `CURRENT_HACKEN /
+David Seger`. Swedish feeds typeset scores with an en dash, so the guard was
+inert on exactly the feeds it was written for.
+
+Fix: the separator is now a dash class (ASCII hyphen, non-breaking hyphen,
+figure dash, en dash, em dash, horizontal bar, minus sign), and the two
+separators need not be the same character. Verified against the served data:
+the Kulusevski article is now `UNRELATED`, and the genuine Häcken article
+(`BK Häcken tog en 3–0-seger mot Örgryte IS`) still classifies
+`CURRENT_HACKEN`.
+
+### 3. Investigated, NOT changed — former-player relevance
+
+`Kalmar bröt den tunga sviten – slog Degerfors` is tagged `former` because it
+quotes **Sebastian Ohlsson**, who genuinely has BK Häcken in his Wikidata P54.
+The match is factually correct; the question is whether a quoted bystander in
+another club's match report is Häcken news.
+
+**Deliberately left unchanged.** The evidence base is too thin to tune on:
+across **54 data snapshots (85 unique headlines)** there are only **3**
+former-player items. A candidate rule (drop only when the name is absent from
+title/lead/slug **and** immediately preceded by a quote attribution) scored 7/7
+on the cases that could be assembled, but that is one real false positive —
+not a measured fix. Recorded here so the next person does not re-derive it.
+
+**Open question for a future round:** Wikidata P54 means "member of sports
+team" and does not distinguish a 200-appearance Häcken career from a brief
+stint. Tightening the matcher cannot fix that; it would need appearance count
+or contract dates.
+
+---
+
 ## B-023 · Player search padded the list with non-footballers ("Norling" → 6 wrong people) — RESOLVED
 
 **Status:** RESOLVED 2026-10-14. Deployed `11589e1`, byte-verified (public build `11589e1.4843d16`), CI green first run. · **Source:** user report — "when searching on Norling i wanted to find Rikard Norling, but seem to have 6 hits on already dead persons who likely have never played fotball"
@@ -2669,6 +2799,8 @@ both linked in the sheet.
 | **B-018** | **RESOLVED 2026-10-12 — deployed `b267cc9`, byte-verified** | Squad cards showed stale Wikidata / missing Wikipedia data while the search tab showed full data for the same player. Root cause measured live: (1) Wikimedia 429s User-Agent-less requests — the nightly's Node fetch sent no UA to the infobox/summary/translation endpoints, and the 429 was swallowed into `null` (19 of 26 players degraded across three nightlies; Rygaard flapped 11→2→11→2 career rows); (2) the per-player merge let degraded results overwrite good ones. Fix: shared `wikimediaHeaders()` on all Wikimedia-facing modules + `appMerge.ts` with a per-player quality guard. Verified: Wembangomo 7 rows + wiki, Helander 10 + wiki, Rygaard 11 + wiki; served sha256 == committed. See the B-018 section |
 | **B-019** | **RESOLVED 2026-10-13 — fix verified against real data, pending deploy** | The discipline engine reported Doumbia as "Avstängd nästa match" for weeks AFTER he had already served his second suspension. Root cause: the serve-check ran ONCE per player — a player who reaches the 3-warning threshold a second time in the same season was never re-checked. FotMob match-level evidence (lineups + the club's own announcement) proves both suspensions were served (round 9, 2026-05-25 and round 20, 2026-09-05). Fix: iterative serve detection + `servedSuspensions` audit field. 4 new regression tests; 669 unit tests green; regenerated ledger shows Doumbia `served` with both dates, all 17 other players unchanged. See the B-019 section |
 | **B-021** | **RESOLVED 2026-10-14 — deployed `3c27b1d`, byte-verified** | Tester round: 3 news false positives (surname-only collisions Samuelsson/Lundkvist/Lindgren — 4 surnames added to AMBIGUOUS_SURNAMES), "HÄCKEN OKÄNT" relabelled "EJ BEKRÄFTAT", match-row S/O/F + H/B badges removed (venue now a word in meta), team sheet on table-row tap (seasonMatches full fixture list + W/D/L record + arena), on-demand lineup lookup in the match sheet (one GraphQL query per tap, no polling). 680 unit tests green; e2e layout/a11y/navigation 130/130, news 51/51. Served sha256 == committed. See the B-021 section |
+| **B-024** | **FIXED 2026-10-20 — NOT YET DEPLOYED** | Two news defects found by verifying the served feed (the deployment chain itself was healthy: served sha256 == `origin/main`, build `03dc392` = data commit). (1) Raw numeric HTML entities reached the screen — `&#8221;` rendered literally — because the RSS strip handled only named entities and deleted them rather than decoding. (2) A Premier League article (Kulusevski/Tottenham) was published as Häcken news: the B-022 score-compound guard matched only an ASCII hyphen, and Swedish feeds typeset scores with an EN DASH (`3–1-seger`), so "seger" matched squad player David Seger. Both fixed with regression tests; 705 unit tests, typecheck and lint green. Former-player relevance (Kalmar/Ohlsson) investigated and deliberately left unchanged — only 3 former-player items exist across 54 snapshots, too thin to tune on. See the B-024 section |
+| **B-025** | **FIXED 2026-10-20 — NOT YET DEPLOYED** | The article sheet showed the story twice, the second copy cut off mid-sentence at the 2000-char cap. fotbolltransfers renders the body twice in one document — once inside `fresnel-greaterThanOrEqual-md` (desktop) and once inside `fresnel-lessThan-md` (mobile); CSS hides one, but `extractContainer` joined every match. Fix: `dropRepeatedCopy` keeps the first run when the paragraph list repeats, tolerating a truncated second copy. Verified live: 25 → 12 paragraphs on fotbolltransfers; bkhacken.se's lead+body pair (different text) preserved. 708 unit tests green. See the B-025 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |

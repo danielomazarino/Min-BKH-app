@@ -69,15 +69,35 @@ export function extractSourceTags(html: string): string[] {
   return out;
 }
 
-function decodeEntities(s: string): string {
+/**
+ * Named entities worth decoding. A CLOSED set on purpose: Latin-1 letters
+ * (Swedish names appear in feeds) plus the typographic quotes and dashes that
+ * Swedish sport feeds emit. Anything outside it is left untouched rather than
+ * deleted — dropping an unknown entity silently loses a character.
+ */
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: " ", amp: "&", lt: "<", gt: ">", quot: '"', apos: "'",
+  auml: "ä", Auml: "Ä", ouml: "ö", Ouml: "Ö", aring: "å", Aring: "Å",
+  eacute: "é", Eacute: "É", egrave: "è", agrave: "à", ccedil: "ç", Ccedil: "Ç",
+  uuml: "ü", Uuml: "Ü", oslash: "ø", Oslash: "Ø", aelig: "æ", AElig: "Æ",
+  ndash: "–", mdash: "—", hellip: "…", middot: "·", bull: "•",
+  lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”", laquo: "«", raquo: "»",
+  copy: "©", reg: "®", trade: "™", deg: "°", euro: "€", pound: "£",
+};
+
+/**
+ * Decode HTML entities.
+ *
+ * WHY NUMERIC ENTITIES MATTER (measured 2026-10-20): the Allsvenskan feed
+ * publishes titles with numeric entities — "Det blev Månadens Mål i
+ * september: &#8221;En delikat chipp&#8221;" — and the RSS path stripped only
+ * NAMED entities, so the raw `&#8221;` reached the supporter's screen.
+ */
+export function decodeEntities(s: string): string {
   return s
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
     .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&([a-z][a-z0-9]*);/gi, (m, name: string) => NAMED_ENTITIES[name] ?? m);
 }
 
 /** Strip markup and collapse whitespace. */
@@ -113,7 +133,12 @@ function extractContainer(html: string, className: string, minLen: number): stri
     const t = decodeEntities(m[1].replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
     if (t.length >= minLen) parts.push(t);
   }
-  return parts.join("\n\n");
+  // Tidy HERE, not only in extractArticleBody: the raw extractors are exported
+  // and used directly, so the "one copy of the story" invariant must hold at
+  // this level too. Order matters — boilerplate is removed BEFORE the duplicate
+  // check, because a house-promo line appears in only one of the two copies and
+  // would otherwise make them look different.
+  return cleanBody(parts.join("\n\n"));
 }
 
 /** bkhacken.se keeps the story in `div.html-text` (lead + remainder). */
@@ -167,6 +192,42 @@ const BOILERPLATE_LINES: RegExp[] = [
 ];
 
 /**
+ * Drop a repeated copy of the story.
+ *
+ * WHY (measured 2026-10-20, real served body): fotbolltransfers renders the
+ * article body TWICE in the same document — once inside
+ * `fresnel-greaterThanOrEqual-md` (desktop) and once inside
+ * `fresnel-lessThan-md` (mobile). Both copies are in the DOM; CSS hides one.
+ * `extractContainer` joins every matching container, so the body was published
+ * as the full story followed by the same story again, cut off mid-sentence by
+ * the MAX_CHARS cap. A supporter saw the article twice, the second time
+ * truncated.
+ *
+ * The rule is structural, not textual: if the paragraph list is an exact
+ * repetition of an earlier run, keep the first run. Comparing PARAGRAPHS (not
+ * characters) means a story that legitimately repeats a sentence is untouched,
+ * and a partial second copy (the truncated one) is still recognised because its
+ * paragraphs match the opening of the first run.
+ */
+function dropRepeatedCopy(paragraphs: string[]): string[] {
+  const n = paragraphs.length;
+  // A duplicate needs at least two paragraphs to be a copy rather than a
+  // repeated one-liner (a pull-quote, a caption).
+  for (let start = 2; start <= n / 2; start++) {
+    const head = paragraphs.slice(0, start);
+    const rest = paragraphs.slice(start);
+    // The remainder must be a prefix of the head — the second copy is often
+    // truncated by the character cap, so it is shorter than the first.
+    const isCopy =
+      rest.length >= 2 &&
+      rest.length <= head.length &&
+      rest.every((p, i) => p === head[i]);
+    if (isCopy) return head;
+  }
+  return paragraphs;
+}
+
+/**
  * Tidy extracted prose for reading.
  *
  * WHY (measured 2026-10-09): the container extractor replaces every tag with a
@@ -176,7 +237,7 @@ const BOILERPLATE_LINES: RegExp[] = [
  * punctuation is a pure formatting fix: no word is added, removed or reordered.
  */
 function cleanBody(text: string): string {
-  return text
+  const paragraphs = text
     .split(/\n{2,}/)
     .map((p) => p.trim())
     .filter((p) => p.length > 0 && !BOILERPLATE_LINES.some((re) => re.test(p)))
@@ -189,8 +250,8 @@ function cleanBody(text: string): string {
         .replace(/\(\s+/g, "(")
         // collapse any run of spaces left behind
         .replace(/[ \t]{2,}/g, " "),
-    )
-    .join("\n\n");
+    );
+  return dropRepeatedCopy(paragraphs).join("\n\n");
 }
 
 /**

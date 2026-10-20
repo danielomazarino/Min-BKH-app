@@ -193,6 +193,41 @@ describe("classifyRelevance — regression against known false positives", () =>
     );
     expect(r.relevance).toBe("CURRENT_HACKEN");
   });
+
+  it("an EN DASH score compound is rejected too — Premier League article", () => {
+    // Verbatim from the served feed, 2026-10-20. The 2026-10-14 guard matched
+    // only an ASCII hyphen, but Swedish feeds typeset scores with an EN DASH
+    // (U+2013): "Tottenhams 3–1-seger". The guard missed it, "seger" matched
+    // squad player David Seger, and a Tottenham/Kulusevski story was published
+    // as Häcken news at the top of the feed.
+    const known: KnownPersons = { currentPlayers: ["David Seger"], formerPlayers: [] };
+    const r = classifyRelevance(
+      {
+        title: "Dejan Kulusevski tillbaka i spel – efter 526 dagar",
+        summary: "Dejan Kulusevski spelar fotboll igen. Svensken fick hoppa in i Tottenhams 3–1-seger mot Coventry. Det var första matchen sedan 11 maj 2025.",
+        url: "https://www.expressen.se/sport/fotboll/premier-league/dejan-kulusevski-tillbaka-i-spel--efter-526-dagar/",
+        publisher: "Expressen",
+      },
+      known,
+    );
+    expect(r.relevance).toBe("UNRELATED");
+    expect(r.matchedPerson).toBeUndefined();
+  });
+
+  it("a Häcken article with an EN DASH score still matches", () => {
+    // The widened guard must not eat a genuine Häcken result line: the club
+    // mention is the evidence here, not the surname.
+    const known: KnownPersons = { currentPlayers: ["David Seger"], formerPlayers: [] };
+    const r = classifyRelevance(
+      {
+        title: "Julius Lindberg tvåmålsskytt i derbyt",
+        summary: "BK Häcken tog en 3–0-seger mot Örgryte IS i Allsvenskan.",
+        publisher: "BK Häcken",
+      },
+      known,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
 });
 
 describe("the different-person guard — surname-only matching without a surname list", () => {

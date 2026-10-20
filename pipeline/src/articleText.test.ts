@@ -20,6 +20,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  decodeEntities,
   extractArticleBody,
   extractBkhBody,
   extractFtBody,
@@ -136,6 +137,52 @@ describe("extractFtBody — fotbolltransfers (div.article-text)", () => {
     expect(body).toContain("själva artikeln");
     expect(body).not.toContain("Annonsera");
   });
+
+  it("returns the story ONCE when the page renders it twice (responsive branches)", () => {
+    // Verbatim shape of the live page, 2026-10-20. fotbolltransfers renders the
+    // body twice — once inside `fresnel-greaterThanOrEqual-md` (desktop) and
+    // once inside `fresnel-lessThan-md` (mobile). Both are in the DOM and CSS
+    // hides one, so joining every container published the article twice, the
+    // second copy cut off mid-sentence by the character cap.
+    const para = (t: string) => `<div class="text-xl article-text"><p>${t}</p></div>`;
+    const html =
+      `<div class="fresnel-container fresnel-greaterThanOrEqual-md">` +
+      para("Mikkel Rygaard lämnade polska LKS Lodz för BK Häcken inför säsongen 2022.") +
+      para("Han blev snabbt en nyckelspelare i laget och gjorde två mål i år.") +
+      para("Den danske mittfältaren sitter på ett utgående kontrakt just nu.") +
+      `</div>` +
+      `<div class="fresnel-container fresnel-lessThan-md">` +
+      para("Mikkel Rygaard lämnade polska LKS Lodz för BK Häcken inför säsongen 2022.") +
+      para("Han blev snabbt en nyckelspelare i laget och gjorde två mål i år.") +
+      para("Den danske mittfältaren sitter på ett utgående kontrakt just nu.") +
+      `</div>`;
+    const body = extractFtBody(html);
+    expect(body.match(/lämnade polska LKS Lodz/g)).toHaveLength(1);
+    expect(body.match(/utgående kontrakt/g)).toHaveLength(1);
+  });
+
+  it("keeps a lead + body pair that is NOT a duplicate (bkhacken shape)", () => {
+    // bkhacken.se also has two html-text containers, but they are the lead
+    // paragraph and the remainder of the story — different text. The dedupe
+    // must not collapse them.
+    const html =
+      `<div class="html-text">Etrit Berisha höll nollan och Adrian Svanbäck gjorde matchens enda mål.</div>` +
+      `<div class="html-text">Första halvlek var en jämn historia spelmässigt, men BK Häcken kom till fler lägen offensivt.</div>`;
+    const body = extractBkhBody(html);
+    expect(body).toContain("Etrit Berisha");
+    expect(body).toContain("Första halvlek");
+  });
+
+  it("keeps a story that legitimately repeats a sentence", () => {
+    // The dedupe compares PARAGRAPH RUNS, not individual sentences, so a
+    // repeated line inside a real story is untouched.
+    const html =
+      `<div class="article-text">BK Häcken vann matchen med 2-0 på hemmaplan i går kväll.</div>` +
+      `<div class="article-text">BK Häcken vann matchen med 2-0 på hemmaplan i går kväll.</div>` +
+      `<div class="article-text">Tränaren var mycket nöjd med insatsen och berömde laget.</div>`;
+    const body = extractFtBody(html);
+    expect(body).toContain("Tränaren var mycket nöjd");
+  });
 });
 
 describe("extractArticleBody — routing and cleanup", () => {
@@ -199,5 +246,34 @@ describe("extractArticleBody — routing and cleanup", () => {
       `<div class="article-text">Andra stycket om något helt annat här.</div>`;
     const body = extractArticleBody(html, "https://fotbolltransfers.com/nyheter/x/1");
     expect(body.split("\n\n").length).toBeGreaterThan(1);
+  });
+});
+
+describe("decodeEntities — RSS titles must not reach the screen as raw entities", () => {
+  it("decodes the numeric entities the Allsvenskan feed actually publishes", () => {
+    // Verbatim from the served feed, 2026-10-20. The RSS path stripped only
+    // NAMED entities, so this title rendered literally in the app as
+    // "Det blev Månadens Mål i september: &#8221;En delikat chipp&#8221;".
+    const raw = "Det blev Månadens Mål i september: &#8221;En delikat chipp&#8221;";
+    expect(decodeEntities(raw)).toBe("Det blev Månadens Mål i september: ”En delikat chipp”");
+  });
+
+  it("decodes hex numeric entities", () => {
+    expect(decodeEntities("caf&#xE9; &#x2013; klart")).toBe("café – klart");
+  });
+
+  it("decodes the named entities Swedish feeds use", () => {
+    expect(decodeEntities("H&auml;cken &amp; G&ouml;teborg")).toBe("Häcken & Göteborg");
+    expect(decodeEntities("&ndash; &rdquo;citat&rdquo;")).toBe("– ”citat”");
+  });
+
+  it("leaves an unknown entity untouched instead of deleting it", () => {
+    // The old RSS strip replaced every &[a-z]+; with a SPACE, silently eating
+    // characters. An entity we do not know must survive verbatim.
+    expect(decodeEntities("50&unknownthing; kvar")).toBe("50&unknownthing; kvar");
+  });
+
+  it("does not double-decode an escaped ampersand", () => {
+    expect(decodeEntities("&amp;lt;")).toBe("&lt;");
   });
 });

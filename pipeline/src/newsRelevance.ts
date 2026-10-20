@@ -159,6 +159,15 @@ function surnameCandidates(normalizedName: string): string[] {
 }
 
 /**
+ * Any dash used as a score separator: ASCII hyphen, non-breaking hyphen,
+ * figure dash, en dash, em dash, horizontal bar, minus sign.
+ *
+ * Swedish feeds typeset scores with an EN DASH ("3–1"), not an ASCII hyphen,
+ * so a guard written against `-` alone silently misses them.
+ */
+const DASH = "[\\u2010\\u2011\\u2012\\u2013\\u2014\\u2015\\u2212-]";
+
+/**
  * Does the article mention a known Häcken person by name?
  *
  * `surnameOnly` (default true) allows a surname-only match, which headlines
@@ -248,7 +257,15 @@ export function mentionsKnownPerson(
       // person: reject the match when the surname is directly preceded by a
       // digit-hyphen score pattern ("7-3-", "2-1-", "0-0-"). A real surname
       // mention is never written that way.
-      if (new RegExp(`\\b\\d+-\\d+-${surname}s?\\b`).test(text)) continue;
+      //
+      // DASH CLASS WIDENED 2026-10-20 (real false positive, served data):
+      // Swedish feeds typeset scores with an EN DASH — "Tottenhams
+      // 3–1-seger" — so an ASCII-only `-` missed it and a Premier League
+      // article about Dejan Kulusevski was published as Häcken news because
+      // "seger" matched squad player David Seger. The separator between the
+      // digits and before the surname may be any dash, and the two need not
+      // be the same character.
+      if (new RegExp(`\\b\\d+${DASH}\\d+${DASH}${surname}s?\\b`).test(text)) continue;
 
       // The surname appears. Does the text also name a DIFFERENT person
       // with it? If so, this player's surname match is not evidence.

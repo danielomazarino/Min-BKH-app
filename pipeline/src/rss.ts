@@ -1,6 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
 import type { NewsItem } from "./types";
 import { trackedFetch } from "./apiMetrics";
+import { decodeEntities } from "./articleText";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
 
@@ -19,10 +20,17 @@ function text(v: unknown): string {
   return String(v);
 }
 
+/**
+ * Strip markup and decode entities from an RSS title/description.
+ *
+ * Entities are DECODED, not deleted. The previous version replaced every
+ * `&[a-z]+;` with a space, which silently ate real characters, and left
+ * numeric entities (`&#8221;`) untouched so they rendered literally in the
+ * app. Decoding happens AFTER tag stripping so a decoded `<` cannot be
+ * mistaken for markup.
+ */
 function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&[a-z]+;/gi, " ")
+  return decodeEntities(html.replace(/<[^>]*>/g, " "))
     .replace(/\s+/g, " ")
     .trim();
 }
