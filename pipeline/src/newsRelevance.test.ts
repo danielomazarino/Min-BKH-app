@@ -733,7 +733,7 @@ describe("surname collisions — the whole historical class, in one table", () =
   const run = (title: string, summary = "", url?: string) =>
     classifyRelevance({ title, summary, publisher: "Göteborgs-Posten", url }, KNOWN_FP);
 
-  const FALSE_POSITIVES: [string, string, string, string?][] = [
+  const FALSE_POSITIVES: [string, string, string, string?, string?][] = [
     ["chef Marcus Samuelsson", "Marcus Samuelsson: En enorm utmaning", "Leder SVT:s jakt på Sveriges nästa stjärnkock."],
     ["Hanna Lundkvist (women's NT)", "Svensk kross – och Hanna Lundkvist slog till med drömmål", ""],
     ["Thomas Lindgren (Hammarby)", "Hammarbys sponsor kopplas till grov brottslighet", "Thomas Lindgren kommenterar."],
@@ -748,12 +748,21 @@ describe("surname collisions — the whole historical class, in one table", () =
     ["Ovetjkin (hockey)", "Seger i Alexander Ovetjkins sista hemmapremiär", "",
       "https://www.svt.se/sport/ishockey/ovetjkin-avslutar-karriaren"],
     ["Kulusevski (EN DASH score)", "Dejan Kulusevski tillbaka i spel – efter 526 dagar", "Tottenhams 3–1-seger"],
+    // The noun "seger" (a win) is lowercase; the surname "Seger" is not. These
+    // four were published as Häcken news on 2026-10-20 before the surname
+    // itself was required to be capitalized.
+    ["noun 'seger' (United)", "Femte raka utan seger för United", "Uniteds dystra svit"],
+    ["noun 'seger' (Mjällby)", "Mjällby föll igen – mål bortdömt", "Fortsatt utan seger"],
+    // Allsvenskan without a Häcken mention → GENERAL_ALLSVENSKAN, not
+    // UNRELATED. What matters is that it is not attributed to David Seger.
+    ["noun 'seger' (Uppgivet)", "Uppgivet i Mjällby: ”Nu är allt bara mörkt”", "Åtta raka utan seger i allsvenskan.", undefined, "GENERAL_ALLSVENSKAN"],
+    ["noun 'seger' (Kulusevski)", "Dejan Kulusevski fick hoppa in i slutet: ”Vi firade honom efteråt”", "Den svenske landslagsmittfältaren blev inbytt."],
   ];
 
-  for (const [label, title, summary, url] of FALSE_POSITIVES) {
+  for (const [label, title, summary, url, expected] of FALSE_POSITIVES) {
     it(`rejects ${label}`, () => {
       const r = run(title, summary, url);
-      expect(r.relevance).toBe("UNRELATED");
+      expect(r.relevance).toBe(expected ?? "UNRELATED");
       expect(r.matchedPerson).toBeUndefined();
     });
   }

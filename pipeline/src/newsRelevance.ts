@@ -217,6 +217,18 @@ function ciPattern(s: string): string {
 }
 
 /**
+ * A literal string as a regex fragment that requires a CAPITAL first letter
+ * and matches the rest either case.
+ *
+ * This is the "is it a proper noun?" test: "Seger" is the player, "seger" is a
+ * win. `ciPattern` alone cannot express it — it accepts both cases on every
+ * character, including the first.
+ */
+function capitalizedPattern(s: string): string {
+  return s[0].toUpperCase() + ciPattern(s.slice(1));
+}
+
+/**
  * Does the article mention a known Häcken person by name?
  *
  * `surnameOnly` (default true) allows a surname match, which headlines often
@@ -301,6 +313,28 @@ export function mentionsKnownPerson(
     const tokens = key.split(" ");
     for (const surname of surnameCandidates(key)) {
       if (!new RegExp(`\\b${surname}s?\\b`).test(text)) continue;
+
+      // CAPITALIZATION OF THE SURNAME ITSELF (2026-10-20, real false
+      // positives, served data). A surname that is also an ordinary Swedish
+      // word must be CAPITALIZED to count as a name: "utan seger" ("without a
+      // win") is a noun, "David Seger" is a person. Four articles were
+      // published as Häcken news on the strength of the noun alone —
+      // "Femte raka utan seger för United", "Fortsatt utan seger",
+      // "Åtta raka utan seger i allsvenskan", "Vi firade honom efteråt".
+      //
+      // This is the same signal as the different-person guard's first-token
+      // rule, applied to the surname: Swedish capitalizes proper nouns and
+      // never capitalizes a common noun mid-sentence. It is list-free, so it
+      // covers every present and future squad surname that is also a word.
+      //
+      // The slug is exempt: publishers lowercase it, so it carries no case
+      // information — a slug-only mention ("…/rygaard-…") must still match.
+      // It is therefore a separate match surface, checked without the
+      // capitalization rule.
+      const slugSurface = norm(slugText(opts.url ?? ""));
+      const inCased = new RegExp(`\\b${capitalizedPattern(surname)}s?\\b`).test(casedText);
+      const inSlug = new RegExp(`\\b${surname}s?\\b`).test(slugSurface);
+      if (!inCased && !inSlug) continue;
 
       // SCORE-COMPOUND GUARD (2026-10-14, real false positive): a surname that
       // is also a Swedish noun ("Seger" = win) appears inside hyphenated score
