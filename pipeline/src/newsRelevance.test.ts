@@ -258,6 +258,34 @@ describe("the different-person guard — surname-only matching without a surname
     expect(r.relevance).toBe("CURRENT_HACKEN");
   });
 
+  it("a POSSESSIVE different person is still a different person (the Kennet trap)", () => {
+    // Verbatim from the served feed, 2026-10-20. The surname regex allows an
+    // optional possessive "s", but the guard's pair regex did not — so
+    // "Kennet Anderssons son Liam" matched squad player David Andersson on the
+    // bare surname while the guard saw no "<first> <surname>" pair at all.
+    // The article is about Örgryte's Liam Andersson and his father Kennet;
+    // Häcken appears only in the site's league table.
+    const r = classifyRelevance(
+      {
+        title: "Sonens succé framför ikonen",
+        summary: "Succé för ikonens son – i startdebuten",
+        publisher: "Sportbladet",
+        url: "https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte?utm_medium=rss",
+      },
+      { currentPlayers: ["David Andersson"], formerPlayers: [] },
+    );
+    expect(r.relevance).toBe("UNRELATED");
+    expect(r.matchedPerson).toBeUndefined();
+  });
+
+  it("a possessive of the player's OWN name does not conflict", () => {
+    // "Rygaards gläds över transfern" is OUR Rygaard in the possessive — the
+    // first token is the player's own, so the widened pair regex must not
+    // reject it.
+    const r = guard(["Mikkel Rygaard Jensen"])("Rygaards gläds över transfern", "Mittfältaren är nöjd med flytten.");
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+
   it("a function word before the surname is grammar, not a first name", () => {
     // "till Rygaard" / "och Sadiku" must not read as a person named "Till"
     // or "Och".

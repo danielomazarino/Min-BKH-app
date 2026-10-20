@@ -269,7 +269,17 @@ export function mentionsKnownPerson(
 
       // The surname appears. Does the text also name a DIFFERENT person
       // with it? If so, this player's surname match is not evidence.
-      const pairRe = new RegExp(`\\b([a-zåäöéü0-9]+) ${surname}\\b`, "g");
+      //
+      // POSSESSIVE FORM (2026-10-20, real false positive, served data): the
+      // surname regex above allows an optional possessive "s" ("Rygaards
+      // gläds …"), but this pair regex did not — so "Kennet Anderssons son
+      // Liam" matched squad player David Andersson on the bare surname while
+      // the guard saw no "<first> <surname>" pair at all. The article was
+      // about Örgryte's Liam Andersson and his father Kennet; Häcken appeared
+      // only in the site's league table. The pair regex now accepts the same
+      // optional "s", so the possessive form is evidence of a different person
+      // exactly like the plain form.
+      const pairRe = new RegExp(`\\b([a-zåäöéü0-9]+) ${surname}s?\\b`, "g");
       let conflicted = false;
       for (const m of text.matchAll(pairRe)) {
         const first = m[1];
