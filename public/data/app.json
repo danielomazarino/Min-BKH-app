@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-20T13:08:08.590Z",
+    "generatedAt": "2026-10-20T13:21:22.688Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,8 +16,8 @@
     "sourceCounts": {
       "Sportbladet": {
         "fetched": 39,
-        "kept": 2,
-        "dropped": 37
+        "kept": 0,
+        "dropped": 39
       },
       "Göteborgs-Posten": {
         "fetched": 28,
@@ -26,8 +26,8 @@
       },
       "BK Häcken": {
         "fetched": 20,
-        "kept": 8,
-        "dropped": 12
+        "kept": 9,
+        "dropped": 11
       },
       "Expressen": {
         "fetched": 20,
@@ -41,8 +41,8 @@
       },
       "SVT Sport": {
         "fetched": 20,
-        "kept": 2,
-        "dropped": 18
+        "kept": 0,
+        "dropped": 20
       },
       "Allsvenskan": {
         "fetched": 10,
@@ -159,28 +159,28 @@
         "url": "https://bkhacken.se/nyhet/joy-omewa-tvamalsskytt-i-sin-forsta-hemmastart-for-bk-hacken-3",
         "publisher": "BK Häcken",
         "publishedAt": "2026-10-04T12:00:00.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "men-excluded"
       },
       {
         "title": "Sista hemmamatchen innan uppehåll – truppen mot IK Uppsala",
         "url": "https://bkhacken.se/nyhet/sista-hemmamatchen-innan-uppehall-truppen-mot-ik-uppsala",
         "publisher": "BK Häcken",
         "publishedAt": "2026-10-03T14:30:00.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "men-excluded"
       },
       {
         "title": "Besöksinformation inför IK Uppsala på Nordic Wellness Arena",
         "url": "https://bkhacken.se/nyhet/besoksinformation-infor-ik-uppsala-pa-nordic-wellness-arena",
         "publisher": "BK Häcken",
         "publishedAt": "2026-10-03T09:00:00.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "men-excluded"
       },
       {
         "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
         "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
         "publisher": "BK Häcken",
         "publishedAt": "2026-10-01T13:35:00.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "En tung Champions League-kväll på hemmaplan",
@@ -411,7 +411,7 @@
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/d7QRQj/manchester-united-tappade-poang-mot-leeds?utm_medium=rss",
         "publisher": "Sportbladet",
         "publishedAt": "2026-10-18T14:54:02.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Fem punkter: Sirius-Elfsborg",
@@ -425,7 +425,7 @@
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/GrJyP9/mjallby-foll-mot-vasteras-illa-ute-i-allsvenskan?utm_medium=rss",
         "publisher": "Sportbladet",
         "publishedAt": "2026-10-18T13:54:47.000Z",
-        "verdict": "kept"
+        "verdict": "general allsvenskan, no Häcken relation"
       },
       {
         "title": "Smäll för Sirius – Elfsborg kvitterade sent",
@@ -705,7 +705,7 @@
         "url": "https://www.svt.se/sport/fotboll/dejan-kulusevski-pa-banken-kan-fa-spela-for-forsta-gangen-pa-15-ar",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-19T18:33:55.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Meraf Bahta satte svenskt rekord – ändå slagen av Johaug: ”Magiskt”",
@@ -740,7 +740,7 @@
         "url": "https://www.svt.se/sport/fotboll/uppgivet-i-mjallby-nu-ar-allt-bara-morkt",
         "publisher": "SVT Sport",
         "publishedAt": "2026-10-19T04:18:48.000Z",
-        "verdict": "kept"
+        "verdict": "general allsvenskan, no Häcken relation"
       },
       {
         "title": "David Rumbutis första svensken till herrfinal – någonsin",
@@ -1169,7 +1169,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-20T13:04:44.205Z",
+    "retrievedAt": "2026-10-20T13:18:02.937Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -5189,18 +5189,6 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "SVT Sport-13-https://www.svt.se/sport/fotboll/dejan-kulusevski-pa-banken-kan-fa-spela-for-forsta-gangen-pa-15-ar",
-      "title": "Dejan Kulusevski fick hoppa in i slutet: ”Vi firade honom efteråt”",
-      "url": "https://www.svt.se/sport/fotboll/dejan-kulusevski-pa-banken-kan-fa-spela-for-forsta-gangen-pa-15-ar",
-      "summary": "Dejan Kulusevski fick spela sina första tävlingsminuter sedan 11 maj förra året. Med ett par minuter kvar blev den svenske landslagsmittfältaren inbytt för sitt Tottenham mot Coventry. Tottenham tog säsongens första seger och vann med 3–1.",
-      "publishedAt": "2026-10-19T18:33:55.000Z",
-      "publisher": "SVT Sport",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.svt.se/sport/fotboll/dejan-kulusevski-pa-banken-kan-fa-spela-for-forsta-gangen-pa-15-ar",
-      "sourceRole": "secondary"
-    },
-    {
       "id": "Fotbolltransfers-0-https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
       "title": "Filip Helander om MFF: \"Då är det tufft\"",
       "url": "https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
@@ -5226,18 +5214,6 @@
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/jens-gustafsson-mikkel-rygaard-ar-fantastisk/223064",
       "clubScoped": true,
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "SVT Sport-18-https://www.svt.se/sport/fotboll/uppgivet-i-mjallby-nu-ar-allt-bara-morkt",
-      "title": "Uppgivet i Mjällby: ”Nu är allt bara mörkt”",
-      "url": "https://www.svt.se/sport/fotboll/uppgivet-i-mjallby-nu-ar-allt-bara-morkt",
-      "summary": "Åtta raka utan seger i allsvenskan. Samtidigt spelar Mjällby i Europa – och nu väntar en tuff bortaresa. – Just nu är jag inte ”görsugen” på att åka till Georgien, konstaterar Tom Pettersson.",
-      "publishedAt": "2026-10-19T04:18:48.000Z",
-      "publisher": "SVT Sport",
-      "category": "men",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.svt.se/sport/fotboll/uppgivet-i-mjallby-nu-ar-allt-bara-morkt",
       "sourceRole": "secondary"
     },
     {
@@ -5294,32 +5270,6 @@
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/andreas-holmberg-vi-har-jobbat-med-det/223047",
       "clubScoped": true,
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Sportbladet-30-https://www.aftonbladet.se/sportbladet/fotboll/a/d7QRQj/manchester-united-tappade-poang-mot-leeds?utm_medium=rss",
-      "title": "Femte raka utan seger för United",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/d7QRQj/manchester-united-tappade-poang-mot-leeds?utm_medium=rss",
-      "summary": "Uniteds dystra svit",
-      "publishedAt": "2026-10-18T14:54:02.000Z",
-      "publisher": "Sportbladet",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/b0124e8a-a186-3c72-938f-4b54073e0144?format=auto&w=1000&s=304397c2be6505afa53296699e5b1107bd56d804",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/d7QRQj/manchester-united-tappade-poang-mot-leeds?utm_medium=rss",
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Sportbladet-32-https://www.aftonbladet.se/sportbladet/fotboll/a/GrJyP9/mjallby-foll-mot-vasteras-illa-ute-i-allsvenskan?utm_medium=rss",
-      "title": "Mjällby föll igen – mål bortdömt",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/GrJyP9/mjallby-foll-mot-vasteras-illa-ute-i-allsvenskan?utm_medium=rss",
-      "summary": "Fortsatt utan seger",
-      "publishedAt": "2026-10-18T13:54:47.000Z",
-      "publisher": "Sportbladet",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/5f611c80-8780-3748-8430-17d28ddaedbf?format=auto&w=1000&s=baa974e686d946bfbef0cdd004cb0358a117e87c",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/GrJyP9/mjallby-foll-mot-vasteras-illa-ute-i-allsvenskan?utm_medium=rss",
       "sourceRole": "secondary"
     },
     {
@@ -5716,7 +5666,7 @@
       ]
     },
     {
-      "id": "BK Häcken-15-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "id": "BK Häcken-17-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
       "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
       "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
@@ -5745,24 +5695,6 @@
           "publisher": "Expressen",
           "url": "https://www.expressen.se/sport/fotboll/allsvenskan/kalmar-brot-den-tunga-sviten-slog-degerfors/",
           "publishedAt": "2026-10-19T18:50:03.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-SVT Sport-13-https://www.svt.se/sport/fotboll/dejan-kulusevski-pa-banken-kan-fa-spela-for-forsta-gangen-pa-15-ar",
-      "title": "Dejan Kulusevski fick hoppa in i slutet: ”Vi firade honom efteråt”",
-      "summary": "Dejan Kulusevski fick spela sina första tävlingsminuter sedan 11 maj förra året. Med ett par minuter kvar blev den svenske landslagsmittfältaren inbytt för sitt Tottenham mot Coventry. Tottenham tog säsongens första seger och vann med 3–1.",
-      "publishedAt": "2026-10-19T18:33:55.000Z",
-      "latestPublishedAt": "2026-10-19T18:33:55.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "SVT Sport",
-          "url": "https://www.svt.se/sport/fotboll/dejan-kulusevski-pa-banken-kan-fa-spela-for-forsta-gangen-pa-15-ar",
-          "publishedAt": "2026-10-19T18:33:55.000Z",
           "role": "secondary",
           "discoveredVia": "rss"
         }
@@ -5807,24 +5739,6 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791750751/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-SVT Sport-18-https://www.svt.se/sport/fotboll/uppgivet-i-mjallby-nu-ar-allt-bara-morkt",
-      "title": "Uppgivet i Mjällby: ”Nu är allt bara mörkt”",
-      "summary": "Åtta raka utan seger i allsvenskan. Samtidigt spelar Mjällby i Europa – och nu väntar en tuff bortaresa. – Just nu är jag inte ”görsugen” på att åka till Georgien, konstaterar Tom Pettersson.",
-      "publishedAt": "2026-10-19T04:18:48.000Z",
-      "latestPublishedAt": "2026-10-19T04:18:48.000Z",
-      "category": "men",
-      "sources": [
-        {
-          "publisher": "SVT Sport",
-          "url": "https://www.svt.se/sport/fotboll/uppgivet-i-mjallby-nu-ar-allt-bara-morkt",
-          "publishedAt": "2026-10-19T04:18:48.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
         }
       ],
       "summaryMethod": "rss-description"
@@ -5891,46 +5805,6 @@
         }
       ],
       "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Sportbladet-30-https://www.aftonbladet.se/sportbladet/fotboll/a/d7QRQj/manchester-united-tappade-poang-mot-leeds?utm_medium=rss",
-      "title": "Femte raka utan seger för United",
-      "summary": "Femte raka utan seger för United",
-      "publishedAt": "2026-10-18T14:54:02.000Z",
-      "latestPublishedAt": "2026-10-18T14:54:02.000Z",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/b0124e8a-a186-3c72-938f-4b54073e0144?format=auto&w=1000&s=304397c2be6505afa53296699e5b1107bd56d804",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/d7QRQj/manchester-united-tappade-poang-mot-leeds?utm_medium=rss",
-          "publishedAt": "2026-10-18T14:54:02.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://akamai.vgc.no/v2/images/b0124e8a-a186-3c72-938f-4b54073e0144?format=auto&w=1000&s=304397c2be6505afa53296699e5b1107bd56d804"
-        }
-      ],
-      "summaryMethod": "excerpt"
-    },
-    {
-      "id": "event-Sportbladet-32-https://www.aftonbladet.se/sportbladet/fotboll/a/GrJyP9/mjallby-foll-mot-vasteras-illa-ute-i-allsvenskan?utm_medium=rss",
-      "title": "Mjällby föll igen – mål bortdömt",
-      "summary": "Mjällby föll igen – mål bortdömt",
-      "publishedAt": "2026-10-18T13:54:47.000Z",
-      "latestPublishedAt": "2026-10-18T13:54:47.000Z",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/5f611c80-8780-3748-8430-17d28ddaedbf?format=auto&w=1000&s=baa974e686d946bfbef0cdd004cb0358a117e87c",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/GrJyP9/mjallby-foll-mot-vasteras-illa-ute-i-allsvenskan?utm_medium=rss",
-          "publishedAt": "2026-10-18T13:54:47.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://akamai.vgc.no/v2/images/5f611c80-8780-3748-8430-17d28ddaedbf?format=auto&w=1000&s=baa974e686d946bfbef0cdd004cb0358a117e87c"
-        }
-      ],
-      "summaryMethod": "excerpt"
     },
     {
       "id": "event-Fotbolltransfers-4-https://fotbolltransfers.com/nyheter/rygaard-om-att-bli-dumpad-av-bk-hacken-gor-lite-ont-faktiskt/223012",
@@ -6368,6 +6242,27 @@
           "role": "primary",
           "discoveredVia": "rss",
           "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/388b323a-abaa-4e4f-b8fa-976cda7a366b.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-BK Häcken-17-https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+      "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
+      "summary": "Genrepsmatch på bortaplan inför den allsvenska återstarten.",
+      "publishedAt": "2026-10-01T13:35:00.000Z",
+      "latestPublishedAt": "2026-10-01T13:35:00.000Z",
+      "category": "men",
+      "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/ff180d06-bd15-4de3-81dc-1331756379df.jpg",
+      "body": "Nu börjar uppladdningen inför höstens avslutande omgångar i Allsvenskan. Fredagen den 2 oktober klockan 12.00 spelar BK Häcken träningsmatch borta mot IF Elfsborg på Borås Arena.\n\nBK Häcken är sedan i måndags tillbaka i träning efter ett längre uppehåll i Allsvenskan. Uppehållet har kommit i samband med landslagsuppehållet, där Olle Samuelsson (Sverige U21), Adrian Svanbäck (Finland), Leo Väisänen (Finland), Sabri Kondo (Tanzania U23) och Etrit Berisha (Albanien) just nu befinner sig ute på sina landslagsuppdrag. Övriga spelare i truppen är samlade på Gothia Park Academy igen, och förberedelserna är i full gång. Inför återstarten är det åtta omgångar kvar av Allsvenskan, där BK Häcken just nu står parkerade på en femteplats i serietabellen, med fem poäng bakom närmaste Europaplacering. Nu väntar matchspel inför höstens avslutande del av säsongen. Träningsmatch inbokad under fredagen",
+      "sources": [
+        {
+          "publisher": "BK Häcken",
+          "url": "https://bkhacken.se/nyhet/traningsmatch-mot-if-elfsborg-bt-sander",
+          "publishedAt": "2026-10-01T13:35:00.000Z",
+          "role": "primary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/ff180d06-bd15-4de3-81dc-1331756379df.jpg"
         }
       ],
       "summaryMethod": "rss-description"
