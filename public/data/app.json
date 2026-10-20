@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-10-20T10:46:05.551Z",
+    "generatedAt": "2026-10-20T12:22:53.877Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -16,8 +16,8 @@
     "sourceCounts": {
       "Sportbladet": {
         "fetched": 39,
-        "kept": 1,
-        "dropped": 38
+        "kept": 0,
+        "dropped": 39
       },
       "BK Häcken": {
         "fetched": 20,
@@ -34,15 +34,15 @@
         "kept": 17,
         "dropped": 3
       },
-      "SVT Sport": {
+      "Göteborgs-Posten": {
         "fetched": 20,
         "kept": 0,
         "dropped": 20
       },
-      "Göteborgs-Posten": {
-        "fetched": 19,
+      "SVT Sport": {
+        "fetched": 20,
         "kept": 0,
-        "dropped": 19
+        "dropped": 20
       },
       "Allsvenskan": {
         "fetched": 10,
@@ -173,7 +173,7 @@
         "url": "https://bkhacken.se/nyhet/besoksinformation-infor-ik-uppsala-pa-nordic-wellness-arena",
         "publisher": "BK Häcken",
         "publishedAt": "2026-10-03T09:00:00.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "men-excluded"
       },
       {
         "title": "Träningsmatch mot IF Elfsborg – BT sänder från Borås Arena",
@@ -200,7 +200,7 @@
         "title": "DIF 2027: Heta spelaren Djurgården vill värva i vinter",
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/VgrgXr/djurgarden-2027-gar-all-in-for-att-varva-konkurrentens-succe?utm_medium=rss",
         "publisher": "Sportbladet",
-        "publishedAt": "2026-10-20T09:15:38.000Z",
+        "publishedAt": "2026-10-20T12:09:23.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -397,7 +397,7 @@
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte?utm_medium=rss",
         "publisher": "Sportbladet",
         "publishedAt": "2026-10-18T15:09:27.000Z",
-        "verdict": "kept"
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Gif Sundsvall förlorade igen – nära att åka ur",
@@ -470,6 +470,13 @@
         "verdict": "no Häcken relation"
       },
       {
+        "title": "Allsvensk Panel: ”Han har rätt – det är patetiskt”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/allsvensk-panel-han-har-ratt-det-ar-patetiskt/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-10-20T12:08:13.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
         "title": "Real Madrid kan chockas i kväll?",
         "url": "https://www.expressen.se/sport/fotboll/premier-league/tips/real-madrid-kan-chockas-i-kvall/",
         "publisher": "Expressen",
@@ -480,7 +487,7 @@
         "title": "Siffrorna visar – Hult en av allsvenskans bästa",
         "url": "https://www.expressen.se/sport/fotboll/allsvenskan/siffrorna-visar-hult-en-av-allsvenskans-basta/",
         "publisher": "Expressen",
-        "publishedAt": "2026-10-20T08:06:06.000Z",
+        "publishedAt": "2026-10-20T12:09:54.000Z",
         "verdict": "general allsvenskan, no Häcken relation"
       },
       {
@@ -603,10 +610,17 @@
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Lossnar ordentligt för Tottenham nu",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/tips/lossnar-ordentligt-for-tottenham-nu/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-10-19T05:00:00.000Z",
+        "title": "17-årige Milan Sundström uttagen till Juniorkronorna",
+        "url": "https://www.svt.se/sport/ishockey/17-arige-milan-sundstrom-uttagen-till-juniorkronorna",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-20T10:58:40.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Pontus Jansson slår fast: Det saknar Malmö FF",
+        "url": "https://www.svt.se/sport/fotboll/pontus-jansson-slar-fast-det-saknar-malmo-ff",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-10-20T10:39:55.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -736,24 +750,10 @@
         "verdict": "men-excluded"
       },
       {
-        "title": "Här slår Julia Zigiotti Olme till igen för Manchester United",
-        "url": "https://www.svt.se/sport/fotboll/har-slar-julia-zigiotti-olme-till-igen-for-manchester-united",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-18T17:49:59.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Anton Källberg förlorade EM-finalen efter jätterysare",
-        "url": "https://www.svt.se/sport/bordtennis/anton-kallberg-forlorade-em-finalen-efter-jatterysare",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-10-18T17:00:38.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Uppgifter: Djurgården trycker på för Noel Sernelius i vinter – Norrköping informerat",
-        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=d202cc5c-ba55-cdd8-a8f7-4f65e2955517",
+        "title": "VSK vill förlänga med Gefvert, Herman Magnusson och Nsabiyumva – inga beslut om Bernardini, Wernersson och Musab; Boudah-lån utan option",
+        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=6f3df9c0-47be-2b21-ddf7-9b938fb34c7b",
         "publisher": "Bollsvenskan",
-        "publishedAt": "2026-10-20T09:56:51.000Z",
+        "publishedAt": "2026-10-20T10:37:08.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -967,6 +967,13 @@
         "verdict": "over candidate cap"
       },
       {
+        "title": "Frankrike vill sänka bidragen för plundrare",
+        "url": "https://www.gp.se/nyheter/varlden/frankrike-vill-minska-bidragen-for-plundrare.921ab373-8014-577c-9cbb-e11fb6217b7e",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-10-20T10:44:22.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
         "title": "Ny rättegång om Tjörnolyckan kan dröja – lotsen vill invänta haverirapport",
         "url": "https://www.gp.se/krim/ny-rattegang-kan-droja-lotsen-vill-invanta-haverirapport.9dfd7a6d-8b1d-5186-aa89-5a2e71f08f08",
         "publisher": "Göteborgs-Posten",
@@ -1106,7 +1113,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-10-20T10:41:45.203Z",
+    "retrievedAt": "2026-10-20T12:19:28.719Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -5114,7 +5121,7 @@
   "cardMatchesInspected": 24,
   "news": [
     {
-      "id": "Expressen-5-https://www.expressen.se/sport/fotboll/allsvenskan/kalmar-brot-den-tunga-sviten-slog-degerfors/",
+      "id": "Expressen-6-https://www.expressen.se/sport/fotboll/allsvenskan/kalmar-brot-den-tunga-sviten-slog-degerfors/",
       "title": "Kalmar bröt den tunga sviten – slog Degerfors",
       "url": "https://www.expressen.se/sport/fotboll/allsvenskan/kalmar-brot-den-tunga-sviten-slog-degerfors/",
       "summary": "Kalmar bröt flera mardrömssviter i ångestmötet. Efteråt var Degerfors självkritiskt. – Total katastrof, säger Sebastian Ohlsson i TV4 Play.",
@@ -5207,19 +5214,6 @@
       "discoveredVia": "rss",
       "dedupeKey": "https://fotbolltransfers.com/nyheter/andreas-holmberg-vi-har-jobbat-med-det/223047",
       "clubScoped": true,
-      "sourceRole": "secondary"
-    },
-    {
-      "id": "Sportbladet-28-https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte?utm_medium=rss",
-      "title": "Sonens succé framför ikonen",
-      "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte?utm_medium=rss",
-      "summary": "Succé för ikonens son – i startdebuten",
-      "publishedAt": "2026-10-18T15:09:27.000Z",
-      "publisher": "Sportbladet",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/4a2fe6c8-21c4-3d05-88a1-dd738e224b1f?format=auto&w=1000&s=8064ecc6c38a3a6b633f64b30bac58e3017bb1a8",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte?utm_medium=rss",
       "sourceRole": "secondary"
     },
     {
@@ -5634,7 +5628,7 @@
   ],
   "newsEvents": [
     {
-      "id": "event-Expressen-5-https://www.expressen.se/sport/fotboll/allsvenskan/kalmar-brot-den-tunga-sviten-slog-degerfors/",
+      "id": "event-Expressen-6-https://www.expressen.se/sport/fotboll/allsvenskan/kalmar-brot-den-tunga-sviten-slog-degerfors/",
       "title": "Kalmar bröt den tunga sviten – slog Degerfors",
       "summary": "Kalmar bröt flera mardrömssviter i ångestmötet. Efteråt var Degerfors självkritiskt. – Total katastrof, säger Sebastian Ohlsson i TV4 Play.",
       "publishedAt": "2026-10-19T18:50:03.000Z",
@@ -5752,26 +5746,6 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792332660/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Sportbladet-28-https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte?utm_medium=rss",
-      "title": "Sonens succé framför ikonen",
-      "summary": "Succé för ikonens son – i startdebuten",
-      "publishedAt": "2026-10-18T15:09:27.000Z",
-      "latestPublishedAt": "2026-10-18T15:09:27.000Z",
-      "category": "men",
-      "imageUrl": "https://akamai.vgc.no/v2/images/4a2fe6c8-21c4-3d05-88a1-dd738e224b1f?format=auto&w=1000&s=8064ecc6c38a3a6b633f64b30bac58e3017bb1a8",
-      "sources": [
-        {
-          "publisher": "Sportbladet",
-          "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte?utm_medium=rss",
-          "publishedAt": "2026-10-18T15:09:27.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss",
-          "imageUrl": "https://akamai.vgc.no/v2/images/4a2fe6c8-21c4-3d05-88a1-dd738e224b1f?format=auto&w=1000&s=8064ecc6c38a3a6b633f64b30bac58e3017bb1a8"
         }
       ],
       "summaryMethod": "rss-description"
