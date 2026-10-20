@@ -643,3 +643,135 @@ describe("classifyRelevance — club-scoped feed", () => {
     expect(r.category).toBe("youth");
   });
 });
+
+describe("capitalization — a lowercase word before a surname is grammar, not a name", () => {
+  // WHY (measured 2026-10-20): the different-person guard reads "<first>
+  // <surname>" pairs to detect a competing person. Swedish writes
+  // "<verb> <surname>" constantly — "då hyllas Rygaard" ("then Rygaard is
+  // praised") — and in the lowercased evidence text a verb is
+  // indistinguishable from a first name. Requiring the first token to be
+  // capitalized is what separates them, and it is list-free: a first name is
+  // always capitalized in Swedish prose, a verb in that position never is.
+  const KNOWN_CAP: KnownPersons = { currentPlayers: ["Mikkel Rygaard Jensen"], formerPlayers: [] };
+  const clsc = (title: string, summary = "") =>
+    classifyRelevance({ title, summary, publisher: "Expressen" }, KNOWN_CAP);
+
+  it("a lowercase verb before the surname does not read as a first name", () => {
+    // Verbatim from the served feed, 2026-10-20. "hyllas" is a passive verb.
+    const r = clsc(
+      "Utgående kontrakt – då hyllas Rygaard: ”Älskar honom”",
+      "Med ett utgående kontrakt är Mikkel Rygaards framtid i BK Häcken oviss.",
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+    expect(r.matchedPerson).toBe("Mikkel Rygaard Jensen");
+  });
+
+  it("a capitalized first name before the surname IS a different person", () => {
+    const r = clsc("Marcus Samuelsson: En enorm utmaning", "Leder SVT:s jakt på Sveriges nästa stjärnkock.");
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("a lowercase noun before a surname-noun does not block the match", () => {
+    // "seger" (a win) is lowercase; the player's surname is capitalized. The
+    // score-compound guard handles the hyphenated form; this covers the plain
+    // noun form.
+    const known: KnownPersons = { currentPlayers: ["David Seger"], formerPlayers: [] };
+    const r = classifyRelevance(
+      { title: "Seger tillbaka i Häckens trupp", summary: "Mittfältaren tränar igen.", publisher: "Göteborgs-Posten" },
+      known,
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+});
+
+describe("the slug carries no capitalization — it is checked separately", () => {
+  // The publisher lowercases the slug, so it cannot participate in the
+  // capitalization rule. It is still the publisher's own statement of who the
+  // article is about, so a slug naming a different person must conflict.
+  it("a slug naming a different person still conflicts (the Kennet trap)", () => {
+    const r = classifyRelevance(
+      {
+        title: "Sonens succé framför ikonen",
+        summary: "Succé för ikonens son – i startdebuten",
+        publisher: "Sportbladet",
+        url: "https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte",
+      },
+      { currentPlayers: ["David Andersson"], formerPlayers: [] },
+    );
+    expect(r.relevance).toBe("UNRELATED");
+  });
+
+  it("a slug naming the player himself does not conflict", () => {
+    const r = classifyRelevance(
+      {
+        title: "Öppnar för flytt inom Allsvenskan",
+        summary: "",
+        publisher: "Fotbolltransfers",
+        url: "https://www.fotbolltransfers.com/nyheter/mikkel-rygaard-oppnar-for-flytt-inom-allsvenskan/123456",
+      },
+      { currentPlayers: ["Mikkel Rygaard Jensen"], formerPlayers: [] },
+    );
+    expect(r.relevance).toBe("CURRENT_HACKEN");
+  });
+});
+
+describe("surname collisions — the whole historical class, in one table", () => {
+  // Every surname false positive this project has shipped or nearly shipped,
+  // plus the true positives that must survive. The point of the table is that
+  // it is a REGRESSION NET, not a rule: the rule is structural (a surname is
+  // not evidence on its own — see the different-person guard and the
+  // capitalization rule), so a new squad player with a common surname needs no
+  // new code here. If a future change breaks one of these, the change is wrong.
+  const KNOWN_FP: KnownPersons = {
+    currentPlayers: [
+      "Olle Samuelsson", "Adam Lundkvist", "Gustav Lindgren", "David Andersson",
+      "David Seger", "Mikkel Rygaard Jensen", "Julius Lindberg", "Sabri Dahari Kondo",
+      "Bamir Fierza Sadiku",
+    ],
+    formerPlayers: ["Jesper Ljung", "Jesper Mattsson", "Niklas Andersen"],
+  };
+  const run = (title: string, summary = "", url?: string) =>
+    classifyRelevance({ title, summary, publisher: "Göteborgs-Posten", url }, KNOWN_FP);
+
+  const FALSE_POSITIVES: [string, string, string, string?][] = [
+    ["chef Marcus Samuelsson", "Marcus Samuelsson: En enorm utmaning", "Leder SVT:s jakt på Sveriges nästa stjärnkock."],
+    ["Hanna Lundkvist (women's NT)", "Svensk kross – och Hanna Lundkvist slog till med drömmål", ""],
+    ["Thomas Lindgren (Hammarby)", "Hammarbys sponsor kopplas till grov brottslighet", "Thomas Lindgren kommenterar."],
+    ["Viktor Andersson (GK)", "Viktor Andersson köps loss av Blåvitt", ""],
+    ["Roger Ljung (VM-94)", "VM 94-hjälten Roger Ljung skiljer sig", "Fotbollsexperten berättar."],
+    ["Britt-Marie Mattsson", "Britt-Marie Mattsson: Trump bjuder in Putin", ""],
+    ["Silas Andersen", "Silas Andersen: Jag skulle älska det", ""],
+    ["Kennet Anderssons son", "Sonens succé framför ikonen", "Succé för ikonens son – i startdebuten",
+      "https://www.aftonbladet.se/sportbladet/fotboll/a/X9Oj3m/kennet-anderssons-son-liam-malskytt-for-orgryte"],
+    ["Smilla Sundell (UFC)", "Smilla Sundell klar för UFC efter seger", "",
+      "https://www.svt.se/sport/mma/smilla-sundell-klar-for-ufc"],
+    ["Ovetjkin (hockey)", "Seger i Alexander Ovetjkins sista hemmapremiär", "",
+      "https://www.svt.se/sport/ishockey/ovetjkin-avslutar-karriaren"],
+    ["Kulusevski (EN DASH score)", "Dejan Kulusevski tillbaka i spel – efter 526 dagar", "Tottenhams 3–1-seger"],
+  ];
+
+  for (const [label, title, summary, url] of FALSE_POSITIVES) {
+    it(`rejects ${label}`, () => {
+      const r = run(title, summary, url);
+      expect(r.relevance).toBe("UNRELATED");
+      expect(r.matchedPerson).toBeUndefined();
+    });
+  }
+
+  const TRUE_POSITIVES: [string, string, string][] = [
+    ["bare surname headline", "Rygaard: \"Primära intresset ligger i att komma hem till Danmark\"", ""],
+    ["possessive surname", "Rygaards gläds över transfern: \"Alla tänkte wow\"", ""],
+    ["lowercase verb before surname", "Utgående kontrakt – då hyllas Rygaard: ”Älskar honom”", "Mikkel Rygaards framtid i BK Häcken är oviss."],
+    ["bare middle surname (Sadiku)", "Sadiku tillbaka i träning", "Anfallaren är redo igen."],
+    ["bare middle surname (Kondo)", "Kondo om framtiden i Häcken", "Mittfältaren öppnar för samtal."],
+    ["club-noun possessive", "Häckens Rygaard är osäker inför söndag", "Tränaren utvärderar honom."],
+    ["full name", "Julius Lindberg tvåmålsskytt när Häcken vann", ""],
+    ["bare surname, no competing person", "Samuelsson tillbaka i träning", "Anfallaren är redo igen."],
+  ];
+
+  for (const [label, title, summary] of TRUE_POSITIVES) {
+    it(`keeps ${label}`, () => {
+      expect(run(title, summary).relevance).toBe("CURRENT_HACKEN");
+    });
+  }
+});

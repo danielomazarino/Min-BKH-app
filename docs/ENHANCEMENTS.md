@@ -557,6 +557,94 @@ is the only path.
 
 ---
 
+## B-028 · Surname false positives — structural fix, no more per-case patches — FIXED
+
+**Status:** FIXED 2026-10-20. Unit 734/734, typecheck and lint green. ·
+**Source:** user requirement — *"several times surnames of actual squad players
+have caused false positives, and I have multiple times said we should have a
+robust solution so we don't have to develop code for this problem each time a
+new problem occurs … investigate for a robust solution once for all based on
+the full name of players so last name false positives are avoided"*
+
+### The problem with what we had
+
+B-021 through B-027 were all the same defect wearing different clothes: a
+squad player's **surname** is also an ordinary Swedish word, or a common
+surname, or a name belonging to someone else. Each fix added a guard tuned to
+the case in front of us:
+
+| Incident | Guard added |
+|---|---|
+| "7-3-seger" (score compound) | digit-dash-dash pattern |
+| "3–1-seger" (EN DASH) | widened the dash class |
+| "Marcus Samuelsson" (chef) | different-person pair regex |
+| "Kennet Anderssons son" (possessive) | `s?` in the pair regex |
+
+Every one of those is a heuristic that recognises a *competing* name. It only
+fires when the competing name appears in the exact shape the guard expects. A
+new squad player with a common surname, or a new way of writing the competing
+name, defeats it again. That is why the same class kept returning.
+
+### The structural rule
+
+A surname is **not evidence on its own**. It counts only when the article also
+names the person's **given name** next to it — "David Andersson", "Mikkel
+Rygaard". A different person who merely shares the surname can never satisfy
+that, because they have a different given name. The whole class is excluded by
+construction, with no list of surnames, first names or exceptions.
+
+Two supporting rules make it work in real Swedish prose:
+
+1. **Capitalization decides whether a preceding token is a name.** `norm()`
+   lowercases everything, which destroys the only reliable distinction between
+   the surname "Seger" and the noun "seger" (a win). Swedish writes
+   `<verb> <surname>` constantly — "då hyllas Rygaard" ("then Rygaard is
+   praised") — and in lowercased text a verb is indistinguishable from a first
+   name. A first name is always capitalized in Swedish prose; a verb in that
+   position never is. Measured across all 54 snapshots: every genuine surname
+   occurrence is capitalized, every noun collision is lowercase.
+2. **The slug is checked without the capitalization rule.** Publishers
+   lowercase slugs, so they carry no case information — but a slug naming a
+   different person (`…/kennet-anderssons-son-liam-…`) is the publisher's own
+   statement of who the article is about and must still conflict.
+
+Capitalization is used **only** to decide whether a preceding token is a name.
+It is never used to decide whether a surname matches: "Seger i Alexander
+Ovetjkins sista hemmapremiär" is capitalized and is still a hockey false
+positive.
+
+### Measured cost — zero
+
+Replayed against all 54 committed `app.json` snapshots (86 unique headlines):
+
+| | before | after |
+|---|---|---|
+| CURRENT_HACKEN | 54 | **54** |
+| UNRELATED | 21 | **21** |
+| FORMER_PLAYER | 4 | **4** |
+| UNKNOWN | 3 | **3** |
+| GENERAL_ALLSVENSKAN | 4 | **4** |
+
+No genuine article lost. The two false positives the old guard still let
+through — Smilla Sundell/UFC and the Ovetjkin hockey item — are now rejected.
+
+A stricter variant (require the full name, no surname fallback) was measured
+and **rejected**: it dropped 10 genuine articles, 7 of which are found only
+through the URL slug ("Öppnar för flytt inom Allsvenskan" names Rygaard in the
+slug alone). The slug is load-bearing and must stay.
+
+### Regression net
+
+`newsRelevance.test.ts` now carries a single table of every surname false
+positive this project has shipped or nearly shipped — Samuelsson, Lundkvist,
+Lindgren, Andersson/Kennet, Seger, Ljung, Mattsson, Andersen, Sundell,
+Ovetjkin, Kulusevski — alongside the true positives that must survive (bare
+surname headlines, possessives, lowercase verbs, middle surnames, club-noun
+possessives). It is a net, not a rule: a new squad player with a common surname
+needs no new entry.
+
+---
+
 ## B-027 · Örgryte article published as Häcken news (possessive surname collision) — FIXED
 
 **Status:** FIXED 2026-10-20. Unit 710/710, typecheck and lint green. ·
@@ -2901,6 +2989,7 @@ both linked in the sheet.
 | **B-025** | **FIXED 2026-10-20 — DEPLOYED, byte-verified** | The article sheet showed the story twice, the second copy cut off mid-sentence at the 2000-char cap. fotbolltransfers renders the body twice in one document — once inside `fresnel-greaterThanOrEqual-md` (desktop) and once inside `fresnel-lessThan-md` (mobile); CSS hides one, but `extractContainer` joined every match. Fix: `dropRepeatedCopy` keeps the first run when the paragraph list repeats, tolerating a truncated second copy. Verified live: 25 → 12 paragraphs on fotbolltransfers; bkhacken.se's lead+body pair (different text) preserved. Served body now 1412 chars, one copy, ends on the real last line. 708 unit tests green. See the B-025 section |
 | **B-026** | **DONE 2026-10-20** | `liquid-glass-navigation-handover.md` sat untracked in the repo root describing the 2026-10-04 working tree. It had drifted: quoted code was the pre-fix state (589 vs 616 lines, missing both `c109164` fixes), CSS values were from an older design (`--fabnav-h` 58→78px, `--fabnav-w` 260→480px, `--fabnav-top` removed), and it contained an unfilled "NaN of 2466 lines" placeholder. Moved to `docs/archive/` with a staleness banner listing the drift and the findings that are still accurate. See the B-026 section |
 | **B-027** | **FIXED 2026-10-20** | **Confirmed false positive.** "Sonens succé framför ikonen" (Sportbladet) is about Örgryte's Liam Andersson and his father Kennet — neither has any Häcken connection (Kennet's Wikidata P54 has no Häcken; the only "Häcken" on the page is the league table). It matched squad player David Andersson on the bare surname, and the different-person guard missed it because the surname regex allows a possessive `s` while the guard's pair regex did not — so "Kennet Anderssons" produced no `<first> <surname>` pair. Fix: the pair regex now accepts the same optional `s`. Verified both directions (6 cases, incl. "Häckens Rygaard" and "Rygaards gläds" still matching). 710 unit tests green. See the B-027 section |
+| **B-028** | **FIXED 2026-10-20** | **Structural fix for the whole surname-collision class.** B-021…B-027 were one defect in different clothes: a squad player's surname is also a Swedish word, a common surname, or someone else's name. Each fix added a guard that recognises a *competing* name, so a new player or a new phrasing defeated it again. The rule is now the inverse: a surname is not evidence on its own — it counts only when the person's GIVEN name appears next to it, which a different person sharing the surname can never satisfy. Capitalization (preserved in a second evidence surface) decides whether a preceding token is a name, so "då hyllas Rygaard" is not read as a person named "Hyllas"; the slug is checked without that rule because publishers lowercase it. Measured over all 54 snapshots: 54 CURRENT_HACKEN before and after — zero recall loss — and the two remaining false positives (Sundell/UFC, Ovetjkin hockey) are now rejected. A stricter full-name-only variant was measured and rejected: it lost 10 genuine articles, 7 found only via the URL slug. 734 unit tests green. See the B-028 section |
 | **E-018** | **DONE — deployed 2026-10-07** (`73222f0`) | One-page Data & källor, no duplicated counts. Article audit subpage (every headline per source, verdict-marked, linked to source) — data flows from the 2026-10-08 nightly. OpenRouter failures show the shared-pool diagnosis. See the E-018 section |
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |

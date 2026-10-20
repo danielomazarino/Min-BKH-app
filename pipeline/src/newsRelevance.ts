@@ -107,6 +107,43 @@ function evidenceText(item: {
   );
 }
 
+/**
+ * The same evidence text, but with capitalization preserved.
+ *
+ * WHY A SECOND SURFACE (measured 2026-10-20)
+ * ------------------------------------------
+ * `norm()` lowercases, which destroys the only reliable distinction between a
+ * surname and an ordinary Swedish word: "Seger" (the player) and "seger" (a
+ * win) become the same token. The different-person guard needs that
+ * distinction, because Swedish writes "<verb> <surname>" constantly —
+ * "då hyllas Rygaard" ("then Rygaard is praised"), "till Rygaard" — and a
+ * lowercase word before a surname is grammar, not a first name.
+ *
+ * Measured across all 54 committed snapshots: every genuine surname occurrence
+ * is capitalized ("Rygaard", "Rygaards", "Andersson", "Lindgren", "Lundkvist",
+ * "Samuelsson", "Seger") and every noun collision is lowercase ("seger",
+ * "3–1-seger", "7-3-seger"). Capitalization is therefore used ONLY to decide
+ * whether a preceding token is a NAME — never to decide whether a surname
+ * matches, because "Seger i Alexander Ovetjkins sista hemmapremiär" is
+ * capitalized and still a hockey false positive.
+ *
+ * The slug is excluded: it is ASCII-fied and lowercased by the publisher, so
+ * it carries no capitalization information at all.
+ */
+function casedEvidenceText(item: {
+  title?: string;
+  summary?: string;
+  url?: string;
+  bodyText?: string;
+}): string {
+  // Diacritics are stripped (so "Öhman" matches the normalized "ohman") but
+  // case is preserved — that is the whole point of this surface.
+  return [item.title ?? "", item.summary ?? "", item.bodyText ?? ""]
+    .join(" . ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 /** Explicit Häcken mention in relevant context. */
 export function mentionsHäcken(
   title: string,
@@ -168,11 +205,27 @@ function surnameCandidates(normalizedName: string): string[] {
 const DASH = "[\\u2010\\u2011\\u2012\\u2013\\u2014\\u2015\\u2212-]";
 
 /**
+ * A literal string as a regex fragment that matches either case, character by
+ * character.
+ *
+ * Needed because the `i` flag would also make `[\p{Lu}]` case-insensitive,
+ * silently destroying the capitalization requirement it is there to express.
+ * Expanding the surname instead keeps the first-token class strict.
+ */
+function ciPattern(s: string): string {
+  return [...s].map((c) => (/[a-z]/.test(c) ? `[${c}${c.toUpperCase()}]` : c)).join("");
+}
+
+/**
  * Does the article mention a known Häcken person by name?
  *
- * `surnameOnly` (default true) allows a surname-only match, which headlines
- * often use ("Falk utvisad", "Rygaard om Häckens väntan"). It is safe for the
- * CURRENT squad — 27 club-verified names — but NOT for the former-player list.
+ * `surnameOnly` (default true) allows a surname match, which headlines often
+ * use ("Falk utvisad", "Rygaard om Häckens väntan"). A surname is never
+ * evidence on its own: it is rejected when the article names a DIFFERENT
+ * person with that surname, and a lowercase word before the surname is read
+ * as grammar rather than a first name. Both rules are structural — no list of
+ * surnames, first names or exceptions — so a new squad player with a common
+ * surname needs no new code. See the pass-2 comments.
  *
  * WHY FORMER PLAYERS REQUIRE A FULL NAME (measured 2026-10-09)
  * -----------------------------------------------------------
@@ -194,6 +247,7 @@ export function mentionsKnownPerson(
 ): string | null {
   const surnameOnly = opts.surnameOnly ?? true;
   const text = evidenceText({ title, summary, url: opts.url, bodyText: opts.bodyText });
+  const casedText = casedEvidenceText({ title, summary, url: opts.url, bodyText: opts.bodyText });
 
   // PASS 1 — full-name matches, across EVERY person, before any surname match.
   //
@@ -279,21 +333,45 @@ export function mentionsKnownPerson(
       // only in the site's league table. The pair regex now accepts the same
       // optional "s", so the possessive form is evidence of a different person
       // exactly like the plain form.
-      const pairRe = new RegExp(`\\b([a-zåäöéü0-9]+) ${surname}s?\\b`, "g");
+      //
+      // CAPITALIZATION (2026-10-20): the pair is read from the CASED text, and
+      // a candidate first token must start with a capital. Without this the
+      // guard rejected genuine articles — "då hyllas Rygaard" ("then Rygaard
+      // is praised") read "hyllas" as a first name, because Swedish writes
+      // "<verb> <surname>" constantly and the lowercase text cannot tell a verb
+      // from a name. A first name is always capitalized in Swedish prose; a
+      // verb in that position never is.
+      //
+      // The surname itself is matched case-insensitively, because the slug is
+      // lowercased by the publisher. Only the FIRST token's capitalization
+      // carries meaning.
+      //
+      // THE SLUG IS CHECKED SEPARATELY, WITHOUT the capitalization rule: the
+      // publisher lowercases it, so it carries no case information at all. A
+      // slug that names a different person ("…/kennet-anderssons-son-liam-…")
+      // is the publisher's own statement of who the article is about, and must
+      // still conflict.
+      const pairSources = [
+        { text: casedText, re: new RegExp(`\\b([\\p{Lu}][\\p{L}\\p{N}]*) ${ciPattern(surname)}s?\\b`, "gu") },
+        { text: norm(slugText(opts.url ?? "")), re: new RegExp(`\\b([a-z0-9]+) ${surname}s?\\b`, "g") },
+      ];
       let conflicted = false;
-      for (const m of text.matchAll(pairRe)) {
-        const first = m[1];
-        if (tokens.includes(first)) continue; // the player's own name
-        // A first token ending in "s" is NOT automatically a possessive:
-        // Marcus, Thomas, Anders, Mats and Niklas all end in s, and "Marcus
-        // Samuelsson" was exactly one of the false positives this guard
-        // exists for. Only a club/football noun in possessive form
-        // ("Häckens Rygaard" = OUR Rygaard) is excluded, from the closed
-        // POSSESSIVE_CLUB_WORDS set below.
-        if (first.endsWith("s") && POSSESSIVE_CLUB_WORDS.has(first)) continue;
-        if (FUNCTION_WORDS.has(first)) continue; // grammar, not a name
-        conflicted = true; // a different "<first> <surname>" person is named
-        break;
+      for (const { text: src, re } of pairSources) {
+        for (const m of src.matchAll(re)) {
+          const first = norm(m[1]);
+          if (tokens.includes(first)) continue; // the player's own name
+          // A first token ending in "s" is NOT automatically a possessive:
+          // Marcus, Thomas, Anders, Mats and Niklas all end in s, and "Marcus
+          // Samuelsson" was exactly one of the false positives this guard
+          // exists for. Only a club/football noun in possessive form
+          // ("Häckens Rygaard" = OUR Rygaard) is excluded, from the closed
+          // POSSESSIVE_CLUB_WORDS set below.
+          if (first.endsWith("s") && POSSESSIVE_CLUB_WORDS.has(first)) continue;
+          if (FUNCTION_WORDS.has(first)) continue; // grammar, not a name
+          conflicted = true; // a different "<first> <surname>" person is named
+          break;
+        }
+        if (conflicted) break;
       }
       if (conflicted) continue;
       return p;
