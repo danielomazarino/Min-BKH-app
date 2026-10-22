@@ -1,259 +1,307 @@
-# CONTINUATION — B-029: Wikidata-identity disambiguation for homonym false positives
+# Continuation — session of 2026-10-23
 
-**Status at handoff (2026-10-20 23:47 CEST):** repo clean at `4445006` (plus this untracked file).
-**No code written for B-029 yet.**
-The investigation is COMPLETE and the answer is POSITIVE — a robust solution exists and is measured.
-Next action: implement B-029, test, deploy, regenerate data, byte-verify.
-
-### How to resume (first 5 commands)
-
-```bash
-cd "/home/lm/Dev/BKH pwa app"
-git --no-pager log --oneline -3
-git status --porcelain
-npm --prefix pipeline test -- --run     # or the repo's own test command — 738 tests, must stay green
-gh workflow list
-```
-
-Then read §5 (the plan) and §6 (gotchas) below before touching code. The single most important
-constraint: **the gate must be restricted to FOOTBALLER twins** — the all-human variant cost 5 genuine
-articles (§4.1).
+**Read this first.** It supersedes the previous `continuation.md` (the B-029
+handoff, committed as `94aaf30`), which is now archived at
+`docs/archive/continuation-B-029-handoff-2026-10-22.md`. That document's B-029
+content is still accurate and is also mirrored in `docs/ENHANCEMENTS.md` under
+**B-029** — read that section rather than the archived file, which is stale in
+three places (see §7).
 
 ---
 
-## 1. The user's request (verbatim, most recent)
+## 1. Where the repo is right now
 
-> "i see that the late news article about kalmar and degerfors is referring to the sebastian ohlsson that
-> has no häcken background … there are two footballers named Sebastian Ohlsson currently associated with
-> Degerfors IF. One was born in 1992 and plays as a defensive midfielder, while the other was born in
-> 1993 and plays as a right-back and midfielder. … see if a new solution can solve this issue. if not let
-> me know before you do any changes"
+| | |
+| --- | --- |
+| HEAD | `6ef88b3` — "fix: unrot two e2e fixtures, fix stale search submit, record B-029..B-033" |
+| Pushed | yes, `origin/main` |
+| Working tree | clean |
+| CI | run `39856436718` on `6ef88b3` — **in progress at handoff time** |
+| Deploy | run `39856436707` on `6ef88b3` — **SUCCESS** |
+| Served build id | **`6ef88b3.1b5a14a`** — verified by curl, matches the pushed commit |
+| Served `app.json` sha256 | `e3a3ac81b0a134bf34387eab413ee77094cbdbd97ff4db0e0f8c46f1e8da7650` |
+| Committed `app.json` sha256 | `e3a3ac81b0a134bf34387eab413ee77094cbdbd97ff4db0e0f8c46f1e8da7650` — **identical** |
+| Served data | 41 `news`, 31 `newsEvents` |
 
-> "https://forzafootball.com/match/degerfors-if-kalmar-ff-1219499965/lineups here i can find which
-> sebastian ohlsson that was playing easily. are you still searching"
+**The data was NOT regenerated this session.** The served bytes are unchanged
+from before; only app code and docs were pushed. So the served artifact is
+still byte-identical to the committed one, which is the correct state.
 
-> "number 7 is on … /lineups under unused substitutes. have you found it"
+---
 
-**Gate honoured:** the user asked to be told *before* changes. The answer is "yes, a solution exists" —
-that report was delivered in-conversation; implementation is authorised to proceed.
+## 2. What was done this session
 
-## 2. GROUND TRUTH (verified this session — do not re-litigate)
+Five items were on the table. **One is complete, one is half-done, three are
+untouched.**
 
-The false positive: **Expressen — "Kalmar bröt den tunga sviten – slog Degerfors"**
-`https://www.expressen.se/sport/fotboll/allsvenskan/kalmar-brot-den-tunga-sviten-slog-degerfors/`
-summary: *"– Total katastrof, säger Sebastian Ohlsson i TV4 Play."* → classified `FORMER_PLAYER` / category `former`.
+### Done — item 1: the stale e2e fixtures (B-032)
 
-**Two real footballers, IDENTICAL Swedish label "Sebastian Ohlsson":**
+CI had been red for **8 consecutive runs**. Both failures were assertions
+pinned to data the nightly regenerates.
 
-| | **Ours** | **Twin** |
-|---|---|---|
-| Wikidata | **Q17461659** | **Q16633334** |
+**(a) `e2e/brief.spec.ts`** hard-coded `Kalmar FF` / `0–5` against the real
+committed `app.json`. True for one specific match; the current last result is
+`Malmö FF` / `0–1`. The invariant is the **order**, not the fixture, so the
+expectation now derives from the committed data.
+
+**Mutation-tested.** I deliberately reversed `matchTeams()` to render
+Häcken-first and confirmed the rewritten test **fails**. A test that cannot fail
+is not a guard. Restored afterwards.
+
+The goalscorer assertion had the same defect (hard-coded `"Lindgren"`; the
+current scorer is Svanbäck) and was fixed the same way.
+
+**(b) `e2e/news.spec.ts`** capped card height at 220px; CI measured **222.1px**.
+This was a **real layout defect**, not a tight threshold:
+
+- `.ncard-meta` had **151px** of content box
+- `"21 okt. · Tidigare spelare"` measures **159px** in Chromium
+- → wrapped to two lines → **+14px**
+
+So card height depended on **which category happened to sort first**. A
+supporter would see an uneven grid.
+
+Fix: the grid card uses the standard Swedish abbreviation `F.d. spelare`
+(127px); `.ncard-meta` is `nowrap` with ellipsis. The list row and the story
+sheet keep the full wording.
+
+**Verified:** every card is **208.1px** in both Chromium and WebKit, for `men`,
+`women` and `former` categories, at 359/390/430px viewports.
+
+### Done — bonus: a real user-facing bug (B-031)
+
+Found while diagnosing the above, **not** from a user report.
+
+`app/pages/FormerPlayers.tsx` submitted `submit(draft)` — the value from the
+last **committed** React render. Type-and-Enter faster than React commits and it
+submits the *previous* value, which on the first search is `""`. That calls
+`setDraft("")`, **wiping the text the user just typed**, and sets the page to
+idle.
+
+Caught from a Playwright failure snapshot showing an empty search box on an idle
+page. Reproduced at **1 in 8 runs**; **12/12** after reading the value from the
+DOM (`inputRef.current?.value ?? draft`).
+
+This is a real bug on a slow phone, not a test artifact.
+
+### Done — item 2: persist findings to `docs/ENHANCEMENTS.md`
+
+Added status rows and full sections for **B-029, B-030, B-031, B-032, B-033**.
+
+This mattered because the "Frequent news article updates" session **died with
+`session.error`** ("400 The requested model is not supported") before it could
+persist anything. Its B-029 findings existed only in session checkpoints. They
+are now on disk.
+
+### Half-done — item 1b: WebKit flakiness (B-033)
+
+`e2e/former-players.spec.ts` on WebKit is **load-dependent flaky**. A
+*different* subset fails on each full-spec run. Observed across runs: lines
+359, 367, 396, 428, 474, 517, 524, 552, 625, 644, 655, 686, 708, 717, 735.
+Every one passes **10/10 in isolation**.
+
+CI reports them as **flaky**, not failed, because `retries: 1` absorbs them.
+The original CI log on `94aaf30` already listed 7 of them **before any change
+this session**.
+
+**Not root-caused.** Failure signature: `searchForHit` times out on
+`former-player` — the search resolved to something other than a result row under
+load. Worth its own investigation.
+
+### Not started — items 3, 4, 5
+
+- **Dead `dedupeKey`** (B-030b) — one line in `pipeline/src/rss.ts`
+- **B-029** — Wikidata identity gate, zero lines written
+- **Display gap** (B-030a) — measured, not fixed
+- **Cadence** — `--news-only` mode, 4 cron slots, cap 120
+
+---
+
+## 3. Verification status — be precise about this
+
+| Check | Result |
+| --- | --- |
+| `npm run lint` | clean |
+| `npm run typecheck` | clean |
+| `npm test` | **738/738**, 32 files |
+| `brief.spec.ts` + `news.spec.ts` | **99 passed**, 7 skipped |
+| Session-cache test after B-031 fix | **12/12** |
+| Mutation test on `matchTeams()` | test failed as required |
+| Full e2e suite | **425 passed, 6 failed, 7 skipped** — all 6 are B-033 |
+| Deploy on `6ef88b3` | **SUCCESS** — served build id `6ef88b3.1b5a14a`, verified by curl |
+| CI on `6ef88b3` | **in progress at handoff time — NOT YET CONFIRMED** |
+
+**The app code IS deployed.** The served document reports build
+`6ef88b3.1b5a14a`, which is the commit pushed this session. So B-031 (the stale
+search submit) and B-032 (the card layout) are live.
+
+**CI is the only open question.** It was still running when this was written.
+Check it first — if it is red, the remaining failures are almost certainly
+B-033 (WebKit flakiness), which `retries: 1` normally absorbs.
+
+---
+
+## 4. First actions for the next session
+
+```bash
+cd "/home/lm/Dev/BKH pwa app"
+
+# 1. Did CI go green? This is the whole point of the push.
+gh run list --limit 5 --json databaseId,name,status,conclusion,headSha
+
+# 2. If CI is red, read the failing job.
+gh run view <run-id> --log-failed | tail -80
+
+# 3. Confirm the deploy actually published the new build id.
+curl -s https://danielomazarino.github.io/Min-BKH-app/ | grep -o 'data-build="[^"]*"'
+
+# 4. Confirm the served data is still byte-identical to the committed data.
+git show HEAD:public/data/app.json | sha256sum
+curl -s https://danielomazarino.github.io/Min-BKH-app/data/app.json | sha256sum
+```
+
+Expected build id: `6ef88b3.<something>`. If it still reads `6971caa.1988cd3`,
+the deploy did not publish and that is the thing to fix first.
+
+---
+
+## 5. Recommended order for the remaining work
+
+| # | Item | Size | Why this order |
+| --- | --- | --- | --- |
+| 1 | Confirm CI/Deploy green on `6ef88b3` | 5 min | Nothing else matters if the push did not land |
+| 2 | **Dead `dedupeKey`** (B-030b) | **S** — one line + tests | Unblocks multi-source events; makes B-029 verification cleaner |
+| 3 | **B-029** Wikidata gate | **L** — 2–3 days | Must land **before** the display gap, or the false positive becomes visible |
+| 4 | **Display gap** (B-030a) | **M** | Rebuild events from the accumulated `news` array |
+| 5 | **Cadence** | **M–L** | Last: 4× the runs multiplies every bug above |
+| — | B-033 WebKit flakiness | **M** | Independent; do it when CI noise becomes annoying |
+
+### Why B-029 before the display gap
+
+Today the Ohlsson false positive is **invisible** — it is in `news` but in no
+event. Fixing the display gap first would make it visible. Fix the gate first.
+
+### Why cadence is last
+
+4× the runs means 4× the exposure to any bug in items 2–4.
+
+---
+
+## 6. Key facts to carry forward
+
+### The display gap, measured on the served artifact
+
+```
+news: 41   newsEvents: 31   articles in news but in no event: 10
+events with more than one source: 0
+```
+
+The 10 invisible articles include real Häcken stories: "Mikkel Rygaard lämnar
+Häcken", "Häcken körde över Örgryte i derbyt – Lindberg hjälte", "Julius
+Lindberg tvåmålsskytt när Häcken vann".
+
+Two independent causes:
+
+- **(a)** `run.ts` builds `newsEvents` from *this run's* candidates only, while
+  `news` accumulates across runs. The app renders `newsEvents` (`News.tsx`,
+  `Brief.tsx`), never `news`.
+- **(b)** `pipeline/src/rss.ts` sets `dedupeKey: link` on every item, so
+  `pipeline/src/dedupe.ts`'s `item.dedupeKey ?? key` **never fires**. Every
+  article keeps its own URL as its event key → `buildNewsEvents` can never group
+  two articles → **0 multi-source events**.
+
+**Caveat for (a):** `run.ts` deletes `bodyText` from accumulated news after
+events are built, so archived items have no body text. Any fix needing text from
+an archived item must persist bodies (+2.3KB gzip measured) or merge the
+previous run's events in.
+
+**Out of scope:** true cross-run story merging is **unsolved** — best prototype
+TP=16 / FN=6 / **FP=25**. Do not attempt it.
+
+### B-029 ground truth (two Sebastian Ohlssons)
+
+| | **Ours** | **The twin** |
+| --- | --- | --- |
+| QID | `Q17461659` | `Q16633334` |
 | Born | 1992-12-31 | 1993-05-26 |
-| Häcken | **YES — BK Häcken 2014–2015** | **NO** (Örgryte / IFK Göteborg / St. Pauli / Degerfors) |
-| Position (P413) | mittfältare (Q193592) | anfallare/försvarare |
-| Shirt | **#7** | **#16** |
-| Fogis (P5038) | 370608 | **367391** |
-| Transfermarkt (P2446) | 205436 | 217357 |
-| Height/weight | 186 cm / 73 kg | 184 cm / 76 kg |
-| Youth club | Hova IF | Qviding FIF |
+| BK Häcken | **2014–2015** | none |
+| Position | mittfältare (`Q193592`) | anfallare / försvarare |
+| Shirt | #7 | #16 |
+| Fogis | 370608 | 367391 |
+| TM | 205436 | 217357 |
 
-**NOTE — the user's premise is INVERTED.** The user believed the 1992-born one was the non-Häcken one.
-Ground truth is the opposite: **1992 = former Häcken player; 1993 = no Häcken background.**
+**The original premise was inverted.** 1992 = former Häcken player; 1993 = no
+Häcken background. Forza lineups for Degerfors 1–2 Kalmar (2026-10-19, match
+`1219499965`): **#16 (b. 1993) started**; #7 was an unused substitute. The
+quoted player is the twin.
 
-**The article quotes the player who STARTED that match.** Forza Football lineups for
-Degerfors 1–2 Kalmar, 2026-10-19 (match id 1219499965), reached via `r.jina.ai` (site 403s curl+browser):
-- **#16 (b. 1993, player id 2178907) — STARTED** (in the starting XI block)
-- **#7 (b. 1992, player id 1314006) — UNUSED SUBSTITUTE** (user confirmed this reading)
+**Solution:** a computed "shadow set" — one SPARQL `SELECT DISTINCT` self-join
+on `rdfs:label`, restricted to `P106 = Q937857` (footballer) on the twin side.
+Measured cost: footballer-twin variant = **0** genuine articles lost; all-human
+variant = **5** lost (all Julius Lindberg). **The gate must be restricted to
+footballer twins.**
 
-Corroborating: `degerforsif.se/truppen-mot-kalmar-i-omgang-24/` lists both #7 and #16;
-SvenskaFans startelvor has one Ohlsson in the XI and one on the bench;
-Nerikes Allehanda calls the speaker **"backen Sebastian Ohlsson"**; Aftonbladet: "Degerfors Sebastian Ohlsson
-sågade lagets insats i början av matchen."
+**Non-negotiable:** failure must be **non-fatal** (empty set ⇒ no gate ⇒ old
+behaviour); the gate belongs in **PASS 1** of `mentionsKnownPerson`
+(`pipeline/src/newsRelevance.ts`); `SELECT DISTINCT` only (the `GROUP_CONCAT`
+variant times out); `VALUES ?label { … }` binds only `?label`, so `?label` must
+be selected explicitly.
 
-⇒ **The article is about the 1993-born twin. It IS a false positive for this app.**
+### Cadence
 
-## 3. WHY NO TEXT RULE CAN FIX THIS (proved)
+Root cause of "missed news" is **when** the feed is sampled, not the filter.
+Nightly samples once at 03:30 UTC; GP's "Rygaard om Häckens väntan" published
+03:47:07 was missed by the 03:48 run. Tracked as **B-006 OPEN**.
 
-- Both entities carry the **byte-identical** label "Sebastian Ohlsson"; neither has P1477/P1559.
-- The match fires on **`mentionsKnownPerson` PASS 1 (full name)** — the strongest pass, which bypasses
-  every B-028 guard (different-person, capitalization, score-compound).
-- The article states no position, no DOB; names no club beyond "Degerforsspelaren"; **BOTH** players are
-  at Degerfors, so club does not separate them. Degerfors stint qualifiers are EMPTY on the twin's side.
-- Expressen bodies are **never fetched** (paywalled + Bonnier robots.txt) → `bodyText` is empty →
-  there is no position/DOB text to read even in principle.
-- Surname-only would be worse (both surnames identical).
+Proposed: news-only runs (RSS + article text + relevance + accumulation; no
+squad enrichment, no SportoMedia match detail) at 3 slots, full pipeline at
+03:30 UTC. Raise cap 60 → 120. Add schedule copy + deploy guard.
 
-⇒ A **data/identity layer (Q-ID)** is mandatory. This is the answer to "robust solution once and for all".
+Full run costs 93–97 API calls, ~215–270s wall time, constrained by Wikidata
+politeness (~10 req/min) during squad enrichment.
 
-## 4. THE SOLUTION — measured, not guessed
+---
 
-### 4.1 The "shadow set" (same-label human twin), computed nightly from Wikidata
+## 7. The archived handoff is stale — do not trust it
 
-Single SPARQL, `SELECT DISTINCT` self-join on `rdfs:label` (former ∪ squad QIDs):
-**1.85 s, one request, 467 rows, 58 labels with a human twin, 17 with a FOOTBALLER twin.**
+`docs/archive/continuation-B-029-handoff-2026-10-22.md` is wrong in three
+places:
 
-⚠️ **The `GROUP_CONCAT` form of the same idea TIMES OUT (>60 s). The `DISTINCT` form must be used at runtime.**
+| It says | Reality |
+| --- | --- |
+| repo clean at `4445006` | now `6ef88b3` |
+| served sha `ffabcc71…`, build `4445006.83b59d0`, 36 news | `e3a3ac81…`, 41 news, 31 events |
+| the Kalmar article is "still present in the served feed" | present in `news`, **absent from `newsEvents`** — i.e. invisible |
 
-- **289 former-player entities; 58 labels (20%) have a same-label HUMAN twin; 17 have a FOOTBALLER twin.**
-- Gate must be restricted to **footballer twins** (P106 = Q937857):
-  - **footballer-twin gate: drops 1 item (the FP) and 0 genuine articles** across the 90-item corpus ✅
-  - blanket "any human twin" gate: drops 1 correct + **5 wrong** (all Julius Lindberg) ❌ **REJECTED**
-- Corpus = 90 unique news items across all committed `app.json` snapshots; 26 classified via a known
-  person; 11 distinct persons; only 3 items have no Häcken mention (Ohlsson = FP; Heintz Q29415639 and
-  Fagerjord Q96749112 = TRUE positives, both P54 = BK Häcken).
+Its B-029 content (ground truth, the measured solution, the 7-step plan) is
+still accurate and is now mirrored in `docs/ENHANCEMENTS.md` under **B-029**.
 
-### 4.2 Discriminators available, in escalating cost order (for the 17 footballer-twin labels)
+---
 
-| Discriminator | Result |
-|---|---|
-| **position (P413)** | 7 pairs separable — incl. Ohlsson (ours *mittfältare* vs twin *anfallare*) |
-| **DOB (P569)** | the other 10 |
-| **club** | **0** pairs separable — useless |
-| **P1889 "different from"** | 13 same-label former pairs carry it (11 footballers) but **6 footballer-twin labels LACK it** (Jonas Henriksson, Leif Forsberg, Peter Eriksson, Peter Nilsson, Rasmus Lindgren, Tobias Carlsson) → strong *positive* signal, NOT sufficient |
-| **roster/lineup corroboration** | `fetchSquadSm`/`fetchLineupsSm` + fogis id — for the FP match only the twin started (#16, fogis 367391 → Q16633334) |
+## 8. Repo rules that bit this session
 
-**External ids (the join key to real-world data), present on BOTH sides of the pipeline:**
-P5038 = fogis.se, P1238 = SvFF, P2446 = Transfermarkt, P12302 = Sofascore, P2369 = Soccerway,
-P5750 = FBref, P1618 = shirt number. Reverse lookup proved **fogis 367391 → Q16633334** (the twin).
+- **Verify the served artifact, not the workflow status.** A green run proves
+  generation, not publication.
+- **A browser screenshot can lie.** The service worker caches `/data/*.json`
+  with `NetworkFirst`, so a cached payload can render after a real deploy. Use
+  `curl`. This is also why every hermetic e2e fixture must `unregister()` the
+  worker and `caches.delete()` before `page.route` — otherwise the route gets
+  **zero hits** and the test silently asserts against the real file.
+- **Never edit `docs/archive/`.** It is a frozen record.
+- **Do not run `npm run pipeline` for diagnosis** — it is the 12-request path.
+- **`GITHUB_TOKEN` pushes do not trigger workflows.** `workflow_dispatch` is not
+  suppressed and is the mechanism to chain a deploy.
+- **Commit trailer:** `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`
+- **For iPhone testing, deployed is the only "done".** A local build is not
+  delivery.
 
-### 4.3 Squad side measured
-- Our **David Andersson = Q124620884** (fogis 872878, b. 2003-09-16); twin **Q121143384** (b. 1891-06-18,
-  IFK Göteborg) + 6 non-footballer humans.
-- Our **Julius Lindberg = Q97102447** (fogis 705320, b. 1999-01-04); twin **Q18166462** = Finnish politician
-  1878–1953 — ⚠️ this is exactly why the blanket all-human gate is rejected (5 genuine articles).
-- `app.json` → `squadEnrichment` is a **dict** keyed by `playerId` (`fogis:872878`) carrying `qid`, `name`,
-  `dateOfBirth`, `position`, `career` for **26 of 27** squad players.
+---
 
-## 5. THE PLAN (B-029)
+## 9. Session history
 
-**Design: a computed "ambiguity" signal, not a maintained list.**
-
-1. **`pipeline/src/formerPlayers.ts`** — extend to return STRUCTURED entries instead of `string[]`:
-   `{ qid, name, aliases, position, dob, fogisId }`. Keep `fetchFormerPlayers` behaviour for
-   compatibility; add a new function that preserves the Q-ID.
-2. **New module `pipeline/src/playerAmbiguity.ts`** (or extend `squadEnrichment.ts`) —
-   `buildShadowSet(entries)`:
-   - ONE SPARQL query, `SELECT DISTINCT` self-join on `rdfs:label`, restricted to
-     `P106 = Q937857` (footballer) on the twin side.
-   - Returns: for each of OUR people, the set of same-label **footballer** twins (QIDs + their position/DOB).
-   - Also include the current squad (Q-IDs from `squadEnrichment.qid`).
-   - **Failure must be NON-FATAL** (like `fetchFormerPlayers`): empty set ⇒ no gate ⇒ old behaviour.
-3. **Wire into `known`** in `run.ts` — extend `KnownPersons` with an optional
-   `ambiguousPeople?: Map<string, {qid, twins}> | Record<string, ...>`.
-4. **The gate in `newsRelevance.ts`** — inside `mentionsKnownPerson`, when a match is found for a person
-   that has a footballer twin, the match is only accepted if **independent Häcken evidence** exists.
-   Ordering matters: the gate must run in **PASS 1** too (the Ohlsson FP originates there).
-   Escape conditions to evaluate (pick the cheapest that works):
-   - the article mentions Häcken/Häckens in the Häcken context (the twin has no Häcken link), OR
-   - position/DOB of the twin contradicts our person, OR
-   - roster/lineup corroboration (expensive — only as last resort).
-   ⚠️ **Design constraint from the measurement:** the gate must be *narrow* — the **all-human** variant
-   cost 5 genuine Julius Lindberg articles. The **footballer-twin** variant cost 0.
-5. **Tests** (`pipeline/src/newsRelevance.test.ts`):
-   - Ohlsson FP → **rejected**.
-   - The 5 Julius Lindberg articles → **accepted**.
-   - Heintz (Q29415639) and Fagerjord (Q96749112) → **accepted**.
-   - All 93 existing tests + the 19-row surname-collision table stay green.
-6. **`docs/ENHANCEMENTS.md`** — new **B-029** section + status-table row. Record: the text-rule
-   impossibility proof, the measured cost, the REJECTED blanket gate, the Wikidata rate-limit gotchas.
-   Never edit `docs/archive/`.
-7. **Commit → push → deploy → regenerate data → byte-verify.**
-   - ⚠️ **Code fixes alone do NOT change served data.** `app.json` is regenerated only by
-     `data-update.yml`. Run `gh workflow run data-update.yml --ref main` after the deploy.
-   - Byte-compare: `git show HEAD:public/data/app.json | sha256sum` vs
-     `curl -s https://danielomazarino.github.io/Min-BKH-app/data/app.json | sha256sum`.
-   - Confirm the Kalmar article is **absent** from the served feed.
-
-## 6. CRITICAL GOTCHAS (learned the hard way)
-
-- **Wikidata rate limits:** ~25–35 s backoff between heavy queries; descriptive User-Agent; several
-  requests returned HTTP 504 "upstream request timeout" with an empty body.
-- **`SELECT DISTINCT` only** — the `GROUP_CONCAT` variant times out.
-- **`VALUES ?label { … }` only binds `?label`**; you must `SELECT ?label` explicitly or the mapping is lost.
-- **JS regex:** the `i` flag makes `[\p{Lu}]` case-insensitive, silently destroying the capitalization
-  requirement → use `ciPattern` (either case) / `capitalizedPattern` (first char forced uppercase).
-- **Never decide "starter" by name equality** against `starting` — both Ohlssons share the name.
-  Separate the `starting` and `substitutes` arrays directly (I made this bug and fixed it).
-- **Expressen bodies are never fetched** → `bodyText` empty for those items. Don't design a fix that
-  depends on body text for Bonnier publishers.
-- **Do not run `npm run pipeline`** (12-request path) for diagnosis.
-- **Service worker caches `/data/*.json` with `NetworkFirst`** → a browser screenshot can lie. Use curl.
-
-## 7. REPO RULES (AGENTS.md) — non-negotiable
-
-- Data generation ≠ data deployment. Verify the **served artifact** with curl, never a green workflow
-  or a screenshot.
-- Byte-compare committed vs served.
-- `GITHUB_TOKEN` pushes do NOT trigger workflows; `workflow_dispatch` is not suppressed and is the
-  mechanism to chain a deploy.
-- Never edit `docs/archive/` — it is a frozen record.
-- For iPhone testing, **deployed is the only "done"**.
-- Record incidents in `docs/ENHANCEMENTS.md`.
-- Commit trailer: `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`.
-
-## 8. WHERE EVERYTHING LIVES
-
-**Repo files:**
-- [pipeline/src/newsRelevance.ts](</home/lm/Dev/BKH pwa app/pipeline/src/newsRelevance.ts>) —
-  `mentionsKnownPerson` (~line 254: **pass 1 full name ← Ohlsson FP origin**; pass 2 surname with the
-  capitalization gate + `pairSources` guard), `matchKnownMan` (~556), `classifyRelevance` (~600),
-  `evidenceText` (~93), `casedEvidenceText` (~133), `slugText` (~76), `ciPattern` (~210),
-  `capitalizedPattern` (~225), `isNonFootballSport` (~527), `KnownPersons` (~36).
-- [pipeline/src/formerPlayers.ts](</home/lm/Dev/BKH pwa app/pipeline/src/formerPlayers.ts>) (124 lines) —
-  `buildFormerPlayersQuery()` (P54=Q639723, P106=Q937857), `fetchFormerPlayers()` (**returns `string[]`
-  — the Q-ID is discarded here**), `subtractCurrentSquad()`.
-- [pipeline/src/squadEnrichment.ts](</home/lm/Dev/BKH pwa app/pipeline/src/squadEnrichment.ts>) —
-  `SquadEnrichment` (~55) already carries `qid`, `dateOfBirth`, `position`, `career`; `enrichSquad` (~214).
-- [pipeline/src/sportomedia.ts](</home/lm/Dev/BKH pwa app/pipeline/src/sportomedia.ts>) —
-  `fetchLineupsSm` (~194), `fetchSquadSm` (~199) — roster/lineup with `fogisId`; `lineupsQuery` (~151);
-  `SQUAD_QUERY` (~163).
-- [pipeline/src/playerIdentity.ts](</home/lm/Dev/BKH pwa app/pipeline/src/playerIdentity.ts>) (79 lines) —
-  the existing canonical-identity layer (`fogis:<id>` / `name:<key>`), **not** used by news relevance.
-- [pipeline/src/run.ts](</home/lm/Dev/BKH pwa app/pipeline/src/run.ts>) — builds `known` (~444);
-  `enrichSquad` at ~758 (runs AFTER news classification — if the shadow set needs squad Q-IDs, it must be
-  moved earlier or queried independently); news classification at 493/502/717/729/785.
-- [pipeline/src/classify.ts](</home/lm/Dev/BKH pwa app/pipeline/src/classify.ts>) —
-  `menRelevantNews(items, known)` (~156): admits on `rel.matchedPerson && isMenOrFormer`; sets
-  `category` to `former`/`men`. A rejected person match falls through here.
-- [pipeline/src/newsPrefilter.ts](</home/lm/Dev/BKH pwa app/pipeline/src/newsPrefilter.ts>) — calls
-  `classifyRelevance` at ~107 when `known` is given.
-- [app/players/wikidata.ts](</home/lm/Dev/BKH pwa app/app/players/wikidata.ts>) — already has
-  `hackenClub`/`hackenTeam`/`isFootballer()`; the P54-corroboration concept exists in the app layer.
-- [pipeline/src/newsRelevance.test.ts](</home/lm/Dev/BKH pwa app/pipeline/src/newsRelevance.test.ts>) —
-  93 tests. The "surname collisions — the whole historical class, in one table" block is the regression net.
-  `FALSE_POSITIVES` tuple type is `[string, string, string, string?, string?][]`.
-- [docs/ENHANCEMENTS.md](</home/lm/Dev/BKH pwa app/docs/ENHANCEMENTS.md>) — source of truth. B-028 at
-  ~560; status table ~3005. **B-004 (Gemini validation) is still open.**
-
-**Temp artifacts — CLEANED UP (done 23:52).** All investigation scratch files under `/tmp` were removed.
-The four artifacts that are actually needed to re-run the measurement were preserved into the session
-workspace (not the repo):
-`<session>/files/b029/` → `identitytable.json` (former: ours + shadows; squad QIDs), `identity.json`
-(58 same-label labels), `corpus_full.json` + `corpus.json` (90 unique news items), `shadowset.json` +
-`shadowset_all.json` (the measured shadow sets), `squadshadow.json`, `squadqids2.txt`,
-`squad_fogis.txt`, `squadnames.json`, and `b029/{run.sh,q1.sparql,q1.json}` (the SPARQL helper used
-for the shadow query — **read this before writing the runtime query**).
-
-Other scratch (SPARQL variants, browser dumps, one-off `.ts` probes) was deleted and is reproducible
-from the queries quoted in this document.
-
-**Environment:** Linux, Node v20.20.2, npm 10.8.2, vitest 3.2.7, `npx tsx` available (top-level await
-NOT supported — wrap in `async function main()`), Playwright. `gh` CLI authenticated as
-`danielomazarino` with `repo` + `workflow` scopes. forzafootball.com 403s both curl and the browser —
-use `https://r.jina.ai/<url>`.
-
-## 9. COMMIT HISTORY (context)
-
-**Production state at handoff:** served `app.json` sha256 `ffabcc71…` == committed; build `4445006.83b59d0`;
-36 news items (32 `men`, 4 `former`). The Kalmar/Ohlsson article is **still present** in the served feed —
-it will only disappear once B-029 is implemented **and** the data is regenerated.
-
-`4445006` data → `e26e15c` B-028 follow-up (surname capitalization) → `6e0e2d5` data →
-`9b66dcc` **B-028** (capitalization-aware different-person guard + `casedEvidenceText` + `ciPattern`/
-`capitalizedPattern` + slug as a separate match surface) → `ee30416` data → `abb424e` B-027 (possessive
-different-person guard) → `2bfcb51` B-026 (archived stale handover) → `1a7ab32` B-024/B-025 (entity
-decoding, en-dash score guard, duplicate body) → `03dc392` data.
-
-B-021…B-028 were all the SAME defect in different clothes: a squad player's surname is also a word, a
-common surname, or another person's name. Every fix added a guard recognising a *competing* name →
-whack-a-mole. **B-029 replaces the pattern with a computed identity layer.**
+| Commit | What |
+| --- | --- |
+| `94aaf30` | docs: add continuation handoff for B-029 (homonym false positives) |
+| `705ae4f` | data: nightly update 2026-10-21 |
+| `6971caa` | data: nightly update 2026-10-22 |
+| `6ef88b3` | **this session** — unrot two e2e fixtures, fix stale search submit, record B-029..B-033 |
