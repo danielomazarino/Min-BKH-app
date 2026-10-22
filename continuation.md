@@ -13,12 +13,13 @@ three places (see §7).
 
 | | |
 | --- | --- |
-| HEAD | `6ef88b3` — "fix: unrot two e2e fixtures, fix stale search submit, record B-029..B-033" |
+| HEAD | `4752c18` — "docs: session handoff for 2026-10-23, archive the stale B-029 handoff" |
+| App code | `6ef88b3` — "fix: unrot two e2e fixtures, fix stale search submit, record B-029..B-033" |
 | Pushed | yes, `origin/main` |
 | Working tree | clean |
-| CI | run `39856436718` on `6ef88b3` — **in progress at handoff time** |
+| CI | run `39856436718` on `6ef88b3` — **SUCCESS** (the 8-run red streak is broken) |
 | Deploy | run `39856436707` on `6ef88b3` — **SUCCESS** |
-| Served build id | **`6ef88b3.1b5a14a`** — verified by curl, matches the pushed commit |
+| Served build id | **`4752c18.e0d4d58`** — verified by curl (this is the handoff commit; the app code is identical to `6ef88b3`) |
 | Served `app.json` sha256 | `e3a3ac81b0a134bf34387eab413ee77094cbdbd97ff4db0e0f8c46f1e8da7650` |
 | Committed `app.json` sha256 | `e3a3ac81b0a134bf34387eab413ee77094cbdbd97ff4db0e0f8c46f1e8da7650` — **identical** |
 | Served data | 41 `news`, 31 `newsEvents` |
@@ -128,16 +129,17 @@ load. Worth its own investigation.
 | Session-cache test after B-031 fix | **12/12** |
 | Mutation test on `matchTeams()` | test failed as required |
 | Full e2e suite | **425 passed, 6 failed, 7 skipped** — all 6 are B-033 |
-| Deploy on `6ef88b3` | **SUCCESS** — served build id `6ef88b3.1b5a14a`, verified by curl |
-| CI on `6ef88b3` | **in progress at handoff time — NOT YET CONFIRMED** |
+| Deploy on `6ef88b3` | **SUCCESS** — served build id verified by curl |
+| CI on `6ef88b3` | **SUCCESS** — run `39856436718`. The 8-run red streak is broken |
 
-**The app code IS deployed.** The served document reports build
-`6ef88b3.1b5a14a`, which is the commit pushed this session. So B-031 (the stale
-search submit) and B-032 (the card layout) are live.
+**Everything is deployed and CI is green.** The served document reports build
+`4752c18.e0d4d58` (the handoff commit; app code identical to `6ef88b3`), and the
+served `app.json` is byte-identical to the committed one
+(`e3a3ac81…`). B-031 (the stale search submit) and B-032 (the card layout) are
+live in production.
 
-**CI is the only open question.** It was still running when this was written.
-Check it first — if it is red, the remaining failures are almost certainly
-B-033 (WebKit flakiness), which `retries: 1` normally absorbs.
+The residual WebKit flakiness (B-033) did **not** block CI — `retries: 1`
+absorbed it, exactly as predicted.
 
 ---
 
