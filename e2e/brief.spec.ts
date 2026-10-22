@@ -72,16 +72,29 @@ test.describe("Brief (dashboard)", () => {
     }
   });
 
-  test("the away result reads Kalmar 0–5 Häcken, not 5–0", async ({ page }) => {
+  test("the away result reads home–away, not Häcken-first", async ({ page }) => {
     // Concrete guard for the real fixture in app.json, so the convention
     // cannot silently regress on the exact match that exposed it.
+    //
+    // REWRITTEN 2026-10-23. This test used to hard-code "Kalmar FF" / "0–5",
+    // which pinned it to one specific match. The nightly regenerates app.json,
+    // so as soon as a different match became the last result the test failed
+    // for a reason that had nothing to do with the convention it guards — CI
+    // was red for 8 consecutive runs on exactly this. The invariant is the
+    // ORDER, not the fixture, so the expectation is now derived from the same
+    // committed data the app renders.
+    const data = JSON.parse(readFileSync("public/data/app.json", "utf8"));
+    const last = data.lastResult;
+    if (!last || last.homeAway !== "away") {
+      test.skip(true, "the current last result is not an away match");
+    }
     const result = page.getByTestId("last-result");
-    const meta = await result.locator(".meta").innerText();
-    test.skip(!/Borta/.test(meta), "the current last result is not an away match");
     const teams = result.locator(".teams .opponent");
-    await expect(teams.first()).toHaveText("Kalmar FF");
+    // Away match: the opponent is the HOME side, so it reads left, and the
+    // score is scoreHome–scoreAway — never Häcken's own 5–0 reading.
+    await expect(teams.first()).toHaveText(last.opponent);
     await expect(teams.last()).toHaveText("Häcken");
-    await expect(page.getByTestId("last-score")).toHaveText("0–5");
+    await expect(page.getByTestId("last-score")).toHaveText(`${last.scoreHome}–${last.scoreAway}`);
   });
 
   test("Hem does not print a goalscorer event list (Section J)", async ({ page }) => {
@@ -103,7 +116,13 @@ test.describe("Brief (dashboard)", () => {
     await expect(page.getByTestId("fixture-away")).toBeVisible();
     await expect(page.getByTestId("fixture-meta")).toBeVisible();
     await expect(page.getByTestId("sheet-scorers")).toBeVisible();
-    await expect(page.getByTestId("sheet-scorers")).toContainText("Lindgren");
+    // Derived from the committed data, not hard-coded. The previous version
+    // asserted "Lindgren", which was true for one specific match and failed
+    // the moment the nightly replaced it — a rotting fixture, not a guard.
+    const data = JSON.parse(readFileSync("public/data/app.json", "utf8"));
+    const goals: Array<{ playerName: string }> = data.lastMatchDetail?.events?.goals ?? [];
+    if (goals.length === 0) test.skip(true, "the current last match has no recorded goals");
+    await expect(page.getByTestId("sheet-scorers")).toContainText(goals[0].playerName);
   });
 
   test("the match sheet states plainly that no real statistics exist (Section K)", async ({ page }) => {

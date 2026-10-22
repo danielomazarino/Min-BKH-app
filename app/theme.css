@@ -2668,6 +2668,15 @@ details.disc .disc-body {
   text-transform: uppercase;
   color: var(--text-3);
   margin-bottom: 3px;
+  /* One line, always. The card is ~175px wide, so its meta line has ~151px of
+     content box; the full label "21 okt. · Tidigare spelare" measures 159px in
+     Chromium and wrapped to two lines, making a former-player card 14px taller
+     than every other card. The card uses the standard Swedish abbreviation
+     ("F.d. spelare", 127px) and this rule guarantees the height never depends
+     on which category happens to sort first. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ncard-title {
   font-size: var(--t-body);

@@ -262,7 +262,14 @@ test.describe("News content correctness (Section H)", () => {
     // event, so this is skipped rather than failed on a feed without one.
     // Former events can land in the grid OR the chronological list, so both
     // are checked.
-    const tagged = page.locator('[data-testid="news-card"], [data-testid="news-row"]').filter({ hasText: "Tidigare spelare" });
+    //
+    // The grid card abbreviates to "F.d. spelare" because the full wording
+    // does not fit its ~151px meta line (see .ncard-meta in theme.css); the
+    // list row and the story sheet keep the full wording. Both spellings are
+    // therefore valid here — what must hold is that the story is tagged at all.
+    const tagged = page
+      .locator('[data-testid="news-card"], [data-testid="news-row"]')
+      .filter({ hasText: /Tidigare spelare|F\.d\. spelare/ });
     if ((await tagged.count()) === 0) test.skip(true, "no former-player event in the current feed");
     await expect(tagged.first()).toBeVisible();
   });

@@ -355,7 +355,17 @@ export default function FormerPlayers({ squadNames = [] }: { squadNames?: string
           role="search"
           onSubmit={(e) => {
             e.preventDefault();
-            submit(draft);
+            // Read the value from the DOM, not from `draft`.
+            //
+            // `submit(draft)` closed over the last COMMITTED render. A user who
+            // types and presses Enter faster than React commits — or a test
+            // that fills and presses Enter in the same tick — submitted the
+            // PREVIOUS value, which on the first search is "". `submit("")`
+            // then called `setDraft("")`, wiping the text the user had just
+            // typed, and `runSearch("")` set the page to idle. Measured: 1 in 8
+            // runs of the session-cache e2e test failed this way, with the
+            // search box empty and the page idle.
+            submit(inputRef.current?.value ?? draft);
           }}
         >
           <Search aria-hidden />

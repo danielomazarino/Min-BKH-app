@@ -121,7 +121,10 @@ function GridCard({ e, onOpen }: { e: NewsEvent; onOpen: () => void }) {
         <span className="ncard-meta">
           {fmtDay(e.latestPublishedAt || e.publishedAt)}
           {e.category === "women" ? " · Dam" : ""}
-          {e.category === "former" ? " · Tidigare spelare" : ""}
+          {/* Abbreviated here only: the full "Tidigare spelare" does not fit
+              the card's meta line and would wrap it to two lines. The list row
+              and the story sheet keep the full wording. */}
+          {e.category === "former" ? " · F.d. spelare" : ""}
         </span>
         <span className="ncard-title">{e.title}</span>
         <span className="ncard-src">

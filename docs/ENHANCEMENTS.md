@@ -557,6 +557,256 @@ is the only path.
 
 ---
 
+## B-031 · Search submitted a stale value — FIXED
+
+**Status:** FIXED 2026-10-23. Lint, typecheck and 738/738 unit tests green.
+**Not yet deployed.** Found while diagnosing CI, not from a user report.
+
+### What a supporter saw
+
+Type a name and press Enter quickly — especially on a slow phone — and the
+search box **empties itself** and nothing happens. The text they just typed is
+gone. Pressing Enter again does nothing, because the box is now empty.
+
+### Root cause
+
+`app/pages/FormerPlayers.tsx` submitted the value from the last **committed**
+React render:
+
+```tsx
+onSubmit={(e) => { e.preventDefault(); submit(draft); }}
+```
+
+`draft` is state. If the keystroke that filled the field and the Enter that
+submitted it land in the same tick — or React simply has not committed yet —
+`draft` is still the *previous* value. On the first search that is `""`, so
+`submit("")` ran, which calls `setDraft("")` (wiping the field) and
+`runSearch("")`, which sets the page to `idle`.
+
+### Evidence
+
+A Playwright failure snapshot showed exactly this end state: the search box
+empty, the page idle, and the two idle hints rendered. Reproduced at **1 in 8
+runs** of the session-cache e2e test. After the fix, **12/12**.
+
+### Fix
+
+Read the value from the DOM, which is always current:
+
+```tsx
+submit(inputRef.current?.value ?? draft);
+```
+
+### Why this matters beyond the test
+
+The test was the messenger. A real user typing on a phone with a slow main
+thread hits the same window. This is a user-facing defect that happened to be
+detected by an automated test.
+
+---
+
+## B-032 · CI red for 8 runs on two rotting e2e fixtures — FIXED
+
+**Status:** FIXED 2026-10-23. Lint, typecheck, 738/738 unit, and the two
+affected specs green (99 passed). **Not yet deployed.**
+
+CI had been red for **8 consecutive runs**. The failures had nothing to do with
+the code under test: both were assertions pinned to data the nightly
+regenerates.
+
+### (1) `brief.spec.ts` — a hard-coded match
+
+The test asserted `Kalmar FF` / `0–5` against the real committed `app.json`.
+That was true for one specific match. The current last result is
+`Malmö FF` / `0–1`, so the test failed for a reason unrelated to the convention
+it exists to guard.
+
+The invariant is the **order** (home on the left, score in home–away order),
+not the fixture. The expectation now derives from the same committed data the
+app renders, so it cannot rot.
+
+**Mutation-tested:** deliberately reversing `matchTeams()` to render
+Häcken-first makes the rewritten test fail, as it must. A test that cannot fail
+is not a guard.
+
+The same class of defect was fixed in the goalscorer assertion, which
+hard-coded `"Lindgren"` (the current scorer is Svanbäck).
+
+### (2) `news.spec.ts` — a real layout defect, not a tight threshold
+
+The test capped card height at 220px. CI measured **222.1px**. This was not a
+font-metric quirk: the first card in CI's data was a `former`-category card,
+and `.ncard-meta` had **151px** of content box while
+`"21 okt. · Tidigare spelare"` measures **159px** in Chromium. The label wrapped
+to two lines, adding exactly 14px.
+
+So card height depended on **which category happened to sort first** — a real
+defect a supporter would see as an uneven grid.
+
+Fix: the grid card uses the standard Swedish abbreviation `F.d. spelare`
+(127px), and `.ncard-meta` is `nowrap` with ellipsis so a future label can never
+reflow the grid. The list row and the story sheet keep the full wording.
+
+**Verified:** every card is **208.1px** in both Chromium and WebKit, for
+`men`, `women` and `former` categories, at 359/390/430px viewports.
+
+---
+
+## B-033 · WebKit `former-players.spec.ts` is load-dependent flaky — OPEN
+
+**Status:** OPEN. Pre-existing; **not** caused by B-031 or B-032.
+
+A *different* subset of this spec fails on each full-spec run. Observed across
+runs: lines 359, 367, 396, 428, 474, 517, 524, 552, 625, 644, 655, 686, 708,
+717, 735. Every one of them passes **10/10 in isolation**.
+
+CI reports these as **flaky**, not failed, because `retries: 1` absorbs them.
+The original CI log on `94aaf30` already listed 7 of them before any change in
+this session.
+
+Not root-caused. The failure signature is `searchForHit` timing out on
+`former-player` — i.e. the search resolved to something other than a result row
+under load. Worth its own investigation; it is not a reason to keep CI red.
+
+---
+
+## B-029 · Wikidata identity gate for homonym false positives — OPEN, not started
+
+**Status:** OPEN. **Zero lines of code written.** The full handoff — ground
+truth, the proof that no text rule works, the measured solution and a 7-step
+plan — is in `continuation.md` at the repo root.
+
+This section exists because the session that produced that handoff **died with
+`session.error`** ("400 The requested model is not supported") before it could
+persist anything. Its findings lived only in session checkpoints. They are
+recorded here so they cannot be lost again.
+
+### The false positive
+
+Expressen, "Kalmar bröt den tunga sviten – slog Degerfors". The summary quotes
+"Sebastian Ohlsson i TV4 Play". It was classified `FORMER_PLAYER` / category
+`former` — i.e. published as Häcken news.
+
+### Ground truth — two footballers, one Swedish label
+
+| | **Ours** | **The twin** |
+| --- | --- | --- |
+| QID | `Q17461659` | `Q16633334` |
+| Born | 1992-12-31 | 1993-05-26 |
+| BK Häcken | **2014–2015** | none |
+| Clubs | — | Örgryte, IFK Göteborg, St. Pauli, Degerfors |
+| Position | mittfältare (`Q193592`) | anfallare / försvarare |
+| Shirt | #7 | #16 |
+| Fogis | 370608 | 367391 |
+| Transfermarkt | 205436 | 217357 |
+| Height / weight | 186cm / 73kg | 184cm / 76kg |
+| Youth | Hova IF | Qviding FIF |
+
+**The original premise was inverted.** The 1992 player is the *former Häcken*
+player; the 1993 player has no Häcken background at all.
+
+Forza Football lineups for Degerfors 1–2 Kalmar (2026-10-19, match
+`1219499965`): **#16 (b. 1993) started**; #7 (b. 1992) was an unused
+substitute. So the quoted player is the twin.
+
+### Why no text rule can fix this
+
+Both players share the identical Swedish label. Nothing in the article text
+distinguishes them — the name is the same string. Any rule that keys on the
+name alone will be wrong for one of them.
+
+### The measured solution
+
+A computed **"shadow set"**: one SPARQL `SELECT DISTINCT` self-join on
+`rdfs:label`, restricted to `P106 = Q937857` (footballer) on the twin side.
+When a known person's label has a footballer namesake, the name alone is no
+longer sufficient evidence.
+
+Measured cost:
+
+| Variant | Genuine articles lost |
+| --- | --- |
+| Footballer-twin only | **0** |
+| All-human twins | **5** (all Julius Lindberg) |
+
+**The gate must therefore be restricted to footballer twins.** The all-human
+variant is not acceptable.
+
+### Non-negotiable constraints
+
+- **Failure must be non-fatal.** An empty shadow set means no gate, i.e. the
+  old behaviour. A Wikidata outage must never silently drop the news feed.
+- **The gate belongs in PASS 1** of `mentionsKnownPerson`
+  (`pipeline/src/newsRelevance.ts`), which is where the Ohlsson false positive
+  originates.
+- **`SELECT DISTINCT` only.** The `GROUP_CONCAT` variant times out.
+- **`VALUES ?label { … }` binds only `?label`** — `?label` must be selected
+  explicitly.
+
+### Ordering constraint
+
+B-029 must land **before** B-030. Today the false positive is invisible because
+it is in `news` but not in `newsEvents`. Fixing the display gap first would make
+it visible.
+
+---
+
+## B-030 · The display gap — accumulated news that no event shows — OPEN
+
+**Status:** OPEN. Measured, not fixed.
+
+### What a supporter sees
+
+Nothing — which is the problem. Articles the pipeline fetched, classified and
+kept are silently absent from the app.
+
+### Measured on the served artifact, 2026-10-23
+
+```
+news: 41   newsEvents: 31   articles in news but in no event: 10
+events with more than one source: 0
+```
+
+The 10 invisible articles include real Häcken stories: "Mikkel Rygaard lämnar
+Häcken", "Häcken körde över Örgryte i derbyt – Lindberg hjälte", "Julius
+Lindberg tvåmålsskytt när Häcken vann".
+
+### Root cause — two independent defects
+
+**(a) Events are rebuilt from this run only.** `run.ts` builds `newsEvents` from
+`menRelevantNews(candidates.filter(...))` — *this run's* candidates — and then
+accumulates `news` across runs separately. The app renders `newsEvents`
+(`News.tsx`, `Brief.tsx`), never `news`. So anything that entered `news` on an
+earlier run and is not in today's candidate set is invisible.
+
+**(b) `dedupeKey` is dead code.** `pipeline/src/rss.ts` sets `dedupeKey: link`
+on every item, so `pipeline/src/dedupe.ts`'s `item.dedupeKey ?? key` never
+fires. Every article keeps its own URL as its event key, so `buildNewsEvents`
+can never group two articles into one event. That is why **0 events have more
+than one source** — the multi-source UI exists but the pipeline cannot produce
+the data for it.
+
+### Fix shape
+
+- **(b) is one line** — remove the `dedupeKey: link` assignment in `rss.ts`.
+  Restores same-run grouping. Needs tests, because it changes grouping
+  behaviour.
+- **(a) is moderate** — rebuild events from the accumulated `news` array rather
+  than from this run's candidates. `buildNewsEvents` is reusable as-is and needs
+  no new grouping rule. **Caveat:** `run.ts` deletes `bodyText` from accumulated
+  news after events are built, so archived items have no body text. Any fix that
+  needs to read text from an archived item must either persist bodies
+  (+2.3KB gzip measured) or merge the previous run's events in.
+
+### Explicitly out of scope
+
+True **cross-run story merging** (deciding that today's article and last week's
+article are the same story) is **unsolved**. The best prototype scored
+TP=16 / FN=6 / **FP=25**. No lexical rule separates "same story" from "related
+story". Do not attempt it as part of this fix.
+
+---
+
 ## B-028 · Surname false positives — structural fix, no more per-case patches — FIXED
 
 **Status:** FIXED 2026-10-20. Unit 738/738, typecheck and lint green. ·
@@ -2981,6 +3231,11 @@ both linked in the sheet.
 
 | Item | Status | Notes |
 | --- | --- | --- |
+| **B-029** | **OPEN — not started** | Wikidata identity gate for homonym false positives. Ground truth, measured solution and a 7-step plan are in `continuation.md`. **Zero lines of code written.** The false positive it targets (Expressen's "Kalmar bröt den tunga sviten", which quotes the *other* Sebastian Ohlsson) is present in the served `news` array but absent from `newsEvents`, so it is currently invisible — see **B-030** |
+| **B-030** | **OPEN — measured, not fixed** | **The display gap.** `news` is accumulated across runs but `newsEvents` is rebuilt from *this run's* candidates only, and the app renders `newsEvents`. Measured on the served artifact 2026-10-23: **10 of 41 articles are in `news` but in no event** — invisible. Also **0 events have more than one source**, because `rss.ts` sets `dedupeKey: link`, so `dedupe.ts`'s `item.dedupeKey ?? key` never fires and every article keeps its own URL as its event key |
+| **B-031** | **FIXED 2026-10-23 — not yet deployed** | **Search submitted a stale value.** `FormerPlayers.tsx` called `submit(draft)`, closing over the last *committed* render. Typing and pressing Enter faster than React commits submitted the previous value — `""` on the first search — which then called `setDraft("")`, **wiping the text the user had just typed**, and set the page to idle. Measured at 1 in 8 runs of the session-cache e2e test; 12/12 after the fix. Real user-facing bug on a slow phone, not a test artifact |
+| **B-032** | **FIXED 2026-10-23 — not yet deployed** | **CI was red for 8 consecutive runs on two rotting e2e fixtures.** (1) `brief.spec.ts` hard-coded `Kalmar FF` / `0–5` against a file the nightly regenerates; the current last result is `Malmö FF` / `0–1`. The invariant is the *order*, not the fixture, so the expectation now derives from the committed data. (2) `news.spec.ts` capped card height at 220px and CI measured **222.1px** — a real layout defect: `.ncard-meta` had 151px of content box while `"21 okt. · Tidigare spelare"` measures 159px in Chromium, so a `former`-category card wrapped to two lines and grew 14px. The card now abbreviates to `F.d. spelare` and the meta line is `nowrap`. Every card is 208.1px in both engines at every width ≥359px |
+| **B-033** | **OPEN — pre-existing, not caused by B-031/B-032** | **WebKit `former-players.spec.ts` is load-dependent flaky.** A *different* subset fails on each full-spec run (observed: 359/367/396/428/474/517/524/552/625/644/655/686/708/717/735 across runs), and each failing test passes 10/10 in isolation. CI reports them as **flaky**, not failed, because `retries: 1` absorbs them. Not root-caused. The original CI log on `94aaf30` already listed 7 of these before any change here |
 | **B-003** | OPEN | Live data is **4/4 single-source** (2026-10-06 nightly). UI supports multi-source; the pipeline does not produce it. Depends on a working semantic layer: B-004, now gated on B-008/B-013 |
 | **B-004** | OPEN — **UNVALIDATED** | Prompt fixed (`c73b820`) + offline test green. **Zero usable answers in 20+ live attempts.** Gemini: ping 10/21 (48%), chat 0/15 (0%), schedule stopped 2026-10-04. OpenRouter transport works but the free catalog is structurally 429-prone (see **B-008**). **Now gated on B-013 (BYOK) or paid credits** — no free path has ever produced a semantic verdict |
 | **E-005** | **DONE — verified in production 2026-10-01** | Served `app.json` shows Layouni `status: "departed"`, `departed: true`, with history preserved (`warningCount: 2`, both `relevantWarnings` intact). 18 ledger entries, `cardMatchesInspected: 22` |
