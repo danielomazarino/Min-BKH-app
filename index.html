@@ -12,6 +12,21 @@
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <meta name="description" content="Supporterapp för BK Häckens herrlag — nästa match, varningar, nyheter och tidigare spelare." />
     <title>Min BKH-app</title>
+    <!-- Privacy-first analytics (Umami Cloud, free Hobby tier): no cookies, no
+         personal data, so no consent banner is needed.
+         In <head> because the installed PWA loads this same document — that
+         launch is a real visit and must be counted.
+         `data-domains` is deliberate: the tracker ignores every host except
+         production, so `npm run dev`, `npm run preview` and the Playwright
+         suite cannot pollute the production numbers. To view local traffic,
+         add localhost to that list temporarily.
+         Changing the id means creating a new website in cloud.umami.is. -->
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="5574b261-86be-4d1f-852d-4bce3e23a141"
+      data-domains="danielomazarino.github.io"
+    ></script>
   </head>
   <body>
     <div id="root"></div>
