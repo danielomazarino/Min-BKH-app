@@ -44,6 +44,7 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 | Settings | **REBUILT 2026-10-07 (`73222f0`, deployed)** — one page, no duplicated counts. New **article audit** subpage: every fetched headline per source, marked with the pipeline's verdict ("Häcken herr" / "Ej herrlag" / drop reason), each linking to the original article. OpenRouter failures now show WHY (shared-pool diagnosis, status-code meanings) under the "N fel" pill |
 | Player cards | **REBUILT 2026-10-08** — the squad is now enriched ONCE per nightly (`squadEnrichment` in `app.json`), so Trupp cards open with career, photo and narrative already present. Career is the **union** of Wikidata and the Wikipedia infobox (was: pick one, which dropped real clubs). Home-country Wikipedia is tried (Norwegian for Wembangomo). Non-Swedish narratives are machine-translated and labelled. See **E-020**. **2026-10-12: the "stale card" reports (Helander, Rygaard, Wembangomo) were RESOLVED — the nightly's requests to Wikipedia were being rate-limited for a missing User-Agent, silently degrading the stored data. Fixed and verified; squad and search now agree. See B-018** |
 | Updates | **NEW 2026-10-08** — an update banner appears when a new version is waiting, plus a manual "Sök efter uppdatering" in settings. Fixes the "I don't see your change" report caused by a stale service worker. See **E-021** |
+| Visitors | **NEW 2026-10-24 (`9e2e7b8`, deployed, verified in production)** — cookieless visitor counting via Umami Cloud's free tier, so the number of people opening the app over time is now knowable. Each destination is counted separately. See **E-022** for what was added and **E-023** for the two manual follow-ups (exclude our own visits; 6-month retention on the free tier) |
 | Gemini | **Disabled in the nightly** (key not injected). Free tier measured: reachable ~48%, real-work probe 0/15. B-004 unvalidated |
 | OpenRouter | **Measurement-only nightly, still never reaches the app.** The pinned free model (`qwen/qwen3.8-27b:free`) was **DELISTED** by OpenRouter — the 2026-10-06 nightly got HTTP 404 while the key was healthy (0/1000 used). Fixed 2026-10-06: the model is now **resolved dynamically from the live free catalog** (`dd8bedb`); a delisted pin fails BEFORE the request instead of burning it. Verified live: resolver picks `google/gemma-4-31b-it:free`, but both verification requests got **HTTP 429 from the shared upstream pool** — the structural limit, unchanged. **All 16 current free models are single-provider** (measured from the endpoints API), so there is no routing resilience anywhere in the free catalog. See **B-008**, **B-012**, **B-013** |
 | Next event | **03:30 UTC** nightly — one run, now including the OpenRouter measurement, the squad enrichment, AND news accumulation |
@@ -403,6 +404,96 @@ a new deploy can sit invisible until the cache is cleared. This is the exact
 **Why a banner and not a forced reload.** A forced reload can drop a supporter
 into a blank screen on a slow connection. The banner lets them choose, and it
 returns on the next check because a stale app is the thing to avoid.
+
+---
+
+## E-022 · We can finally tell how many people use the app
+
+**Status:** DONE — deployed and verified in production 2026-10-24 (`9e2e7b8`)
+· **Affects:** nothing a supporter sees; no visual change
+
+**What was wrong.** The public GitHub Pages URL spread on its own,
+without any way to say **how many people open the app**, whether that number
+is rising, or which of the five destinations they actually use. Every other
+question about the app could be answered from data; this one could not be
+answered at all.
+
+**What was added — one file, 15 lines, in `<head>` of `index.html`:**
+
+```html
+<script defer src="https://cloud.umami.is/script.js"
+        data-website-id="5574b261-86be-4d1f-852d-4bce3e23a141"
+        data-domains="danielomazarino.github.io"></script>
+```
+
+- **Umami Cloud, Hobby plan — free**, 100k events/month, 1 website. Chosen
+  because it is **cookieless and collects no personal data**, so no consent
+  banner is needed and nothing changes for the supporter.
+- **In `<head>` on purpose.** The installed PWA serves this same document, so a
+  Home Screen launch is a real visit and is counted. Putting the tag in a React
+  component would have counted only browser visits.
+- **`data-domains` pins it to production.** The tag loads everywhere, but the
+  tracker ignores any other hostname — `npm run dev`, `npm run preview` and the
+  Playwright suite cannot inflate the real numbers. To see local traffic, add
+  `localhost` to that list temporarily.
+- **Each destination is counted separately.** Umami hooks `history.pushState`,
+  which is what `HashRouter` uses, so `/nyheter`, `/matcher`, `/trupp` and
+  `/spelare` become distinct pageviews. Verified by clicking a tab, not
+  assumed from the docs.
+
+**What was verified, precisely.**
+
+- Build green, 738 unit tests pass, 40 e2e tests pass (offline / PWA /
+  navigation), lint clean — including the assertion that no new service-worker
+  scope or console error appears.
+- On a hostname-mapped build of `dist/`: the dev and preview hostnames load the
+  tag but send **nothing** (the `data-domains` gate works).
+- On the **live public URL**, after the deploy run completed: the served
+  document carries `data-build="9e2e7b8.1d34420"`, `window.umami` is defined,
+  and a launch plus one tab click produced **two `POST gateway.umami.is/api/send`
+  → HTTP 200**. Bytes and behaviour were checked on the served site, not
+  inferred from a green Actions run.
+
+**Not changed:** no new npm dependency, no `vite.config.ts` change, no
+Workbox precache change (the tag is a cross-origin `<script>`, so offline
+behaviour is identical), no UI.
+
+---
+
+## E-023 · Two things a human must do for E-022 — OPEN
+
+**Status:** OPEN — both are manual, neither blocks the app · **Affects:** the
+honesty of the visitor numbers
+
+Both items below are **outside what code can do**. Until they are done the
+numbers are either polluted or not durable — the app itself is unaffected.
+
+### 1. Exclude our own visits
+
+The people who build and test the app open it constantly. With the tracker
+live, those opens are counted as supporters. Umami's documented mechanism is a
+per-browser flag, set once in the console **on the deployed site**:
+
+```js
+localStorage.setItem('umami.disabled', 1);   // exclude this browser
+localStorage.removeItem('umami.disabled');   // undo
+```
+
+It applies per website, and must be set again in each browser and on each
+device. This is a dashboard-accuracy chore, not a defect.
+
+### 2. Know the retention limit before relying on the trend
+
+The free Hobby plan keeps analytics for **6 months** (Pro: 2 years; Business: 5).
+So "users over time" is answerable for roughly half a year on the free tier;
+after that the oldest data ages out. If the long-term trend matters, either
+export periodically (**all data is exportable**), or move to self-hosting later —
+Umami is open source, and the tracking tag would not need to change.
+
+**What would make this item observable-done.** A week of data with our own
+visits excluded, and a dated export of the first month stored somewhere
+durable. Until then the visitor count exists, but its long-term meaning is
+limited by the free retention window.
 
 ---
 
@@ -3220,6 +3311,9 @@ both linked in the sheet.
   been proven safe yet. See **B-004** in the technical archive.
 - **Do not run the data pipeline casually.** It rewrites live content.
 - **Do not mark the iPhone search issue fixed** without checking the real device.
+- **Do not read the visitor numbers as-is before E-023 item 1 is done.** Our own
+  visits are counted until the `umami.disabled` flag is set in each browser used
+  for development. The numbers become meaningful only after that.
 
 ---
 
@@ -3262,6 +3356,8 @@ both linked in the sheet.
 | **E-019** | **DONE — deployed** (`dea4be8`) | One shared player card for squad AND former players. Unit 523/523, squad e2e 20/20, former-players + a11y e2e 110/110 — all local. See the E-019 section |
 | **E-020** | **DONE — code complete, tests green, pending deploy** | Squad cards get real data: career is the UNION of Wikidata + infobox (was: pick one, dropping clubs), home-country Wikipedia tried, non-Swedish narratives translated, "no data found" shown explicitly. Squad resolved ONCE per nightly into `squadEnrichment`. Verified live on Berisha/Wembangomo/Lundkvist. See the E-020 section |
 | **E-021** | **DONE — code complete, tests green, pending deploy** | Update banner + manual "Sök efter uppdatering" in settings. Fixes the stale-service-worker "I don't see your change" report. See the E-021 section |
+| **E-022** | **DONE 2026-10-24 — deployed `9e2e7b8`, verified in production** | Cookieless visitor counting (Umami Cloud, free Hobby). One `<script>` in the `<head>` of `index.html`; no npm dependency, no vite/workbox change, no UI change. `data-domains` blocks dev/preview/e2e so local runs cannot pollute production. Verified on the served URL: `window.umami` defined, launch + one tab click → two `POST gateway.umami.is/api/send` HTTP 200. See the E-022 section |
+| **E-023** | **OPEN — manual, outside code** | Two follow-ups for E-022: (1) exclude our own visits with `localStorage.setItem('umami.disabled', 1)` per browser/device; (2) the free Hobby tier retains analytics **6 months**, so the long-term visitor trend needs periodic export (all data is exportable) or self-hosting later. Neither affects the app. See the E-023 section |
 | **B-013** | **OPEN — NEEDS DECISION** | BYOK from a non-Google provider (Groq/Cerebras/Mistral) is the only free path to LLM reliability: every OpenRouter `:free` model is single-provider and its shared pool 429s. BYOK-to-Google explicitly rejected — same provider that scored 0/15. Investigation plan written; needs a product decision first. See the B-013 section |
 | **Sources** | 8 feeds | `fotbollskanalen.se` has **no feed** — Next.js HTML behind every candidate URL. Needs scraping; deliberately not added |
 | E-001 – E-004 | DONE | Verified in code |
