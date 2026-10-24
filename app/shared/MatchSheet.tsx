@@ -16,7 +16,7 @@
  * the event list. Presenting "events per minute" as a football statistic
  * would be exactly that kind of invention, so it is done nowhere in this app.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MatchDetail } from "../../pipeline/src/types";
 import { Sheet } from "./Sheet";
 import { fetchLineupOnDemand, type LineupOutcome } from "../players/lineupLookup";
@@ -161,7 +161,7 @@ function TimelineRow({ item }: { item: TlItem }) {
 }
 
 /**
- * The starting eleven — fetched ON DEMAND, never polled.
+ * The starting eleven — checked once when the match card opens, never polled.
  *
  * Tester request (2026-10-13): an indicator when the eleven is released
  * ("preliminär och sen slutlig elva", "det kan ske släpps på häckens
@@ -169,13 +169,8 @@ function TimelineRow({ item }: { item: TlItem }) {
  * is fine (the same pattern as the player Wikipedia lookup), but constant
  * polling and notifications are NOT worth it.
  *
- * So this is a button, not a feed: one GraphQL query fires per tap, the
- * result lives in component state only, and nothing runs in the background.
- * The idle state says IN WORDS what the button does and when the lineup is
- * expected — the tester's follow-up (2026-10-14) was that a bare button
- * gives no clue the lineup exists or when it will appear. Lineups are
- * published close to kickoff, so before that the answer is the honest
- * "inte publicerad än".
+ * One GraphQL query fires when the sheet mounts. The result lives in
+ * component state only, and nothing runs in the background.
  *
  * Takes the match ID only — it works for BOTH played matches (the match
  * sheet) and upcoming ones (the upcoming-match sheet), which have no
@@ -183,28 +178,23 @@ function TimelineRow({ item }: { item: TlItem }) {
  */
 export function LineupSection({ matchId }: { matchId: number }) {
   const [state, setState] = useState<
-    { phase: "idle" } | { phase: "loading" } | { phase: "done"; outcome: LineupOutcome }
-  >({ phase: "idle" });
+    { phase: "loading" } | { phase: "done"; outcome: LineupOutcome }
+  >({ phase: "loading" });
+  const requestRef = useRef<{ matchId: number; promise: Promise<LineupOutcome> } | null>(null);
 
-  const load = () => {
+  useEffect(() => {
+    let active = true;
     setState({ phase: "loading" });
-    void fetchLineupOnDemand(matchId).then((outcome) => setState({ phase: "done", outcome }));
-  };
-
-  if (state.phase === "idle") {
-    return (
-      <div>
-        <div className="mod-label">Uppställning</div>
-        <p className="small dim" style={{ margin: "0 0 6px" }} data-testid="lineup-hint">
-          Startelvan släpps normalt strax före avspark. Hämta senaste läget när
-          du vill — appen frågar inte efter den av sig själv.
-        </p>
-        <button type="button" className="icon-btn" onClick={load} data-testid="lineup-fetch" style={{ width: "auto", padding: "6px 12px", fontSize: 13 }}>
-          Hämta uppställning
-        </button>
-      </div>
-    );
-  }
+    if (requestRef.current?.matchId !== matchId) {
+      requestRef.current = { matchId, promise: fetchLineupOnDemand(matchId) };
+    }
+    void requestRef.current.promise.then((outcome) => {
+      if (active) setState({ phase: "done", outcome });
+    });
+    return () => {
+      active = false;
+    };
+  }, [matchId]);
 
   if (state.phase === "loading") {
     return (
@@ -233,44 +223,54 @@ export function LineupSection({ matchId }: { matchId: number }) {
       <div>
         <div className="mod-label">Uppställning</div>
         <p className="small dim" style={{ margin: "4px 0 0" }} data-testid="lineup-not-published">
-          Uppställningen är inte publicerad än. Den slås fast närmare avspark —
-          prova igen närmare matchen.
+          Startelva ej tillgänglig
         </p>
       </div>
     );
   }
 
   const l = outcome.lineups;
+  const sides: Array<{ side: string; team: typeof l.homeTeam }> = [
+    { side: "Hemmalag", team: l.homeTeam },
+    { side: "Bortalag", team: l.visitingTeam },
+  ];
   return (
     <div>
       <div className="mod-label">Uppställning</div>
       <div className="stack-2" data-testid="lineup-content">
-        {[l.homeTeam, l.visitingTeam]
-          .filter((t): t is NonNullable<typeof t> => t != null)
-          .map((t) => (
-            <div key={t.abbrv}>
+        {sides.map(({ side, team }) => {
+          if (!team || (team.starting.length === 0 && team.substitutes.length === 0)) {
+            return (
+              <p className="small dim" style={{ margin: 0 }} key={side}>
+                {side}: Startelva ej tillgänglig
+              </p>
+            );
+          }
+          return (
+            <div key={team.abbrv}>
               <p className="small" style={{ margin: "4px 0 2px", fontWeight: 600 }}>
-                {t.abbrv}{t.formation ? ` · ${t.formation}` : ""}
+                {team.abbrv}{team.formation ? ` · ${team.formation}` : ""}
               </p>
               <p className="small dim" style={{ margin: "0 0 2px" }}>Startelva</p>
               <ul className="plain-list" style={{ margin: 0 }}>
-                {t.starting.map((p, i) => (
+                {team.starting.map((p, i) => (
                   <li key={i}>
                     {p.shirtNumber != null ? <b>{p.shirtNumber}</b> : null} {p.givenName} {p.surName}
                     {p.position ? <span className="dim xsmall"> ({p.position})</span> : null}
                   </li>
                 ))}
               </ul>
-              {t.substitutes.length > 0 && (
+              {team.substitutes.length > 0 && (
                 <>
                   <p className="small dim" style={{ margin: "6px 0 2px" }}>Avbytare</p>
                   <p className="small" style={{ margin: 0 }}>
-                    {t.substitutes.map((p) => `${p.givenName} ${p.surName}`).join(", ")}
+                    {team.substitutes.map((p) => `${p.givenName} ${p.surName}`).join(", ")}
                   </p>
                 </>
               )}
             </div>
-          ))}
+          );
+        })}
       </div>
     </div>
   );

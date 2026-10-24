@@ -10,13 +10,11 @@
  *
  * Behaviour (identical in both places):
  * - Tapping the banner opens the upcoming-match sheet (fixture + the
- *   on-demand "Hämta uppställning" section) — the same sheet the Kommande
+ *   automatically checked lineup) — the same sheet the Kommande
  *   list opens. No navigation to /matcher any more: the sheet IS the
  *   destination, so the lineup affordance is one tap from the banner.
- * - The lineup affordance text appears ONLY on match day (user correction,
- *   2026-10-14): the countdown line then reads "Matchdag, klicka för
- *   startelva". On other days the banner is a plain fixture line — no
- *   persistent hint, no clutter.
+ * - The smaller lineup hint appears ONLY on match day. On other days the
+ *   banner is a plain fixture line — no persistent hint, no clutter.
  * - "Hemma"/"Borta" is NOT printed: the team order (Häcken left = home,
  *   Swedish convention) already states it — same rule as the match rows.
  */
@@ -46,7 +44,10 @@ export function NextMatchBanner({
       <span className="strip-when">
         <b data-testid="countdown">
           {matchDay
-            ? "Matchdag, klicka för startelva"
+            ? <>
+                <span className="matchday-label">Matchdag</span>
+                <span className="matchday-action">Klicka för startelva</span>
+              </>
             : days === 1
               ? "Imorgon"
               : days != null
