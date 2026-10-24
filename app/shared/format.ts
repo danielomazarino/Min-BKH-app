@@ -67,13 +67,20 @@ export function fmtWhen(iso: string, now = Date.now()): string {
   return dOnly.format(d);
 }
 
-/** Whole days until a future date; null when in the past. */
+/**
+ * Calendar days until a date; null when its calendar day is in the past.
+ *
+ * Match labels are day-based ("I dag"/"Imorgon"), not rolling 24-hour
+ * windows. In particular, a kickoff a few hours from now is still today.
+ */
 export function daysUntil(iso: string, now = Date.now()): number | null {
   const d = parse(iso);
   if (!d) return null;
-  const diff = d.getTime() - now;
-  if (diff <= 0) return null;
-  return Math.ceil(diff / 86400000);
+  const current = new Date(now);
+  const targetDay = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  const currentDay = Date.UTC(current.getFullYear(), current.getMonth(), current.getDate());
+  const days = (targetDay - currentDay) / 86400000;
+  return days < 0 ? null : days;
 }
 
 /**

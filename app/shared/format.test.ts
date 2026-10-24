@@ -464,11 +464,12 @@ describe("scorerLine", () => {
 });
 
 describe("time helpers", () => {
-  it("daysUntil counts whole days and returns null in the past", () => {
-    const now = Date.parse("2026-09-25T12:00:00Z");
-    expect(daysUntil("2026-09-26T11:00:00Z", now)).toBe(1);
-    expect(daysUntil("2026-09-25T13:00:00Z", now)).toBe(1);
-    expect(daysUntil("2026-09-20T12:00:00Z", now)).toBeNull();
+  it("daysUntil counts calendar days, including match day, and returns null for past days", () => {
+    const now = new Date(2026, 9, 24, 12).getTime();
+    expect(daysUntil(new Date(2026, 9, 24, 15).toISOString(), now)).toBe(0);
+    expect(daysUntil(new Date(2026, 9, 25, 11).toISOString(), now)).toBe(1);
+    expect(daysUntil(new Date(2026, 9, 24, 10).toISOString(), now)).toBe(0);
+    expect(daysUntil(new Date(2026, 9, 23, 12).toISOString(), now)).toBeNull();
   });
 
   it("fmtWhen is relative for recent items and absolute after a day", () => {
