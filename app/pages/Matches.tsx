@@ -123,7 +123,7 @@ export default function Matches({ state }: { state: AppDataState }) {
   // lineup is to be shown"). The sheet shows the fixture and the on-demand
   // lineup section — the discoverable path to the eleven. Local state: the
   // sheet is derived from the MatchRef already in memory, no deep link needed.
-  const openUpcoming = openUpcomingId != null ? list.find((m) => m.id === openUpcomingId) ?? null : null;
+  const openUpcoming = openUpcomingId != null ? data.upcoming.find((m) => m.id === openUpcomingId) ?? null : null;
 
   return (
     <>

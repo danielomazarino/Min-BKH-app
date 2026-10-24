@@ -16,6 +16,7 @@ import { Sheet } from "./shared/Sheet";
 import { UpdateBanner } from "./shared/UpdateBanner";
 import { useAppUpdate } from "./shared/useAppUpdate";
 import { DESTINATIONS, SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
+import { fmtDateTime } from "./shared/format";
 
 const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
 
@@ -270,6 +271,11 @@ function SettingsPanel({ state }: { state: AppDataState }) {
               }).format(new Date(data.freshness.generatedAt))} · uppdateras varje natt 03:30 UTC.`
             : "Data kunde inte läsas."}
         </p>
+        {source?.retrievedAt && (
+          <p className="small dim" data-testid="sportomedia-updated">
+            Matchdata från SportoMedia senast hämtad: {fmtDateTime(source.retrievedAt)}.
+          </p>
+        )}
         {unavailable && (
           <>
             <p className="small muted" data-testid="current-unavailable">

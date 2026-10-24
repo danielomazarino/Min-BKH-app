@@ -19,7 +19,7 @@
  *   Swedish convention) already states it — same rule as the match rows.
  */
 import type { MatchRef } from "../../pipeline/src/types";
-import { competitionLabel, daysUntil, fmtDay, matchTeams } from "./format";
+import { competitionLabel, daysUntil, fmtDay, fmtTime, matchTeams } from "./format";
 
 export function NextMatchBanner({
   next,
@@ -37,7 +37,7 @@ export function NextMatchBanner({
       className="strip strip-tap"
       onClick={onOpen}
       data-testid="next-match"
-      aria-label={`Nästa match ${teams.left} mot ${teams.right}, ${fmtDay(next.date)}.${
+      aria-label={`Nästa match ${teams.left} mot ${teams.right}, ${fmtDay(next.date)} klockan ${fmtTime(next.date)}.${
         matchDay ? " Matchdag, klicka för startelva." : ""
       }`}
     >
@@ -54,7 +54,7 @@ export function NextMatchBanner({
                 ? `Om ${days} dagar`
                 : "—"}
         </b>
-        <span>{fmtDay(next.date)}</span>
+        <span>{fmtDay(next.date)} · {fmtTime(next.date)}</span>
       </span>
       <span className="strip-teams">
         <span className="dim">{competitionLabel(next.competition)}</span>

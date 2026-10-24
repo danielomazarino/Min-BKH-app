@@ -84,12 +84,6 @@ function BriefBody({ data, threshold }: { data: AppData; threshold: number }) {
 
   return (
     <>
-      {data.currentDataUnavailable && (
-        <p className="small muted" role="status" data-testid="current-data-unavailable">
-          Aktuell matchdata saknas just nu. Senaste kända data visas.
-        </p>
-      )}
-
       {/* 1 — next match. The single most important thing on the screen.
           Shared banner with Matcher (B-021 round 3): same layout, same
           logic, and the tap opens the upcoming-match sheet directly — the
