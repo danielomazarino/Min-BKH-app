@@ -160,6 +160,7 @@ test.describe("Matches archive", () => {
   });
 
   test("the full 16-team table is present", async ({ page }) => {
+    await page.getByTestId("tab-table").click();
     await expect(page.getByTestId("league-table")).toBeVisible();
     expect(await page.getByTestId("table-row").count()).toBeGreaterThanOrEqual(16);
   });

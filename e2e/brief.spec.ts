@@ -174,7 +174,7 @@ test.describe("Brief (dashboard)", () => {
     if ((await hero.count()) === 0) test.skip(true, "no next match in data");
     await hero.click();
     await expect(page.getByTestId("upcoming-sheet")).toBeVisible();
-    await expect(page.getByTestId("lineup-hint")).toBeVisible();
+    await expect(page.getByText("Uppställning", { exact: true })).toBeVisible();
   });
 
   test("Brief is a vertical scroll surface, not a horizontal layer", async ({ page }) => {
