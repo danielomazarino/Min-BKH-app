@@ -11,7 +11,7 @@
  * so the browser/iOS back gesture closes the detail rather than leaving the
  * page.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AppDataState } from "../data";
 import type { MatchRef } from "../../pipeline/src/types";
@@ -30,15 +30,12 @@ import {
 import { idFromSearch } from "../shared/nav";
 
 export default function Matches({ state }: { state: AppDataState }) {
-  const [tab, setTab] = useState<"spelade" | "kommande">("spelade");
+  const [tab, setTab] = useState<"spelade" | "kommande" | "tabell">("spelade");
   const { search } = useLocation();
   const navigate = useNavigate();
 
-  // ?section=tabellen — Brief's "Hela tabellen" link. The table sits below
-  // the match lists, so without an explicit scroll the reader landed on the
-  // page top and had to hunt for it (tester report, 2026-10-07). The ref is
-  // scrolled once data is ready; the param is then dropped from the URL so a
-  // manual reload does not yank the reader down again.
+  // ?section=tabellen — Brief's "Hela tabellen" link. Select the table tab
+  // directly, then remove the one-shot parameter so reloads open normally.
   //
   // THESE HOOKS MUST STAY ABOVE THE EARLY RETURNS. They were originally placed
   // after the loading/error returns, so the loading render registered 3 hooks
@@ -46,7 +43,6 @@ export default function Matches({ state }: { state: AppDataState }) {
   // than during the previous render". That blanked the whole /matcher page the
   // moment data arrived, and with it every e2e test that visited /matcher.
   // A hook may never sit behind a conditional return.
-  const tableRef = useRef<HTMLElement | null>(null);
   // Team sheet: tapping a league-table row opens that team's position, arena
   // and fixtures against Häcken (tester request, 2026-10-13). Local state is
   // enough — the sheet is derived from data already in memory, so there is no
@@ -60,22 +56,11 @@ export default function Matches({ state }: { state: AppDataState }) {
   // its deep link). ALSO above the early returns — see #310.
   const [openPlayedId, setOpenPlayedId] = useState<number | null>(null);
   const wantsTable = new URLSearchParams(search).get("section") === "tabellen";
-  const tableRows = state.status === "ready" ? state.data.table.length : 0;
   useEffect(() => {
     if (!wantsTable || state.status !== "ready") return;
-    if (tableRows === 0) return;
-    // The page does NOT scroll on the window: the `.layer` wrapper is the
-    // scroll container (overflow-y: auto, measured live). scrollIntoView
-    // walks up to the nearest scrollable ancestor, so it works — but only
-    // once the element is actually in the DOM with layout, hence the rAF.
-    requestAnimationFrame(() => {
-      tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+    setTab("tabell");
     navigate("/matcher", { replace: true });
-    // Runs once per arrival with the param; the navigate above removes it.
-    // (This project's ESLint config does not register react-hooks rules, so
-    // there is no directive to silence — the comment is the record.)
-  }, [wantsTable, state.status, tableRows, navigate]);
+  }, [wantsTable, state.status, navigate]);
 
   if (state.status === "loading") {
     return (
@@ -135,10 +120,12 @@ export default function Matches({ state }: { state: AppDataState }) {
             Brief (B-021 round 3) — one component, one layout, and the tap
             opens the upcoming-match sheet with the lineup section. */}
         {data.nextMatch && (
-          <NextMatchBanner
-            next={data.nextMatch}
-            onOpen={() => setOpenUpcomingId(data.nextMatch!.id)}
-          />
+          <section className="matches-next-match">
+            <NextMatchBanner
+              next={data.nextMatch}
+              onOpen={() => setOpenUpcomingId(data.nextMatch!.id)}
+            />
+          </section>
         )}
 
         <div className="match-tabs" style={{ paddingTop: 12 }}>
@@ -149,11 +136,52 @@ export default function Matches({ state }: { state: AppDataState }) {
             <button role="tab" aria-selected={tab === "kommande"} onClick={() => setTab("kommande")} data-testid="tab-upcoming">
               Kommande
             </button>
+            <button role="tab" aria-selected={tab === "tabell"} onClick={() => setTab("tabell")} data-testid="tab-table">
+              Tabell
+            </button>
           </div>
         </div>
 
         <div className="module" style={{ paddingTop: 12 }}>
-          {list.length === 0 ? (
+          {tab === "tabell" ? (
+            <section aria-labelledby="table-h" data-testid="league-table">
+              <h2 className="mod-label" id="table-h">
+                Tabell
+              </h2>
+              {data.table.length === 0 ? (
+                <p className="empty">Tabellen är inte tillgänglig just nu.</p>
+              ) : (
+                data.table.map((t) => {
+                  const self = t.team === "BK Häcken";
+                  return (
+                    <button
+                      type="button"
+                      className="mrow"
+                      key={t.team}
+                      style={self ? { color: "var(--text)" } : undefined}
+                      data-testid="table-row"
+                      onClick={() => setOpenTeam(t.team)}
+                      aria-label={`${t.team}, ${t.rank}. plats, ${t.points} poäng. Visa lagets uppgifter.`}
+                    >
+                      <span className="score" style={{ fontSize: 13, color: self ? "var(--yellow)" : "var(--text-3)" }}>
+                        {t.rank}
+                      </span>
+                      <span className="body">
+                        <span className="opponent" style={self ? { color: "var(--yellow)" } : undefined}>
+                          {t.team}
+                        </span>
+                        <span className="meta">
+                          {t.played} matcher · {t.goalDiff > 0 ? "+" : ""}
+                          {t.goalDiff}
+                        </span>
+                      </span>
+                      <span className="res">{t.points} p</span>
+                    </button>
+                  );
+                })
+              )}
+            </section>
+          ) : list.length === 0 ? (
             <p className="empty">
               <strong>{tab === "spelade" ? "Inga spelade matcher" : "Inga kommande matcher"}</strong>
               {tab === "spelade" ? "Säsongen har inte börjat om." : "Inget schema är inlagt just nu."}
@@ -177,41 +205,6 @@ export default function Matches({ state }: { state: AppDataState }) {
           )}
         </div>
 
-        {data.table.length > 0 && (
-          <section className="module" aria-labelledby="table-h" data-testid="league-table" ref={tableRef}>
-            <h2 className="mod-label" id="table-h">
-              Tabellen
-            </h2>
-            {data.table.map((t) => {
-              const self = t.team === "BK Häcken";
-              return (
-                <button
-                  type="button"
-                  className="mrow"
-                  key={t.team}
-                  style={self ? { color: "var(--text)" } : undefined}
-                  data-testid="table-row"
-                  onClick={() => setOpenTeam(t.team)}
-                  aria-label={`${t.team}, ${t.rank}. plats, ${t.points} poäng. Visa lagets uppgifter.`}
-                >
-                  <span className="score" style={{ fontSize: 13, color: self ? "var(--yellow)" : "var(--text-3)" }}>
-                    {t.rank}
-                  </span>
-                  <span className="body">
-                    <span className="opponent" style={self ? { color: "var(--yellow)" } : undefined}>
-                      {t.team}
-                    </span>
-                    <span className="meta">
-                      {t.played} matcher · {t.goalDiff > 0 ? "+" : ""}
-                      {t.goalDiff}
-                    </span>
-                  </span>
-                  <span className="res">{t.points} p</span>
-                </button>
-              );
-            })}
-          </section>
-        )}
       </div>
       {openMatch && <MatchSheet detail={openMatch} onClose={closeMatch} />}
       {openPlayed && <MatchSheet detail={openPlayed} onClose={() => setOpenPlayedId(null)} />}

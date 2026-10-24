@@ -203,6 +203,7 @@ test.describe("Brief (dashboard)", () => {
     await page.getByTestId("table-position").waitFor();
     await page.getByRole("link", { name: /Hela tabellen/ }).click();
     await expect(page).toHaveURL(/\u0023\/matcher/);
+    await expect(page.getByTestId("tab-table")).toHaveAttribute("aria-selected", "true");
     await expect(page.getByTestId("league-table")).toBeVisible();
   });
 });

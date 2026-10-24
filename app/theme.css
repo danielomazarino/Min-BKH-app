@@ -2807,6 +2807,10 @@ details.disc .disc-body {
   padding-bottom: var(--s2);
 }
 
+.matches-next-match {
+  padding-top: var(--s5);
+}
+
 .strip {
   display: flex;
   align-items: center;

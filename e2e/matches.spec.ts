@@ -30,6 +30,35 @@ test("Matcher opens the shared next-match card with kickoff time", async ({ page
   ).toBeVisible();
 });
 
+test("Matcher banner has the same top spacing as Home", async ({ page }) => {
+  await page.goto("/#/");
+  await expect(page.getByTestId("brief-page")).toBeAttached({ timeout: 20_000 });
+  const homeGap = await page.evaluate(() => {
+    const header = document.querySelector(".app-header")!.getBoundingClientRect();
+    const banner = document.querySelector('[data-testid="next-match"]')!.getBoundingClientRect();
+    return banner.top - header.bottom;
+  });
+
+  await page.goto("/#/matcher");
+  await expect(page.getByTestId("matches-page")).toBeAttached({ timeout: 20_000 });
+  const matcherGap = await page.evaluate(() => {
+    const header = document.querySelector(".app-header")!.getBoundingClientRect();
+    const banner = document.querySelector('[data-testid="next-match"]')!.getBoundingClientRect();
+    return banner.top - header.bottom;
+  });
+  expect(matcherGap).toBe(homeGap);
+});
+
+test("Matcher's Tabell tab shows the league table in the tab position", async ({ page }) => {
+  await page.goto("/#/matcher");
+  await expect(page.getByTestId("matches-page")).toBeAttached({ timeout: 20_000 });
+  await page.getByTestId("tab-table").click();
+
+  await expect(page.getByTestId("tab-table")).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByTestId("league-table")).toBeVisible();
+  await expect(page.getByTestId("league-table")).toBeInViewport();
+});
+
 test("Hem keeps the unavailable notice in Settings with the last SportoMedia update", async ({ page }) => {
   await page.goto("/#/");
   await expect(page.getByTestId("brief-page")).toBeAttached({ timeout: 20_000 });
