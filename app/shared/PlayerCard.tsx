@@ -342,6 +342,10 @@ function PlayerCardInner({
   // `enrichment.career` — use it directly rather than re-merging.
   const heightCm = c?.heightCm ?? infobox?.heightCm ?? enrichment?.heightCm;
   const position = c?.position ?? infobox?.position ?? enrichment?.position;
+  const alternateNames =
+    c?.alsoKnownAs.filter((alias) => alias.trim().toLocaleLowerCase() !== name.trim().toLocaleLowerCase()) ?? [];
+  const wikiExtract = wiki ? translated ?? wiki.extract : null;
+  const conciseWikiExtract = wikiExtract ? condenseWikiExtract(wikiExtract, name) : null;
   const careerMerge = enrichment
     ? { stints: enrichment.career, usedInfobox: enrichment.usedInfobox }
     : mergeCareerStints(c?.career ?? [], infobox?.career ?? []);
@@ -355,7 +359,7 @@ function PlayerCardInner({
   return (
     <Sheet
       title={name}
-      subtitle={c?.description ?? squadFacts?.positionLabel ?? undefined}
+      subtitle={squadFacts ? undefined : c?.description ?? undefined}
       onClose={onClose}
       headExtra={headExtra}
     >
@@ -367,71 +371,31 @@ function PlayerCardInner({
           </p>
         )}
 
-        {c && c.alsoKnownAs.length > 0 && (
+        {alternateNames.length > 0 && (
           <p className="small muted" style={{ margin: 0 }} data-testid="aka">
-            Sökbar även som: {c.alsoKnownAs.join(", ")}
+            Även känd som: {alternateNames.join(", ")}
           </p>
         )}
 
-        <div className="player-head">
-          <div className="player-head-facts">
-            {/* ---- squad-season facts: the data ONLY the squad has ---- */}
-            {squadFacts && (
-              <div style={{ marginBottom: 8 }} data-testid="squad-facts">
-                <div className="kv">
-                  <Stat v={squadFacts.matchesPlayed} l="Matcher" />
-                  <Stat v={squadFacts.goals} l="Mål" />
-                  <Stat v={squadFacts.assists} l="Assist" />
-                  <Stat v={squadFacts.yellowCards} l="Gult" />
-                  <Stat v={squadFacts.redCards} l="Rött" />
-                </div>
-                {squadFacts.cardState && (
-                  <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="squad-card-state">
-                    Kortläge: {squadFacts.cardState}.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* ---- no Wikidata/Wikipedia match: say so, never render silently ---- */}
-            {c === null && (
-              <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="no-wiki-data">
-                Ingen data hittades i Wikidata eller Wikipedia för det här namnet.
-                {squadFacts ? " Säsongssiffrorna ovan kommer från den egna truppdatan." : ""}
-              </p>
-            )}
-            {c === undefined && (
-              <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="wiki-loading">
-                Söker i Wikidata och Wikipedia…
-              </p>
-            )}
-
-            {/* ---- Wikipedia narrative, when a verified article exists ---- */}
-            {wiki ? (
-              <div>
-                <p className="small" style={{ margin: "0 0 4px" }} data-testid="wiki-extract">
-                  {translated ?? wiki.extract}
+        <section className="player-profile-section" aria-label="Personuppgifter">
+          <div className="mod-label">Personuppgifter</div>
+          <div className="player-head">
+            <div className="player-head-facts">
+              {c === null && (
+                <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="no-wiki-data">
+                  Ingen data hittades i Wikidata eller Wikipedia för det här namnet.
+                  {squadFacts ? " Säsongssiffrorna ovan kommer från den egna truppdatan." : ""}
                 </p>
-                {wiki.lang !== "sv" && (
-                  <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="wiki-translation-note">
-                    {translated
-                      ? `Maskinöversatt från ${LANG_NAME[wiki.lang] ?? wiki.lang}.`
-                      : `Texten är på ${LANG_NAME[wiki.lang] ?? wiki.lang} — översättning kunde inte hämtas.`}
-                  </p>
-                )}
-                <p className="small dim" style={{ margin: 0 }} data-testid="wiki-source">
-                  <a className="link" href={wiki.pageUrl} target="_blank" rel="noopener noreferrer">
-                    Läs hela artikeln ({LANG_NAME[wiki.lang] ?? wiki.lang} Wikipedia)
-                  </a>
+              )}
+              {c === undefined && (
+                <p className="small dim" style={{ margin: "0 0 4px" }} data-testid="wiki-loading">
+                  Söker i Wikidata och Wikipedia…
                 </p>
-              </div>
-            ) : null}
+              )}
 
-            {/* ---- general information ---- */}
-            <div>
               <div className="kv">
-                <Stat v={c?.dateOfBirth ?? null} l="Född" isText />
-                <Stat v={heightCm ?? null} l="Längd cm" />
+                <Stat v={c?.dateOfBirth ? fmtBirthDate(c.dateOfBirth) : null} l="Född" isText />
+                <Stat v={heightCm != null ? `${heightCm} cm` : null} l="Längd" isText />
                 <Stat v={position ?? squadFacts?.positionLabel ?? null} l="Position" isText />
                 <Stat v={c?.citizenship[0] ?? null} l="Nationalitet" isText />
               </div>
@@ -451,24 +415,66 @@ function PlayerCardInner({
                 </p>
               )}
             </div>
-          </div>
 
-          {/* ---- photo — small, top right, only when a source has one ---- */}
-          {c?.imageUrl && (
-            <img
-              src={commonsImageUrl(c.imageUrl)}
-              alt={name}
-              loading="lazy"
-              decoding="async"
-              className="player-photo"
-              data-testid="player-photo"
-            />
-          )}
-        </div>
+            {c?.imageUrl && (
+              <img
+                src={commonsImageUrl(c.imageUrl)}
+                alt={name}
+                loading="lazy"
+                decoding="async"
+                className="player-photo"
+                data-testid="player-photo"
+              />
+            )}
+          </div>
+        </section>
+
+        {squadFacts && (
+          <section className="player-section" data-testid="squad-facts">
+            <div className="mod-label">Säsongen</div>
+            <div className="kv squad-stat-grid">
+              <Stat v={squadFacts.matchesPlayed} l="Matcher" />
+              <Stat v={squadFacts.goals} l="Mål" />
+              <Stat v={squadFacts.assists} l="Assist" />
+              <Stat v={squadFacts.yellowCards} l="Gult" />
+              <Stat v={squadFacts.redCards} l="Rött" />
+            </div>
+            {squadFacts.cardState && (
+              <p className="small dim" style={{ margin: "6px 0 0" }} data-testid="squad-card-state">
+                Kortläge: {squadFacts.cardState}.
+              </p>
+            )}
+          </section>
+        )}
+
+        {wiki && (
+          <section className="player-section" data-testid="wiki-section">
+            <div className="mod-label">Om spelaren</div>
+            {conciseWikiExtract ? (
+              <p className="small" style={{ margin: "0 0 8px" }} data-testid="wiki-extract">
+                {conciseWikiExtract}
+              </p>
+            ) : (
+              <p className="small dim" style={{ margin: "0 0 8px" }}>
+                Läs spelarens biografi på Wikipedia.
+              </p>
+            )}
+            {wiki.lang !== "sv" && (
+              <p className="small dim" style={{ margin: "0 0 8px" }} data-testid="wiki-translation-note">
+                {translated
+                  ? `Maskinöversatt från ${LANG_NAME[wiki.lang] ?? wiki.lang}.`
+                  : `Texten är på ${LANG_NAME[wiki.lang] ?? wiki.lang} — översättning kunde inte hämtas.`}
+              </p>
+            )}
+            <a className="link small" href={wiki.pageUrl} target="_blank" rel="noopener noreferrer" data-testid="wiki-source">
+              Läs hela artikeln på Wikipedia
+            </a>
+          </section>
+        )}
 
         {/* ---- career ---- */}
         {c && (
-          <div>
+          <section className="player-section">
             <div className="mod-label">Karriär</div>
             {career.length > 0 ? (
               <>
@@ -502,12 +508,12 @@ function PlayerCardInner({
                 uppgiften saknas.
               </p>
             )}
-          </div>
+          </section>
         )}
 
         {/* ---- national teams ---- */}
         {c && nationalTeams.length > 0 && (
-          <div>
+          <section className="player-section">
             <div className="mod-label">Landslag</div>
             <ul className="career" data-testid="national-teams">
               {nationalTeams.map((s, idx) => (
@@ -524,12 +530,12 @@ function PlayerCardInner({
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         )}
 
         {/* ---- provenance ---- */}
         {c && (
-          <div>
+          <section className="player-section">
             <div className="mod-label">Källa</div>
             <p className="small dim prov" style={{ margin: 0 }} data-testid="provenance">
               Uppgifterna kommer från Wikidata och Wikipedia och kan vara ofullständiga.{" "}
@@ -537,7 +543,7 @@ function PlayerCardInner({
                 Öppna Wikidata-posten ({c.qid})
               </a>
             </p>
-          </div>
+          </section>
         )}
       </div>
     </Sheet>
@@ -548,6 +554,26 @@ function PlayerCardInner({
  * One value in the identity grid. `.kv .k .v` is sized for NUMBERS; `isText`
  * drops a text value to a size that fits.
  */
+function fmtBirthDate(iso: string): string {
+  const dayMonth = fmtDay(iso);
+  const year = /^\d{4}/.exec(iso)?.[0];
+  return year ? `${dayMonth} ${year}` : dayMonth;
+}
+
+function condenseWikiExtract(extract: string, name: string): string | null {
+  const sentences = extract.match(/[^.!?]+(?:[.!?]+|$)/g) ?? [extract];
+  const first = sentences[0]?.trim() ?? "";
+  const playerName = name.trim();
+  let summary = first.toLocaleLowerCase().startsWith(playerName.toLocaleLowerCase())
+    ? first.slice(playerName.length).replace(/^\s*[,–—:]?\s*/, "")
+    : first;
+  summary = summary.replace(/^(?:född|born)\b[^,]*,\s*/i, "").trim();
+  summary = summary.replace(/^(?:är\s+en|är|is\s+(?:a|an))\s+/i, "");
+  summary = summary ? summary[0].toLocaleUpperCase() + summary.slice(1) : "";
+  const result = [summary, ...sentences.slice(1).map((sentence) => sentence.trim())].filter(Boolean).join(" ").trim();
+  return result || null;
+}
+
 function Stat({ v, l, isText }: { v: number | string | null; l: string; isText?: boolean }) {
   return (
     <div className="k">

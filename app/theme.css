@@ -2204,6 +2204,10 @@ main {
   gap: var(--s4);
   margin: var(--s3) 0;
 }
+.squad-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 .kv .k {
   min-width: 46px;
 }
@@ -2212,6 +2216,12 @@ main {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
+}
+.squad-stat-grid .k .v {
+  font-size: 16px;
+}
+.squad-stat-grid .k .l {
+  font-size: 9px;
 }
 .kv .k .l {
   font-size: 10px;
@@ -2260,6 +2270,24 @@ main {
   .player-photo {
     width: 120px;
   }
+}
+
+/* Distinct player-card sections follow the shared sheet rhythm with more
+   breathing room than the compact nested content inside each section. */
+.player-section + .player-section {
+  margin-top: var(--s3);
+}
+.player-profile-section {
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--hairline);
+}
+.player-section .mod-label,
+.player-profile-section .mod-label {
+  margin-bottom: var(--s2);
+}
+.squad-facts-section .kv {
+  margin-top: var(--s2);
+  margin-bottom: var(--s2);
 }
 
 /* Career timeline: one row per stint. The year column is fixed-width and
