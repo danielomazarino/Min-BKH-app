@@ -1,6 +1,6 @@
 {
   "freshness": {
-    "generatedAt": "2026-11-04T11:30:25.412Z",
+    "generatedAt": "2026-11-05T11:28:25.878Z",
     "sourceStatus": {
       "rss:BK Häcken": "ok",
       "rss:Sportbladet": "ok",
@@ -19,6 +19,11 @@
         "kept": 0,
         "dropped": 39
       },
+      "Göteborgs-Posten": {
+        "fetched": 23,
+        "kept": 0,
+        "dropped": 23
+      },
       "BK Häcken": {
         "fetched": 20,
         "kept": 8,
@@ -31,18 +36,13 @@
       },
       "Fotbolltransfers": {
         "fetched": 20,
-        "kept": 16,
-        "dropped": 4
+        "kept": 18,
+        "dropped": 2
       },
       "SVT Sport": {
         "fetched": 20,
         "kept": 0,
         "dropped": 20
-      },
-      "Göteborgs-Posten": {
-        "fetched": 15,
-        "kept": 1,
-        "dropped": 14
       },
       "Allsvenskan": {
         "fetched": 10,
@@ -187,7 +187,7 @@
         "url": "https://bkhacken.se/nyhet/bk-hacken-aterkallar-beslut-om-forandringar-i-ungdomsverksamheten",
         "publisher": "BK Häcken",
         "publishedAt": "2026-10-22T07:00:23.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "men-excluded"
       },
       {
         "title": "Adrian Svanbäck matchvinnare i Malmö: \"En speciell känsla\"",
@@ -195,6 +195,146 @@
         "publisher": "BK Häcken",
         "publishedAt": "2026-10-18T16:58:49.000Z",
         "verdict": "over candidate cap"
+      },
+      {
+        "title": "Warner Hahn om framtiden: ”Ska sätta oss ner efter säsongen”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/VgW3l6/warner-hahn-oppnar-for-att-forlanga-med-hammarby?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-05T10:42:52.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Rydström räknar bort Hagen: ”Skittråkigt”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/L38BLx/hammarbys-oliver-hagen-missar-resten-av-sasongen?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-05T10:42:48.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Cristiano Ronaldo slutar i landslaget",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/QgdLzJ/cristiano-ronaldo-slutar-i-landslaget?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-05T10:27:11.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Norsk chock på VM: ”Rullstol och rollator”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/gdgA2J/norge-chockades-av-sakerheten-pa-hotellet-pa-fotbolls-vm?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-05T09:02:04.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Rankar: 30 bästa spelarna i Ettan-fotbollen 2026",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvlyJk/basta-spelarna-i-ettan-fotbollen-2026-rankar-topp-30?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-05T08:46:29.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Frun har flytt landet: ”Oväntad vändning”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/77EdOW/ollie-watkins-familj-har-flytt-saudiarabien-efter-robotattackerna?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-05T05:27:34.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Como krossade Lens – tangerade CL-rekord",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/X9vbRB/como-krossade-lens-tangerade-cl-rekord?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T22:04:26.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Viking Stavanger tog första CL-segern",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/qy2WoL/viking-stavanger-tog-sin-forsta-seger-i-champions-league?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T21:58:07.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Haaland hjälte för Man City",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvA6k9/erling-haaland-hjalte-for-man-city-i-champions-league-mot-leipzig?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T21:56:56.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Fagerlund: De glömmer aldrig den här kvällen",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/JrkkRb/fagerlunds-kronika-efter-fenerbahce-liverpool?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T20:51:43.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Viktor Gyökeres gjorde mål och assist för Arsenal",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/gdg71q/viktor-gyokeres-med-assist-for-arsenal-i-cl?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T20:20:58.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Fede Valverde räddade Real Madrid i Grekland",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/8Ge392/fede-valverde-avgjorde-for-real-madrid-mot-aek-aten?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T19:42:43.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Liverpool föll ihop efter Isaks mål",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/ylk1XA/alexander-isak-malskytt?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T19:16:41.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Nya rekordet: 51 (!) röda kort",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/MAzem5/nytt-varldsrekord-51-roda-kort-i-brasilien?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T19:10:20.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Målvaktens första ord efter dödsolyckan",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/qyG51E/jesus-owono-bryter-tystnaden-efter-jesus-de-miguels-dod?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T16:07:16.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Nordic United kan kastas ur superettan",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/77br34/nordic-united-kan-kastas-ur-superettan?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T15:36:46.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Allsvensk panel omgång 27: Fansen som varit bäst 2026",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/4OMGgg/bast-fans-i-allsvenskan-2026-experterna-rankar-bast-i-klassen?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T14:42:57.000Z",
+        "verdict": "general allsvenskan, no Häcken relation"
+      },
+      {
+        "title": "”Aldrig suttit så här mycket på bänken tidigare”",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/ylQjaa/abdul-abdulmalik-och-jani-honkavaara-om-speltiden-i-dif?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T14:36:51.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "BANK: Va-va-voom",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/lKBjJA/bank-va-va-voom?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T13:21:10.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Blågult tvingas lämna landet inför avgörandet",
+        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/aOgowL/sverige-tvingas-ladda-upp-i-spanien-infor-nations-league?utm_medium=rss",
+        "publisher": "Sportbladet",
+        "publishedAt": "2026-11-04T12:39:09.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Två debutanter med i Potters trupp",
@@ -208,20 +348,6 @@
         "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/p175bw/kulusevski-med-i-potters-trupp?utm_medium=rss",
         "publisher": "Sportbladet",
         "publishedAt": "2026-11-04T11:04:09.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Skallade Besara – stängs av resten av säsongen",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Wgnyxr/malmo-ff-s-andrej-djuric-stangs-av-resten-av-sasongen?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-04T10:17:20.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Rankar: 30 bästa spelarna i Ettan-fotbollen 2026",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/kvlyJk/basta-spelarna-i-ettan-fotbollen-2026-rankar-topp-30?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-04T09:55:37.000Z",
         "verdict": "no Häcken relation"
       },
       {
@@ -344,417 +470,291 @@
         "verdict": "men-excluded"
       },
       {
-        "title": "Kompenserad med 39 miljoner kronor",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/w31yK5/gianni-infantino-i-ny-skandal-skatt-betalades-i-hemlighet?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T23:04:37.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Linus Carlstrand avstängd: ”En dålig jävla regel”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/Wgwb5K/linus-carlstrand-avstangd-for-aik-dalig-javla-regel?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T21:29:34.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Svensken målskytt i två raka matcher",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/mKARrl/serie-a-aliu-njie-malskytt-igen-for-fiorentina?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T20:39:18.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Överraskningen på guldfesten – superstjärnan på besök",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/b8E5Og/hacken-firar-sm-guldet?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T20:21:42.000Z",
-        "verdict": "men-excluded"
-      },
-      {
-        "title": "Landskrona tog sista chansen i toppstriden",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/0Bmm2E/superettan-landskrona-slog-orebro-har-chans-pa-allsvenskan?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T19:57:54.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "Gais besegrade AIK på Gamla Ullevi",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/4OMjgV/gais-besegrade-aik-pa-gamla-ullevi?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T19:54:22.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Ville ha straff efter märkliga situationen: ”Tråkigt”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/w3a6LL/kryss-mellan-mjallby-och-kalmar-ff?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T19:52:17.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "HIF:s öde avgörs i sista omgången",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/58xxPW/helsingborg-foll-mot-oster-i-superettan-riskerar-att-aka-ut?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T19:50:02.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Fick hjärtstillestånd efter brutal kollision",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/MAOgwK/hjartstillestand-pa-planen-i-spanien?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T19:10:14.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "RYDÉN: Damallsvenskans självklara gigant",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/4O9nmg/ryden-damallsvenskans-sjalvklara-gigant?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T18:49:51.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "Häcken vinner guld för andra året i rad",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/JrzzeR/hacken-vinner-damallsvenskan-2026?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T18:49:38.000Z",
-        "verdict": "men-excluded"
-      },
-      {
-        "title": "Här är alla nominerade till världslagen 2026",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/MAKxlR/har-ar-alla-nominerade-till-varldslagen-2026?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T18:16:44.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Alice, 14, mitt i läktarkaoset: ”Sprejar över alla”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/zlnar9/alice-14-berattar-om-laktarkaoset-pa-hackengoteborg?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T17:10:59.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Siffran som får Hammarby att sticka ut internationellt",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OgvpVO/hammarby-nast-bast-efter-bodo-glimt?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T15:50:04.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Sirius Otso Liimatta missar resten av säsongen",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/qy0GO1/siriusspelaren-otto-liimatta-missar-resten-av-sasongen?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T15:35:31.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Grealish festade sig till en avstängning",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/b8p9Xd/jack-grealish-festande-innan-avstangningen-avslojat?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T10:07:47.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Kritiserar polisinsatsen på derbyt: ”Farligt”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/rMwjK3/ifk-goteborg-kritisk-20-har-sokt-vard-efter-ingripandet?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T09:32:56.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Ten Hag: ”Man United kan åka ur”",
-        "url": "https://www.aftonbladet.se/sportbladet/fotboll/a/OgvoEk/manchester-united-kan-aka-ur-premier-league?utm_medium=rss",
-        "publisher": "Sportbladet",
-        "publishedAt": "2026-11-02T08:57:17.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Blågult glädjebesked – Kulusevski uttagen",
-        "url": "https://www.expressen.se/sport/fotboll/landslaget/blagult-gladjebesked-kulusevski-uttagen/",
+        "title": "Stockholmsklubbarna vill se öppet agentregister",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/kravet-fran-08-klubbarna-oppet-agentregister/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-04T11:03:16.000Z",
+        "publishedAt": "2026-11-05T11:13:33.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Andrej Djuric stängs av resten av säsongen",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/andrej-djuric-stangs-av-resten-av-sasongen/",
+        "title": "Cristiano Ronaldo slutar i landslaget",
+        "url": "https://www.expressen.se/sport/fotboll/cristiano-ronaldo-slutar-i-landslaget/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-04T10:14:38.000Z",
+        "publishedAt": "2026-11-05T10:29:48.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Manchester City förbjuder frågor om domen",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/manchester-city-forbjuder-fragor-om-domen-/",
+        "title": "Reagerar på Gyökeres ord: ”Vad snackar han om?”",
+        "url": "https://www.expressen.se/sport/fotboll/champions-league/reagerar-pa-gyokeres-ord-vad-snackar-han-om/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-04T10:09:49.000Z",
+        "publishedAt": "2026-11-05T10:14:27.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Lars Larsen hoppar av Örebro SK",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/lars-larsen-hoppar-av-orebro-sk/",
+        "title": "Piteå sparkar tränaren: ”Svårt beslut”",
+        "url": "https://www.expressen.se/sport/fotboll/damallsvenskan/pitea-sparkar-tranaren-svart-beslut/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-04T09:24:13.000Z",
+        "publishedAt": "2026-11-05T09:50:05.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kim Hellberg stormar mot Premier League",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/tips/kim-hellberg-stormar-mot-premier-league/",
+        "title": "Harry Kane förlänger med Bayern München",
+        "url": "https://www.expressen.se/sport/fotboll/bundesliga/harry-kane-forlanger-med-bayern-munchen/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-04T09:07:48.000Z",
+        "publishedAt": "2026-11-05T09:45:29.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Rasmus Wikström blir borta länge",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/rasmus-wikstrom-blir-borta-lange/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-11-05T10:54:53.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Fokus på allsvenskan för Mjällby",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/tips/fokus-pa-allsvenskan-for-mjallby/",
+        "publisher": "Expressen",
+        "publishedAt": "2026-11-05T08:56:49.000Z",
         "verdict": "advertisement"
       },
       {
-        "title": "Slösa inte tecken i jackpotomgången",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/tips/slosa-inte-tecken-i--jackpotomgangen/",
+        "title": "Okända norska VM-dramat: ”Obehagligt”",
+        "url": "https://www.expressen.se/sport/fotboll/okanda-norska-vm-dramat-obehagligt/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-04T06:00:00.000Z",
-        "verdict": "advertisement"
-      },
-      {
-        "title": "Spansk polis inleder utredning efter dödskollisionen",
-        "url": "https://www.expressen.se/sport/fotboll/spansk-polis-inleder-utredning-efter-dodskollisionen/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-11-04T07:34:21.000Z",
+        "publishedAt": "2026-11-05T08:45:39.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Utspelade och urusla – men Michael Carrick fick rätt till slut",
-        "url": "https://www.expressen.se/sport/kronikorer/therese-stromberg/utspelade-och-urusla-men-michael-carrick-fick-ratt-till-slut/",
+        "title": "Erdal Rakip om sorgen – och MFF-nobben",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/erdal-rakip-om-sorgen-och-mff-nobben/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T22:14:23.000Z",
+        "publishedAt": "2026-11-05T04:00:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "PSG historiska – gjorde fyra mål på 16 minuter",
-        "url": "https://www.expressen.se/sport/fotboll/psg-historiska-gjorde-fyra-mal-pa-16-minuter/",
+        "title": "Sensationslagets jättekross – tangerat CL-rekord",
+        "url": "https://www.expressen.se/sport/fotboll/champions-league/sensationslagets-jattekross-nara-nytt-cl-rekord/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T21:56:10.000Z",
+        "publishedAt": "2026-11-04T23:34:35.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Nilssons Lindelöfs Aston Villa överkört av Barcelona",
-        "url": "https://www.expressen.se/sport/fotboll/nilssons-lindelofs-aston-villa-overkort-av-barcelona/",
+        "title": "Gianluigi Donnarumma sågas efter ingripandet",
+        "url": "https://www.expressen.se/sport/fotboll/champions-league/gianluigi-donnarumma-sagas-efter-ingripandet/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T21:53:56.000Z",
+        "publishedAt": "2026-11-04T22:31:00.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Uneken tillbaka – missat tio matcher: ”Tufft – det får jag ändå erkänna”",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/uneken-tillbaka-missat-tio-matcher-tufft-det-far-jag-anda-erkanna/",
+        "title": "Viktor Gyökeres succé i Champions League",
+        "url": "https://www.expressen.se/sport/fotboll/champions-league/viktor-gyokeres-succe-i-champions-league/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T21:22:46.000Z",
+        "publishedAt": "2026-11-04T22:45:01.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "40 JO-anmälningar mot polisen efter Göteborgsderbyt",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/40-jo-anmalningar-mot-polisen-efter-goteborgsderbyt/",
+        "title": "Abdulmalik om första tiden i Djurgården: ”Kul men frustrerande”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/abdulmalik-om-forsta-tiden-i-djurgarden-kul-men-frustrerande/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T21:05:33.000Z",
+        "publishedAt": "2026-11-04T19:31:05.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Manchester United vände efter protesterna: ”Aldrig sett något liknande”",
-        "url": "https://www.expressen.se/sport/fotboll/champions-league/manchester-united-supportrar-kastade-in-foremal-mot-egna-spelare-skamligt/",
+        "title": "Liverpool kollapsade mot Fenerbache",
+        "url": "https://www.expressen.se/sport/fotboll/champions-league/alexander-isak-malskytt-med-forsta-bolltouchen/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T21:55:20.000Z",
+        "publishedAt": "2026-11-04T19:54:17.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Sirius leder allsvenskan igen – nollade HBK",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/sirius-leder-allsvenskan-igen-nollade-hbk/",
+        "title": "Real Madrid vände – undvek fiasko i Champions League",
+        "url": "https://www.expressen.se/sport/fotboll/champions-league/aek-aten-chockar-real-madrid-tar-ledningen/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T20:15:50.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
-      },
-      {
-        "title": "Jonas Olsson om resorna, festen och golfen: ”Kan bli arga”",
-        "url": "https://www.expressen.se/sport/fotboll/jonas-olsson-om-resorna-festen-och-golfen-kan-bli-arga/",
-        "publisher": "Expressen",
-        "publishedAt": "2026-11-03T19:05:44.000Z",
+        "publishedAt": "2026-11-04T19:41:01.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Jättebråk i Champions League",
-        "url": "https://www.expressen.se/sport/fotboll/jattebrak-i-champions-league/",
+        "title": "Allsvensk panel: De går vinnande ur guldstriden",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/allsvensk-panel-de-gar-vinnande-ue-guldstriden-/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T19:30:46.000Z",
+        "publishedAt": "2026-11-04T16:11:23.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "PL-panelen: ”Få saker gör mig så förbannad”",
-        "url": "https://www.expressen.se/sport/fotboll/premier-league/pl-panelen-fa-saker-gor-mig-sa-forbannad/",
+        "title": "Datum satt för Erling Haalands rättegång med Norwegian",
+        "url": "https://www.expressen.se/sport/fotboll/premier-league/datum-satt-for-erling-haalands-rattegang-med-norwegian/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T16:44:19.000Z",
+        "publishedAt": "2026-11-04T15:07:39.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kvinna skadad av pyroteknik efter Göteborgsderbyt",
-        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/kvinna-skadad-av-pyroteknik-efter-goteborgsderbyt/",
+        "title": "Beskedet om Sam Larsson: ”Han känner sin kropp”",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/beskedet-om-sam-larsson-han-kanner-sin-kropp/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T15:30:28.000Z",
+        "publishedAt": "2026-11-04T15:08:00.000Z",
         "verdict": "men-excluded"
       },
       {
-        "title": "Hammarbys supertalang Fanny Peterson korsbandsskadad",
-        "url": "https://www.expressen.se/sport/fotboll/damallsvenskan/hammarbys-supertalang-fanny-peterson-korsbandsskadad/",
+        "title": "Klart: AIK värvar Ibrahima Chérif Fofana",
+        "url": "https://www.expressen.se/sport/fotboll/allsvenskan/klart-aik-varvar-ibrahima-cherif-fofana/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T14:04:15.000Z",
+        "publishedAt": "2026-11-04T14:10:42.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Här är Sveriges väg till OS 2028",
-        "url": "https://www.expressen.se/sport/fotboll/landslaget/har-ar-sveriges-vag-till-os-2028/",
+        "title": "Supertalangen JJ Gabriels val: Real Madrid",
+        "url": "https://www.expressen.se/sport/fotboll/premier-league/supertalangen-jj-gabriels-val-real-madrid/",
         "publisher": "Expressen",
-        "publishedAt": "2026-11-03T12:36:24.000Z",
+        "publishedAt": "2026-11-04T13:23:33.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Här är Sveriges Nations League-trupp – Dejan Kulusevski med igen",
-        "url": "https://www.svt.se/sport/fotboll/har-ar-sveriges-nations-league-trupp-dejan-kulusevski-med-igen",
+        "title": "Cristiano Ronaldo slutar i landslaget",
+        "url": "https://www.svt.se/sport/fotboll/cristiano-ronaldo-slutar-i-landslaget",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-04T11:03:36.000Z",
+        "publishedAt": "2026-11-05T10:32:40.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Andreas Almgrens föräldrar efter succén: ”Jättenervös”",
-        "url": "https://www.svt.se/sport/friidrott/andreas-almgrens-foraldrar-efter-succen-jattenervos",
+        "title": "Mora IK i ekonomisk kris: ”Mycket allvarligt läge”",
+        "url": "https://www.svt.se/sport/ishockey/mora-ik-i-ekonomisk-kris-mycket-allvarligt-lage",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-04T09:02:11.000Z",
+        "publishedAt": "2026-11-05T10:01:39.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Förundersökning inleds efter Jesús de Miguels död",
-        "url": "https://www.svt.se/sport/fotboll/forundersokning-inleds-efter-jesus-de-miguel-dod",
+        "title": "Sjuk Victor Wembanyama satte NBA-rekord",
+        "url": "https://www.svt.se/sport/basket/sjuk-victor-wembanyama-satte-nba-rekord",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-04T08:01:20.000Z",
+        "publishedAt": "2026-11-05T09:38:38.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Här landar Andreas Almgren på Arlanda: ”Ganska trött”",
-        "url": "https://www.svt.se/sport/friidrott/har-landar-andreas-almgren-pa-arlanda-ganska-trott",
+        "title": "Engla Nilssons lärdomar efter ätstörningen: ”Tror många har problem”",
+        "url": "https://www.svt.se/sport/friidrott/engla-nilssons-lardomar-efter-atstorningen-tror-manga-har-problem",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-04T07:50:24.000Z",
+        "publishedAt": "2026-11-05T09:16:19.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Galen vändning av Winnipeg Jets – hämtade upp 0–4 på mindre än tre minuter",
-        "url": "https://www.svt.se/sport/ishockey/galen-vandning-av-winnipeg-jets-hamtade-upp-0-4-pa-mindre-an-tre-minuter",
+        "title": "LIV-golfen i fara efter ny smäll – huvudfinansiär drar sig ur",
+        "url": "https://www.svt.se/sport/golf/liv-golfens-nya-small-huvudfinansiar-drar-sig-ur",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-04T05:40:25.000Z",
+        "publishedAt": "2026-11-05T07:46:48.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Klarar ”J-O” Waldner testet med pingisspelarnas siluett?",
-        "url": "https://www.svt.se/sport/bordtennis/klarar-j-o-waldner-testet-med-pingisspelarnas-siluett",
+        "title": "Luka Doncic förbi Michael Jordan i rekordböckerna",
+        "url": "https://www.svt.se/sport/basket/luka-doncic-forbi-michael-jordan-i-rekordbockerna",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-04T05:22:06.000Z",
+        "publishedAt": "2026-11-05T07:20:09.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Isak Bjerkebo reagerar på speciella bilderna",
-        "url": "https://www.svt.se/sport/fotboll/isak-bjerkebo-reagerar-pa-speciella-bilderna",
+        "title": "Islossning för Adrian Kempe med hattrick i Los Angeles kross",
+        "url": "https://www.svt.se/sport/ishockey/islossning-for-adrian-kempe-med-hattrick-i-los-angeles-kross",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T23:03:23.000Z",
+        "publishedAt": "2026-11-05T05:44:10.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kanadas besked: Inget Ryssland i JVM",
-        "url": "https://www.svt.se/sport/ishockey/kanadas-besked-inget-ryssland-i-jvm",
+        "title": "Mira Jungåker efter succéåren i USA: ”Vill bli världens bästa”",
+        "url": "https://www.svt.se/sport/ishockey/mira-jungaker-efter-succearen-i-usa-vill-bli-varldens-basta",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T22:35:13.000Z",
+        "publishedAt": "2026-11-05T05:30:28.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "HBK-kuggen André Boman bedrövad: ”Alla kunde blivit utbytta”",
-        "url": "https://www.svt.se/sport/fotboll/hbk-kuggen-andre-boman-bedrovad-alla-kunde-blivit-utbytta",
+        "title": "Sverige ställs mot Kanada direkt: ”Hoppas de är jetlaggade”",
+        "url": "https://www.svt.se/sport/ishockey/sverige-stalls-mot-kanada-direkt-hoppas-de-ar-jetlaggade",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T21:53:07.000Z",
+        "publishedAt": "2026-11-05T05:30:22.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Manchester United utbuade – sedan vände de",
-        "url": "https://www.svt.se/sport/fotboll/man-united-pa-vag-mot-nytt-fiasko-publiken-i-uppror",
+        "title": "Comos historiska kross – vann med 9–1",
+        "url": "https://www.svt.se/sport/fotboll/comos-historiska-kross-vann-med-9-1",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T21:00:45.000Z",
+        "publishedAt": "2026-11-04T22:13:01.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Anders Larsson efter svenska beskedet: ”Förstår att det kliar i fingrarna hos folk”",
-        "url": "https://www.svt.se/sport/ishockey/anders-larsson-efter-svenska-beskedet-forstar-att-det-kliar-i-fingrarna-hos-folk",
+        "title": "Nina Koppang efter EM-uttagningen: ”Mentalt på en bättre plats”",
+        "url": "https://www.svt.se/sport/handboll/nina-koppang-efter-em-uttagningen-mentalt-pa-en-battre-plats",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T19:56:25.000Z",
+        "publishedAt": "2026-11-04T21:01:25.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Sirius vacklade inte – nollade Halmstad",
-        "url": "https://www.svt.se/sport/fotboll/sirius-vacklade-inte-nollade-halmstad",
+        "title": "Viktor Gyökeres succé – mål och assist i Champions League",
+        "url": "https://www.svt.se/sport/fotboll/viktor-gyokeres-succe-mal-och-assist-i-champions-league",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T19:49:31.000Z",
+        "publishedAt": "2026-11-04T20:46:13.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Jonas Eriksson: Därför fick Kalmar inte straff mot Mjällby",
-        "url": "https://www.svt.se/sport/fotboll/jonas-eriksson-darfor-fick-kalmar-inte-straff-mot-mjallby",
+        "title": "SHL:s vd slår tillbaka mot Rysslandsbreven: ”Inte andemeningen”",
+        "url": "https://www.svt.se/sport/ishockey/shls-vd-slar-tillbaka-mot-rysslandsbreven-inte-andemeningen",
         "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T19:03:11.000Z",
+        "publishedAt": "2026-11-04T19:16:08.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Alexander Isak nätade i Champions League – när Liverpool föll",
+        "url": "https://www.svt.se/sport/fotboll/alexander-isak-malskytt-for-liverpool-i-champions-league",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-11-04T19:16:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Anton Källberg föll ihop i Frankfurt – utslagen ur WTT Champions",
+        "url": "https://www.svt.se/sport/bordtennis/anton-kallberg-foll-ihop-i-frankfurt-utslagen-ur-wtt-champions",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-11-04T19:05:42.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "SVT:s korrespondent om den ryska motattacken: ”Ser det som utpressning”",
+        "url": "https://www.svt.se/sport/ishockey/svts-korrespondent-om-den-ryska-motattacken-ser-det-som-utpressning",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-11-04T17:08:49.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Alexander Zverev förlorade sin första match som världsetta: ”Chockerande”",
+        "url": "https://www.svt.se/sport/tennis/alexander-zverev-forlorade-sin-forsta-match-som-varldsetta-chockerande",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-11-04T16:30:37.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Frustrerande skadetid för Sirius Jesper Uneken: ”Det dödar en lite”",
+        "url": "https://www.svt.se/sport/fotboll/frustrerande-skadetid-for-sirius-jesper-uneken-det-dodar-en-lite",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-11-04T16:10:39.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Expertens utropstecken efter Graham Potters Nations League-trupp",
+        "url": "https://www.svt.se/sport/fotboll/expertens-utropstecken-efter-graham-potters-nations-league-trupp",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-11-04T13:15:12.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Tydliga uppdelningen i allsvenskan: ”Det får man knappt säga”",
+        "url": "https://www.svt.se/sport/fotboll/tydliga-uppdelningen-i-allsvenskan-det-far-man-knappt-saga",
+        "publisher": "SVT Sport",
+        "publishedAt": "2026-11-04T12:52:22.000Z",
         "verdict": "general allsvenskan, no Häcken relation"
       },
       {
-        "title": "Elias Ranefur nära skräll – tvingade fram femsetare mot Dang Qiu",
-        "url": "https://www.svt.se/sport/bordtennis/elias-ranefur-nara-skrall-tvingade-fram-femsetare-mot-dang-qiu",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T18:44:58.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Vill se Kulusevski-comeback: ”Där blir de bäst någonsin i Sverige”",
-        "url": "https://www.svt.se/sport/fotboll/vill-se-kulusevski-comeback-dar-blir-de-bast-nagonsin-i-sverige",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T16:47:30.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Truls Möregårdh tvingas stryka sig efter problem med axeln",
-        "url": "https://www.svt.se/sport/bordtennis/truls-moregardh-tvingas-stryka-sig-efter-problem-med-axeln",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T16:22:47.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Julia Nielsen om olyckan: ”Min syster såg till att ingen skulle köra på mig”",
-        "url": "https://www.svt.se/sport/friidrott/julia-nielsen-om-olyckan-min-syster-sag-till-att-ingen-skulle-kora-pa-mig",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T16:10:42.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Fanny Petersons mardröm – slitit av korsbandet",
-        "url": "https://www.svt.se/sport/fotboll/fanny-petersons-mardrom-slitit-av-korsbandet",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T14:03:47.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Uppgifter: SHL uppmanar spelare att inte uttala sig om Ryssland",
-        "url": "https://www.svt.se/sport/ishockey/uppgifter-shl-uppmanar-spelare-att-inte-uttala-sig-om-ryssland",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T12:58:06.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Sverige vägrar möta Ryssland i hockey-VM",
-        "url": "https://www.svt.se/sport/ishockey/sverige-vagrar-mota-ryssland-i-hockey-vm",
-        "publisher": "SVT Sport",
-        "publishedAt": "2026-11-03T12:44:46.000Z",
-        "verdict": "no Häcken relation"
-      },
-      {
-        "title": "Lien tonar ned ligaskillnaden: “De bästa lagen här i Allsvenskan är också väldigt bra”",
-        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=ba5800dc-a58c-825e-fed4-3bb554aef8b9",
+        "title": "Rydström ser landslagsnivå hos Skoglund och Karlsson – framhåller Karlsson som tänkbar sexa",
+        "url": "https://bollsvenskan.se/nyhetsflode/?post_id=bc7c945c-42cf-3014-d587-f1460a77883d",
         "publisher": "Bollsvenskan",
-        "publishedAt": "2026-11-04T09:36:16.000Z",
-        "verdict": "general allsvenskan, no Häcken relation"
+        "publishedAt": "2026-11-05T10:25:36.000Z",
+        "verdict": "no Häcken relation"
       },
       {
         "title": "Fotbollseffekten – en rapport om Sveriges starkaste folkrörelse och samhällskraft",
@@ -943,14 +943,14 @@
         "url": "https://fotbolltransfers.com/nyheter/bk-hacken-uppges-forlanga-med-adam-lundkvist/223150",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-10-21T08:59:57.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "Filip Helander om MFF: \"Då är det tufft\"",
         "url": "https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
         "publisher": "Fotbolltransfers",
         "publishedAt": "2026-10-19T11:47:37.000Z",
-        "verdict": "over candidate cap"
+        "verdict": "kept"
       },
       {
         "title": "Jens Gustafsson: \"Han är fantastisk\"",
@@ -967,108 +967,164 @@
         "verdict": "over candidate cap"
       },
       {
-        "title": "Nyhetsshowen 4 november*Bevara oss från kommunala elsparkcyklar",
-        "url": "https://www.gp.se/nyhetsshowen/bevara-oss-fran-kommunala-elsparkcyklar.8081893d-e71c-592d-8cf5-cca7a662535f",
+        "title": "Räkna med högre bolåneränta – trots nya siffran",
+        "url": "https://www.gp.se/ekonomi/chefsekonomen-riksbanken-kommer-inte-att-andra-sig.6ec20096-e2d9-527d-8f28-0b85299ad371",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T10:07:34.000Z",
+        "publishedAt": "2026-11-05T10:44:50.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Tre korta punkter om mellanårsvalet",
-        "url": "https://www.gp.se/nyheter/varlden/resultatet-orsakerna-och-foljderna-tre-punkter-om-mellanarsvalet.4534d963-3810-567a-811d-5a0c37ddab57",
+        "title": "Barbara Hannigan som Pippi och GSO på toppnivå",
+        "url": "https://www.gp.se/kultur/musik/konsertrecension/recension-barbara-hannigan-med-gso.c5a1b64f-94dc-58a5-85f8-3a4d81d4a620",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T08:59:48.000Z",
+        "publishedAt": "2026-11-05T10:25:59.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Därför höjer Riksbanken räntan",
-        "url": "https://www.gp.se/ekonomi/riksbanken-hojer-rantan.5f8ba408-ccf7-54d6-a11c-ea994522d1fb",
+        "title": "GP dubbelt nominerade till Stora Journalistpriset",
+        "url": "https://www.gp.se/nyheter/sverige/gp-med-dubbla-nomineringar-till-stora-journalistpriset.9b8facc4-1795-5183-b3d8-030caebd6fbf",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T08:33:03.000Z",
+        "publishedAt": "2026-11-05T10:21:08.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Analys: Väljarnas hårda dom – nu väntar Trumps motdrag",
-        "url": "https://www.gp.se/nyheter/varlden/valjarnas-harda-dom-nu-vantar-trumps-motdrag.c1815dca-7145-51a4-8c67-dd1c15469793",
+        "title": "Nyhetsshowen 5 november*Bob Dylans udda klädval under mötet med påven",
+        "url": "https://www.gp.se/nyhetsshowen/bob-dylans-udda-kladval-under-motet-med-paven.408db7f2-4f6e-5f6a-80fa-85277ba05edd",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T07:46:52.000Z",
+        "publishedAt": "2026-11-05T10:12:03.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Så bra var Teddybears på Pustervik",
-        "url": "https://www.gp.se/kultur/musik/konsertrecension/recension-teddybears-pustervik-3-november.48415893-02fc-5303-9717-3cc795553ea3",
+        "title": "Asme döms för våldtäkt efter Grammisgalan",
+        "url": "https://www.gp.se/krim/artisten-asme-doms-for-valdtakt-i-hovratten.fd6025a7-fe0b-5d0b-93cd-168e46d94ca5",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T07:16:20.000Z",
+        "publishedAt": "2026-11-05T10:07:18.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Demokraterna mot storseger – Trump accepterar valresultatet",
-        "url": "https://www.gp.se/nyheter/varlden/demokraterna-mot-storseger-trump-accepterar-valresultatet.41535b7f-b261-5531-8a68-632a2a80c9e4",
+        "title": "Flera flygplan bombhotade i Europa",
+        "url": "https://www.gp.se/nyheter/varlden/flera-flygplan-bombhotade-i-europa.3385bb80-3e62-5e59-9a4c-471b5df0aa5e",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T06:36:50.000Z",
+        "publishedAt": "2026-11-05T09:51:45.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "”Hisingens detektivbyrå” – mysterier från Göteborg",
-        "url": "https://www.gp.se/kultur/marcus-berggren-och-karin-londre-startar-radioprogram-om-det-mystiska-goteborg.c06260c2-4d0d-5540-9dd7-e9be61b4e221",
+        "title": "P3-programmet lägger ner",
+        "url": "https://www.gp.se/kultur/p3-programmet-p3-klubben-lagger-ner.9fa55c6b-6494-5e80-825b-da7ffd5691d4",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T06:20:15.000Z",
+        "publishedAt": "2026-11-05T09:46:35.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Efter utfrysningen – här är Patriks Wålemarks nya liv",
-        "url": "https://www.gp.se/sport/fotboll/patrik-walemark-efter-uppstandelsen-vet-inte-var-det-kom-ifran.48e74b00-41b1-57ea-8fdd-2506e2aae41a",
+        "title": "Norsk storfilm gör Bert Karlsson till ärkeskurk",
+        "url": "https://www.gp.se/kultur/film/bert-karlsson-gors-till-skurk-i-norsk-storfilm-om-eurovision.5c7500ce-acd2-5398-91c3-190d51c925f8",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T05:12:08.000Z",
-        "verdict": "kept"
-      },
-      {
-        "title": "Anmälde gruppvåldtäkt – utredning läggs ner",
-        "url": "https://www.gp.se/krim/anmalde-gruppvaldtakt-i-torslanda-utredningen-laggs-ner.06a4de99-4152-5dc4-858c-96ff554641b3",
-        "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T04:49:47.000Z",
+        "publishedAt": "2026-11-05T09:42:42.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Marken i Göteborg har vuxit – här är nya halvön",
-        "url": "https://www.gp.se/politik/goteborg-har-fatt-mer-mark-har-ar-den-nya-halvon.c135625f-2c12-5ce3-9fe8-d8717eb30820",
+        "title": "Gymnasieprogrammen som bör öka och minska i Västra Götaland",
+        "url": "https://www.gp.se/nyheter/vastsverige/ny-rapport-gymnasieprogrammen-som-bor-oka-och-minska.2281dac0-fb02-54bd-bb58-99380015bc75",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T04:39:30.000Z",
+        "publishedAt": "2026-11-05T09:13:43.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Svenskhet är att förstå det fina med att ställa sig sist i kön",
-        "url": "https://www.gp.se/asikt-och-debatt/debatt/svenskhet-ar-att-forsta-det-fina-med-att-stalla-sig-sist-i-kon.20e85a16-b0ee-5353-bbea-f4ee061fe326",
+        "title": "Klasssiska kaffebaren till Nordstan",
+        "url": "https://www.gp.se/kultur/bar-centro-oppnar-i-nordstan.902bdb6e-e014-5e9c-80e1-942b2ce70c0f",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T04:00:00.000Z",
+        "publishedAt": "2026-11-05T09:00:04.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Anosh Ghasri: De som förnekade problemen har en skuld",
-        "url": "https://www.gp.se/asikt-och-debatt/ledare/gastkronika/de-som-fornekade-problemen-har-en-skuld.3c35ca69-a4c2-5e9d-b9fb-763f8c2a3434",
+        "title": "Här är årets julvärd i SVT 2026",
+        "url": "https://www.gp.se/kultur/tv/hen-blir-arets-julvard-i-svt.5db8163d-65f4-562c-9414-83636d9dab26",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T04:00:00.000Z",
+        "publishedAt": "2026-11-05T08:47:30.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Kajsa Dovstad: Vad är det för fel på svenska miljardärer?",
-        "url": "https://www.gp.se/asikt-och-debatt/ledare/gastkolumn/vad-ar-det-for-fel-pa-svenska-miljardarer.3d09d1bd-e721-5b57-b852-c02ea702a60a",
+        "title": "Frölundas svar på SHL:s munkavel",
+        "url": "https://www.gp.se/sport/ishockey/frolunda/frolunda-gar-emot-shl-s-rad-om-ryssland.08b0ab88-9f8b-56d4-b162-98bd7503d1ff",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T04:00:00.000Z",
+        "publishedAt": "2026-11-05T07:27:12.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Valfriheten avskaffas inte för de äldres bästa",
-        "url": "https://www.gp.se/asikt-och-debatt/fria-ord/valfriheten-avskaffas-inte-for-de-aldres-basta.0c8bf0a0-bd6b-5df2-afaa-2a1645385bd4",
+        "title": "Kungamodern som rustade för krig från Bohus",
+        "url": "https://www.gp.se/kultur/gp-historia/kungamodern-som-rustade-for-krig-fran-bohus.26383ab5-4567-587d-b374-469a940ae508",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T04:00:00.000Z",
+        "publishedAt": "2026-11-05T06:18:07.000Z",
         "verdict": "no Häcken relation"
       },
       {
-        "title": "Lätt att kräva mod av andra när man själv inte riskerar något",
-        "url": "https://www.gp.se/asikt-och-debatt/debatt/latt-att-krava-mod-av-andra-nar-man-sjalv-inte-riskerar-nagot.48a88900-f711-5b0e-be6e-e322560d37a1",
+        "title": "Så ledde populisterna public service till slakt",
+        "url": "https://www.gp.se/kultur/kulturkronika/sa-ledde-populisterna-public-service-till-slakt.9780ef56-631c-5c47-abf3-d6ca7d817c6c",
         "publisher": "Göteborgs-Posten",
-        "publishedAt": "2026-11-04T03:55:00.000Z",
+        "publishedAt": "2026-11-05T04:51:02.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Öis-stjärnan Benjamin Laturnus scoutas av utländska klubbar",
+        "url": "https://www.gp.se/sport/fotboll/orgryte-is/ois-stjarnan-scoutas-av-utlandska-klubbar.f06b2cb5-00c2-57d7-89a1-e234c3ca6c16",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T04:50:04.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Hel ö till salu",
+        "url": "https://www.gp.se/nyheter/vastsverige/o-till-salu-i-lilla-edet-for-forsta-gangen-pa-46-ar.5ed476da-3db2-5488-ae7a-f45465b87ddb",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T04:48:15.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Försökte äta billigt – klarade knappt en vecka",
+        "url": "https://www.gp.se/ekonomi/forsokte-ata-billigt-klarade-knappt-en-vecka.fd673619-e4c5-54be-9f46-259b87480455",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T04:47:46.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Hotet: Elsparkcyklarna kan försvinna från Göteborg",
+        "url": "https://www.gp.se/politik/rodgrona-hotet-da-forbjuds-elsparkcyklar-i-goteborg.0a44702c-9a44-5d3f-89b6-73ca170265e4",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T04:45:53.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Polisens uppdrag är inte att be om lov från fotbollssupportrar",
+        "url": "https://www.gp.se/asikt-och-debatt/fria-ord/polisens-uppdrag-ar-inte-att-be-om-lov-fran-fotbollssupportrar.97dd1a0c-33d5-54c5-b92f-153d6fe55468",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T04:00:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Håkan Boström: Klankriminaliteten borde inte ha kommit som en överraskning",
+        "url": "https://www.gp.se/asikt-och-debatt/ledare/klankriminaliteten-borde-inte-ha-kommit-som-en-overraskning.0201cab4-a91f-5147-b341-850eb55104f6",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T04:00:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Tvångsvården erbjuder endast förvaring och ökar risken för förtida död",
+        "url": "https://www.gp.se/asikt-och-debatt/debatt/tvangsvarden-erbjuder-endast-forvaring-och-okar-risken-for-fortida-dod.63aea24e-f6ec-568e-a21e-2ba730b96b1e",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T04:00:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Många människor har bara råd med kläder från lågpriskedjor",
+        "url": "https://www.gp.se/asikt-och-debatt/debatt/skuldbelagg-inte-de-som-bara-har-rad-med-klader-fran-lagpriskedjor.2600875d-0a90-57f6-8c41-6825b6ba6308",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T03:55:00.000Z",
+        "verdict": "no Häcken relation"
+      },
+      {
+        "title": "Hundratals köade för Zelda",
+        "url": "https://www.gp.se/kultur/lang-ko-for-nygammalt-zeldaspel.b8e0f71f-f0b1-5b8e-b959-065c62906047",
+        "publisher": "Göteborgs-Posten",
+        "publishedAt": "2026-11-05T00:13:33.000Z",
         "verdict": "no Häcken relation"
       }
     ]
@@ -1078,7 +1134,7 @@
     "publicSite": "allsvenskan.se",
     "provenance": "SportoMedia data service used by allsvenskan.se (Svensk Elitfotboll)",
     "sourceUrl": "https://gql.sportomedia.se/graphql",
-    "retrievedAt": "2026-11-04T11:27:06.524Z",
+    "retrievedAt": "2026-11-05T11:25:08.676Z",
     "season": "2026",
     "competition": "Allsvenskan",
     "dataStatus": "current",
@@ -5754,7 +5810,7 @@
       ]
     },
     {
-      "id": "Fotbolltransfers-10-https://fotbolltransfers.com/nyheter/bk-hacken-uppges-forlanga-med-adam-lundkvist/223150",
+      "id": "Fotbolltransfers-16-https://fotbolltransfers.com/nyheter/bk-hacken-uppges-forlanga-med-adam-lundkvist/223150",
       "title": "BK Häcken uppges förlänga med nyckelspelare",
       "url": "https://fotbolltransfers.com/nyheter/bk-hacken-uppges-forlanga-med-adam-lundkvist/223150",
       "summary": "Han sitter på ett utgående avtal med BK Häcken. Nu är parterna överens om en förlängning, enligt uppgifter.",
@@ -5798,7 +5854,7 @@
       "sourceRole": "secondary"
     },
     {
-      "id": "Fotbolltransfers-11-https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
+      "id": "Fotbolltransfers-17-https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
       "title": "Filip Helander om MFF: \"Då är det tufft\"",
       "url": "https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
       "summary": "Malmö FF ser återigen ut att missa Europaspel. Häckens mittback Filip Helander känner för sin tidigare klubb.",
@@ -5939,20 +5995,6 @@
       "sourceTags": [
         "Herr"
       ]
-    },
-    {
-      "id": "Fotbolltransfers-15-https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
-      "title": "Officiellt: Ex-allsvensk målvakt avslutar karriären",
-      "url": "https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
-      "summary": "Han representerade BK Häcken, Djurgårdens IF, IFK Norrköping och Örebro SK. Nu är karriären över.",
-      "publishedAt": "2026-10-15T10:19:05.000Z",
-      "publisher": "Fotbolltransfers",
-      "category": "men",
-      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01746035930/528x300.jpg",
-      "discoveredVia": "rss",
-      "dedupeKey": "https://fotbolltransfers.com/nyheter/officiellt-oscar-jansson-avslutar-karriaren/222918",
-      "clubScoped": true,
-      "sourceRole": "secondary"
     }
   ],
   "newsEvents": [
@@ -5973,24 +6015,6 @@
           "role": "secondary",
           "discoveredVia": "rss",
           "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01791750751/528x300.jpg"
-        }
-      ],
-      "summaryMethod": "rss-description"
-    },
-    {
-      "id": "event-Göteborgs-Posten-7-https://www.gp.se/sport/fotboll/patrik-walemark-efter-uppstandelsen-vet-inte-var-det-kom-ifran.48e74b00-41b1-57ea-8fdd-2506e2aae41a",
-      "title": "Efter utfrysningen – här är Patriks Wålemarks nya liv",
-      "summary": "GP träffar göteborgaren i Poznan: ”Jag hade inte behandlat någon så”",
-      "publishedAt": "2026-11-04T05:12:08.000Z",
-      "latestPublishedAt": "2026-11-04T05:12:08.000Z",
-      "category": "former",
-      "sources": [
-        {
-          "publisher": "Göteborgs-Posten",
-          "url": "https://www.gp.se/sport/fotboll/patrik-walemark-efter-uppstandelsen-vet-inte-var-det-kom-ifran.48e74b00-41b1-57ea-8fdd-2506e2aae41a",
-          "publishedAt": "2026-11-04T05:12:08.000Z",
-          "role": "secondary",
-          "discoveredVia": "rss"
         }
       ],
       "summaryMethod": "rss-description"
@@ -6432,6 +6456,48 @@
           "role": "primary",
           "discoveredVia": "rss",
           "imageUrl": "https://hacken.ams3.digitaloceanspaces.com/5836f0c2-ea50-437b-b461-861b509adda2.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-16-https://fotbolltransfers.com/nyheter/bk-hacken-uppges-forlanga-med-adam-lundkvist/223150",
+      "title": "BK Häcken uppges förlänga med nyckelspelare",
+      "summary": "Han sitter på ett utgående avtal med BK Häcken. Nu är parterna överens om en förlängning, enligt uppgifter.",
+      "publishedAt": "2026-10-21T08:59:57.000Z",
+      "latestPublishedAt": "2026-10-21T08:59:57.000Z",
+      "category": "men",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792566135/528x300.jpg",
+      "body": "Adam Lundkvist lämnade IF Elfsborg för spel i Major League Soccer våren 2018.\n\n32-åringen tillbringade fem säsonger i Houston Dynamo FC, innan det blev en flytt till Austin FC.\n\nEfter en säsong i Austin återvände ytterbacken till Sverige och Allsvenskan. Han skrev på för BK Häcken.\n\nLundkvist tog snabbt en startplats i Göteborgsklubben. Han har gjort tre assist på 21 allsvenska matcher i år.\n\nI augusti uttryckte sportchefen Erik Friberg att Häcken gärna behåller Lundkvist, vars kontrakt löper ut i vinter.\n\nNu skriver Sportbladet att Häcken och Lundkvist nått en muntlig överenskommelse gällande en förlängning.\n\nChristoffer Borg Mattisson / BILDBYRÅN\n\nDet framgår dock inte hur långt det nya kontraktet sträcker sig. Backen förväntas skriva på inom kort.",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/bk-hacken-uppges-forlanga-med-adam-lundkvist/223150",
+          "publishedAt": "2026-10-21T08:59:57.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792566135/528x300.jpg"
+        }
+      ],
+      "summaryMethod": "rss-description"
+    },
+    {
+      "id": "event-Fotbolltransfers-17-https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
+      "title": "Filip Helander om MFF: \"Då är det tufft\"",
+      "summary": "Malmö FF ser återigen ut att missa Europaspel. Häckens mittback Filip Helander känner för sin tidigare klubb.",
+      "publishedAt": "2026-10-19T11:47:37.000Z",
+      "latestPublishedAt": "2026-10-19T11:47:37.000Z",
+      "category": "men",
+      "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792403964/528x300.jpg",
+      "body": "Malmö FF vann SM-guld 2023 och 2024. Men sedan kom en rejäl dipp under 2025.\n\nHenrik Rydström fick sparken, men Anes Mravac lyckades inte rädda säsongen. MFF slutade på sjätte plats i Allsvenskan.\n\nMFF plockade in Miguel Ángel Ramírez som ny huvudtränare inför den här säsongen. Men den spanska satsningen höll inte länge.\n\nRamírez fick sparken redan i slutet av maj. Under sommaren anslöt Gaute Helstrup som ersättare.\n\nNorrmannen plockades in från Bodö/Glimt, där han var assisterande tränare till Kjetil Knutsen.\n\nMFF har haft blandade resultat sedan Helstrup tog över. På söndagen blev det en hemmaförlust mot BK Häcken (0-1).\n\nMFF ligger nu på sjunde plats i Allsvenskan och har hela tio poäng upp till Hammarby IF på Europaplats. Sex omgångar återstår.\n\nFilip Helander, som numera är i Häcken, lider med sin tidigare klubb.\n\n– Det har ju varit tufft ett tag, sedan har de fått lite bättre resultat på senare tid. Det är tufft när förväntningarna är högre än vad man klarar av att prestera just nu. Det kan ju bli ett ok nästan, säger han till Sydsvenskan.\n\n– De har bra spelare, men man ska bara få allting att stämma. Nu ändrar de väl lite inriktning med ny tränare och det gäller väl också att han får tid på sig, fortsätter 33-åringen.\n\nMittbacken betonar att det var speciellt att spela borta mot MFF inför hela familjen. Han blev inte utbuad av hemmafansen.\n\nJag är Häckenspelare nu och trivs där.\n\n– För mig personligen är det alltid kul att komma hit, höra hymnen och så vidare. Men jag är Häckenspelare nu och trivs där, säger Helander till Sydsvenskan.\n\nMichael Erichsen / BILDBYRÅN\n\nHelander har kontrakt med Häcken som sträcker sig över säsongen 2028.",
+      "sources": [
+        {
+          "publisher": "Fotbolltransfers",
+          "url": "https://fotbolltransfers.com/nyheter/helander-om-malmo-ff-det-galler-att-helstrup-far-tid-pa-sig/223079",
+          "publishedAt": "2026-10-19T11:47:37.000Z",
+          "role": "secondary",
+          "discoveredVia": "rss",
+          "imageUrl": "https://fotbolltransfers-images.ams3.cdn.digitaloceanspaces.com/uploads/images/news/01792403964/528x300.jpg"
         }
       ],
       "summaryMethod": "rss-description"
