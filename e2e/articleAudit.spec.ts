@@ -40,10 +40,10 @@ test.describe("Article audit", () => {
   test("the link appears when audit data exists and opens the list", async ({ page }) => {
     await page.route("**/data/app.json", (route) => route.fulfill({ json: appData(true) }));
     await page.goto("/#/installningar");
-    // RESTRUCTURED 2026-10-13: the Nyhetskällor section is GONE (user: it
-    // duplicated the technical section). The audit link lives inside
-    // "Teknisk information" now — open it first.
-    await page.getByTestId("diagnostics").locator("summary").click();
+    // RESTRUCTURED 2026-11-26: the audit link moved out of the old
+    // "Teknisk information" drawer into its own "Källor" section, so the
+    // reader no longer has to open a technical drawer to find the headlines.
+    await page.getByTestId("settings-sources").locator("summary").click();
     await page.getByRole("link", { name: /Granska alla 3 hämtade artiklar/ }).click();
     const audit = page.getByTestId("article-audit");
     await expect(audit).toBeVisible();

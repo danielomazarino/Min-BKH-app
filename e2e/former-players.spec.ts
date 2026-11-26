@@ -727,9 +727,13 @@ test.describe("Starred players (Section C)", () => {
 
   test("with nothing starred there is an understandable empty state", async ({ page }) => {
     await expect(page.getByTestId("starred")).toHaveCount(0);
-    await expect(page.getByTestId("no-stars-hint")).toBeVisible();
-    // The hint must invite both actions: search online, and star the results.
-    await expect(page.getByTestId("no-stars-hint")).toContainText("stjärnmärk dina BK Häcken-val");
+    // ONE hint, not two. This used to be a separate `no-stars-hint` element
+    // that rendered alongside `idle-hint`, so a cold load showed the same
+    // sentence twice. The single remaining hint must still invite both
+    // actions: search online, and star the results.
+    await expect(page.getByTestId("idle-hint")).toHaveCount(1);
+    await expect(page.getByTestId("idle-hint")).toBeVisible();
+    await expect(page.getByTestId("idle-hint")).toContainText("stjärnmärk dina BK Häcken-val");
   });
 
   test("an open player card has a manual refresh control", async ({ page }) => {

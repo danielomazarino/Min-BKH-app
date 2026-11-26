@@ -2577,6 +2577,24 @@ details.disc .disc-body {
   padding-bottom: var(--s3);
 }
 
+/* Named settings sections (2026-11-26). The summary carries a title plus a
+   one-line summary so a COLLAPSED section still says what is inside it —
+   the old single "Teknisk information" drawer gave no clue that it held the
+   warning rule, the audit and the whole measurement log. */
+details.disc > summary .disc-title {
+  flex: none;
+}
+details.disc > summary .disc-summary {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  color: var(--text-3);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Source list (settings) */
 .srcrow {
   display: flex;

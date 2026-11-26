@@ -163,11 +163,16 @@ export default function Matches({ state }: { state: AppDataState }) {
                       onClick={() => setOpenTeam(t.team)}
                       aria-label={`${t.team}, ${t.rank}. plats, ${t.points} poäng. Visa lagets uppgifter.`}
                     >
-                      <span className="score" style={{ fontSize: 13, color: self ? "var(--yellow)" : "var(--text-3)" }}>
+                      {/* --accent-ink, NOT --yellow. Yellow is a FILL token:
+                          as text on the light theme's white row it measures
+                          1.45:1, which is unreadable. --accent-ink is the
+                          text/icon role and resolves to #6b5900 (6.9:1) on
+                          white while staying #ffd200 (14.5:1) on black. */}
+                      <span className="score" style={{ fontSize: 13, color: self ? "var(--accent-ink)" : "var(--text-3)" }}>
                         {t.rank}
                       </span>
                       <span className="body">
-                        <span className="opponent" style={self ? { color: "var(--yellow)" } : undefined}>
+                        <span className="opponent" style={self ? { color: "var(--accent-ink)" } : undefined}>
                           {t.team}
                         </span>
                         <span className="meta">

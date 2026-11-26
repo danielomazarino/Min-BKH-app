@@ -102,8 +102,26 @@ test.describe("Accessibility (axe-core)", () => {
     expect(describe(s.violations).join("\n")).toEqual("");
   });
 
-  test("status is never conveyed by colour alone", async ({ page }) => {
-    await page.goto("/#/");
+  /**
+   * The Matcher page has three tabs, and the default scan only ever saw the
+   * first one. The Tabell tab highlights BK Häcken's own row, and that
+   * highlight was `var(--yellow)` — 1.45:1 on the light theme's white row,
+   * a serious contrast failure that no scan could reach because the tab was
+   * never opened. Scan every tab, not just the landing state.
+   */
+  test("every Matcher tab is scanned, including Tabell", async ({ page }) => {
+    await page.goto("/#/matcher");
+    await page.waitForTimeout(600);
+
+    for (const tab of ["Spelade", "Kommande", "Tabell"]) {
+      await page.getByRole("tab", { name: tab }).click();
+      await animationsSettled(page);
+      const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag22aa"]).analyze();
+      expect(describe(results.violations).join("\n"), `Matcher tab "${tab}"`).toEqual("");
+    }
+  });
+
+  test("status is never conveyed by colour alone", async ({ page }) => {    await page.goto("/#/");
     await page.waitForTimeout(600);
     // Match results carry a coloured edge (::before) plus the score; the
     // visible S/O/F letter was removed (tester, 2026-10-13) as a third

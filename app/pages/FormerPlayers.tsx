@@ -507,12 +507,11 @@ export default function FormerPlayers({ squadNames = [] }: { squadNames?: string
         </section>
       )}
 
-      {state.status === "idle" && favorites.length === 0 && recent.length === 0 && (
-        <p className="empty" style={{ paddingTop: 20 }} data-testid="no-stars-hint">
-          Sök spelarinformation online och stjärnmärk dina BK Häcken-val
-        </p>
-      )}
-
+      {/* ONE idle hint, not two. The previous version rendered this sentence
+          from two independent conditions that are both true on a cold load
+          with no favourites and no history, so the page showed the same line
+          twice. The `recent` list is the only thing that needs the second
+          branch, so the hint lives there and the duplicate is gone. */}
       {state.status === "idle" && (
         <>
           {recent.length > 0 && (
@@ -536,7 +535,6 @@ export default function FormerPlayers({ squadNames = [] }: { squadNames?: string
           </p>
         </>
       )}
-
       {selectedMissing && (
         <p className="empty" role="status" data-testid="deep-link-missing">
           <strong>Hittade inte den spelaren i resultatet</strong>
