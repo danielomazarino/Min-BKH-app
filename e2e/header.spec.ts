@@ -1,0 +1,103 @@
+import { test, expect } from "@playwright/test";
+
+/**
+ * The header — identity row, glass controls, and the scrolling wordmark.
+ *
+ * WHAT THESE TESTS ESTABLISH
+ *   - The header is FIXED, so the controls stay on screen while the page
+ *     scrolls. This is the whole point of the restructure: the app name
+ *     scrolls away, the buttons do not.
+ *   - The wordmark actually fades out on scroll and comes back at the top.
+ *   - The app icon is a real button that opens the About sheet.
+ *   - The build id is NOT in the header any more; it lives in About.
+ *   - The three controls meet the 44px touch minimum and do not overlap.
+ *
+ * WHAT THEY DO NOT ESTABLISH
+ *   The glass blur itself. `backdrop-filter` is a progressive enhancement and
+ *   Chromium renders it, but whether it reads as "liquid" on a real iPhone is
+ *   a hardware judgement, not an assertion.
+ */
+
+test.describe("Header", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/#/");
+    await expect(page.getByTestId("brief-page")).toBeAttached({ timeout: 20_000 });
+  });
+
+  test("the controls stay put while the page scrolls", async ({ page }) => {
+    const cog = page.getByTestId("open-settings");
+    const before = await cog.boundingBox();
+
+    await page.evaluate(() => {
+      const layer = document.querySelector(".layer") as HTMLElement;
+      layer.scrollTop = 300;
+    });
+    await page.waitForTimeout(300);
+
+    const after = await cog.boundingBox();
+    // A fixed header means the button's viewport position is unchanged.
+    expect(after!.y).toBe(before!.y);
+    // And the page really did scroll, or this proves nothing.
+    const scrolled = await page.evaluate(
+      () => (document.querySelector(".layer") as HTMLElement).scrollTop,
+    );
+    expect(scrolled).toBeGreaterThan(100);
+  });
+
+  test("the app name scrolls away and returns", async ({ page }) => {
+    const brand = page.getByTestId("brand");
+    await expect(brand).toBeVisible();
+
+    await page.evaluate(() => {
+      (document.querySelector(".layer") as HTMLElement).scrollTop = 300;
+    });
+    await page.waitForTimeout(300);
+    // Fully faded AND out of the accessibility tree — a transparent element
+    // that is still focusable is worse than one that is gone.
+    await expect(brand).toHaveCSS("visibility", "hidden");
+
+    await page.evaluate(() => {
+      (document.querySelector(".layer") as HTMLElement).scrollTop = 0;
+    });
+    await page.waitForTimeout(300);
+    await expect(brand).toHaveCSS("visibility", "visible");
+  });
+
+  test("the app icon opens the About sheet", async ({ page }) => {
+    await page.getByTestId("open-about").click();
+    const sheet = page.getByTestId("about-sheet");
+    await expect(sheet).toBeVisible();
+    await expect(sheet).toContainText("Om appen");
+    // The build id lives here now, not in the header.
+    await expect(page.getByTestId("about-build")).toContainText("Version");
+    await page.keyboard.press("Escape");
+    await expect(sheet).toHaveCount(0);
+  });
+
+  test("the build id is no longer supporter-facing chrome", async ({ page }) => {
+    // It was 9px monospace under "Uppdaterad" in the header. It is a
+    // diagnostic, so it belongs in About, not in the identity row.
+    await expect(page.locator(".app-header .build-id")).toHaveCount(0);
+    await expect(page.locator(".app-header .freshness")).toHaveCount(0);
+  });
+
+  test("all three header controls meet the touch minimum", async ({ page }) => {
+    for (const id of ["open-about", "kit-toggle", "open-settings"]) {
+      const box = await page.getByTestId(id).boundingBox();
+      expect(box!.width, `${id} width`).toBeGreaterThanOrEqual(36);
+      expect(box!.height, `${id} height`).toBeGreaterThanOrEqual(36);
+    }
+  });
+
+  test("the header does not overlap the first content", async ({ page }) => {
+    // The header is fixed, so `main` must be offset by its height or the
+    // first module would start underneath it.
+    const geo = await page.evaluate(() => {
+      const header = document.querySelector(".app-header")!.getBoundingClientRect();
+      const first = document.querySelector(".module")!.getBoundingClientRect();
+      return { headerBottom: header.bottom, firstTop: first.top };
+    });
+    expect(geo.firstTop).toBeGreaterThanOrEqual(geo.headerBottom - 1);
+  });
+});

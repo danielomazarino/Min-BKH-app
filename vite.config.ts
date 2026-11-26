@@ -255,7 +255,20 @@ export default defineConfig({
     versionLabel(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icons/icon-192.png", "icons/icon-512.png", "icons/maskable-192.png", "icons/maskable-512.png"],
+      includeAssets: [
+        "icons/icon-192.png",
+        "icons/icon-512.png",
+        "icons/maskable-192.png",
+        "icons/maskable-512.png",
+        // The light-theme set and the header marks are referenced from CSS and
+        // JSX rather than the manifest, so they must be precached explicitly.
+        "icons/icon-light-192.png",
+        "icons/icon-light-512.png",
+        "icons/maskable-light-192.png",
+        "icons/maskable-light-512.png",
+        "icons/mark-dark.png",
+        "icons/mark-light.png",
+      ],
       manifest: {
         name: "Min BKH-app",
         short_name: "Min BKH-app",
@@ -285,6 +298,14 @@ export default defineConfig({
           { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
           { src: "icons/maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
           { src: "icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+          // The light-theme icons are declared with `media`, so an installed
+          // PWA on a light-preferring device gets the white-field artwork
+          // instead of a black tile. Browsers that ignore `media` fall back to
+          // the dark set above, which is the safe default.
+          { src: "icons/icon-light-192.png", sizes: "192x192", type: "image/png", media: "(prefers-color-scheme: light)" },
+          { src: "icons/icon-light-512.png", sizes: "512x512", type: "image/png", media: "(prefers-color-scheme: light)" },
+          { src: "icons/maskable-light-192.png", sizes: "192x192", type: "image/png", purpose: "maskable", media: "(prefers-color-scheme: light)" },
+          { src: "icons/maskable-light-512.png", sizes: "512x512", type: "image/png", purpose: "maskable", media: "(prefers-color-scheme: light)" },
         ],
       },
       workbox: {

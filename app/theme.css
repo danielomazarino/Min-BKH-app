@@ -394,8 +394,15 @@ a {
    ========================================================================== */
 
 .app-header {
-  position: sticky;
+  /* FIXED, not sticky. The app shell is a fixed viewport with an internal
+     scroller (`.layer`), so a sticky header is not inside the scroller and
+     would never move anyway. The header is fixed and the WORDMARK alone is
+     translated by the layer's scrollTop (see AppHeader.tsx), which is what
+     lets the name scroll away while the controls stay put. */
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 30;
   display: flex;
   align-items: center;
@@ -421,17 +428,51 @@ a {
   border-bottom: 1px solid var(--hairline);
 }
 
-.app-header .mark {
-  /* 22 -> 26px: scaled up to sit comfortably beside the enlarged header
-     buttons (32 -> 36px boxes, 24px glyphs). The brand text grew with it. */
+/* THE ICON IS A BUTTON. It is the app's identity, so it is the natural place
+   to answer "what is this app?" — tapping it opens the About sheet. The box is
+   36px like the other two controls so the three read as one row, and the art
+   is clipped to a circle so the transparent-background mark reads as a tile
+   rather than a floating drawing. */
+.mark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  /* The mark art is drawn on a transparent field, so the button supplies the
+     tile. --surface-2 is the same lift the other glass buttons use. */
+  background: var(--surface-2);
+  transition: transform var(--dur-tap) ease, background var(--dur-tap) ease;
+}
+.mark-btn:active {
+  transform: scale(0.94);
+  background: var(--surface-3);
+}
+.mark-btn .mark {
   width: 26px;
   height: 26px;
   flex: none;
+  /* The two variants are swapped by theme, never both painted. */
+  display: block;
+}
+/* Only the variant matching the active theme is shown. Doing this in CSS keeps
+   the swap instant and avoids a React re-render on every theme change. */
+.mark-btn .mark-light {
+  display: none;
+}
+[data-theme="light"] .mark-btn .mark-dark {
+  display: none;
+}
+[data-theme="light"] .mark-btn .mark-light {
+  display: block;
 }
 
 .app-header .brand {
   /* 15 -> 17px: matches the enlarged mark and buttons. Still one line, still
-     ellipsising — a long brand must never push the status cluster out. */
+     ellipsising — a long brand must never push the controls out. */
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -440,9 +481,11 @@ a {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* The brand owns the left side and needs its own breathing room from the
-     mark now that the header's uniform gap is gone. */
   margin-left: var(--s2);
+  /* The wordmark is translated and faded by AppHeader as the page scrolls.
+     `will-change` keeps that on the compositor instead of repainting the
+     header text on every frame. */
+  will-change: transform, opacity;
 }
 
 .app-header .brand b {
@@ -450,67 +493,40 @@ a {
   font-weight: 700;
 }
 
-/* Freshness dot: quiet, always present, never alarming by colour alone */
-.freshness {
-  display: inline-flex;
+/* The right-hand control cluster. `flex: none` so the scrolling wordmark can
+   never push the buttons off-screen, and a small gap so the two glass buttons
+   read as a pair rather than one wide control. */
+.header-actions {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: var(--t-label);
-  color: var(--text-3);
+  gap: 6px;
   flex: none;
 }
-.freshness .dot {
-  width: 5px;
-  height: 5px;
+
+/* Freshness dot, now in Settings rather than the header. Same two-state
+   signal: green when the nightly landed, caution when it has not. */
+.freshness-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--ok);
-  flex: none;
+  margin-right: 6px;
+  vertical-align: middle;
 }
-.freshness[data-stale="true"] .dot {
+.freshness-dot[data-stale="true"] {
   background: var(--caution);
 }
 
-/* Freshness + build id, stacked. The header height is a fixed 44px, so the
-   group must not grow: `flex: none` plus a fixed line-height keeps the settings
-   button from being pushed or clipped, whatever the id happens to be.
-
-   The user asked for the status text to sit CLOSER to the jersey button.
-   4px (down from the old uniform 8px) is the measured gap that reads as
-   "one cluster" without the text touching the button's hit box. */
-.header-status {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 1px;
-  flex: none;
-  /* Never let a long id push the brand out of the header. */
-  min-width: 0;
-  max-width: 40%;
-  line-height: 1;
-  margin-right: 6px;
-}
-
-/* WHICH BUILD IS ON SCREEN.
- *
- * Readable on a real iPhone, where the bundle filename is invisible and a stale
- * service worker is otherwise indistinguishable from "my change did not work".
- * MEASURED contrast 6.92:1 against the header's effective background
- * (rgba(0,0,0,.72) over --bg #000 resolves to rgb(0,0,0); --text-3 is
- * rgba(255,255,255,.58) = rgb(148,148,148)), clearing WCAG AA for small text.
- *
- * Deliberately quiet: --text-3, not --text, and no background chip. It is
- * diagnostic, not chrome. */
-.build-id {
+/* The build id, now shown in the About sheet rather than the header. */
+.build-id-inline {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.02em;
-  color: var(--text-3);
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: none;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  padding: 1px 5px;
 }
 
 .icon-btn {
@@ -525,6 +541,27 @@ a {
   flex: none;
   color: var(--text-2);
   border-radius: 50%;
+  /* GLASS, matching the tab bar (user, 2026-11-26: "clickable liquid buttons").
+     The app now has ONE chrome idiom instead of a flat glyph row above a glass
+     nav. Same token family as .fabnav so the two cannot drift apart: the
+     surface, the hairline edge and the inner top sheen are the cues that read
+     as a translucent pane rather than a solid disc.
+     The opaque fallback is declared FIRST so the button is readable when
+     backdrop-filter is unsupported; the blur is additive, never load-bearing. */
+  background: var(--fabnav-surface-opaque);
+  border: 1px solid var(--fabnav-edge);
+  box-shadow: inset 0 1px 0 var(--fabnav-sheen);
+  transition: transform var(--dur-tap) ease, background var(--dur-tap) ease;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .icon-btn {
+    background: var(--fabnav-surface);
+    -webkit-backdrop-filter: var(--fabnav-blur);
+    backdrop-filter: var(--fabnav-blur);
+  }
+}
+.icon-btn:active {
+  transform: scale(0.94);
 }
 .icon-btn svg {
   /* 19 -> 24px, and BOTH header buttons get exactly this. The jersey looked
@@ -533,9 +570,6 @@ a {
      equal VISUALS. 24px on both, verified side by side at 390px. */
   width: 24px;
   height: 24px;
-}
-.icon-btn:active {
-  background: var(--surface-2);
 }
 .icon-btn:disabled {
   /* A disabled refresh button must still look like a button, not vanish —
@@ -578,6 +612,12 @@ a {
 main {
   flex: 1;
   min-height: 0;
+  /* The header is `position: fixed`, so it is out of flow and `main` would
+     otherwise start UNDER it. This is the offset that replaces the space the
+     sticky header used to occupy. It uses --chrome-top, the same token the
+     sheet's top bound uses, so the two can never disagree about how tall the
+     header band is. */
+  padding-top: var(--chrome-top);
   /* NO bottom padding here, deliberately.
      The floating nav must genuinely float OVER scrolling content, so the
      scroll viewport has to extend all the way to the bottom of the screen
@@ -2692,6 +2732,22 @@ details.disc > summary .disc-summary {
   display: block;
 }
 /* Placeholder hue while loading/failed — never a broken image box. */
+/* The no-image fallback: the app's own mark, centred and small, on the card's
+   surface. It must NOT be stretched to fill the 16:9 box — the mark is a
+   square drawing and `object-fit: cover` would crop the crane's jib. */
+.ncard-thumb .ncard-fallback {
+  object-fit: contain;
+  width: 44%;
+  height: 44%;
+  margin: auto;
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+}
+.ncard-thumb[data-no-image] {
+  background: var(--surface-2);
+}
+
 .ncard-thumb::after {
   content: "";
   position: absolute;

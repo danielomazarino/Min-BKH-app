@@ -114,8 +114,22 @@ function GridCard({ e, onOpen }: { e: NewsEvent; onOpen: () => void }) {
       data-testid="news-card"
       aria-label={`${e.title}. ${publisher}`}
     >
-      <span className="ncard-thumb">
-        {e.imageUrl ? <img src={e.imageUrl} alt="" loading="lazy" decoding="async" /> : null}
+      {/* A card with no image used to render an EMPTY grey box, which reads as
+          a broken image rather than as "this story has no picture". The app
+          icon is the honest fallback: it is the app's own mark, it is always
+          available offline, and it makes the card look deliberate. */}
+      <span className="ncard-thumb" data-no-image={e.imageUrl ? undefined : true}>
+        {e.imageUrl ? (
+          <img src={e.imageUrl} alt="" loading="lazy" decoding="async" />
+        ) : (
+          <img
+            src={`${import.meta.env.BASE_URL}icons/mark-dark.png`}
+            alt=""
+            className="ncard-fallback"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
       </span>
       <span className="ncard-body">
         <span className="ncard-meta">

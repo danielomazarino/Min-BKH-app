@@ -121,6 +121,14 @@ export function SettingsPanel({ state }: { state: AppDataState }) {
       }).format(new Date(data.freshness.generatedAt))
     : null;
 
+  // Same 36-hour rule the header used: a nightly that has not landed in a day
+  // and a half means the data may be stale, and saying so is more useful than
+  // a green dot that is always green.
+  const generatedAt = data?.freshness.generatedAt ?? null;
+  const stale = generatedAt
+    ? (Date.now() - new Date(generatedAt).getTime()) / 3600000 > 36
+    : false;
+
   const allOk = !unavailable;
 
   return (
@@ -131,6 +139,15 @@ export function SettingsPanel({ state }: { state: AppDataState }) {
               paragraph of provenance. ---- */}
       <section data-testid="settings-status">
         <div className="mod-label">Status</div>
+        {/* The freshness dot moved here from the header (2026-11-26). It is a
+            data-health signal, so it belongs beside the data it describes —
+            not in the identity row, where it competed with the app name. */}
+        {generatedAt && (
+          <p className="small" data-testid="freshness" data-stale={stale}>
+            <span className="freshness-dot" data-stale={stale} aria-hidden="true" />
+            {stale ? "Kan vara gammal" : "Uppdaterad"}
+          </p>
+        )}
         <p className="small muted" data-testid="settings-updated">
           {fetched
             ? `Hämtad ${fetched} · uppdateras varje natt 03:30 UTC.`

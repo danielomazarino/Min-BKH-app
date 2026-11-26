@@ -32,6 +32,16 @@ import { mkdirSync } from "node:fs";
 
 const BLACK = "#000000";
 const YELLOW = "#ffd200";
+/**
+ * The LIGHT-theme icon. The away kit is a white shirt with yellow trim, so the
+ * icon inverts: a white field with the same yellow art. Yellow on white is
+ * 1.45:1, which is fine for a large graphic but not for the thin strokes, so
+ * the art is drawn in a darkened yellow (--accent-ink, #6b5900) that measures
+ * 6.9:1 on white. The BALL's pentagon and seams stay white, because they are
+ * cut out of the yellow disc rather than drawn on the field.
+ */
+const LIGHT_FIELD = "#ffffff";
+const LIGHT_INK = "#6b5900";
 
 /**
  * One plant stalk: a dense column of stacked leaf rows narrowing to a tip.
@@ -39,17 +49,17 @@ const YELLOW = "#ffd200";
  * and closer together than in the first attempt — neighbouring foliage
  * interlocks, reading as one hedge rather than four separate trees.
  */
-const stalk = (x, base, h, w) => {
+const stalk = (x, base, h, w, ink = YELLOW) => {
   const row = (yy, ww) =>
-    `<path d="M${x} ${yy} q${-ww * 0.5} ${-h * 0.05} ${-ww} ${h * 0.1} q${ww * 0.45} ${h * 0.05} ${ww} ${-h * 0.1} Z" fill="${YELLOW}"/>` +
-    `<path d="M${x} ${yy} q${ww * 0.5} ${-h * 0.05} ${ww} ${h * 0.1} q${-ww * 0.45} ${h * 0.05} ${-ww} ${-h * 0.1} Z" fill="${YELLOW}"/>`;
+    `<path d="M${x} ${yy} q${-ww * 0.5} ${-h * 0.05} ${-ww} ${h * 0.1} q${ww * 0.45} ${h * 0.05} ${ww} ${-h * 0.1} Z" fill="${ink}"/>` +
+    `<path d="M${x} ${yy} q${ww * 0.5} ${-h * 0.05} ${ww} ${h * 0.1} q${-ww * 0.45} ${h * 0.05} ${-ww} ${-h * 0.1} Z" fill="${ink}"/>`;
   const rows = 6;
-  let out = `<rect x="${x - w * 0.07}" y="${base - h * 0.3}" width="${w * 0.14}" height="${h * 0.3}" fill="${YELLOW}"/>`;
+  let out = `<rect x="${x - w * 0.07}" y="${base - h * 0.3}" width="${w * 0.14}" height="${h * 0.3}" fill="${ink}"/>`;
   for (let i = 0; i < rows; i += 1) {
     const f = i / (rows - 1);
     out += row(base - h * (0.26 + f * 0.56), w * (0.62 - f * 0.28));
   }
-  out += `<path d="M${x} ${base - h} l${w * 0.13} ${h * 0.14} l${-w * 0.13} ${h * 0.05} l${-w * 0.13} ${-h * 0.14} Z" fill="${YELLOW}"/>`;
+  out += `<path d="M${x} ${base - h} l${w * 0.13} ${h * 0.14} l${-w * 0.13} ${h * 0.05} l${-w * 0.13} ${-h * 0.14} Z" fill="${ink}"/>`;
   return out;
 };
 
@@ -63,7 +73,7 @@ const stalk = (x, base, h, w) => {
  * line, the BKH wordmark centred in the open space between crane and ball,
  * and seven overlapping hedge stalks.
  */
-const art = (s) => {
+const art = (s, ink = YELLOW, cut = BLACK) => {
   const t = (v) => 256 + (v - 256) * s; // transform about centre
   const k = (v) => v * s; // scale a length
   const ground = t(438); // the ground bar's top edge
@@ -72,22 +82,22 @@ const art = (s) => {
   const jibY = t(96);
   return `
   <!-- ground bar: the line everything stands on -->
-  <rect x="${t(48)}" y="${ground}" width="${k(416)}" height="${k(14)}" fill="${YELLOW}"/>
+  <rect x="${t(48)}" y="${ground}" width="${k(416)}" height="${k(14)}" fill="${ink}"/>
 
   <!-- hedge: seven stalks, wide enough to overlap into one hedge -->
   <g>
-    ${stalk(t(84), ground, k(104), k(58))}
-    ${stalk(t(128), ground, k(122), k(64))}
-    ${stalk(t(174), ground, k(108), k(60))}
-    ${stalk(t(220), ground, k(128), k(66))}
-    ${stalk(t(266), ground, k(110), k(60))}
-    ${stalk(t(312), ground, k(124), k(64))}
-    ${stalk(t(356), ground, k(104), k(58))}
+    ${stalk(t(84), ground, k(104), k(58), ink)}
+    ${stalk(t(128), ground, k(122), k(64), ink)}
+    ${stalk(t(174), ground, k(108), k(60), ink)}
+    ${stalk(t(220), ground, k(128), k(66), ink)}
+    ${stalk(t(266), ground, k(110), k(60), ink)}
+    ${stalk(t(312), ground, k(124), k(64), ink)}
+    ${stalk(t(356), ground, k(104), k(58), ink)}
   </g>
 
   <!-- crane: lattice tower, slewing unit, jib with tie lines, counter-jib,
        trolley cable and hook. Built from strokes so it stays crisp small. -->
-  <g stroke="${YELLOW}" fill="none" stroke-linecap="round">
+  <g stroke="${ink}" fill="none" stroke-linecap="round">
     <!-- tower: two rails + zigzag lattice -->
     <path d="M${towerX - k(13)} ${ground} L${towerX - k(9)} ${jibY}" stroke-width="${k(7)}"/>
     <path d="M${towerX + k(13)} ${ground} L${towerX + k(9)} ${jibY}" stroke-width="${k(7)}"/>
@@ -106,22 +116,22 @@ const art = (s) => {
   </g>
   <!-- the hook: an open crane hook on the cable -->
   <path d="M${jibTipX} ${t(150)} a${k(11)} ${k(11)} 0 1 1 ${k(1)} ${k(20)} a${k(13)} ${k(13)} 0 1 0 ${k(-1)} ${k(-20)}"
-        fill="none" stroke="${YELLOW}" stroke-width="${k(9)}" stroke-linecap="round"/>
+        fill="none" stroke="${ink}" stroke-width="${k(9)}" stroke-linecap="round"/>
   <!-- counterweight on the counter-jib -->
-  <rect x="${towerX - k(58)}" y="${jibY + k(14)}" width="${k(26)}" height="${k(20)}" fill="${YELLOW}"/>
+  <rect x="${towerX - k(58)}" y="${jibY + k(14)}" width="${k(26)}" height="${k(20)}" fill="${ink}"/>
 
   <!-- BKH wordmark: centred in the open space between the crane tower and
        the football, above the hedge — the composition's visual centre. -->
   <text x="${t(268)}" y="${t(286)}" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif"
-        font-weight="900" font-size="${k(88)}" letter-spacing="${k(2)}" fill="${YELLOW}">BKH</text>
+        font-weight="900" font-size="${k(88)}" letter-spacing="${k(2)}" fill="${ink}">BKH</text>
 
   <!-- football: ON the ground line (its bottom touches the bar), a real
        ball — centre pentagon, five curved seams to the edge. -->
   <g transform="translate(${t(404)} ${t(438 - 62)})">
-    <circle r="${k(62)}" fill="${YELLOW}"/>
-    <path d="M0 -25 L24 -8 L15 21 L-15 21 L-24 -8 Z" fill="${BLACK}"/>
+    <circle r="${k(62)}" fill="${ink}"/>
+    <path d="M0 -25 L24 -8 L15 21 L-15 21 L-24 -8 Z" fill="${cut}"/>
     <path d="M0 -62 L0 -25 M24 -8 L59 -19 M15 21 L37 51 M-15 21 L-37 51 M-24 -8 L-59 -19"
-          stroke="${BLACK}" stroke-width="${k(6)}" fill="none"/>
+          stroke="${cut}" stroke-width="${k(6)}" fill="none"/>
   </g>`;
 };
 
@@ -150,6 +160,40 @@ const ios = () => `
   ${art(0.88)}
 </svg>`;
 
+/**
+ * LIGHT-THEME variants. Same composition, inverted field. The ball's pentagon
+ * and seams are cut in the FIELD colour, so they read as holes in the disc
+ * exactly as they do on the dark icon.
+ */
+const regularLight = () => `
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="${LIGHT_FIELD}"/>
+  ${art(1, LIGHT_INK, LIGHT_FIELD)}
+</svg>`;
+
+const maskableLight = () => `
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="${LIGHT_FIELD}"/>
+  ${art(0.78, LIGHT_INK, LIGHT_FIELD)}
+</svg>`;
+
+/**
+ * THE HEADER MARK. The app icon is also the header's identity button, so it
+ * needs a transparent-background version: a square black tile would read as a
+ * sticker on the light theme's white header. The art is drawn at 0.86 so the
+ * crane's jib and the ball keep a little breathing room inside the circle the
+ * header clips it to.
+ */
+const markDark = () => `
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 512 512">
+  ${art(0.86)}
+</svg>`;
+
+const markLight = () => `
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 512 512">
+  ${art(0.86, LIGHT_INK, LIGHT_FIELD)}
+</svg>`;
+
 mkdirSync("public/icons", { recursive: true });
 
 const jobs = [
@@ -158,6 +202,12 @@ const jobs = [
   ["apple-touch-icon.png", 180, ios],
   ["maskable-512.png", 512, maskable],
   ["maskable-192.png", 192, maskable],
+  ["icon-light-192.png", 192, regularLight],
+  ["icon-light-512.png", 512, regularLight],
+  ["maskable-light-512.png", 512, maskableLight],
+  ["maskable-light-192.png", 192, maskableLight],
+  ["mark-dark.png", 128, markDark],
+  ["mark-light.png", 128, markLight],
 ];
 
 for (const [name, size, fn] of jobs) {

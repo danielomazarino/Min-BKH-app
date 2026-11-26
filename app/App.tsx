@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { HashRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Settings as SettingsIcon } from "lucide-react";
-import { KitToggle } from "./shared/KitToggle";
 import { SettingsPanel } from "./shared/SettingsPanel";
+import { AppHeader } from "./shared/AppHeader";
+import { AboutSheet } from "./shared/AboutSheet";
 import Brief from "./pages/Brief";
 import News from "./pages/News";
 import Matches from "./pages/Matches";
@@ -15,8 +15,6 @@ import { Sheet } from "./shared/Sheet";
 import { UpdateBanner } from "./shared/UpdateBanner";
 import { useAppUpdate } from "./shared/useAppUpdate";
 import { SETTINGS_PATH, destinationFor, idFromSearch, searchWithId } from "./shared/nav";
-
-const ICON = `${import.meta.env.BASE_URL}icons/icon-192.png`;
 
 /**
  * The build id, injected at build time onto the `<html>` element.
@@ -73,6 +71,7 @@ function AppShell({ state }: { state: AppDataState }) {
 
   const settingsOpen = pathname === SETTINGS_PATH;
   const active = destinationFor(settingsOpen && from ? from : pathname);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const go = (to: string) => {
     setFrom(null);
@@ -119,56 +118,17 @@ function AppShell({ state }: { state: AppDataState }) {
     return () => window.removeEventListener("keydown", onKey, true);
   }, [settingsOpen, from]);
 
-  const generatedAt = state.status === "ready" ? state.data.freshness.generatedAt : null;
-  const stale = generatedAt ? (Date.now() - new Date(generatedAt).getTime()) / 3600000 > 36 : false;
-
   return (
     <>
       <a href="#main" className="skip-link">
         Hoppa till innehållet
       </a>
 
-      <header className="app-header">
-        <img src={ICON} alt="" className="mark" width={22} height={22} />
-        <span className="brand">
-          Min <b>BKH</b>-app
-        </span>
-        {/* Freshness and the build id stack in one right-aligned group so the
-            build id sits directly UNDER "Uppdaterad" without widening the
-            header or pushing the settings button around. */}
-        <span className="header-status">
-          {generatedAt && (
-            <span
-              className="freshness"
-              data-stale={stale}
-              data-testid="freshness"
-              title={`Senast uppdaterad ${new Date(generatedAt).toLocaleString("sv-SE")}`}
-            >
-              <span className="dot" aria-hidden="true" />
-              {stale ? "Kan vara gammal" : "Uppdaterad"}
-            </span>
-          )}
-          {/* WHICH BUILD IS THIS? Readable on a real iPhone, where the bundle
-              hash is invisible and a stale service worker is otherwise
-              indistinguishable from "my change did not work". */}
-          <span className="build-id" data-testid="build-id" title={`Build ${BUILD_ID}`}>
-            {BUILD_ID}
-          </span>
-        </span>
-        {/* The kit toggle sits LEFT of the cog wheel, as requested. Both are
-            32px icon buttons, so the pair reads as one control group. */}
-        <KitToggle />
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={openSettings}
-          aria-label="Inställningar och data"
-          data-testid="open-settings"
-          aria-expanded={settingsOpen}
-        >
-          <SettingsIcon aria-hidden />
-        </button>
-      </header>
+      <AppHeader
+        onOpenSettings={openSettings}
+        onOpenAbout={() => setAboutOpen(true)}
+        settingsOpen={settingsOpen}
+      />
 
       <main id="main" tabIndex={-1}>
         <Routes>
@@ -190,6 +150,17 @@ function AppShell({ state }: { state: AppDataState }) {
         <Sheet title="Data & källor" onClose={closeSettings} testId="settings-sheet">
           <SettingsPanel state={state} />
         </Sheet>
+      )}
+
+      {aboutOpen && (
+        <AboutSheet
+          buildId={BUILD_ID}
+          onClose={() => setAboutOpen(false)}
+          onOpenSettings={() => {
+            setAboutOpen(false);
+            openSettings();
+          }}
+        />
       )}
     </>
   );
