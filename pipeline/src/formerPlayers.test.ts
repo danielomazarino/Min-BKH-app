@@ -32,6 +32,14 @@ function news(overrides: Partial<NewsItem>): NewsItem {
   };
 }
 
+/**
+ * Pinned clock. The fixtures are dated 2026-10-08 and `prefilterNews` drops
+ * items older than its 45-day window, so relying on the default `new Date()`
+ * made this test pass until 2026-11-22 and fail on every run after that. A
+ * date-dependent assertion is a clock bomb, not a regression test.
+ */
+const NOW = new Date("2026-10-08T10:00:00Z");
+
 const KNOWN: KnownPersons = {
   currentPlayers: ["Mikkel Rygaard Jensen", "Harun Ibrahim", "Sanders Ngabo"],
   formerPlayers: ["Zeidane Inoussa", "Ibrahim Sadiq", "Kim Källström"],
@@ -136,7 +144,7 @@ describe("classifyRelevance — former players", () => {
 describe("prefilterNews — former players pass Gate 1", () => {
   it("keeps a former-player article that never says Häcken", () => {
     const item = news({ title: "Officiellt: Zeidane Inoussa lånas ut av Swansea" });
-    const { candidates } = prefilterNews([item], { known: KNOWN });
+    const { candidates } = prefilterNews([item], { known: KNOWN, now: NOW });
     expect(candidates.map((c) => c.id)).toEqual(["x"]);
   });
 });
