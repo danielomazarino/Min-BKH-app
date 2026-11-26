@@ -75,6 +75,14 @@ Inställningar bakom en disclosure.
 
 ## Matcher
 
+- Three tabs in order: **Spelade**, **Kommande**, **Tabell**. The league table
+  is shown in the Tabell tab rather than below the match lists.
+- Home's **Hela tabellen** link opens Matcher with Tabell selected
+  (`?section=tabellen`).
+- The next-match banner has the same 24 px top gap as Home and opens the shared
+  match sheet.
+- Opening a match sheet fetches the available lineup on demand. If no lineup is
+  published, the sheet says **Startelva ej tillgänglig**.
 - Arkiv med W/D/L som **färgad kant OCH bokstav** (aldrig färg ensam),
   H/B-monogram, datum, motståndare.
 - Bara **senaste matchen** har händelsedata, så bara den öppnar ett ark.

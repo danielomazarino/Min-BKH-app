@@ -25,6 +25,65 @@ Status keys: `OPEN` · `IN PROGRESS` · `DONE` · `BLOCKED` · `NEEDS DECISION`
 
 ---
 
+## E-024 · Five days of green pipelines, stale production — FIXED 2026-11-26
+
+**Status:** DONE — deployed and verified in production 2026-11-26 (`786a342`,
+build `786a342.4e9b0ce`) · **Affects:** every supporter, for five days
+
+### What a supporter saw
+
+The app kept showing the same news and the same match data from **21 November**
+while the club kept publishing. Nothing looked broken — no error, no banner.
+The feed was simply frozen.
+
+### What was actually wrong
+
+Data generation was never broken. The nightly pipeline ran and committed fresh
+data every day, including 2026-11-26. **Every deploy from 2026-11-22 onward
+failed**, so none of that data ever reached the site.
+
+The cause was a test, not a data source. `prefilterNews` drops news older than
+45 days, and `pipeline/src/formerPlayers.test.ts` used a fixture dated
+`2026-10-08` without pinning `now`. That assertion was only true until:
+
+$$2026\text{-}10\text{-}08 + 45\text{ days} = 2026\text{-}11\text{-}22\text{T}10{:}00\text{Z}$$
+
+The first deploy after that instant (run `45019471479`) failed on this single
+test. `deploy.yml` gates `build` on `npm test`, so the deploy stopped there.
+The same assertion failed identically in runs `45019471479`, `45411746188` and
+`45825801113`.
+
+### The fix
+
+Pass an explicit `now`, matching the convention `gemini.test.ts` already uses.
+Full suite: **741/741** (was 1 failed | 740 passed).
+
+### Verification (served artifact, not workflow status)
+
+| Check | Result |
+| --- | --- |
+| Deploy run `45896098278` | SUCCESS — first green deploy since 2026-11-22 |
+| Served build id | `786a342.4e9b0ce` |
+| Served `freshness.generatedAt` | `2026-11-26T13:05:39Z` (was `2026-11-21T11:42Z`) |
+| Committed vs served `app.json` | sha256 identical (`447243d3…`) |
+
+### Source connections, probed live 2026-11-26
+
+All 8 RSS feeds returned HTTP 200 with items — BK Häcken, Sportbladet,
+Expressen, SVT Sport, Bollsvenskan, Allsvenskan, Fotbolltransfers,
+Göteborgs-Posten — and SportoMedia GraphQL returned 200 with
+`dataStatus: current`. `sourceStatus.gemini = "failed"` is **expected**:
+`data-update.yml` deliberately withholds `GEMINI_API_KEY` (AGENTS.md §6).
+
+### Lesson
+
+A date-dependent assertion inside a gating test is an outage scheduled for a
+future date. It passes in review, passes in CI on the day it is written, and
+fails silently months later — while the pipeline that depends on it keeps
+reporting success. Pin the clock in any test that touches a time window.
+
+---
+
 ## Current state — 2026-10-09 (14:50 CEST / 12:50 UTC)
 
 > This snapshot can lag reality by hours. Before relying on it, check the live

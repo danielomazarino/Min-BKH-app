@@ -1,4 +1,67 @@
-# Continuation — session of 2026-10-23
+# Continuation — session of 2026-11-26
+
+**Current handoff (2026-11-26, 22:20 CET).** This section supersedes every
+snapshot below for current repository/deployment status. Historical notes are
+retained as context; their commit and run references describe earlier state.
+
+## Current repository and deployment
+
+| | |
+| --- | --- |
+| HEAD / `origin/main` | `786a342` — "test: pin the clock in the former-players prefilter test" |
+| Deploy run | `45896098278` — **SUCCESS** (first green deploy since 2026-11-22) |
+| Served build id | `786a342.4e9b0ce` — verified from the live Pages HTML |
+| Served data | `freshness.generatedAt = 2026-11-26T13:05:39Z` — verified by curl |
+| Byte check | committed `public/data/app.json` and served bytes are sha256-identical |
+| Live URL | `https://danielomazarino.github.io/Min-BKH-app/` |
+
+## Resolved this session — 5-day silent deploy outage
+
+Data generation never failed. **Every deploy from 2026-11-22 to 2026-11-26
+failed**, so production served data frozen at `2026-11-21T11:42Z` while the
+nightly pipelines kept committing fresh data nobody could see.
+
+Root cause was a clock bomb, not a data-source fault:
+`prefilterNews` drops items outside a 45-day window, and
+`pipeline/src/formerPlayers.test.ts` used a fixture dated `2026-10-08` without
+pinning `now`. That assertion was only true until
+`2026-10-08 + 45d = 2026-11-22T10:00Z`. The first deploy after that instant
+failed on this single test, and the deploy workflow gates `build` on `npm test`.
+
+Fix: pass an explicit `now`, matching the convention `gemini.test.ts` already
+uses. Full suite is 741/741 (was 1 failed | 740 passed).
+
+**Source connections verified live on 2026-11-26:** all 8 RSS feeds returned
+HTTP 200 with items (BK Häcken, Sportbladet, Expressen, SVT Sport, Bollsvenskan,
+Allsvenskan, Fotbolltransfers, GP) and SportoMedia GraphQL returned 200 with
+`dataStatus: current`. `sourceStatus.gemini = "failed"` is **expected**:
+`data-update.yml` deliberately withholds `GEMINI_API_KEY`, so the deterministic
+path is structurally guaranteed (AGENTS.md §6).
+
+Lesson recorded: a date-dependent assertion in a gating test is an outage
+scheduled for a future date. Pin the clock.
+
+## Completed in the previous session (2026-10-24)
+
+- Matcher now has **Spelade**, **Kommande**, and **Tabell** tabs; the league
+  table is rendered in the third tab.
+- Home's “Hela tabellen” link selects the Tabell tab through
+  `/matcher?section=tabellen`.
+- Matcher’s next-match banner has 24px top spacing, matching Home.
+- Updated browser assertions to select the table tab and check the current
+  lineup section rather than obsolete UI text.
+- Focused Chromium tests passed (2/2); full CI and Pages deployment passed.
+- Verified the live HTML build marker is `230fa06.eb50bb5`. Earlier in this
+  deployment, the served JS/CSS asset hashes matched the local build; the
+  final commit only changed tests, leaving app assets unchanged.
+
+No further work is pending. The working tree is clean apart from local
+agent-skill directories under `.github/skills/`; `liquid-glass-tab-bar` is
+tracked, the rest are session-generated and untracked.
+
+---
+
+## Previous handoff snapshot — 2026-10-23
 
 **Read this first.** It supersedes the previous `continuation.md` (the B-029
 handoff, committed as `94aaf30`), which is now archived at
