@@ -85,14 +85,44 @@ test.describe("Header", () => {
   test("all three header controls meet the touch minimum", async ({ page }) => {
     for (const id of ["open-about", "kit-toggle", "open-settings"]) {
       const box = await page.getByTestId(id).boundingBox();
-      expect(box!.width, `${id} width`).toBeGreaterThanOrEqual(36);
-      expect(box!.height, `${id} height`).toBeGreaterThanOrEqual(36);
+      expect(box!.width, `${id} width`).toBeGreaterThanOrEqual(44);
+      expect(box!.height, `${id} height`).toBeGreaterThanOrEqual(44);
     }
   });
 
+  test("the header is an overlay, not a menu bar", async ({ page }) => {
+    // The user's request: no permanent band at the top. The header must paint
+    // no background and no border, and must not swallow taps meant for the
+    // page — only its three controls are tappable.
+    const header = page.locator(".app-header");
+    await expect(header).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(header).toHaveCSS("border-bottom-width", "0px");
+    await expect(header).toHaveCSS("pointer-events", "none");
+    await expect(page.getByTestId("open-settings")).toHaveCSS("pointer-events", "auto");
+  });
+
+  test("content scrolls under the floating controls", async ({ page }) => {
+    // The clearance for the buttons lives on the scroller's padding, so it
+    // scrolls away with the content. After scrolling, content must be visible
+    // in the band the header occupies — that is what "no menu bar" means.
+    await page.evaluate(() => {
+      (document.querySelector(".layer") as HTMLElement).scrollTop = 400;
+    });
+    await page.waitForTimeout(300);
+    const covered = await page.evaluate(() => {
+      const header = document.querySelector(".app-header")!.getBoundingClientRect();
+      // Sample a point in the header band that is NOT one of the buttons.
+      const x = window.innerWidth / 2;
+      const y = header.top + header.height / 2;
+      const el = document.elementFromPoint(x, y);
+      return el?.closest(".app-header") !== null;
+    });
+    expect(covered).toBe(false);
+  });
+
   test("the header does not overlap the first content", async ({ page }) => {
-    // The header is fixed, so `main` must be offset by its height or the
-    // first module would start underneath it.
+    // The header is an overlay, so the scroller's top padding must keep the
+    // first module clear of the buttons at rest.
     const geo = await page.evaluate(() => {
       const header = document.querySelector(".app-header")!.getBoundingClientRect();
       const first = document.querySelector(".module")!.getBoundingClientRect();

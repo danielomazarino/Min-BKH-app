@@ -24,6 +24,17 @@
  * wordmark is translated by the active layer's `scrollTop`, read from a
  * passive scroll listener. The controls never move; only the name does.
  *
+ * NO BAND (2026-11-26, second pass). The first version kept a translucent
+ * bar with a hairline border, and the user reported it still read as a menu
+ * bar: "the idea was to remove that so the page scroll up like in modern
+ * mobile apps." The header now paints nothing at all — no background, no
+ * border, no blur — and is `pointer-events: none` so a touch that misses a
+ * button falls through to the page. Only the three glass buttons carry a
+ * surface, and content scrolls edge to edge underneath them. The clearance
+ * that keeps the FIRST content clear of the buttons lives on the scroller's
+ * padding, so it scrolls away with the content instead of reserving a
+ * permanent strip.
+ *
  * The icon is a real button that opens an About sheet. It is the app's
  * identity, so it is the natural place to answer "what is this?".
  */

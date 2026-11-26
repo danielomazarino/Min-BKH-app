@@ -74,7 +74,21 @@
   --t-label: 11px;
 
   /* Chrome heights */
-  --header-h: 44px;
+  /* 44 -> 56px. The header controls were 36px circles floating above a 78px
+     tab bar, which read as undersized — the top of the screen looked like a
+     different, lighter-weight app than the bottom. The buttons are now 48px
+     (see --header-btn) and the band grows to hold them with breathing room. */
+  --header-h: 56px;
+  /* The three floating header controls, sized AGAINST the tab bar rather than
+     in isolation. The bar is 78px tall with 20px glyphs; a 48px button with a
+     26px glyph is the same visual weight class, so the top and bottom chrome
+     read as one design instead of two. 48px also clears the 44px touch
+     minimum with margin. */
+  --header-btn: 48px;
+  --header-glyph: 26px;
+  /* The app mark inside its button. Larger than the glyphs because the art is
+     a detailed drawing, not a line icon — at 26px the stadium read as a smudge. */
+  --header-mark: 34px;
   /* The floating bar is 92px tall and floats 16px above the safe area, so
      content needs ~92 + 2x16 + the inset of clearance to scroll fully clear.
      Raised 64 -> 92px on 2026-10-04: the whole bar was too small to hit with a
@@ -195,10 +209,6 @@
   --dur-dismiss: 220ms;
   --dur-tap: 80ms;
 
-  /* Header surface. A token because the light theme needs its own value —
-     see .app-header. */
-  --header-bg: rgba(0, 0, 0, 0.72);
-
   /* The yellow banner in the DARK kit: the original subtle wash, which on
      black reads as a glow and was never complained about. Accent stays the
      amber ink — see the light-theme override for why red would be wrong
@@ -279,11 +289,6 @@
   --fabnav-pill: rgba(0, 0, 0, 0.08);
   --fabnav-pill-edge: rgba(0, 0, 0, 0.22);
   --fabnav-pill-opaque: rgba(0, 0, 0, 0.1);
-
-  /* Light header over a white page. Higher alpha than the dark header's
-     0.72 because a translucent WHITE over white content needs more opacity
-     to separate; blur does the rest. */
-  --header-bg: rgba(255, 255, 255, 0.85);
 
   /* Sheet backdrop. Over a white page a 0.55 black scrim is fine — it is
      deliberately dark in BOTH themes, because its job is to dim the page
@@ -398,7 +403,14 @@ a {
      scroller (`.layer`), so a sticky header is not inside the scroller and
      would never move anyway. The header is fixed and the WORDMARK alone is
      translated by the layer's scrollTop (see AppHeader.tsx), which is what
-     lets the name scroll away while the controls stay put. */
+     lets the name scroll away while the controls stay put.
+     NO BAND. The header used to paint a translucent bar with a hairline
+     border, which read as a permanent menu bar eating the top of the screen.
+     The user asked for the modern mobile pattern instead: content scrolls
+     edge to edge and the controls float over it. So the header is now a
+     transparent overlay — no background, no border, no blur — and only the
+     three glass buttons carry any surface. `pointer-events: none` lets a
+     touch that misses a button fall through to the page underneath. */
   position: fixed;
   top: 0;
   left: 0;
@@ -418,14 +430,15 @@ a {
   gap: 0;
   height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
   padding: env(safe-area-inset-top, 0px) var(--s4) 0;
-  /* Token, not a literal: the light theme needs a light header over a white
-     page, and a literal rgba(0,0,0,.72) here would keep the header black in
-     the away kit — the one element that would have given the lie to the
-     whole toggle. */
-  background: var(--header-bg);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--hairline);
+  background: none;
+  border-bottom: 0;
+  pointer-events: none;
+}
+
+/* The overlay is transparent, so only the controls themselves are tappable.
+   Without this the whole top band would swallow taps meant for the page. */
+.app-header > * {
+  pointer-events: auto;
 }
 
 /* THE ICON IS A BUTTON. It is the app's identity, so it is the natural place
@@ -437,23 +450,33 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--header-btn);
+  height: var(--header-btn);
   flex: none;
   border-radius: 50%;
   overflow: hidden;
-  /* The mark art is drawn on a transparent field, so the button supplies the
-     tile. --surface-2 is the same lift the other glass buttons use. */
-  background: var(--surface-2);
+  /* GLASS, the same token family as the other two controls and the tab bar.
+     The mark art is drawn on a transparent field, so the button supplies the
+     tile — an opaque --surface-2 disc here made the icon read as a different
+     kind of control from the two beside it. */
+  background: var(--fabnav-surface-opaque);
+  border: 1px solid var(--fabnav-edge);
+  box-shadow: inset 0 1px 0 var(--fabnav-sheen);
   transition: transform var(--dur-tap) ease, background var(--dur-tap) ease;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .mark-btn {
+    background: var(--fabnav-surface);
+    -webkit-backdrop-filter: var(--fabnav-blur);
+    backdrop-filter: var(--fabnav-blur);
+  }
 }
 .mark-btn:active {
   transform: scale(0.94);
-  background: var(--surface-3);
 }
 .mark-btn .mark {
-  width: 26px;
-  height: 26px;
+  width: var(--header-mark);
+  height: var(--header-mark);
   flex: none;
   /* The two variants are swapped by theme, never both painted. */
   display: block;
@@ -471,9 +494,10 @@ a {
 }
 
 .app-header .brand {
-  /* 15 -> 17px: matches the enlarged mark and buttons. Still one line, still
-     ellipsising — a long brand must never push the controls out. */
-  font-size: 17px;
+  /* 15 -> 19px: scaled with the 48px buttons so the wordmark is not dwarfed
+     by the controls beside it. Still one line, still ellipsising — a long
+     brand must never push the controls out. */
+  font-size: 19px;
   font-weight: 700;
   letter-spacing: -0.01em;
   flex: 1;
@@ -481,7 +505,7 @@ a {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-left: var(--s2);
+  margin-left: var(--s3);
   /* The wordmark is translated and faded by AppHeader as the page scrolls.
      `will-change` keeps that on the compositor instead of repainting the
      header text on every frame. */
@@ -499,7 +523,9 @@ a {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  /* Scaled with the buttons: 6px between 36px circles read as a pair, 8px
+     between 48px circles reads the same. */
+  gap: 8px;
   flex: none;
 }
 
@@ -533,11 +559,10 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* 32 -> 36px: the user asked for bigger, EQUAL icons. The box grows so
-     the 44px-recommended hit target is not sacrificed; the glyph below
-     grows to match. */
-  width: 36px;
-  height: 36px;
+  /* Sized from --header-btn so the three controls can never drift apart, and
+     scaled against the 78px tab bar rather than in isolation (see the token). */
+  width: var(--header-btn);
+  height: var(--header-btn);
   flex: none;
   color: var(--text-2);
   border-radius: 50%;
@@ -564,12 +589,12 @@ a {
   transform: scale(0.94);
 }
 .icon-btn svg {
-  /* 19 -> 24px, and BOTH header buttons get exactly this. The jersey looked
-     smaller than the cog at 20 vs 19 because the shirt silhouette occupies
-     less of its viewBox than the cog's gear does — equal boxes were not
-     equal VISUALS. 24px on both, verified side by side at 390px. */
-  width: 24px;
-  height: 24px;
+  /* Both header buttons get exactly this. The jersey looked smaller than the
+     cog at 20 vs 19 because the shirt silhouette occupies less of its viewBox
+     than the cog's gear does — equal boxes were not equal VISUALS. Sized from
+     the token so the pair stays in step with the button. */
+  width: var(--header-glyph);
+  height: var(--header-glyph);
 }
 .icon-btn:disabled {
   /* A disabled refresh button must still look like a button, not vanish —
@@ -589,20 +614,11 @@ a {
   }
 }
 
-/* THE CENTRING RULE for the jersey between status text and cog.
- *
- * Both gaps are 6px — the same either side of the jersey button, measured
- * between VISIBLE edges: the status text's right edge to the jersey glyph's
- * left edge, and the jersey glyph's right edge to the cog glyph's left edge.
- * The button boxes are wider than their glyphs, so box-to-box margins would
- * NOT give equal visual gaps; 6px of margin against a 36px box with a 24px
- * glyph leaves (36-24)/2 = 6px of internal padding on each side, which is
- * what makes the two 6px margins read as equal.
- *
- * The status text got margin-right: 6px above; the cog needs no extra rule
- * because the jersey's own right margin provides its gap. */
+/* The jersey sits inside .header-actions, whose 8px gap owns the spacing to
+   the cog. An extra margin here would double-count it and make the two gaps
+   unequal — the exact defect the old rule existed to prevent. */
 .kit-toggle {
-  margin-right: 6px;
+  margin-right: 0;
 }
 
 /* ==========================================================================
@@ -612,12 +628,13 @@ a {
 main {
   flex: 1;
   min-height: 0;
-  /* The header is `position: fixed`, so it is out of flow and `main` would
-     otherwise start UNDER it. This is the offset that replaces the space the
-     sticky header used to occupy. It uses --chrome-top, the same token the
-     sheet's top bound uses, so the two can never disagree about how tall the
-     header band is. */
-  padding-top: var(--chrome-top);
+  /* NO top padding. The header is a transparent overlay now, so content must
+     scroll edge to edge and pass UNDER the floating controls — that is the
+     modern mobile pattern the user asked for. The clearance that keeps the
+     FIRST content clear of the buttons is applied once, on the scroll
+     container's own top padding (.layer), so it scrolls away with the
+     content instead of reserving a permanent band. */
+  padding-top: 0;
   /* NO bottom padding here, deliberately.
      The floating nav must genuinely float OVER scrolling content, so the
      scroll viewport has to extend all the way to the bottom of the screen
@@ -638,7 +655,11 @@ main {
   -webkit-overflow-scrolling: touch;
   /* Bottom padding = bar height + its float offset, so the final content can
      always be scrolled up out from under the bar. */
-  padding: 0 var(--s4) var(--chrome-bottom);
+  /* Top padding = the header band, so the FIRST content starts clear of the
+     floating controls. It lives on the scroller, not on `main`, so it scrolls
+     away with the content and the page then runs edge to edge under the
+     buttons — the modern mobile pattern. */
+  padding: var(--chrome-top) var(--s4) var(--chrome-bottom);
   scrollbar-width: none;
   /* Momentum scrolling is already native on iOS via -webkit-overflow-scrolling;
      this hint keeps the compositor from re-rasterising the whole layer on
